@@ -233,30 +233,41 @@ export class UpgradeManager {
   }
 
   /**
-   * Checks if player has at least 30 fiéis to buy a temple
+   * Checks if player has at least 30 fiéis to buy the temple (one-time cost)
    */
   public canAffordTemple(): boolean {
+    const temploCount = this.states.get('templo')?.count || 0;
+    if (temploCount >= 1) return false;
     const fies = this.states.get('fiel')?.count || 0;
     return fies >= 30;
   }
 
   /**
-   * Buy a temple (costs 30 fiéis)
+   * Checks if temple was already built (one-time purchase)
+   */
+  public isTempleBuilt(): boolean {
+    return (this.states.get('templo')?.count || 0) >= 1;
+  }
+
+  /**
+   * Buy the temple (one-time cost of 30 fiéis)
    */
   public buyTemple(): boolean {
     const fielState = this.states.get('fiel');
     const temploState = this.states.get('templo');
     if (!fielState || !temploState) return false;
 
+    // Custo único de apenas uma vez
+    if (temploState.count >= 1) return false;
     if (fielState.count < 30) return false;
 
     fielState.count -= 30;
-    temploState.count += 1;
+    temploState.count = 1;
     temploState.unlocked = true;
 
     this.events.emit('upgrade:purchased', {
       upgradeId: 'templo',
-      newCount: temploState.count,
+      newCount: 1,
       cost: 30
     });
 
@@ -328,5 +339,15 @@ export class UpgradeManager {
       }
     });
     return anyNewlyUnlocked;
+  }
+
+  public resetAll(): void {
+    this.configs.forEach(cfg => {
+      this.states.set(cfg.id, {
+        id: cfg.id,
+        count: 0,
+        unlocked: cfg.unlockCost === 0 && (cfg.unlockFielCount === undefined || cfg.unlockFielCount === 0)
+      });
+    });
   }
 }

@@ -109,4 +109,18 @@ export class ResourceManager {
       });
     }
   }
+
+  public resetAll(): void {
+    this.resources.forEach(res => {
+      res.amount = 0;
+      res.totalEarned = 0;
+      res.peakAmount = 0;
+      this.events.emit('resource:changed', {
+        id: res.id,
+        amount: 0,
+        delta: 0,
+        isManual: false
+      });
+    });
+  }
 }

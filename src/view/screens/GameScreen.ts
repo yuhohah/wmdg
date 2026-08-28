@@ -105,9 +105,12 @@ export class GameScreen extends Container {
       hoverColor: 0x242424,
       textColor: THEME.colors.grayMuted,
       onClick: () => {
-        if (confirm('Deseja realmente resetar todo o progresso do culto divino?')) {
+        if (confirm('Deseja realmente apagar tudo e recomeçar do zero?')) {
           this.engine.resetGame();
           this.templesCard.visible = false;
+          this.resourceCard.reset();
+          this.initialCard.reset();
+          this.templesCard.reset();
           this.updateHUD();
           this.resize(this.currentWidth, this.currentHeight);
         }
@@ -248,16 +251,18 @@ export class GameScreen extends Container {
     const canAffordFiel = this.engine.resources.hasAmount('faith', fielCost);
     const maxAffordable = this.engine.getMaxAffordableFiel();
     this.initialCard.updateData(
+      faith,
+      faithRate,
       fielCost,
       canAffordFiel,
       fiesCount,
-      faithRate,
       maxAffordable.count,
       maxAffordable.cost
     );
 
     // 4. Update Temples Action Card if visible
     if (this.templesCard.visible) {
+      const isTempleBuilt = this.engine.isTempleBuilt();
       const u1Cost = this.engine.upgrades.getUpgradeCost('temple_click', 1);
       const u1Afford = this.engine.resources.hasAmount('gold', u1Cost);
       const u1Mult = this.engine.getTempleClickMultiplier();
@@ -273,8 +278,9 @@ export class GameScreen extends Container {
       const faithBonusPct = (Math.log10(Math.max(1, faith)) * 0.25 * u3Mult) * 100;
 
       this.templesCard.updateData(
-        templosCount,
+        gold,
         goldRate,
+        isTempleBuilt,
         fiesCount,
         u1Cost,
         u1Afford,

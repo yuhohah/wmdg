@@ -197,7 +197,14 @@ export class GameEngine {
   }
 
   /**
-   * Buy sacred temple (deducts 30 fiéis)
+   * Check if sacred temple was already built (one-time purchase)
+   */
+  public isTempleBuilt(): boolean {
+    return this.upgrades.isTempleBuilt();
+  }
+
+  /**
+   * Buy sacred temple (deducts 30 fiéis, one-time cost)
    */
   public buyTemple(): boolean {
     return this.upgrades.buyTemple();
@@ -272,7 +279,7 @@ export class GameEngine {
   }
 
   /**
-   * Reset game progress
+   * Reset game progress (completely wipe everything to 0)
    */
   public resetGame(): void {
     SaveSystem.clear();
@@ -280,19 +287,11 @@ export class GameEngine {
     this.stats = defaults.stats;
     this.multipliers = defaults.multipliers;
 
-    // Reset resources
-    Object.keys(this.resources.getAllResources()).forEach(k => {
-      this.resources.set(k as ResourceId, 0);
-    });
+    // Reset resources completely (amounts, peak, totals)
+    this.resources.resetAll();
 
-    // Reset upgrades
-    this.upgrades.getConfigs().forEach(cfg => {
-      const state = this.upgrades.getState(cfg.id);
-      if (state) {
-        state.count = 0;
-        state.unlocked = cfg.unlockCost === 0 && (cfg.unlockFielCount === undefined || cfg.unlockFielCount === 0);
-      }
-    });
+    // Reset upgrades completely
+    this.upgrades.resetAll();
 
     this.save();
     this.events.emit('game:reset', undefined);
@@ -303,7 +302,7 @@ export class GameEngine {
    */
   public getState(): GameState {
     return {
-      version: 2,
+      version: 3,
       resources: this.resources.getAllResources(),
       upgrades: this.upgrades.getAllStates(),
       stats: {

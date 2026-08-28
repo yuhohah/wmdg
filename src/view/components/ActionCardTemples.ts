@@ -17,13 +17,14 @@ export class ActionCardTemples extends Container {
   private glowGraphics: Graphics;
   private haloGraphics: Graphics;
   private templeSprite: Sprite;
+
+  // Header: "VOCÊ TEM X OURO" e abaixo "+Y/s"
   private titleText: Text;
-  private subtitleText: Text;
+  private rateText: Text;
   private dividerGraphics: Graphics;
 
   // Temple status & build button
-  private templesCountText: Text;
-  private goldRateText: Text;
+  private templeStatusText: Text;
   private buildTempleBtn: UIButton;
 
   // Upgrades Section
@@ -44,6 +45,8 @@ export class ActionCardTemples extends Container {
   private u3Mult: Text;
   private u3Btn: UIButton;
 
+  private currentDisplayGold: number = 0;
+  private targetGold: number = 0;
   private rotationAngle: number = 0;
   private onBuyTempleCallback: () => void;
   private onBuyUpgradeCallback: (id: string) => void;
@@ -67,87 +70,73 @@ export class ActionCardTemples extends Container {
     this.haloGraphics = new Graphics();
     this.addChild(this.haloGraphics);
 
-    // 3. Header
+    // 3. Header: "VOCÊ TEM 0 OURO" e abaixo "+0/s"
     this.titleText = new Text({
-      text: 'TEMPLO SAGRADO',
+      text: 'VOCÊ TEM 0 OURO',
       style: new TextStyle({
         fontFamily: THEME.fonts.heading,
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: '900',
-        letterSpacing: 2,
+        letterSpacing: 1.5,
         fill: THEME.colors.pureWhite,
         align: 'center'
       })
     });
     this.titleText.anchor.set(0.5, 0);
-    this.titleText.position.set(this.cardWidth / 2, 14);
+    this.titleText.position.set(this.cardWidth / 2, 16);
     this.addChild(this.titleText);
 
-    this.subtitleText = new Text({
-      text: 'Gera Ouro e concede Bênçãos Ancestrais',
-      style: new TextStyle({
-        fontFamily: THEME.fonts.body,
-        fontSize: 10,
-        fontWeight: '600',
-        fill: THEME.colors.grayMuted,
-        align: 'center'
-      })
-    });
-    this.subtitleText.anchor.set(0.5, 0);
-    this.subtitleText.position.set(this.cardWidth / 2, 33);
-    this.addChild(this.subtitleText);
-
-    // 4. Temple Icon
-    this.templeSprite = Sprite.from('/assets/icons/icon_cathedral.png');
-    this.templeSprite.anchor.set(0.5);
-    this.templeSprite.width = 68;
-    this.templeSprite.height = 68;
-    this.templeSprite.position.set(this.cardWidth / 2, 88);
-    this.addChild(this.templeSprite);
-
-    // 5. Temple Stats
-    this.templesCountText = new Text({
-      text: '0 Templos Construídos',
+    this.rateText = new Text({
+      text: '+0/s',
       style: new TextStyle({
         fontFamily: THEME.fonts.numbers,
         fontSize: 13,
         fontWeight: '700',
-        fill: THEME.colors.pureWhite,
+        fill: THEME.colors.silverLight,
         align: 'center'
       })
     });
-    this.templesCountText.anchor.set(0.5, 0);
-    this.templesCountText.position.set(this.cardWidth / 2, 126);
-    this.addChild(this.templesCountText);
+    this.rateText.anchor.set(0.5, 0);
+    this.rateText.position.set(this.cardWidth / 2, 36);
+    this.addChild(this.rateText);
 
-    this.goldRateText = new Text({
-      text: 'Produção: +0 Ouro/s',
+    // 4. Temple Icon
+    this.templeSprite = Sprite.from('/assets/icons/icon_cathedral.png');
+    this.templeSprite.anchor.set(0.5);
+    this.templeSprite.width = 66;
+    this.templeSprite.height = 66;
+    this.templeSprite.position.set(this.cardWidth / 2, 94);
+    this.addChild(this.templeSprite);
+
+    // 5. Temple Status Text
+    this.templeStatusText = new Text({
+      text: 'Templo Sagrado Não Construído',
       style: new TextStyle({
-        fontFamily: THEME.fonts.numbers,
-        fontSize: 11,
-        fontWeight: '600',
+        fontFamily: THEME.fonts.heading,
+        fontSize: 12,
+        fontWeight: '700',
         fill: THEME.colors.silver,
         align: 'center'
       })
     });
-    this.goldRateText.anchor.set(0.5, 0);
-    this.goldRateText.position.set(this.cardWidth / 2, 145);
-    this.addChild(this.goldRateText);
+    this.templeStatusText.anchor.set(0.5, 0);
+    this.templeStatusText.position.set(this.cardWidth / 2, 134);
+    this.addChild(this.templeStatusText);
 
-    // 6. Build Temple Button (costs 30 fiéis)
+    // 6. Build Temple Button (Custo Único de 30 Fiéis - Bem Grande na Frente)
     this.buildTempleBtn = new UIButton({
       width: this.cardWidth - 40,
-      height: 40,
-      label: 'Construir Templo',
-      subLabel: 'Custa 30 Fiéis',
-      fontSize: 12,
+      height: 60,
+      label: 'CONSTRUIR TEMPLO SAGRADO',
+      subLabel: 'Custo Único: 30 Fiéis',
+      fontSize: 13,
       bgColor: THEME.colors.btnSuccess,
       hoverColor: THEME.colors.btnSuccessHover,
       textColor: THEME.colors.textDark,
       disabled: false,
       onClick: () => this.onBuyTempleCallback()
     });
-    this.buildTempleBtn.position.set(this.cardWidth / 2, 190);
+    this.buildTempleBtn.position.set(this.cardWidth / 2, 166);
     this.addChild(this.buildTempleBtn);
 
     // 7. Divider
@@ -165,7 +154,7 @@ export class ActionCardTemples extends Container {
         fill: THEME.colors.silverDark
       })
     });
-    this.upgradesTitleText.position.set(20, 226);
+    this.upgradesTitleText.position.set(20, 224);
     this.addChild(this.upgradesTitleText);
 
     // Row layout coordinates
@@ -175,7 +164,7 @@ export class ActionCardTemples extends Container {
     const btnRightX = this.cardWidth - 20 - btnW / 2;
 
     // --- UPGRADE 1: Prece Dourada (Fé por Toque) ---
-    const y1 = 250;
+    const y1 = 248;
     this.u1Title = new Text({
       text: 'Prece Dourada',
       style: new TextStyle({
@@ -216,7 +205,7 @@ export class ActionCardTemples extends Container {
     this.addChild(this.u1Btn);
 
     // --- UPGRADE 2: Glória aos Devotos (Produção dos Fiéis) ---
-    const y2 = 308;
+    const y2 = 306;
     this.u2Title = new Text({
       text: 'Glória aos Devotos',
       style: new TextStyle({
@@ -257,7 +246,7 @@ export class ActionCardTemples extends Container {
     this.addChild(this.u2Btn);
 
     // --- UPGRADE 3: Alquimia Espiritual (Fé aumenta Ouro/s) ---
-    const y3 = 366;
+    const y3 = 364;
     this.u3Title = new Text({
       text: 'Alquimia Espiritual',
       style: new TextStyle({
@@ -271,7 +260,7 @@ export class ActionCardTemples extends Container {
     this.addChild(this.u3Title);
 
     this.u3Mult = new Text({
-      text: 'Mult. Fé: 1.00x',
+      text: 'Mult: 1.00x',
       style: new TextStyle({
         fontFamily: THEME.fonts.numbers,
         fontSize: 10,
@@ -314,34 +303,35 @@ export class ActionCardTemples extends Container {
 
     // Divider line between temple build and upgrades
     this.dividerGraphics.clear();
-    this.dividerGraphics.moveTo(20, 218);
-    this.dividerGraphics.lineTo(this.cardWidth - 20, 218);
+    this.dividerGraphics.moveTo(20, 214);
+    this.dividerGraphics.lineTo(this.cardWidth - 20, 214);
     this.dividerGraphics.stroke({ width: 1, color: THEME.colors.cardBorderLight, alpha: 0.5 });
 
     // Background boxes for the 3 upgrade rows
     const rowW = this.cardWidth - 40;
     const rowH = 48;
-    this.bgGraphics.roundRect(20, 245, rowW, rowH, 8);
+    this.bgGraphics.roundRect(20, 243, rowW, rowH, 8);
     this.bgGraphics.fill({ color: 0x080808, alpha: 0.7 });
     this.bgGraphics.stroke({ width: 1, color: 0x1f1f1f });
 
-    this.bgGraphics.roundRect(20, 303, rowW, rowH, 8);
+    this.bgGraphics.roundRect(20, 301, rowW, rowH, 8);
     this.bgGraphics.fill({ color: 0x080808, alpha: 0.7 });
     this.bgGraphics.stroke({ width: 1, color: 0x1f1f1f });
 
-    this.bgGraphics.roundRect(20, 361, rowW, rowH, 8);
+    this.bgGraphics.roundRect(20, 359, rowW, rowH, 8);
     this.bgGraphics.fill({ color: 0x080808, alpha: 0.7 });
     this.bgGraphics.stroke({ width: 1, color: 0x1f1f1f });
 
     // Outer subtle halo behind icon
     this.glowGraphics.clear();
-    this.glowGraphics.circle(this.cardWidth / 2, 88, 50);
+    this.glowGraphics.circle(this.cardWidth / 2, 94, 48);
     this.glowGraphics.fill({ color: THEME.colors.pureWhite, alpha: 0.04 });
   }
 
   public updateData(
-    templosCount: number,
+    goldAmount: number,
     goldRate: number,
+    isTempleBuilt: boolean,
     fiesCount: number,
     u1Cost: number,
     u1Afford: boolean,
@@ -354,38 +344,59 @@ export class ActionCardTemples extends Container {
     u3MultVal: number,
     faithBonusPct: number
   ): void {
-    this.templesCountText.text = `${Formatters.formatNumber(templosCount)} ${templosCount === 1 ? 'Templo Construído' : 'Templos Construídos'}`;
-    this.goldRateText.text = `Produção: +${Formatters.formatNumber(goldRate)} Ouro/s`;
+    this.targetGold = goldAmount;
+    this.rateText.text = `+${Formatters.formatNumber(goldRate)}/s`;
 
-    // Temple build button (costs 30 fiéis)
-    const canAffordTemple = fiesCount >= 30;
-    this.buildTempleBtn.setLabel('Construir Templo', `Custa 30 Fiéis (${fiesCount}/30)`);
-    this.buildTempleBtn.setDisabled(!canAffordTemple);
+    if (isTempleBuilt) {
+      this.buildTempleBtn.visible = false;
+      this.templeStatusText.text = '🏛️ TEMPLO SAGRADO ATIVO';
+      this.templeStatusText.style.fill = THEME.colors.pureWhite;
+      this.templeStatusText.position.y = 154;
+    } else {
+      this.buildTempleBtn.visible = true;
+      this.templeStatusText.text = 'Desperte o Templo Sagrado';
+      this.templeStatusText.style.fill = THEME.colors.silver;
+      this.templeStatusText.position.y = 126;
+
+      const canAfford = fiesCount >= 30;
+      this.buildTempleBtn.setLabel('CONSTRUIR TEMPLO SAGRADO', `Custo Único: 30 Fiéis (${fiesCount}/30)`);
+      this.buildTempleBtn.setDisabled(!canAfford);
+    }
 
     // Upgrade 1
     this.u1Mult.text = `Fé/toque: ${u1MultVal.toFixed(2)}x (+0.50x)`;
     this.u1Btn.setLabel('+Melhorar', `${Formatters.formatNumber(u1Cost)} Ouro`);
-    this.u1Btn.setDisabled(!u1Afford);
+    this.u1Btn.setDisabled(!u1Afford || !isTempleBuilt);
 
     // Upgrade 2
     this.u2Mult.text = `Ganho Fiéis: ${u2MultVal.toFixed(2)}x (+0.25x)`;
     this.u2Btn.setLabel('+Melhorar', `${Formatters.formatNumber(u2Cost)} Ouro`);
-    this.u2Btn.setDisabled(!u2Afford);
+    this.u2Btn.setDisabled(!u2Afford || !isTempleBuilt);
 
     // Upgrade 3
     this.u3Mult.text = `Mult: ${u3MultVal.toFixed(2)}x (+${faithBonusPct.toFixed(0)}% Fé)`;
     this.u3Btn.setLabel('+Melhorar', `${Formatters.formatNumber(u3Cost)} Ouro`);
-    this.u3Btn.setDisabled(!u3Afford);
+    this.u3Btn.setDisabled(!u3Afford || !isTempleBuilt);
   }
 
   public update(dt: number): void {
+    // Smooth interpolation for gold in header
+    if (Math.abs(this.targetGold - this.currentDisplayGold) > 0.01) {
+      const diff = this.targetGold - this.currentDisplayGold;
+      this.currentDisplayGold += diff * Math.min(1, dt * 15);
+      this.titleText.text = `VOCÊ TEM ${Formatters.formatNumber(this.currentDisplayGold)} OURO`;
+    } else {
+      this.currentDisplayGold = this.targetGold;
+      this.titleText.text = `VOCÊ TEM ${Formatters.formatNumber(this.targetGold)} OURO`;
+    }
+
     // Subtle rotation of architectural halo
     this.rotationAngle += dt * 0.6;
     this.haloGraphics.clear();
 
     const cx = this.cardWidth / 2;
-    const cy = 88;
-    const r = 42;
+    const cy = 94;
+    const r = 40;
 
     for (let i = 0; i < 4; i++) {
       const startAngle = this.rotationAngle + (i * Math.PI) / 2;
@@ -396,6 +407,18 @@ export class ActionCardTemples extends Container {
 
     // Subtle breathing
     const breath = Math.sin(performance.now() * 0.002) * 1.2;
-    this.templeSprite.position.y = 88 + breath;
+    this.templeSprite.position.y = 94 + breath;
+  }
+
+  public reset(): void {
+    this.targetGold = 0;
+    this.currentDisplayGold = 0;
+    this.titleText.text = 'VOCÊ TEM 0 OURO';
+    this.rateText.text = '+0/s';
+    this.buildTempleBtn.visible = true;
+    this.buildTempleBtn.setDisabled(true);
+    this.templeStatusText.text = 'Desperte o Templo Sagrado';
+    this.templeStatusText.style.fill = THEME.colors.silver;
+    this.templeStatusText.position.y = 126;
   }
 }

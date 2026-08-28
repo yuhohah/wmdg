@@ -86,6 +86,7 @@ export class SaveSystem {
   public static clear(): void {
     try {
       localStorage.removeItem(this.STORAGE_KEY);
+      localStorage.removeItem(this.PREVIOUS_STORAGE_KEY);
     } catch (e) {
       console.error('[SaveSystem] Failed to clear save:', e);
     }

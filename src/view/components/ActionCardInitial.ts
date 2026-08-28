@@ -17,7 +17,7 @@ export class ActionCardInitial extends Container {
   private cardHeight: number;
   private bgGraphics: Graphics;
   private titleText: Text;
-  private subtitleText: Text;
+  private rateText: Text;
   private dividerGraphics: Graphics;
 
   public orb: ClickerOrb;
@@ -25,6 +25,8 @@ export class ActionCardInitial extends Container {
   private convertMaxButton: UIButton;
   private buttonHelperText: Text;
 
+  private currentDisplayFaith: number = 0;
+  private targetFaith: number = 0;
   private onConvertFielCallback: () => void;
   private onConvertMaxFielCallback: () => void;
 
@@ -32,7 +34,7 @@ export class ActionCardInitial extends Container {
     super();
 
     this.cardWidth = props.width || 360;
-    this.cardHeight = props.height || 480;
+    this.cardHeight = props.height || 520;
     this.onConvertFielCallback = props.onConvertFiel;
     this.onConvertMaxFielCallback = props.onConvertMaxFiel;
 
@@ -40,14 +42,14 @@ export class ActionCardInitial extends Container {
     this.bgGraphics = new Graphics();
     this.addChild(this.bgGraphics);
 
-    // 2. Card Header
+    // 2. Header: "VOCÊ TEM X PONTOS DE FÉ" e abaixo "+Y/s"
     this.titleText = new Text({
-      text: 'A ENTIDADE DIVINA',
+      text: 'VOCÊ TEM 0 PONTOS DE FÉ',
       style: new TextStyle({
         fontFamily: THEME.fonts.heading,
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: '900',
-        letterSpacing: 2,
+        letterSpacing: 1.5,
         fill: THEME.colors.pureWhite,
         align: 'center'
       })
@@ -56,25 +58,25 @@ export class ActionCardInitial extends Container {
     this.titleText.position.set(this.cardWidth / 2, 16);
     this.addChild(this.titleText);
 
-    this.subtitleText = new Text({
-      text: 'Toque na esfera para adorar e gerar Fé',
+    this.rateText = new Text({
+      text: '+0/s',
       style: new TextStyle({
-        fontFamily: THEME.fonts.body,
-        fontSize: 10,
-        fontWeight: '600',
-        fill: THEME.colors.grayMuted,
+        fontFamily: THEME.fonts.numbers,
+        fontSize: 13,
+        fontWeight: '700',
+        fill: THEME.colors.silverLight,
         align: 'center'
       })
     });
-    this.subtitleText.anchor.set(0.5, 0);
-    this.subtitleText.position.set(this.cardWidth / 2, 36);
-    this.addChild(this.subtitleText);
+    this.rateText.anchor.set(0.5, 0);
+    this.rateText.position.set(this.cardWidth / 2, 36);
+    this.addChild(this.rateText);
 
     // 3. Clickable Orb (Esfera Clicável)
     this.orb = new ClickerOrb((x, y) => {
       props.onOrbClick(x, y);
     });
-    this.orb.position.set(this.cardWidth / 2, 185);
+    this.orb.position.set(this.cardWidth / 2, 195);
     this.addChild(this.orb);
 
     // 4. Subtle Divider
@@ -158,13 +160,17 @@ export class ActionCardInitial extends Container {
   }
 
   public updateData(
+    faith: number,
+    faithRate: number,
     fielCost: number,
     canAffordFiel: boolean,
     fiesCount: number,
-    ratePerSec: number,
     maxCount: number,
     maxCost: number
   ): void {
+    this.targetFaith = faith;
+    this.rateText.text = `+${Formatters.formatNumber(faithRate)}/s`;
+
     this.convertButton.setLabel('Converter Fiel', `${Formatters.formatNumber(fielCost)} PF`);
     this.convertButton.setDisabled(!canAffordFiel);
 
@@ -174,10 +180,28 @@ export class ActionCardInitial extends Container {
     this.convertMaxButton.setLabel('Converter Max', maxSubLabel);
     this.convertMaxButton.setDisabled(maxCount <= 0);
 
-    this.buttonHelperText.text = `Você possui ${Formatters.formatNumber(fiesCount)} fiéis (+${Formatters.formatNumber(ratePerSec)} PF/s)`;
+    this.buttonHelperText.text = `Você possui ${Formatters.formatNumber(fiesCount)} fiéis (+${Formatters.formatNumber(faithRate)} PF/s)`;
   }
 
   public update(dt: number): void {
     this.orb.update(dt);
+
+    // Smooth interpolation for faith counter in header
+    if (Math.abs(this.targetFaith - this.currentDisplayFaith) > 0.01) {
+      const diff = this.targetFaith - this.currentDisplayFaith;
+      this.currentDisplayFaith += diff * Math.min(1, dt * 15);
+      this.titleText.text = `VOCÊ TEM ${Formatters.formatNumber(this.currentDisplayFaith)} PONTOS DE FÉ`;
+    } else {
+      this.currentDisplayFaith = this.targetFaith;
+      this.titleText.text = `VOCÊ TEM ${Formatters.formatNumber(this.targetFaith)} PONTOS DE FÉ`;
+    }
+  }
+
+  public reset(): void {
+    this.targetFaith = 0;
+    this.currentDisplayFaith = 0;
+    this.titleText.text = 'VOCÊ TEM 0 PONTOS DE FÉ';
+    this.rateText.text = '+0/s';
+    this.buttonHelperText.text = 'Você possui 0 fiéis (+0 PF/s)';
   }
 }

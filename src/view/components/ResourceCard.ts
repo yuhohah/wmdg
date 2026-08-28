@@ -257,4 +257,20 @@ export class ResourceCard extends Container {
       this.goldRateText.position.x = this.goldValueText.position.x + this.goldValueText.width + 6;
     }
   }
+
+  public reset(): void {
+    this.targetFaith = 0;
+    this.currentDisplayFaith = 0;
+    this.targetGold = 0;
+    this.currentDisplayGold = 0;
+    this.goldContainer.visible = false;
+    this.temploContainer.visible = false;
+    this.faithValueText.text = '0 PF';
+    this.faithRateText.text = '(+0/s)';
+    this.fielValueText.text = '0 Fiéis';
+    this.goldValueText.text = '0 Ouro';
+    this.goldRateText.text = '(+0/s)';
+    this.temploValueText.text = '0 Templos';
+    this.drawBackground();
+  }
 }
