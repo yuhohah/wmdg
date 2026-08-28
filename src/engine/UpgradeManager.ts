@@ -18,17 +18,58 @@ export const DEFAULT_UPGRADES: UpgradeConfig[] = [
   },
   {
     id: 'templo',
-    name: 'Templos',
-    description: 'Monumentos grandiosos que multiplicam o ganho por segundo dos fiéis.',
-    baseCost: 2500,
-    costMultiplier: 1.5,
-    baseOutput: 0, // Apenas os fiéis geram Fé por segundo; templos multiplicam esse ganho
-    multiplierPerItem: 1.0, // +100% por templo (+1x multiplicador por templo)
+    name: 'Templo Sagrado',
+    description: 'Monumento sagrado que gera Ouro e canaliza bênçãos divinas.',
+    baseCost: 30, // Custa 30 fiéis
+    costMultiplier: 1.0,
+    baseOutput: 1, // 1 Ouro/s base por templo
     icon: '/assets/icons/icon_cathedral.png',
-    targetResource: 'faith',
+    targetResource: 'gold',
     consumesResource: 'faith',
     unlockCost: 0,
-    unlockFielCount: 100 // Desbloqueia exatamente ao adquirir 100 fiéis
+    unlockFielCount: 30 // Desbloqueia ao atingir 30 fiéis
+  },
+  {
+    id: 'temple_click',
+    name: 'Prece Dourada',
+    description: 'Aumenta a Fé gerada por clique na Entidade.',
+    baseCost: 10,
+    costMultiplier: 1.45,
+    baseOutput: 0,
+    baseMultiplier: 1.00,
+    multiplierIncreasePerLevel: 0.50, // 1.00x base, +0.50x por nível (1.00x, 1.50x, 2.00x...)
+    icon: '/assets/icons/icon_star.png',
+    targetResource: 'faith',
+    consumesResource: 'gold',
+    unlockCost: 0
+  },
+  {
+    id: 'temple_fiel',
+    name: 'Glória aos Devotos',
+    description: 'Aumenta a produção de Fé por segundo de todos os fiéis.',
+    baseCost: 15,
+    costMultiplier: 1.45,
+    baseOutput: 0,
+    baseMultiplier: 1.00,
+    multiplierIncreasePerLevel: 0.25, // 1.00x base, +0.25x por nível (1.00x, 1.25x, 1.50x...)
+    icon: '/assets/icons/icon_flame.png',
+    targetResource: 'faith',
+    consumesResource: 'gold',
+    unlockCost: 0
+  },
+  {
+    id: 'temple_gold_faith',
+    name: 'Alquimia Espiritual',
+    description: 'Faz com que seus Pontos de Fé aumentem o Ouro gerado por segundo.',
+    baseCost: 25,
+    costMultiplier: 1.50,
+    baseOutput: 0,
+    baseMultiplier: 1.00,
+    multiplierIncreasePerLevel: 0.50, // 1.00x base, +0.50x por nível (1.00x, 1.50x, 2.00x...)
+    icon: '/assets/icons/icon_shrine.png',
+    targetResource: 'gold',
+    consumesResource: 'gold',
+    unlockCost: 0
   }
 ];
 
@@ -89,6 +130,11 @@ export class UpgradeManager {
     const state = this.states.get(id);
     if (!config || !state || countToBuy <= 0) return Infinity;
 
+    // Special: Templo costs exactly 30 fiéis per unit
+    if (id === 'templo') {
+      return 30 * countToBuy;
+    }
+
     const base = config.baseCost;
     const r = config.costMultiplier;
     const l = state.count;
@@ -109,6 +155,13 @@ export class UpgradeManager {
     const config = this.configs.get(id);
     const state = this.states.get(id);
     if (!config || !state) return { count: 0, cost: 0 };
+
+    // Special: Templo costs fiéis
+    if (id === 'templo') {
+      const fiesCount = this.states.get('fiel')?.count || 0;
+      const maxT = Math.floor(fiesCount / 30);
+      return { count: maxT, cost: maxT * 30 };
+    }
 
     const balance = this.resourceManager.getResource(config.consumesResource).amount;
     const base = config.baseCost;
@@ -131,62 +184,93 @@ export class UpgradeManager {
   }
 
   /**
-   * Multiplier applied to faithful production based on temple count
-   * E.g. 0 temples = 1x, 1 temple = 2x (+100%), 2 temples = 3x (+200%)
+   * Multipliers for the 3 Temple upgrades (Base 1.00x, increasing gradually)
    */
-  public getFielMultiplier(): number {
-    const temploConfig = this.configs.get('templo');
-    const temploState = this.states.get('templo');
-    if (!temploState || temploState.count <= 0) return 1.0;
-    const multPerItem = temploConfig?.multiplierPerItem ?? 1.0;
-    return 1.0 + temploState.count * multPerItem;
+  public getTempleClickMultiplier(): number {
+    const state = this.states.get('temple_click');
+    const level = state?.count || 0;
+    return 1.00 + (level * 0.50);
+  }
+
+  public getTempleFielMultiplier(): number {
+    const state = this.states.get('temple_fiel');
+    const level = state?.count || 0;
+    return 1.00 + (level * 0.25);
+  }
+
+  public getTempleGoldFaithMultiplier(): number {
+    const state = this.states.get('temple_gold_faith');
+    const level = state?.count || 0;
+    return 1.00 + (level * 0.50);
   }
 
   /**
-   * Production per second for this item based on current quantity owned
+   * Calculates Gold per second from temples and faith points
    */
-  public getUpgradeOutput(id: string): number {
-    const config = this.configs.get(id);
-    const state = this.states.get(id);
-    if (!config || !state || state.count <= 0) return 0;
+  public getGoldProductionPerSecond(faithAmount: number = 0): number {
+    const templosCount = this.states.get('templo')?.count || 0;
+    if (templosCount <= 0) return 0;
 
-    if (id === 'fiel') {
-      return config.baseOutput * state.count * this.getFielMultiplier();
+    const baseGold = templosCount * 1.0;
+    const faithBonusMult = this.getTempleGoldFaithMultiplier();
+    // Logarithmic faith scaling: Faith points gradually boost gold generation
+    const faithBonus = (Math.log10(Math.max(1, faithAmount)) * 0.25) * faithBonusMult;
+    return baseGold * (1.0 + faithBonus);
+  }
+
+  /**
+   * Faith production per second (Exclusively from fiéis, multiplied by temple_fiel upgrade)
+   */
+  public getTotalProductionPerSecond(resourceId: ResourceId, faithAmount: number = 0): number {
+    if (resourceId === 'faith') {
+      const fiesCount = this.states.get('fiel')?.count || 0;
+      return fiesCount * 1.0 * this.getTempleFielMultiplier();
     }
-
-    return config.baseOutput * state.count;
+    if (resourceId === 'gold') {
+      return this.getGoldProductionPerSecond(faithAmount);
+    }
+    return 0;
   }
 
   /**
-   * Extra adoration/click power given by click bonus items
+   * Checks if player has at least 30 fiéis to buy a temple
    */
-  public getTotalClickBonus(): number {
-    let bonus = 0;
-    this.configs.forEach(config => {
-      if (config.clickMultiplier) {
-        const state = this.states.get(config.id);
-        if (state && state.count > 0) {
-          bonus += config.clickMultiplier * state.count;
-        }
-      }
+  public canAffordTemple(): boolean {
+    const fies = this.states.get('fiel')?.count || 0;
+    return fies >= 30;
+  }
+
+  /**
+   * Buy a temple (costs 30 fiéis)
+   */
+  public buyTemple(): boolean {
+    const fielState = this.states.get('fiel');
+    const temploState = this.states.get('templo');
+    if (!fielState || !temploState) return false;
+
+    if (fielState.count < 30) return false;
+
+    fielState.count -= 30;
+    temploState.count += 1;
+    temploState.unlocked = true;
+
+    this.events.emit('upgrade:purchased', {
+      upgradeId: 'templo',
+      newCount: temploState.count,
+      cost: 30
     });
-    return bonus;
+
+    return true;
   }
 
   /**
-   * Total automated production per second for a specific resource
-   * SPECIFICATION: Apenas os fiéis geram Pontos de Fé por segundo.
-   * Templos multiplicam esse ganho.
-   */
-  public getTotalProductionPerSecond(resourceId: ResourceId): number {
-    if (resourceId !== 'faith') return 0;
-    return this.getUpgradeOutput('fiel');
-  }
-
-  /**
-   * Purchase quantity of items
+   * Purchase general upgrades (consumes resource)
    */
   public buyUpgrade(id: string, countToBuy: number = 1): boolean {
+    if (id === 'templo') {
+      return this.buyTemple();
+    }
+
     const config = this.configs.get(id);
     const state = this.states.get(id);
     if (!config || !state) return false;
@@ -199,7 +283,7 @@ export class UpgradeManager {
     state.count += countToBuy;
     state.unlocked = true;
 
-    // Check unlocks immediately if faithful count reached 100
+    // Check unlocks immediately if faithful count reached 30
     if (id === 'fiel') {
       this.checkUnlocks({});
     }
@@ -214,7 +298,7 @@ export class UpgradeManager {
   }
 
   /**
-   * Update unlock status based on peak faith points or faithful devotos count
+   * Check unlocks (e.g. 30 fiéis unlocks Templo Sagrado)
    */
   public checkUnlocks(peakResources: Record<ResourceId, number>): boolean {
     let anyNewlyUnlocked = false;
@@ -225,7 +309,7 @@ export class UpgradeManager {
       if (state && !state.unlocked) {
         let shouldUnlock = false;
 
-        // Unlock condition: 100 fiéis for temples
+        // Unlock condition: 30 fiéis for temples
         if (cfg.unlockFielCount !== undefined) {
           if (fiesCount >= cfg.unlockFielCount) {
             shouldUnlock = true;

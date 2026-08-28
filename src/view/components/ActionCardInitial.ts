@@ -8,7 +8,8 @@ export interface ActionCardInitialProps {
   width?: number;
   height?: number;
   onOrbClick: (globalX: number, globalY: number) => void;
-  onBuyFiel: () => void;
+  onConvertFiel: () => void;
+  onConvertMaxFiel: () => void;
 }
 
 export class ActionCardInitial extends Container {
@@ -20,17 +21,20 @@ export class ActionCardInitial extends Container {
   private dividerGraphics: Graphics;
 
   public orb: ClickerOrb;
-  private buyButton: UIButton;
+  private convertButton: UIButton;
+  private convertMaxButton: UIButton;
   private buttonHelperText: Text;
 
-  private onBuyFielCallback: () => void;
+  private onConvertFielCallback: () => void;
+  private onConvertMaxFielCallback: () => void;
 
   constructor(props: ActionCardInitialProps) {
     super();
 
     this.cardWidth = props.width || 360;
     this.cardHeight = props.height || 480;
-    this.onBuyFielCallback = props.onBuyFiel;
+    this.onConvertFielCallback = props.onConvertFiel;
+    this.onConvertMaxFielCallback = props.onConvertMaxFiel;
 
     // 1. Background
     this.bgGraphics = new Graphics();
@@ -77,25 +81,48 @@ export class ActionCardInitial extends Container {
     this.dividerGraphics = new Graphics();
     this.addChild(this.dividerGraphics);
 
-    // 5. Action Button: "Adquirir fiéis"
-    this.buyButton = new UIButton({
-      width: this.cardWidth - 48,
-      height: 52,
-      label: 'Adquirir Fiéis',
+    // 5. Dual Action Buttons: "Converter Fiel" e "Converter Max"
+    const margin = 20;
+    const gap = 10;
+    const btnWidth = Math.floor((this.cardWidth - margin * 2 - gap) / 2);
+    const btnHeight = 52;
+    const btnY = this.cardHeight - 66;
+
+    // Left Button: Converter Fiel
+    this.convertButton = new UIButton({
+      width: btnWidth,
+      height: btnHeight,
+      label: 'Converter Fiel',
       subLabel: '15 PF',
-      fontSize: 13,
+      fontSize: 11,
       bgColor: THEME.colors.btnSuccess,
       hoverColor: THEME.colors.btnSuccessHover,
       textColor: THEME.colors.textDark,
       disabled: false,
-      onClick: () => this.onBuyFielCallback()
+      onClick: () => this.onConvertFielCallback()
     });
-    this.buyButton.position.set(this.cardWidth / 2, this.cardHeight - 66);
-    this.addChild(this.buyButton);
+    this.convertButton.position.set(margin + btnWidth / 2, btnY);
+    this.addChild(this.convertButton);
 
-    // 6. Helper text below button
+    // Right Button: Converter Max
+    this.convertMaxButton = new UIButton({
+      width: btnWidth,
+      height: btnHeight,
+      label: 'Converter Max',
+      subLabel: '+0 (0 PF)',
+      fontSize: 11,
+      bgColor: THEME.colors.cardBgHover,
+      hoverColor: 0x2a2a2a,
+      textColor: THEME.colors.pureWhite,
+      disabled: true,
+      onClick: () => this.onConvertMaxFielCallback()
+    });
+    this.convertMaxButton.position.set(margin + btnWidth + gap + btnWidth / 2, btnY);
+    this.addChild(this.convertMaxButton);
+
+    // 6. Helper text below buttons
     this.buttonHelperText = new Text({
-      text: 'Cada fiel ora gerando +1 PF/s para a Entidade',
+      text: 'Você possui 0 fiéis (+0 PF/s)',
       style: new TextStyle({
         fontFamily: THEME.fonts.body,
         fontSize: 10,
@@ -123,17 +150,31 @@ export class ActionCardInitial extends Container {
     this.bgGraphics.roundRect(2, 2, this.cardWidth - 4, 1.5, 8);
     this.bgGraphics.fill({ color: THEME.colors.pureWhite, alpha: 0.15 });
 
-    // Divider line above action button
+    // Divider line above action buttons
     this.dividerGraphics.clear();
-    this.dividerGraphics.moveTo(24, this.cardHeight - 104);
-    this.dividerGraphics.lineTo(this.cardWidth - 24, this.cardHeight - 104);
+    this.dividerGraphics.moveTo(20, this.cardHeight - 104);
+    this.dividerGraphics.lineTo(this.cardWidth - 20, this.cardHeight - 104);
     this.dividerGraphics.stroke({ width: 1, color: THEME.colors.cardBorderLight, alpha: 0.5 });
   }
 
-  public updateData(fielCost: number, canAfford: boolean, fiesCount: number): void {
-    this.buyButton.setLabel('Adquirir Fiéis', `${Formatters.formatNumber(fielCost)} PF`);
-    this.buyButton.setDisabled(!canAfford);
-    this.buttonHelperText.text = `Você possui ${Formatters.formatNumber(fiesCount)} fiéis (+${Formatters.formatNumber(fiesCount)} PF/s)`;
+  public updateData(
+    fielCost: number,
+    canAffordFiel: boolean,
+    fiesCount: number,
+    ratePerSec: number,
+    maxCount: number,
+    maxCost: number
+  ): void {
+    this.convertButton.setLabel('Converter Fiel', `${Formatters.formatNumber(fielCost)} PF`);
+    this.convertButton.setDisabled(!canAffordFiel);
+
+    const maxSubLabel = maxCount > 0
+      ? `+${Formatters.formatNumber(maxCount)} (${Formatters.formatNumber(maxCost)} PF)`
+      : '0 PF';
+    this.convertMaxButton.setLabel('Converter Max', maxSubLabel);
+    this.convertMaxButton.setDisabled(maxCount <= 0);
+
+    this.buttonHelperText.text = `Você possui ${Formatters.formatNumber(fiesCount)} fiéis (+${Formatters.formatNumber(ratePerSec)} PF/s)`;
   }
 
   public update(dt: number): void {

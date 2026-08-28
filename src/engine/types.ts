@@ -1,4 +1,4 @@
-export type ResourceId = 'faith' | 'gems' | string;
+export type ResourceId = 'faith' | 'gold' | 'gems' | string;
 
 export interface ResourceState {
   id: ResourceId;
@@ -16,6 +16,8 @@ export interface UpgradeConfig {
   baseOutput: number; // production per second per item
   clickMultiplier?: number; // bonus to manual adoration/click
   multiplierPerItem?: number; // multiplier applied to faithful output (e.g. +1.0 for +100%)
+  baseMultiplier?: number; // base multiplier starting at 1.00
+  multiplierIncreasePerLevel?: number; // increment per level
   icon: string;
   targetResource: ResourceId;
   consumesResource: ResourceId;

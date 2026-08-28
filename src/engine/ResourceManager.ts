@@ -15,9 +15,12 @@ export class ResourceManager {
       });
     }
 
-    // Ensure 'faith' always exists
+    // Ensure 'faith' and 'gold' always exist
     if (!this.resources.has('faith')) {
       this.registerResource('faith', 0);
+    }
+    if (!this.resources.has('gold')) {
+      this.registerResource('gold', 0);
     }
   }
 

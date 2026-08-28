@@ -79,6 +79,7 @@ export class GameEngine {
 
     // 2. Automated resource generation
     const faithPerSec = this.getIncomePerSecond('faith');
+    const goldPerSec = this.getIncomePerSecond('gold');
     const incomeThisTick: Record<ResourceId, number> = {};
 
     if (faithPerSec > 0) {
@@ -87,11 +88,17 @@ export class GameEngine {
       incomeThisTick['faith'] = faithGained;
     }
 
+    if (goldPerSec > 0) {
+      const goldGained = goldPerSec * dt;
+      this.resources.add('gold', goldGained, false);
+      incomeThisTick['gold'] = goldGained;
+    }
+
     // 3. Unlock progression check
     const allRes = this.resources.getAllResources();
     const peakMap: Record<ResourceId, number> = {
       faith: allRes.faith?.peakAmount || 0,
-      gems: allRes.gems?.peakAmount || 0
+      gold: allRes.gold?.peakAmount || 0
     };
     this.upgrades.checkUnlocks(peakMap);
 
@@ -123,19 +130,20 @@ export class GameEngine {
   }
 
   /**
-   * Calculate manual click / adoration power (Base 1 + bonus from upgrades) * global multiplier
+   * Calculate manual click power (Base 1 * temple click multiplier)
    */
   public getClickPower(): number {
     const baseClick = 1;
-    const upgradeBonus = this.upgrades.getTotalClickBonus();
-    return Math.floor((baseClick + upgradeBonus) * this.multipliers.globalClick);
+    const templeClickMult = this.upgrades.getTempleClickMultiplier();
+    return Math.max(1, Math.round(baseClick * templeClickMult * this.multipliers.globalClick));
   }
 
   /**
-   * Get production rate per second for faith
+   * Get production rate per second for faith or gold
    */
   public getIncomePerSecond(id: ResourceId = 'faith'): number {
-    const base = this.upgrades.getTotalProductionPerSecond(id);
+    const faithAmount = this.resources.getResource('faith').amount;
+    const base = this.upgrades.getTotalProductionPerSecond(id, faithAmount);
     return base * this.multipliers.globalProduction;
   }
 
@@ -157,6 +165,52 @@ export class GameEngine {
   }
 
   /**
+   * Convert 1 faithful devotee
+   */
+  public convertFiel(): boolean {
+    return this.buyUpgrade('fiel', 1);
+  }
+
+  /**
+   * Convert maximum affordable faithful devotees
+   */
+  public convertMaxFiel(): { count: number; cost: number } {
+    const max = this.upgrades.getMaxAffordable('fiel');
+    if (max.count > 0) {
+      this.buyUpgrade('fiel', max.count);
+    }
+    return max;
+  }
+
+  /**
+   * Get maximum affordable count and cost for faithful
+   */
+  public getMaxAffordableFiel(): { count: number; cost: number } {
+    return this.upgrades.getMaxAffordable('fiel');
+  }
+
+  /**
+   * Check if player can afford a sacred temple (costs 30 fiéis)
+   */
+  public canAffordTemple(): boolean {
+    return this.upgrades.canAffordTemple();
+  }
+
+  /**
+   * Buy sacred temple (deducts 30 fiéis)
+   */
+  public buyTemple(): boolean {
+    return this.upgrades.buyTemple();
+  }
+
+  /**
+   * Buy temple upgrade with gold
+   */
+  public buyTempleUpgrade(upgradeId: string): boolean {
+    return this.upgrades.buyUpgrade(upgradeId, 1);
+  }
+
+  /**
    * Count of faithful devotees
    */
   public getFiesCount(): number {
@@ -171,18 +225,26 @@ export class GameEngine {
   }
 
   /**
-   * Multiplier applied to faithful production
+   * Multipliers for temple upgrades
    */
-  public getTempleMultiplier(): number {
-    return this.upgrades.getFielMultiplier();
+  public getTempleClickMultiplier(): number {
+    return this.upgrades.getTempleClickMultiplier();
+  }
+
+  public getTempleFielMultiplier(): number {
+    return this.upgrades.getTempleFielMultiplier();
+  }
+
+  public getTempleGoldFaithMultiplier(): number {
+    return this.upgrades.getTempleGoldFaithMultiplier();
   }
 
   /**
-   * Checks if temples action card is unlocked (>= 100 fiéis)
+   * Checks if temples action card is unlocked (>= 30 fiéis)
    */
   public isTemplesUnlocked(): boolean {
     const temploState = this.upgrades.getState('templo');
-    return (temploState?.unlocked ?? false) || this.getFiesCount() >= 100;
+    return (temploState?.unlocked ?? false) || this.getFiesCount() >= 30;
   }
 
   /**

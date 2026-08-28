@@ -9,7 +9,8 @@ export class SaveSystem {
     return {
       version: this.CURRENT_VERSION,
       resources: {
-        faith: { id: 'faith', amount: 0, totalEarned: 0, peakAmount: 0 }
+        faith: { id: 'faith', amount: 0, totalEarned: 0, peakAmount: 0 },
+        gold: { id: 'gold', amount: 0, totalEarned: 0, peakAmount: 0 }
       },
       upgrades: {},
       stats: {

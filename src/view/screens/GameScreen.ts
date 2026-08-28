@@ -115,35 +115,47 @@ export class GameScreen extends Container {
     });
     this.headerContainer.addChild(this.resetBtn);
 
-    // 5. Top-Left Resource Card (Recursos: Pontos de Fé & Fiéis)
+    // 5. Top-Left Resource Card (Recursos: Fé, Fiéis, Ouro, Templos)
     this.resourceCard = new ResourceCard(260);
     this.resourceCard.position.set(24, 18);
     this.addChild(this.resourceCard);
 
-    // 6. Action Card 1: Initial Card (Clicker Orb + Adquirir Fiéis)
+    // 6. Action Card 1: Initial Card (Esfera Clicável + Converter Fiel / Converter Max)
     this.initialCard = new ActionCardInitial({
       width: 360,
-      height: 480,
+      height: 520,
       onOrbClick: (clickX, clickY) => {
         const earned = this.engine.clickResource('faith', clickX, clickY);
         this.floatingText.spawn(clickX, clickY, earned);
         this.updateHUD();
       },
-      onBuyFiel: () => {
-        const bought = this.engine.buyUpgrade('fiel', 1);
+      onConvertFiel: () => {
+        const bought = this.engine.convertFiel();
         if (bought) {
+          this.updateHUD();
+        }
+      },
+      onConvertMaxFiel: () => {
+        const result = this.engine.convertMaxFiel();
+        if (result.count > 0) {
           this.updateHUD();
         }
       }
     });
     this.actionCardsContainer.addChild(this.initialCard);
 
-    // 7. Action Card 2: Temples Card (Unlocked at 100 Fiéis)
+    // 7. Action Card 2: Temples Card (Unlocked at 30 Fiéis, costs 30 fiéis, produces gold)
     this.templesCard = new ActionCardTemples({
       width: 360,
-      height: 480,
+      height: 520,
       onBuyTemple: () => {
-        const bought = this.engine.buyUpgrade('templo', 1);
+        const bought = this.engine.buyTemple();
+        if (bought) {
+          this.updateHUD();
+        }
+      },
+      onBuyUpgrade: (upgradeId: string) => {
+        const bought = this.engine.buyTempleUpgrade(upgradeId);
         if (bought) {
           this.updateHUD();
         }
@@ -207,31 +219,74 @@ export class GameScreen extends Container {
 
   private updateHUD(): void {
     const faith = this.engine.resources.getResource('faith').amount;
-    const rate = this.engine.getIncomePerSecond('faith');
+    const faithRate = this.engine.getIncomePerSecond('faith');
+    const gold = this.engine.resources.getResource('gold').amount;
+    const goldRate = this.engine.getIncomePerSecond('gold');
     const fiesCount = this.engine.getFiesCount();
     const templosCount = this.engine.getTemplosCount();
-    const multiplier = this.engine.getTempleMultiplier();
+    const isTempleUnlocked = this.engine.isTemplesUnlocked();
 
     // 1. Update Resource HUD Card
-    this.resourceCard.setValues(faith, rate, fiesCount, templosCount, multiplier);
+    this.resourceCard.setValues(
+      faith,
+      faithRate,
+      fiesCount,
+      gold,
+      goldRate,
+      templosCount,
+      isTempleUnlocked
+    );
 
-    // 2. Check if Temples card should unlock (>= 100 fiéis)
-    const isUnlocked = this.engine.isTemplesUnlocked();
-    if (isUnlocked !== this.templesCard.visible) {
-      this.templesCard.visible = isUnlocked;
+    // 2. Check if Temples card should unlock (>= 30 fiéis)
+    if (isTempleUnlocked !== this.templesCard.visible) {
+      this.templesCard.visible = isTempleUnlocked;
       this.resize(this.currentWidth, this.currentHeight);
     }
 
     // 3. Update Initial Action Card
     const fielCost = this.engine.upgrades.getUpgradeCost('fiel', 1);
     const canAffordFiel = this.engine.resources.hasAmount('faith', fielCost);
-    this.initialCard.updateData(fielCost, canAffordFiel, fiesCount);
+    const maxAffordable = this.engine.getMaxAffordableFiel();
+    this.initialCard.updateData(
+      fielCost,
+      canAffordFiel,
+      fiesCount,
+      faithRate,
+      maxAffordable.count,
+      maxAffordable.cost
+    );
 
     // 4. Update Temples Action Card if visible
     if (this.templesCard.visible) {
-      const temploCost = this.engine.upgrades.getUpgradeCost('templo', 1);
-      const canAffordTemplo = this.engine.resources.hasAmount('faith', temploCost);
-      this.templesCard.updateData(temploCost, canAffordTemplo, templosCount, fiesCount, multiplier, rate);
+      const u1Cost = this.engine.upgrades.getUpgradeCost('temple_click', 1);
+      const u1Afford = this.engine.resources.hasAmount('gold', u1Cost);
+      const u1Mult = this.engine.getTempleClickMultiplier();
+
+      const u2Cost = this.engine.upgrades.getUpgradeCost('temple_fiel', 1);
+      const u2Afford = this.engine.resources.hasAmount('gold', u2Cost);
+      const u2Mult = this.engine.getTempleFielMultiplier();
+
+      const u3Cost = this.engine.upgrades.getUpgradeCost('temple_gold_faith', 1);
+      const u3Afford = this.engine.resources.hasAmount('gold', u3Cost);
+      const u3Mult = this.engine.getTempleGoldFaithMultiplier();
+
+      const faithBonusPct = (Math.log10(Math.max(1, faith)) * 0.25 * u3Mult) * 100;
+
+      this.templesCard.updateData(
+        templosCount,
+        goldRate,
+        fiesCount,
+        u1Cost,
+        u1Afford,
+        u1Mult,
+        u2Cost,
+        u2Afford,
+        u2Mult,
+        u3Cost,
+        u3Afford,
+        u3Mult,
+        faithBonusPct
+      );
     }
 
     // 5. Update Stats Footer
@@ -266,8 +321,8 @@ export class GameScreen extends Container {
 
     // Action Cards Layout
     const cardW = 360;
-    const cardGap = 28;
-    const cardsTopY = Math.max(130, this.resourceCard.position.y + 110);
+    const cardGap = 24;
+    const cardsTopY = Math.max(130, this.resourceCard.position.y + 130);
 
     if (this.templesCard.visible) {
       if (isDesktop) {
@@ -281,7 +336,7 @@ export class GameScreen extends Container {
         // Vertical Stack on narrow screens
         const centerX = Math.max(0, (width - cardW) / 2);
         this.initialCard.position.set(centerX, cardsTopY);
-        this.templesCard.position.set(centerX, cardsTopY + 480 + 20);
+        this.templesCard.position.set(centerX, cardsTopY + 520 + 20);
       }
     } else {
       // Single Initial Card Centered
