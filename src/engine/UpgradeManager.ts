@@ -55,7 +55,7 @@ export class UpgradeManager {
       this.states.set(cfg.id, saved ? { ...saved } : {
         id: cfg.id,
         count: 0,
-        unlocked: cfg.unlockCost === 0
+        unlocked: cfg.unlockCost === 0 && (cfg.unlockFielCount === undefined || cfg.unlockFielCount === 0)
       });
     });
   }

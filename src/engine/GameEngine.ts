@@ -228,7 +228,7 @@ export class GameEngine {
       const state = this.upgrades.getState(cfg.id);
       if (state) {
         state.count = 0;
-        state.unlocked = cfg.unlockCost === 0;
+        state.unlocked = cfg.unlockCost === 0 && (cfg.unlockFielCount === undefined || cfg.unlockFielCount === 0);
       }
     });
 
