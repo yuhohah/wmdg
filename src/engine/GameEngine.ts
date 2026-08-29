@@ -2,7 +2,7 @@ import { GameState, ResourceId, GameEventMap, OfflineEarningsReport } from './ty
 import { EventEmitter } from './EventEmitter';
 import { GameLoop } from './GameLoop';
 import { ResourceManager } from './ResourceManager';
-import { UpgradeManager } from './UpgradeManager';
+import { UpgradeManager, MonumentConfig } from './UpgradeManager';
 import { SaveSystem } from './SaveSystem';
 import { OfflineProgressCalculator } from './OfflineProgress';
 
@@ -130,12 +130,13 @@ export class GameEngine {
   }
 
   /**
-   * Calculate manual click power (Base 1 * temple click multiplier)
+   * Calculate manual click power (Base 1 * temple click multiplier * monument click multiplier)
    */
   public getClickPower(): number {
     const baseClick = 1;
     const templeClickMult = this.upgrades.getTempleClickMultiplier();
-    return Math.max(1, Math.round(baseClick * templeClickMult * this.multipliers.globalClick));
+    const monumentClickMult = this.upgrades.getMonumentClickMultiplier();
+    return Math.max(1, Math.round(baseClick * templeClickMult * monumentClickMult * this.multipliers.globalClick));
   }
 
   /**
@@ -153,19 +154,13 @@ export class GameEngine {
   public buyUpgrade(id: string, count: number = 1): boolean {
     const success = this.upgrades.buyUpgrade(id, count);
     if (success) {
-      // Re-check unlocks immediately if faithful were bought
-      if (id === 'fiel') {
-        const peakMap: Record<ResourceId, number> = {
-          faith: this.resources.getResource('faith').peakAmount
-        };
-        this.upgrades.checkUnlocks(peakMap);
-      }
+      this.save();
     }
     return success;
   }
 
   /**
-   * Convert 1 faithful devotee
+   * Convert a single faithful devotee
    */
   public convertFiel(): boolean {
     return this.buyUpgrade('fiel', 1);
@@ -218,6 +213,52 @@ export class GameEngine {
   }
 
   /**
+   * Temple enhancement with Faith (PF): 10 levels
+   */
+  public getTempleEnhancementLevel(): number {
+    return this.upgrades.getTempleEnhancementLevel();
+  }
+
+  public getTempleEnhancementCost(): number {
+    return this.upgrades.getTempleEnhancementCost();
+  }
+
+  public canUpgradeTempleWithFaith(): boolean {
+    return this.upgrades.canUpgradeTempleWithFaith();
+  }
+
+  public upgradeTempleWithFaith(): boolean {
+    return this.upgrades.upgradeTempleWithFaith();
+  }
+
+  /**
+   * Monument System (7 mythical monuments)
+   */
+  public isMonumentsUnlocked(): boolean {
+    return this.upgrades.isMonumentsUnlocked();
+  }
+
+  public getMonumentsCount(): number {
+    return this.upgrades.getMonumentsCount();
+  }
+
+  public getNextMonument(): MonumentConfig | undefined {
+    return this.upgrades.getNextMonument();
+  }
+
+  public getNextMonumentCost(): number {
+    return this.upgrades.getNextMonumentCost();
+  }
+
+  public canAffordNextMonument(): boolean {
+    return this.upgrades.canAffordNextMonument();
+  }
+
+  public buyNextMonument(): boolean {
+    return this.upgrades.buyNextMonument();
+  }
+
+  /**
    * Count of faithful devotees
    */
   public getFiesCount(): number {
@@ -252,6 +293,17 @@ export class GameEngine {
   public isTemplesUnlocked(): boolean {
     const temploState = this.upgrades.getState('templo');
     return (temploState?.unlocked ?? false) || this.getFiesCount() >= 30;
+  }
+
+  /**
+   * Time acceleration scale (1x to 10x)
+   */
+  public setTimeScale(scale: number): void {
+    this.loop.setTimeScale(scale);
+  }
+
+  public getTimeScale(): number {
+    return this.loop.getTimeScale();
   }
 
   /**

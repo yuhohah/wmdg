@@ -4,6 +4,7 @@ import { GameEngine } from '../../engine/GameEngine';
 import { ResourceCard } from '../components/ResourceCard';
 import { ActionCardInitial } from '../components/ActionCardInitial';
 import { ActionCardTemples } from '../components/ActionCardTemples';
+import { ActionCardMonuments } from '../components/ActionCardMonuments';
 import { UIButton } from '../components/UIButton';
 import { FloatingTextManager } from '../components/FloatingTextManager';
 import { OfflineModal } from '../components/OfflineModal';
@@ -26,11 +27,13 @@ export class GameScreen extends Container {
   private saveStatusText: Text;
   private manualSaveBtn: UIButton;
   private resetBtn: UIButton;
+  private timeSpeedBtn: UIButton;
 
   // HUD & Action Cards
   private resourceCard: ResourceCard;
   private initialCard: ActionCardInitial;
   private templesCard: ActionCardTemples;
+  private monumentsCard: ActionCardMonuments;
   private statsText: Text;
 
   private currentWidth: number = 1000;
@@ -81,6 +84,27 @@ export class GameScreen extends Container {
     });
     this.headerContainer.addChild(this.saveStatusText);
 
+    // Header Buttons: Time Speed, Save, Reset
+    const SPEED_STEPS = [1, 2, 3, 5, 10];
+    let currentSpeedIndex = 0;
+
+    this.timeSpeedBtn = new UIButton({
+      width: 75,
+      height: 30,
+      label: '⚡ 1x',
+      fontSize: 11,
+      bgColor: THEME.colors.cardBg,
+      hoverColor: THEME.colors.cardBgHover,
+      textColor: THEME.colors.pureWhite,
+      onClick: () => {
+        currentSpeedIndex = (currentSpeedIndex + 1) % SPEED_STEPS.length;
+        const newSpeed = SPEED_STEPS[currentSpeedIndex];
+        this.engine.setTimeScale(newSpeed);
+        this.timeSpeedBtn.setLabel(`⚡ ${newSpeed}x`);
+      }
+    });
+    this.headerContainer.addChild(this.timeSpeedBtn);
+
     this.manualSaveBtn = new UIButton({
       width: 80,
       height: 30,
@@ -107,10 +131,15 @@ export class GameScreen extends Container {
       onClick: () => {
         if (confirm('Deseja realmente apagar tudo e recomeçar do zero?')) {
           this.engine.resetGame();
+          this.engine.setTimeScale(1);
+          currentSpeedIndex = 0;
+          this.timeSpeedBtn.setLabel('⚡ 1x');
           this.templesCard.visible = false;
+          this.monumentsCard.visible = false;
           this.resourceCard.reset();
           this.initialCard.reset();
           this.templesCard.reset();
+          this.monumentsCard.reset();
           this.updateHUD();
           this.resize(this.currentWidth, this.currentHeight);
         }
@@ -118,7 +147,7 @@ export class GameScreen extends Container {
     });
     this.headerContainer.addChild(this.resetBtn);
 
-    // 5. Top-Left Resource Card (Recursos: Fé, Fiéis, Ouro, Templos)
+    // 5. Top-Left Resource Card (Recursos: Fé, Fiéis, Ouro, Templos, Monumentos)
     this.resourceCard = new ResourceCard(260);
     this.resourceCard.position.set(24, 18);
     this.addChild(this.resourceCard);
@@ -157,6 +186,12 @@ export class GameScreen extends Container {
           this.updateHUD();
         }
       },
+      onUpgradeTempleWithFaith: () => {
+        const bought = this.engine.upgradeTempleWithFaith();
+        if (bought) {
+          this.updateHUD();
+        }
+      },
       onBuyUpgrade: (upgradeId: string) => {
         const bought = this.engine.buyTempleUpgrade(upgradeId);
         if (bought) {
@@ -167,7 +202,21 @@ export class GameScreen extends Container {
     this.templesCard.visible = this.engine.isTemplesUnlocked();
     this.actionCardsContainer.addChild(this.templesCard);
 
-    // 8. Stats Footer Text
+    // 8. Action Card 3: Monuments Card (Unlocked at 10,000 Gold, 7 monuments)
+    this.monumentsCard = new ActionCardMonuments({
+      width: 360,
+      height: 520,
+      onBuyMonument: () => {
+        const bought = this.engine.buyNextMonument();
+        if (bought) {
+          this.updateHUD();
+        }
+      }
+    });
+    this.monumentsCard.visible = this.engine.isMonumentsUnlocked();
+    this.actionCardsContainer.addChild(this.monumentsCard);
+
+    // 9. Stats Footer Text
     this.statsText = new Text({
       text: '',
       style: new TextStyle({
@@ -181,11 +230,11 @@ export class GameScreen extends Container {
     this.statsText.anchor.set(0.5, 1);
     this.addChild(this.statsText);
 
-    // 9. Floating Text Layer
+    // 10. Floating Text Layer
     this.floatingText = new FloatingTextManager();
     this.addChild(this.floatingText);
 
-    // 10. Offline Modal Layer
+    // 11. Offline Modal Layer
     this.offlineModal = new OfflineModal(() => {
       this.engine.claimOfflineEarnings();
       this.updateHUD();
@@ -228,6 +277,8 @@ export class GameScreen extends Container {
     const fiesCount = this.engine.getFiesCount();
     const templosCount = this.engine.getTemplosCount();
     const isTempleUnlocked = this.engine.isTemplesUnlocked();
+    const monumentsCount = this.engine.getMonumentsCount();
+    const isMonumentsUnlocked = this.engine.isMonumentsUnlocked();
 
     // 1. Update Resource HUD Card
     this.resourceCard.setValues(
@@ -237,12 +288,25 @@ export class GameScreen extends Container {
       gold,
       goldRate,
       templosCount,
-      isTempleUnlocked
+      isTempleUnlocked,
+      monumentsCount,
+      isMonumentsUnlocked
     );
 
-    // 2. Check if Temples card should unlock (>= 30 fiéis)
+    // 2. Check if Temples card or Monuments card should unlock/toggle
+    let layoutChanged = false;
+
     if (isTempleUnlocked !== this.templesCard.visible) {
       this.templesCard.visible = isTempleUnlocked;
+      layoutChanged = true;
+    }
+
+    if (isMonumentsUnlocked !== this.monumentsCard.visible) {
+      this.monumentsCard.visible = isMonumentsUnlocked;
+      layoutChanged = true;
+    }
+
+    if (layoutChanged) {
       this.resize(this.currentWidth, this.currentHeight);
     }
 
@@ -263,6 +327,10 @@ export class GameScreen extends Container {
     // 4. Update Temples Action Card if visible
     if (this.templesCard.visible) {
       const isTempleBuilt = this.engine.isTempleBuilt();
+      const enhLevel = this.engine.getTempleEnhancementLevel();
+      const enhCost = this.engine.getTempleEnhancementCost();
+      const canEnhance = this.engine.canUpgradeTempleWithFaith();
+
       const u1Cost = this.engine.upgrades.getUpgradeCost('temple_click', 1);
       const u1Afford = this.engine.resources.hasAmount('gold', u1Cost);
       const u1Mult = this.engine.getTempleClickMultiplier();
@@ -282,6 +350,9 @@ export class GameScreen extends Container {
         goldRate,
         isTempleBuilt,
         fiesCount,
+        enhLevel,
+        enhCost,
+        canEnhance,
         u1Cost,
         u1Afford,
         u1Mult,
@@ -295,7 +366,22 @@ export class GameScreen extends Container {
       );
     }
 
-    // 5. Update Stats Footer
+    // 5. Update Monuments Action Card if visible
+    if (this.monumentsCard.visible) {
+      const nextCost = this.engine.getNextMonumentCost();
+      const canAffordNext = this.engine.canAffordNextMonument();
+      const nextInfo = this.engine.getNextMonument();
+
+      this.monumentsCard.updateData(
+        gold,
+        monumentsCount,
+        nextCost,
+        canAffordNext,
+        nextInfo
+      );
+    }
+
+    // 6. Update Stats Footer
     const state = this.engine.getState();
     this.statsText.text = `Adorações Manuais: ${Formatters.formatNumber(state.stats.totalClicks)}   •   Tempo de Devoção: ${Formatters.formatDuration(state.stats.playTimeSeconds)}`;
   }
@@ -310,39 +396,68 @@ export class GameScreen extends Container {
     const isDesktop = width >= 820;
 
     if (isDesktop) {
-      this.headerIconSprite.position.set(width - 390, 24);
-      this.gameTitleText.position.set(width - 356, 24);
-      this.saveStatusText.position.set(width - 356, 46);
+      this.headerIconSprite.position.set(width - 480, 24);
+      this.gameTitleText.position.set(width - 446, 24);
+      this.saveStatusText.position.set(width - 446, 46);
 
-      this.manualSaveBtn.position.set(width - 135, 34);
+      this.timeSpeedBtn.position.set(width - 225, 34);
+      this.manualSaveBtn.position.set(width - 140, 34);
       this.resetBtn.position.set(width - 50, 34);
     } else {
       this.headerIconSprite.position.set(width - 170, 20);
       this.gameTitleText.position.set(width - 138, 20);
       this.saveStatusText.position.set(width - 138, 40);
 
-      this.manualSaveBtn.position.set(width - 110, 68);
-      this.resetBtn.position.set(width - 40, 68);
+      this.timeSpeedBtn.position.set(width - 180, 68);
+      this.manualSaveBtn.position.set(width - 100, 68);
+      this.resetBtn.position.set(width - 20, 68);
     }
 
-    // Action Cards Layout
+    // Action Cards Layout (up to 3 cards)
     const cardW = 360;
-    const cardGap = 24;
-    const cardsTopY = Math.max(130, this.resourceCard.position.y + 130);
+    const cardGap = 20;
+    const cardsTopY = Math.max(130, this.resourceCard.position.y + 140);
 
-    if (this.templesCard.visible) {
-      if (isDesktop) {
-        // Two Cards Side by Side
+    const hasTemples = this.templesCard.visible;
+    const hasMonuments = this.monumentsCard.visible;
+
+    if (hasTemples && hasMonuments) {
+      if (width >= 1180) {
+        // 3 Cards Side by Side
+        const totalCardsW = cardW * 3 + cardGap * 2;
+        const startX = Math.max(20, (width - totalCardsW) / 2);
+
+        this.initialCard.position.set(startX, cardsTopY);
+        this.templesCard.position.set(startX + cardW + cardGap, cardsTopY);
+        this.monumentsCard.position.set(startX + (cardW + cardGap) * 2, cardsTopY);
+      } else if (width >= 780) {
+        // 2 Cards top, 1 card centered below
+        const totalTopW = cardW * 2 + cardGap;
+        const startX = Math.max(20, (width - totalTopW) / 2);
+
+        this.initialCard.position.set(startX, cardsTopY);
+        this.templesCard.position.set(startX + cardW + cardGap, cardsTopY);
+        this.monumentsCard.position.set((width - cardW) / 2, cardsTopY + 520 + cardGap);
+      } else {
+        // Vertical Stack
+        const centerX = Math.max(0, (width - cardW) / 2);
+        this.initialCard.position.set(centerX, cardsTopY);
+        this.templesCard.position.set(centerX, cardsTopY + 520 + cardGap);
+        this.monumentsCard.position.set(centerX, cardsTopY + (520 + cardGap) * 2);
+      }
+    } else if (hasTemples) {
+      if (width >= 780) {
+        // 2 Cards Side by Side
         const totalCardsW = cardW * 2 + cardGap;
         const startX = Math.max(24, (width - totalCardsW) / 2);
 
         this.initialCard.position.set(startX, cardsTopY);
         this.templesCard.position.set(startX + cardW + cardGap, cardsTopY);
       } else {
-        // Vertical Stack on narrow screens
+        // Vertical Stack
         const centerX = Math.max(0, (width - cardW) / 2);
         this.initialCard.position.set(centerX, cardsTopY);
-        this.templesCard.position.set(centerX, cardsTopY + 520 + 20);
+        this.templesCard.position.set(centerX, cardsTopY + 520 + cardGap);
       }
     } else {
       // Single Initial Card Centered
@@ -366,6 +481,9 @@ export class GameScreen extends Container {
     this.initialCard.update(dt);
     if (this.templesCard.visible) {
       this.templesCard.update(dt);
+    }
+    if (this.monumentsCard.visible) {
+      this.monumentsCard.update(dt);
     }
     this.floatingText.update(dt);
   }

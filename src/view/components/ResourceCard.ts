@@ -26,6 +26,11 @@ export class ResourceCard extends Container {
   private temploSprite: Sprite;
   private temploValueText: Text;
 
+  // Monuments row (visible once monuments unlocked or > 0)
+  private monumentoContainer: Container;
+  private monumentoSprite: Sprite;
+  private monumentoValueText: Text;
+
   private currentDisplayFaith: number = 0;
   private targetFaith: number = 0;
   private currentDisplayGold: number = 0;
@@ -163,6 +168,30 @@ export class ResourceCard extends Container {
     this.temploValueText.position.set(24, 0);
     this.temploContainer.addChild(this.temploValueText);
 
+    // 6. Monuments Row
+    this.monumentoContainer = new Container();
+    this.monumentoContainer.position.set(16, 138);
+    this.monumentoContainer.visible = false;
+    this.addChild(this.monumentoContainer);
+
+    this.monumentoSprite = Sprite.from('/assets/icons/icon_monument.png');
+    this.monumentoSprite.width = 18;
+    this.monumentoSprite.height = 18;
+    this.monumentoSprite.position.set(0, 0);
+    this.monumentoContainer.addChild(this.monumentoSprite);
+
+    this.monumentoValueText = new Text({
+      text: '0/7 Monumentos',
+      style: new TextStyle({
+        fontFamily: THEME.fonts.numbers,
+        fontSize: 13,
+        fontWeight: '700',
+        fill: THEME.colors.silverLight
+      })
+    });
+    this.monumentoValueText.position.set(24, 0);
+    this.monumentoContainer.addChild(this.monumentoValueText);
+
     this.drawBackground();
   }
 
@@ -170,11 +199,17 @@ export class ResourceCard extends Container {
     this.bgGraphics.clear();
 
     let actualHeight = 88;
-    if (this.goldContainer.visible && this.temploContainer.visible) {
-      actualHeight = 138;
-    } else if (this.goldContainer.visible || this.temploContainer.visible) {
-      actualHeight = 114;
-    }
+    const rows = [
+      true, // faith & fiel
+      this.goldContainer?.visible,
+      this.temploContainer?.visible,
+      this.monumentoContainer?.visible
+    ].filter(Boolean).length;
+
+    if (rows === 4) actualHeight = 164;
+    else if (rows === 3) actualHeight = 138;
+    else if (rows === 2) actualHeight = 114;
+    else actualHeight = 88;
 
     // Dark monochrome glass card
     this.bgGraphics.roundRect(0, 0, this.widthPx, actualHeight, 14);
@@ -193,7 +228,9 @@ export class ResourceCard extends Container {
     gold: number = 0,
     goldRate: number = 0,
     templosCount: number = 0,
-    isTempleUnlocked: boolean = false
+    isTempleUnlocked: boolean = false,
+    monumentsCount: number = 0,
+    isMonumentsUnlocked: boolean = false
   ): void {
     this.targetFaith = faith;
     this.targetGold = gold;
@@ -203,28 +240,37 @@ export class ResourceCard extends Container {
 
     this.fielValueText.text = `${Formatters.formatNumber(fiesCount)} Fiéis`;
 
-    // Show Gold row if unlocked or gold > 0
     let needRedraw = false;
+
+    // Show Gold row
     const shouldShowGold = isTempleUnlocked || templosCount > 0 || gold > 0;
     if (shouldShowGold !== this.goldContainer.visible) {
       this.goldContainer.visible = shouldShowGold;
       needRedraw = true;
     }
-
     if (shouldShowGold) {
       this.goldRateText.text = `(+${Formatters.formatNumber(goldRate)}/s)`;
       this.goldRateText.position.x = this.goldValueText.position.x + this.goldValueText.width + 6;
     }
 
-    // Show Temples row if templos > 0
+    // Show Temples row
     const shouldShowTemples = templosCount > 0;
     if (shouldShowTemples !== this.temploContainer.visible) {
       this.temploContainer.visible = shouldShowTemples;
       needRedraw = true;
     }
-
     if (shouldShowTemples) {
       this.temploValueText.text = `${Formatters.formatNumber(templosCount)} ${templosCount === 1 ? 'Templo' : 'Templos'}`;
+    }
+
+    // Show Monuments row
+    const shouldShowMonuments = isMonumentsUnlocked || monumentsCount > 0;
+    if (shouldShowMonuments !== this.monumentoContainer.visible) {
+      this.monumentoContainer.visible = shouldShowMonuments;
+      needRedraw = true;
+    }
+    if (shouldShowMonuments) {
+      this.monumentoValueText.text = `${monumentsCount}/7 Monumentos`;
     }
 
     if (needRedraw) {
@@ -265,12 +311,14 @@ export class ResourceCard extends Container {
     this.currentDisplayGold = 0;
     this.goldContainer.visible = false;
     this.temploContainer.visible = false;
+    this.monumentoContainer.visible = false;
     this.faithValueText.text = '0 PF';
     this.faithRateText.text = '(+0/s)';
     this.fielValueText.text = '0 Fiéis';
     this.goldValueText.text = '0 Ouro';
     this.goldRateText.text = '(+0/s)';
     this.temploValueText.text = '0 Templos';
+    this.monumentoValueText.text = '0/7 Monumentos';
     this.drawBackground();
   }
 }
