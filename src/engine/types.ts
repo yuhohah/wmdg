@@ -1,4 +1,4 @@
-export type ResourceId = 'faith' | 'gold' | 'gems' | string;
+export type ResourceId = 'faith' | 'gold' | 'essence' | 'gems' | string;
 
 export interface ResourceState {
   id: ResourceId;
@@ -37,12 +37,21 @@ export interface GameStats {
   startTime: number;
   playTimeSeconds: number;
   lastSaveTimestamp: number;
+  totalResets: number;
+  totalEssenceEarned: number;
+}
+
+export interface PrestigeState {
+  essence: number;
+  totalEssenceEarned: number;
+  resetsCount: number;
 }
 
 export interface GameState {
   version: number;
   resources: Record<ResourceId, ResourceState>;
   upgrades: Record<string, UpgradeState>;
+  prestige: PrestigeState;
   stats: GameStats;
   multipliers: {
     globalProduction: number;
@@ -59,6 +68,8 @@ export type GameEventMap = {
   'tick': { dt: number; totalIncome: Record<ResourceId, number> };
   'resource:changed': { id: ResourceId; amount: number; delta: number; isManual: boolean };
   'upgrade:purchased': { upgradeId: string; newCount: number; cost: number };
+  'milestone:reached': { id: string; level: number; multiplier: number; label: string };
+  'prestige:performed': { essenceGained: number; totalEssence: number };
   'click:produced': { resourceId: ResourceId; amount: number; screenX?: number; screenY?: number };
   'offline:collected': OfflineEarningsReport;
   'game:saved': { timestamp: number };

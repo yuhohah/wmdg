@@ -1,24 +1,35 @@
 import { GameState } from './types';
 
 export class SaveSystem {
-  private static readonly STORAGE_KEY = 'IDLE_CLICKER_FAITH_SAVE_V3';
-  private static readonly PREVIOUS_STORAGE_KEY = 'IDLE_CLICKER_FAITH_SAVE_V2';
-  private static readonly CURRENT_VERSION = 3;
+  private static readonly STORAGE_KEY = 'IDLE_CLICKER_FAITH_SAVE_V4';
+  private static readonly PREVIOUS_STORAGE_KEYS = [
+    'IDLE_CLICKER_FAITH_SAVE_V3',
+    'IDLE_CLICKER_FAITH_SAVE_V2'
+  ];
+  private static readonly CURRENT_VERSION = 4;
 
   public static getDefaultState(): GameState {
     return {
       version: this.CURRENT_VERSION,
       resources: {
         faith: { id: 'faith', amount: 0, totalEarned: 0, peakAmount: 0 },
-        gold: { id: 'gold', amount: 0, totalEarned: 0, peakAmount: 0 }
+        gold: { id: 'gold', amount: 0, totalEarned: 0, peakAmount: 0 },
+        essence: { id: 'essence', amount: 0, totalEarned: 0, peakAmount: 0 }
       },
       upgrades: {},
+      prestige: {
+        essence: 0,
+        totalEssenceEarned: 0,
+        resetsCount: 0
+      },
       stats: {
         totalClicks: 0,
         manualFaithEarned: 0,
         startTime: Date.now(),
         playTimeSeconds: 0,
-        lastSaveTimestamp: Date.now()
+        lastSaveTimestamp: Date.now(),
+        totalResets: 0,
+        totalEssenceEarned: 0
       },
       multipliers: {
         globalProduction: 1.0,
@@ -43,10 +54,13 @@ export class SaveSystem {
     try {
       let data = localStorage.getItem(this.STORAGE_KEY);
       if (!data) {
-        // Try migrating from V2
-        const v2Data = localStorage.getItem(this.PREVIOUS_STORAGE_KEY);
-        if (v2Data) {
-          data = v2Data;
+        // Try migrating from earlier versions
+        for (const prevKey of this.PREVIOUS_STORAGE_KEYS) {
+          const prevData = localStorage.getItem(prevKey);
+          if (prevData) {
+            data = prevData;
+            break;
+          }
         }
       }
 
@@ -67,6 +81,10 @@ export class SaveSystem {
           ...defaults.upgrades,
           ...(parsed.upgrades || {})
         },
+        prestige: {
+          ...defaults.prestige,
+          ...(parsed.prestige || {})
+        },
         stats: {
           ...defaults.stats,
           ...(parsed.stats || {}),
@@ -86,7 +104,9 @@ export class SaveSystem {
   public static clear(): void {
     try {
       localStorage.removeItem(this.STORAGE_KEY);
-      localStorage.removeItem(this.PREVIOUS_STORAGE_KEY);
+      for (const prevKey of this.PREVIOUS_STORAGE_KEYS) {
+        localStorage.removeItem(prevKey);
+      }
     } catch (e) {
       console.error('[SaveSystem] Failed to clear save:', e);
     }
@@ -100,13 +120,13 @@ export class SaveSystem {
   public static importSave(encoded: string): boolean {
     try {
       const decoded = atob(encoded);
-      const parsed = JSON.parse(decoded);
-      if (parsed && typeof parsed === 'object') {
-        localStorage.setItem(this.STORAGE_KEY, decoded);
-        return true;
+      const parsed = JSON.parse(decoded) as GameState;
+      if (parsed && parsed.resources) {
+        return this.save(parsed);
       }
       return false;
-    } catch {
+    } catch (e) {
+      console.error('[SaveSystem] Failed to import save data:', e);
       return false;
     }
   }

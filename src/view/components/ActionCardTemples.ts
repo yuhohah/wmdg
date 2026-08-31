@@ -2,12 +2,15 @@ import { Container, Graphics, Sprite, Text, TextStyle } from 'pixi.js';
 import { THEME } from '../theme';
 import { UIButton } from './UIButton';
 import { Formatters } from '../utils/Formatters';
+import { MilestoneProgress } from '../../engine/GameMath';
 
 export interface ActionCardTemplesProps {
   width?: number;
   height?: number;
   onBuyTemple: () => void;
   onUpgradeTempleWithFaith: () => void;
+  onBuySacerdote: () => void;
+  onBuyMaxSacerdote: () => void;
   onBuyUpgrade: (upgradeId: string) => void;
 }
 
@@ -22,12 +25,22 @@ export class ActionCardTemples extends Container {
   // Header: "VOCÊ TEM X OURO" e abaixo "+Y/s"
   private titleText: Text;
   private rateText: Text;
-  private dividerGraphics: Graphics;
+  private divider1Graphics: Graphics;
+  private divider2Graphics: Graphics;
 
   // Temple status & build button
   private templeStatusText: Text;
   private buildTempleBtn: UIButton;
   private enhancementBtn: UIButton;
+
+  // Sacerdotes Section
+  private sacerdotesTitleText: Text;
+  private sacerdoteMilestoneLabel: Text;
+  private sacerdoteMilestoneBarBg: Graphics;
+  private sacerdoteMilestoneBarFill: Graphics;
+  private buySacerdoteBtn: UIButton;
+  private buyMaxSacerdoteBtn: UIButton;
+  private sacerdotesHelperText: Text;
 
   // Upgrades Section
   private upgradesTitleText: Text;
@@ -52,6 +65,8 @@ export class ActionCardTemples extends Container {
   private rotationAngle: number = 0;
   private onBuyTempleCallback: () => void;
   private onUpgradeTempleWithFaithCallback: () => void;
+  private onBuySacerdoteCallback: () => void;
+  private onBuyMaxSacerdoteCallback: () => void;
   private onBuyUpgradeCallback: (id: string) => void;
 
   constructor(props: ActionCardTemplesProps) {
@@ -61,6 +76,8 @@ export class ActionCardTemples extends Container {
     this.cardHeight = props.height || 520;
     this.onBuyTempleCallback = props.onBuyTemple;
     this.onUpgradeTempleWithFaithCallback = props.onUpgradeTempleWithFaith;
+    this.onBuySacerdoteCallback = props.onBuySacerdote;
+    this.onBuyMaxSacerdoteCallback = props.onBuyMaxSacerdote;
     this.onBuyUpgradeCallback = props.onBuyUpgrade;
 
     // 1. Card Background
@@ -87,29 +104,29 @@ export class ActionCardTemples extends Container {
       })
     });
     this.titleText.anchor.set(0.5, 0);
-    this.titleText.position.set(this.cardWidth / 2, 16);
+    this.titleText.position.set(this.cardWidth / 2, 14);
     this.addChild(this.titleText);
 
     this.rateText = new Text({
       text: '+0/s',
       style: new TextStyle({
         fontFamily: THEME.fonts.numbers,
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: '700',
         fill: THEME.colors.silverLight,
         align: 'center'
       })
     });
     this.rateText.anchor.set(0.5, 0);
-    this.rateText.position.set(this.cardWidth / 2, 36);
+    this.rateText.position.set(this.cardWidth / 2, 32);
     this.addChild(this.rateText);
 
     // 4. Temple Icon
     this.templeSprite = Sprite.from('/assets/icons/icon_cathedral.png');
     this.templeSprite.anchor.set(0.5);
-    this.templeSprite.width = 66;
-    this.templeSprite.height = 66;
-    this.templeSprite.position.set(this.cardWidth / 2, 88);
+    this.templeSprite.width = 54;
+    this.templeSprite.height = 54;
+    this.templeSprite.position.set(this.cardWidth / 2, 74);
     this.addChild(this.templeSprite);
 
     // 5. Temple Status Text
@@ -117,36 +134,35 @@ export class ActionCardTemples extends Container {
       text: 'Desperte o Templo Sagrado',
       style: new TextStyle({
         fontFamily: THEME.fonts.heading,
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: '700',
         fill: THEME.colors.silver,
         align: 'center'
       })
     });
     this.templeStatusText.anchor.set(0.5, 0);
-    this.templeStatusText.position.set(this.cardWidth / 2, 126);
+    this.templeStatusText.position.set(this.cardWidth / 2, 106);
     this.addChild(this.templeStatusText);
 
-    // 6. Build Temple Button (Custo Único de 30 Fiéis - Bem Grande na Frente)
+    // 6. Build Temple Button (Custo Único de 30 Fiéis) / Aprimorar Templo com PF
     this.buildTempleBtn = new UIButton({
       width: this.cardWidth - 40,
-      height: 56,
+      height: 42,
       label: 'CONSTRUIR TEMPLO SAGRADO',
       subLabel: 'Custo Único: 30 Fiéis',
-      fontSize: 13,
+      fontSize: 12,
       bgColor: THEME.colors.btnSuccess,
       hoverColor: THEME.colors.btnSuccessHover,
       textColor: THEME.colors.textDark,
       disabled: false,
       onClick: () => this.onBuyTempleCallback()
     });
-    this.buildTempleBtn.position.set(this.cardWidth / 2, 168);
+    this.buildTempleBtn.position.set(this.cardWidth / 2, 142);
     this.addChild(this.buildTempleBtn);
 
-    // 7. Aprimorar Templo com PF Button (10 níveis)
     this.enhancementBtn = new UIButton({
       width: this.cardWidth - 40,
-      height: 44,
+      height: 40,
       label: 'APRIMORAR TEMPLO (Nv. 0/10)',
       subLabel: '10.000 PF (+100% Ouro)',
       fontSize: 11,
@@ -156,17 +172,17 @@ export class ActionCardTemples extends Container {
       disabled: true,
       onClick: () => this.onUpgradeTempleWithFaithCallback()
     });
-    this.enhancementBtn.position.set(this.cardWidth / 2, 168);
+    this.enhancementBtn.position.set(this.cardWidth / 2, 142);
     this.enhancementBtn.visible = false;
     this.addChild(this.enhancementBtn);
 
-    // 8. Divider
-    this.dividerGraphics = new Graphics();
-    this.addChild(this.dividerGraphics);
+    // 7. Divider 1
+    this.divider1Graphics = new Graphics();
+    this.addChild(this.divider1Graphics);
 
-    // 9. Upgrades Header Title
-    this.upgradesTitleText = new Text({
-      text: 'UPGRADES DO TEMPLO (OURO)',
+    // 8. Sacerdotes Section
+    this.sacerdotesTitleText = new Text({
+      text: 'SACERDOTES DO TEMPLO',
       style: new TextStyle({
         fontFamily: THEME.fonts.heading,
         fontSize: 10,
@@ -175,17 +191,110 @@ export class ActionCardTemples extends Container {
         fill: THEME.colors.silverDark
       })
     });
-    this.upgradesTitleText.position.set(20, 224);
+    this.sacerdotesTitleText.position.set(20, 172);
+    this.addChild(this.sacerdotesTitleText);
+
+    // Sacerdote Milestone Bar
+    const sBarW = this.cardWidth - 40;
+    this.sacerdoteMilestoneLabel = new Text({
+      text: '⭐ Marco: 0/5 Sacerdotes (Próximo: 2x Conversão)',
+      style: new TextStyle({
+        fontFamily: THEME.fonts.numbers,
+        fontSize: 9,
+        fontWeight: '700',
+        fill: THEME.colors.silverLight,
+        align: 'right'
+      })
+    });
+    this.sacerdoteMilestoneLabel.anchor.set(1, 0);
+    this.sacerdoteMilestoneLabel.position.set(this.cardWidth - 20, 172);
+    this.addChild(this.sacerdoteMilestoneLabel);
+
+    this.sacerdoteMilestoneBarBg = new Graphics();
+    this.sacerdoteMilestoneBarBg.roundRect(20, 188, sBarW, 4, 2);
+    this.sacerdoteMilestoneBarBg.fill({ color: 0x1a1a1a });
+    this.addChild(this.sacerdoteMilestoneBarBg);
+
+    this.sacerdoteMilestoneBarFill = new Graphics();
+    this.addChild(this.sacerdoteMilestoneBarFill);
+
+    // Sacerdote Dual Buttons (Left: Comprar Sacerdote, Right: Comprar Max)
+    const margin = 20;
+    const gap = 10;
+    const sBtnWidth = Math.floor((this.cardWidth - margin * 2 - gap) / 2);
+    const sBtnHeight = 44;
+    const sBtnY = 218;
+
+    this.buySacerdoteBtn = new UIButton({
+      width: sBtnWidth,
+      height: sBtnHeight,
+      label: 'Comprar Sacerdote',
+      subLabel: '20 Ouro',
+      fontSize: 11,
+      bgColor: THEME.colors.btnSuccess,
+      hoverColor: THEME.colors.btnSuccessHover,
+      textColor: THEME.colors.textDark,
+      disabled: true,
+      onClick: () => this.onBuySacerdoteCallback()
+    });
+    this.buySacerdoteBtn.position.set(margin + sBtnWidth / 2, sBtnY);
+    this.addChild(this.buySacerdoteBtn);
+
+    this.buyMaxSacerdoteBtn = new UIButton({
+      width: sBtnWidth,
+      height: sBtnHeight,
+      label: 'Comprar Max',
+      subLabel: '+0 (0 Ouro)',
+      fontSize: 11,
+      bgColor: THEME.colors.cardBgHover,
+      hoverColor: 0x2a2a2a,
+      textColor: THEME.colors.pureWhite,
+      disabled: true,
+      onClick: () => this.onBuyMaxSacerdoteCallback()
+    });
+    this.buyMaxSacerdoteBtn.position.set(margin + sBtnWidth + gap + sBtnWidth / 2, sBtnY);
+    this.addChild(this.buyMaxSacerdoteBtn);
+
+    this.sacerdotesHelperText = new Text({
+      text: 'Você possui 0 sacerdotes (+0 fiéis/s)',
+      style: new TextStyle({
+        fontFamily: THEME.fonts.body,
+        fontSize: 10,
+        fontWeight: '500',
+        fill: THEME.colors.silverDark,
+        align: 'center'
+      })
+    });
+    this.sacerdotesHelperText.anchor.set(0.5, 0);
+    this.sacerdotesHelperText.position.set(this.cardWidth / 2, 246);
+    this.addChild(this.sacerdotesHelperText);
+
+    // 9. Divider 2
+    this.divider2Graphics = new Graphics();
+    this.addChild(this.divider2Graphics);
+
+    // 10. Upgrades Header Title
+    this.upgradesTitleText = new Text({
+      text: 'MELHORIAS DO TEMPLO (OURO)',
+      style: new TextStyle({
+        fontFamily: THEME.fonts.heading,
+        fontSize: 10,
+        fontWeight: '800',
+        letterSpacing: 1.5,
+        fill: THEME.colors.silverDark
+      })
+    });
+    this.upgradesTitleText.position.set(20, 264);
     this.addChild(this.upgradesTitleText);
 
     // Row layout coordinates
     const rowStartX = 20;
     const btnW = 95;
-    const btnH = 36;
+    const btnH = 34;
     const btnRightX = this.cardWidth - 20 - btnW / 2;
 
     // --- UPGRADE 1: Prece Dourada (Fé por Toque) ---
-    const y1 = 248;
+    const y1 = 286;
     this.u1Title = new Text({
       text: 'Prece Dourada',
       style: new TextStyle({
@@ -207,7 +316,7 @@ export class ActionCardTemples extends Container {
         fill: THEME.colors.silverLight
       })
     });
-    this.u1Mult.position.set(rowStartX, y1 + 17);
+    this.u1Mult.position.set(rowStartX, y1 + 16);
     this.addChild(this.u1Mult);
 
     this.u1Btn = new UIButton({
@@ -226,7 +335,7 @@ export class ActionCardTemples extends Container {
     this.addChild(this.u1Btn);
 
     // --- UPGRADE 2: Glória aos Devotos (Produção dos Fiéis) ---
-    const y2 = 306;
+    const y2 = 342;
     this.u2Title = new Text({
       text: 'Glória aos Devotos',
       style: new TextStyle({
@@ -248,7 +357,7 @@ export class ActionCardTemples extends Container {
         fill: THEME.colors.silverLight
       })
     });
-    this.u2Mult.position.set(rowStartX, y2 + 17);
+    this.u2Mult.position.set(rowStartX, y2 + 16);
     this.addChild(this.u2Mult);
 
     this.u2Btn = new UIButton({
@@ -267,7 +376,7 @@ export class ActionCardTemples extends Container {
     this.addChild(this.u2Btn);
 
     // --- UPGRADE 3: Alquimia Espiritual (Fé aumenta Ouro/s) ---
-    const y3 = 364;
+    const y3 = 398;
     this.u3Title = new Text({
       text: 'Alquimia Espiritual',
       style: new TextStyle({
@@ -289,7 +398,7 @@ export class ActionCardTemples extends Container {
         fill: THEME.colors.silverLight
       })
     });
-    this.u3Mult.position.set(rowStartX, y3 + 17);
+    this.u3Mult.position.set(rowStartX, y3 + 16);
     this.addChild(this.u3Mult);
 
     this.u3Btn = new UIButton({
@@ -322,30 +431,36 @@ export class ActionCardTemples extends Container {
     this.bgGraphics.roundRect(2, 2, this.cardWidth - 4, 1.5, 8);
     this.bgGraphics.fill({ color: THEME.colors.pureWhite, alpha: 0.15 });
 
-    // Divider line between temple build/enhancement and upgrades
-    this.dividerGraphics.clear();
-    this.dividerGraphics.moveTo(20, 214);
-    this.dividerGraphics.lineTo(this.cardWidth - 20, 214);
-    this.dividerGraphics.stroke({ width: 1, color: THEME.colors.cardBorderLight, alpha: 0.5 });
+    // Divider 1 line
+    this.divider1Graphics.clear();
+    this.divider1Graphics.moveTo(20, 168);
+    this.divider1Graphics.lineTo(this.cardWidth - 20, 168);
+    this.divider1Graphics.stroke({ width: 1, color: THEME.colors.cardBorderLight, alpha: 0.4 });
+
+    // Divider 2 line
+    this.divider2Graphics.clear();
+    this.divider2Graphics.moveTo(20, 258);
+    this.divider2Graphics.lineTo(this.cardWidth - 20, 258);
+    this.divider2Graphics.stroke({ width: 1, color: THEME.colors.cardBorderLight, alpha: 0.4 });
 
     // Background boxes for the 3 upgrade rows
     const rowW = this.cardWidth - 40;
-    const rowH = 48;
-    this.bgGraphics.roundRect(20, 243, rowW, rowH, 8);
+    const rowH = 46;
+    this.bgGraphics.roundRect(20, 281, rowW, rowH, 8);
     this.bgGraphics.fill({ color: 0x080808, alpha: 0.7 });
     this.bgGraphics.stroke({ width: 1, color: 0x1f1f1f });
 
-    this.bgGraphics.roundRect(20, 301, rowW, rowH, 8);
+    this.bgGraphics.roundRect(20, 337, rowW, rowH, 8);
     this.bgGraphics.fill({ color: 0x080808, alpha: 0.7 });
     this.bgGraphics.stroke({ width: 1, color: 0x1f1f1f });
 
-    this.bgGraphics.roundRect(20, 359, rowW, rowH, 8);
+    this.bgGraphics.roundRect(20, 393, rowW, rowH, 8);
     this.bgGraphics.fill({ color: 0x080808, alpha: 0.7 });
     this.bgGraphics.stroke({ width: 1, color: 0x1f1f1f });
 
     // Outer subtle halo behind icon
     this.glowGraphics.clear();
-    this.glowGraphics.circle(this.cardWidth / 2, 88, 48);
+    this.glowGraphics.circle(this.cardWidth / 2, 74, 40);
     this.glowGraphics.fill({ color: THEME.colors.pureWhite, alpha: 0.04 });
   }
 
@@ -357,6 +472,11 @@ export class ActionCardTemples extends Container {
     enhLevel: number,
     enhCost: number,
     canEnhance: boolean,
+    sacerdotesCount: number,
+    sacerdoteCost: number,
+    canAffordSacerdote: boolean,
+    maxSacerdotesCount: number,
+    maxSacerdotesCost: number,
     u1Cost: number,
     u1Afford: boolean,
     u1MultVal: number,
@@ -366,7 +486,9 @@ export class ActionCardTemples extends Container {
     u3Cost: number,
     u3Afford: boolean,
     u3MultVal: number,
-    faithBonusPct: number
+    faithBonusPct: number,
+    sacerdoteMilestoneProgress?: MilestoneProgress,
+    sacerdoteMilestoneMult?: number
   ): void {
     this.targetGold = goldAmount;
     this.rateText.text = `+${Formatters.formatNumber(goldRate)}/s`;
@@ -379,7 +501,7 @@ export class ActionCardTemples extends Container {
         ? `🏛️ TEMPLO SAGRADO • NÍVEL ${enhLevel}`
         : '🏛️ TEMPLO SAGRADO ATIVO';
       this.templeStatusText.style.fill = THEME.colors.pureWhite;
-      this.templeStatusText.position.y = 132;
+      this.templeStatusText.position.y = 110;
 
       // Update Temple Enhancement button
       if (enhLevel >= 10) {
@@ -392,17 +514,55 @@ export class ActionCardTemples extends Container {
         );
         this.enhancementBtn.setDisabled(!canEnhance);
       }
+
+      // Sacerdotes Buttons
+      this.buySacerdoteBtn.setLabel('Comprar Sacerdote', `${Formatters.formatNumber(sacerdoteCost)} Ouro`);
+      this.buySacerdoteBtn.setDisabled(!canAffordSacerdote);
+
+      if (maxSacerdotesCount > 0) {
+        this.buyMaxSacerdoteBtn.setLabel('Comprar Max', `+${maxSacerdotesCount} (${Formatters.formatNumber(maxSacerdotesCost)} Ouro)`);
+        this.buyMaxSacerdoteBtn.setDisabled(false);
+      } else {
+        this.buyMaxSacerdoteBtn.setLabel('Comprar Max', `+0 (0 Ouro)`);
+        this.buyMaxSacerdoteBtn.setDisabled(true);
+      }
+
+      const multStr = sacerdoteMilestoneMult && sacerdoteMilestoneMult > 1 ? ` (${sacerdoteMilestoneMult}x)` : '';
+      this.sacerdotesHelperText.text = `Você possui ${Formatters.formatNumber(sacerdotesCount)} sacerdotes${multStr} (+${Formatters.formatNumber(sacerdotesCount * (sacerdoteMilestoneMult || 1))} fiéis/s)`;
+
+      // Sacerdotes Milestone Bar
+      if (sacerdoteMilestoneProgress) {
+        const sBarW = this.cardWidth - 40;
+        if (sacerdoteMilestoneProgress.isMaxed) {
+          this.sacerdoteMilestoneLabel.text = `⭐ Marcos no Máximo (${sacerdoteMilestoneMult || 50}x)`;
+        } else {
+          this.sacerdoteMilestoneLabel.text = `⭐ ${sacerdotesCount}/${sacerdoteMilestoneProgress.nextLevel} (${sacerdoteMilestoneProgress.nextMultiplier}x)`;
+        }
+
+        this.sacerdoteMilestoneBarFill.clear();
+        const fillW = Math.max(2, sBarW * sacerdoteMilestoneProgress.progress);
+        this.sacerdoteMilestoneBarFill.roundRect(20, 188, fillW, 4, 2);
+        this.sacerdoteMilestoneBarFill.fill({ color: THEME.colors.pureWhite });
+      }
     } else {
       this.buildTempleBtn.visible = true;
       this.enhancementBtn.visible = false;
 
       this.templeStatusText.text = 'Desperte o Templo Sagrado';
       this.templeStatusText.style.fill = THEME.colors.silver;
-      this.templeStatusText.position.y = 126;
+      this.templeStatusText.position.y = 106;
 
       const canAfford = fiesCount >= 30;
       this.buildTempleBtn.setLabel('CONSTRUIR TEMPLO SAGRADO', `Custo Único: 30 Fiéis (${fiesCount}/30)`);
       this.buildTempleBtn.setDisabled(!canAfford);
+
+      this.buySacerdoteBtn.setLabel('Comprar Sacerdote', `${Formatters.formatNumber(sacerdoteCost)} Ouro`);
+      this.buySacerdoteBtn.setDisabled(true);
+      this.buyMaxSacerdoteBtn.setLabel('Comprar Max', `+0 (0 Ouro)`);
+      this.buyMaxSacerdoteBtn.setDisabled(true);
+      this.sacerdotesHelperText.text = `Construa o Templo para ordenar sacerdotes`;
+      this.sacerdoteMilestoneLabel.text = `⭐ Marco: 0/5`;
+      this.sacerdoteMilestoneBarFill.clear();
     }
 
     // Upgrade 1
@@ -437,8 +597,8 @@ export class ActionCardTemples extends Container {
     this.haloGraphics.clear();
 
     const cx = this.cardWidth / 2;
-    const cy = 88;
-    const r = 40;
+    const cy = 74;
+    const r = 34;
 
     for (let i = 0; i < 4; i++) {
       const startAngle = this.rotationAngle + (i * Math.PI) / 2;
@@ -448,8 +608,8 @@ export class ActionCardTemples extends Container {
     }
 
     // Subtle breathing
-    const breath = Math.sin(performance.now() * 0.002) * 1.2;
-    this.templeSprite.position.y = 88 + breath;
+    const breath = Math.sin(performance.now() * 0.002) * 1.0;
+    this.templeSprite.position.y = 74 + breath;
   }
 
   public reset(): void {
@@ -462,6 +622,6 @@ export class ActionCardTemples extends Container {
     this.enhancementBtn.visible = false;
     this.templeStatusText.text = 'Desperte o Templo Sagrado';
     this.templeStatusText.style.fill = THEME.colors.silver;
-    this.templeStatusText.position.y = 126;
+    this.templeStatusText.position.y = 106;
   }
 }

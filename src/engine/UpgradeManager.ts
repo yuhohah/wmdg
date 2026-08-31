@@ -2,6 +2,7 @@ import { UpgradeConfig, UpgradeState, ResourceId } from './types';
 import { EventEmitter } from './EventEmitter';
 import { GameEventMap } from './types';
 import { ResourceManager } from './ResourceManager';
+import { GameMath, FIEL_MILESTONES, SACERDOTE_MILESTONES, MilestoneProgress } from './GameMath';
 
 export interface MonumentConfig {
   id: number;
@@ -90,6 +91,18 @@ export const DEFAULT_UPGRADES: UpgradeConfig[] = [
     unlockFielCount: 30 // Desbloqueia ao atingir 30 fiéis
   },
   {
+    id: 'sacerdote',
+    name: 'Sacerdotes',
+    description: 'Líderes sagrados no Templo que acolhem e consagram +1 Fiel por segundo continuamente.',
+    baseCost: 20,
+    costMultiplier: 1.12,
+    baseOutput: 1, // 1 Fiel/s por sacerdote
+    icon: '/assets/icons/icon_shrine.png',
+    targetResource: 'faith',
+    consumesResource: 'gold',
+    unlockCost: 0
+  },
+  {
     id: 'temple_enhancement',
     name: 'Aprimoramento do Templo',
     description: 'Aprimora a estrutura sagrada com Fé, dobrando a quantidade de ouro gerado.',
@@ -162,6 +175,7 @@ export class UpgradeManager {
   private states: Map<string, UpgradeState> = new Map();
   private events: EventEmitter<GameEventMap>;
   private resourceManager: ResourceManager;
+  private fractionalFiel: number = 0;
 
   constructor(
     events: EventEmitter<GameEventMap>,
@@ -207,14 +221,13 @@ export class UpgradeManager {
   }
 
   /**
-   * Cost formula: BaseCost * (CostMultiplier ^ currentCount)
+   * Custo usando GameMath
    */
   public getUpgradeCost(id: string, countToBuy: number = 1): number {
     const config = this.configs.get(id);
     const state = this.states.get(id);
     if (!config || !state || countToBuy <= 0) return Infinity;
 
-    // Special: Templo costs exactly 30 fiéis per unit
     if (id === 'templo') {
       return 30 * countToBuy;
     }
@@ -227,21 +240,11 @@ export class UpgradeManager {
       return this.getNextMonumentCost();
     }
 
-    const base = config.baseCost;
-    const r = config.costMultiplier;
-    const l = state.count;
-
-    if (r === 1) {
-      return base * countToBuy;
-    }
-
-    // Sum of geometric series: base * r^l * (r^k - 1) / (r - 1)
-    const cost = base * Math.pow(r, l) * (Math.pow(r, countToBuy) - 1) / (r - 1);
-    return Math.floor(cost);
+    return GameMath.calculateBulkCost(config.baseCost, config.costMultiplier, state.count, countToBuy);
   }
 
   /**
-   * Maximum affordable upgrades for geometric cost series
+   * Máximo comprável em O(1) usando GameMath
    */
   public getMaxAffordable(id: string): { count: number; cost: number } {
     const config = this.configs.get(id);
@@ -249,9 +252,6 @@ export class UpgradeManager {
     if (!config || !state) return { count: 0, cost: 0 };
 
     const balance = this.resourceManager.getResource(config.consumesResource).amount;
-    const base = config.baseCost;
-    const r = config.costMultiplier;
-    const l = state.count;
 
     if (id === 'templo') {
       const fies = this.states.get('fiel')?.count || 0;
@@ -274,27 +274,11 @@ export class UpgradeManager {
       return { count: 0, cost: 0 };
     }
 
-    if (r === 1) {
-      const count = Math.floor(balance / base);
-      return { count, cost: count * base };
-    }
-
-    const singleCost = Math.floor(base * Math.pow(r, l));
-    if (balance < singleCost) {
-      return { count: 0, cost: 0 };
-    }
-
-    const numerator = balance * (r - 1);
-    const denominator = base * Math.pow(r, l);
-    const maxK = Math.floor(Math.log(numerator / denominator + 1) / Math.log(r));
-
-    if (maxK <= 0) return { count: 0, cost: 0 };
-    const cost = this.getUpgradeCost(id, maxK);
-    return { count: maxK, cost };
+    return GameMath.calculateMaxBuy(config.baseCost, config.costMultiplier, state.count, balance);
   }
 
   /**
-   * Multipliers for the 3 Temple upgrades (Base 1.00x, increasing gradually)
+   * Multiplicadores do Templo
    */
   public getTempleClickMultiplier(): number {
     const state = this.states.get('temple_click');
@@ -315,8 +299,33 @@ export class UpgradeManager {
   }
 
   /**
-   * Temple Enhancement with Faith (PF): 10 levels, initial cost 10,000 PF
-   * Multiplies base gold substantially (2^level = 1x, 2x, 4x, 8x, 16x... up to 1024x at level 10)
+   * Milestones dos Fiéis
+   */
+  public getFielMilestoneMultiplier(): number {
+    const fiesCount = this.states.get('fiel')?.count || 0;
+    return GameMath.getMilestoneMultiplier(fiesCount, FIEL_MILESTONES);
+  }
+
+  public getFielMilestoneProgress(): MilestoneProgress {
+    const fiesCount = this.states.get('fiel')?.count || 0;
+    return GameMath.getMilestoneProgress(fiesCount, FIEL_MILESTONES);
+  }
+
+  /**
+   * Milestones dos Sacerdotes
+   */
+  public getSacerdoteMilestoneMultiplier(): number {
+    const count = this.getSacerdotesCount();
+    return GameMath.getMilestoneMultiplier(count, SACERDOTE_MILESTONES);
+  }
+
+  public getSacerdoteMilestoneProgress(): MilestoneProgress {
+    const count = this.getSacerdotesCount();
+    return GameMath.getMilestoneProgress(count, SACERDOTE_MILESTONES);
+  }
+
+  /**
+   * Aprimoramento do Templo
    */
   public getTempleEnhancementLevel(): number {
     return this.states.get('temple_enhancement')?.count || 0;
@@ -355,35 +364,35 @@ export class UpgradeManager {
   }
 
   /**
-   * Calculates Gold per second from temples, temple enhancement, faith bonus and monuments
+   * Produção de Ouro por segundo (com Softcap na fé logarítmica)
    */
   public getGoldProductionPerSecond(faithAmount: number = 0): number {
     const templosCount = this.states.get('templo')?.count || 0;
     if (templosCount <= 0) return 0;
 
-    // Temple enhancement with PF: doubles base gold per level
     const enhLevel = this.getTempleEnhancementLevel();
     const enhMult = Math.pow(2, enhLevel);
 
     const baseGold = templosCount * 1.0 * enhMult;
     const faithBonusMult = this.getTempleGoldFaithMultiplier();
-    // Logarithmic faith scaling: Faith points gradually boost gold generation
-    const faithBonus = (Math.log10(Math.max(1, faithAmount)) * 0.25) * faithBonusMult;
+    
+    // Logarithmic faith scaling com Power Softcap em 5.0x
+    const rawFaithBonus = (Math.log10(Math.max(1, faithAmount)) * 0.25) * faithBonusMult;
+    const softcappedFaithBonus = GameMath.applyPowerSoftcap(rawFaithBonus, 5.0, 0.5);
 
-    // Monument Gold multiplier
     const monumentMult = this.getMonumentGoldMultiplier();
-
-    return baseGold * (1.0 + faithBonus) * monumentMult;
+    return baseGold * (1.0 + softcappedFaithBonus) * monumentMult;
   }
 
   /**
-   * Faith production per second (Exclusively from fiéis, multiplied by temple_fiel and monuments)
+   * Produção de Fé por segundo (Multiplicada por Milestones e Monumentos)
    */
   public getTotalProductionPerSecond(resourceId: ResourceId, faithAmount: number = 0): number {
     if (resourceId === 'faith') {
       const fiesCount = this.states.get('fiel')?.count || 0;
       const monumentMult = this.getMonumentFaithMultiplier();
-      return fiesCount * 1.0 * this.getTempleFielMultiplier() * monumentMult;
+      const milestoneMult = this.getFielMilestoneMultiplier();
+      return fiesCount * 1.0 * this.getTempleFielMultiplier() * monumentMult * milestoneMult;
     }
     if (resourceId === 'gold') {
       return this.getGoldProductionPerSecond(faithAmount);
@@ -391,9 +400,6 @@ export class UpgradeManager {
     return 0;
   }
 
-  /**
-   * Checks if player has at least 30 fiéis to buy the temple (one-time cost)
-   */
   public canAffordTemple(): boolean {
     const temploCount = this.states.get('templo')?.count || 0;
     if (temploCount >= 1) return false;
@@ -401,22 +407,15 @@ export class UpgradeManager {
     return fies >= 30;
   }
 
-  /**
-   * Checks if temple was already built (one-time purchase)
-   */
   public isTempleBuilt(): boolean {
     return (this.states.get('templo')?.count || 0) >= 1;
   }
 
-  /**
-   * Buy the temple (one-time cost of 30 fiéis)
-   */
   public buyTemple(): boolean {
     const fielState = this.states.get('fiel');
     const temploState = this.states.get('templo');
     if (!fielState || !temploState) return false;
 
-    // Custo único de apenas uma vez
     if (temploState.count >= 1) return false;
     if (fielState.count < 30) return false;
 
@@ -434,9 +433,44 @@ export class UpgradeManager {
   }
 
   /**
-   * Monument System: 7 mythical monuments
-   * Card unlocked when player accumulates 10,000 Gold
-   * Initial cost: 100,000 Gold
+   * Sacerdotes do Templo (Multiplicados por Milestones de Sacerdotes)
+   */
+  public getSacerdotesCount(): number {
+    return this.states.get('sacerdote')?.count || 0;
+  }
+
+  public addSacerdoteFies(dt: number): number {
+    const sacerdotes = this.getSacerdotesCount();
+    if (sacerdotes <= 0) return 0;
+
+    const sMult = this.getSacerdoteMilestoneMultiplier();
+    const gained = sacerdotes * dt * sMult;
+    this.fractionalFiel += gained;
+
+    const whole = Math.floor(this.fractionalFiel);
+    if (whole > 0) {
+      this.fractionalFiel -= whole;
+      const fielState = this.states.get('fiel');
+      if (fielState) {
+        const prevCount = fielState.count;
+        fielState.count += whole;
+        this.checkMilestoneCross('fiel', prevCount, fielState.count, FIEL_MILESTONES);
+      }
+    }
+
+    return gained;
+  }
+
+  public buySacerdote(count: number = 1): boolean {
+    return this.buyUpgrade('sacerdote', count);
+  }
+
+  public getMaxAffordableSacerdote(): { count: number; cost: number } {
+    return this.getMaxAffordable('sacerdote');
+  }
+
+  /**
+   * Sistema de Monumentos Ancestrais
    */
   public isMonumentsUnlocked(): boolean {
     const state = this.states.get('monument');
@@ -451,7 +485,6 @@ export class UpgradeManager {
 
   public getNextMonument(): MonumentConfig | undefined {
     const count = this.getMonumentsCount();
-    if (count >= MONUMENTS.length) return undefined;
     return MONUMENTS[count];
   }
 
@@ -461,69 +494,67 @@ export class UpgradeManager {
   }
 
   public canAffordNextMonument(): boolean {
-    const next = this.getNextMonument();
-    if (!next) return false;
-    return this.resourceManager.hasAmount('gold', next.cost);
+    if (!this.isMonumentsUnlocked()) return false;
+    const cost = this.getNextMonumentCost();
+    return this.resourceManager.hasAmount('gold', cost);
   }
 
   public buyNextMonument(): boolean {
     if (!this.canAffordNextMonument()) return false;
-    const next = this.getNextMonument();
-    if (!next) return false;
-
-    if (!this.resourceManager.spend('gold', next.cost)) return false;
+    const cost = this.getNextMonumentCost();
+    if (!this.resourceManager.spend('gold', cost)) return false;
 
     const state = this.states.get('monument');
     if (!state) return false;
+
     state.count += 1;
     state.unlocked = true;
 
     this.events.emit('upgrade:purchased', {
       upgradeId: 'monument',
       newCount: state.count,
-      cost: next.cost
+      cost
     });
 
     return true;
   }
 
+  public getMonumentGlobalMultiplier(): number {
+    const count = this.getMonumentsCount();
+    let mult = 1.0;
+    if (count >= 1) mult *= 2.0; // Monólito da Aurora: +100% Global
+    if (count >= 5) mult *= 5.0; // Colosso: +400% Global
+    if (count >= 6) mult *= 6.0; // Farol: +500% Global
+    if (count >= 7) mult *= 11.0; // Trono: +1000% Global
+    return mult;
+  }
+
   public getMonumentFaithMultiplier(): number {
     const count = this.getMonumentsCount();
     let mult = 1.0;
-    if (count >= 1) mult *= 2.0;
-    if (count >= 2) mult *= 2.5;
-    if (count >= 5) mult *= 5.0;
-    if (count >= 6) mult *= 6.0;
-    if (count >= 7) mult *= 11.0;
-    return mult;
+    if (count >= 2) mult *= 2.5; // Obelisco: +150% Fé dos Fiéis
+    return mult * this.getMonumentGlobalMultiplier();
   }
 
   public getMonumentGoldMultiplier(): number {
     const count = this.getMonumentsCount();
     let mult = 1.0;
-    if (count >= 1) mult *= 2.0;
-    if (count >= 3) mult *= 3.0;
-    if (count >= 5) mult *= 5.0;
-    if (count >= 6) mult *= 6.0;
-    if (count >= 7) mult *= 11.0;
-    return mult;
+    if (count >= 3) mult *= 3.0; // Torre dos Céus: +200% Ouro dos Templos
+    return mult * this.getMonumentGlobalMultiplier();
   }
 
   public getMonumentClickMultiplier(): number {
     const count = this.getMonumentsCount();
     let mult = 1.0;
-    if (count >= 1) mult *= 2.0;
-    if (count >= 4) mult *= 4.0;
-    if (count >= 5) mult *= 5.0;
-    if (count >= 6) mult *= 6.0;
-    if (count >= 7) mult *= 11.0;
-    return mult;
+    if (count >= 4) mult *= 4.0; // Pirâmide: +300% Fé por Toque
+    return mult * this.getMonumentGlobalMultiplier();
   }
 
-  /**
-   * Purchase general upgrades (consumes resource)
-   */
-  public buyUpgrade(id: string, countToBuy: number = 1): boolean {
+  public buyUpgrade(id: string, count: number = 1): boolean {
+    const config = this.configs.get(id);
+    const state = this.states.get(id);
+    if (!config || !state || count <= 0) return false;
+
     if (id === 'templo') {
       return this.buyTemple();
     }
@@ -534,33 +565,50 @@ export class UpgradeManager {
       return this.buyNextMonument();
     }
 
-    const config = this.configs.get(id);
-    const state = this.states.get(id);
-    if (!config || !state) return false;
-
-    const cost = this.getUpgradeCost(id, countToBuy);
-    if (!this.resourceManager.spend(config.consumesResource, cost)) {
+    const totalCost = this.getUpgradeCost(id, count);
+    if (!this.resourceManager.hasAmount(config.consumesResource, totalCost)) {
       return false;
     }
 
-    state.count += countToBuy;
+    if (!this.resourceManager.spend(config.consumesResource, totalCost)) {
+      return false;
+    }
+
+    const prevCount = state.count;
+    state.count += count;
+
+    if (id === 'fiel') {
+      this.checkMilestoneCross('fiel', prevCount, state.count, FIEL_MILESTONES);
+    } else if (id === 'sacerdote') {
+      this.checkMilestoneCross('sacerdote', prevCount, state.count, SACERDOTE_MILESTONES);
+    }
+
     this.events.emit('upgrade:purchased', {
       upgradeId: id,
       newCount: state.count,
-      cost
+      cost: totalCost
     });
 
     return true;
   }
 
-  /**
-   * Check unlocks (e.g. 30 fiéis unlocks Templo Sagrado, 10000 Ouro unlocks Monumentos)
-   */
+  private checkMilestoneCross(id: string, prevCount: number, newCount: number, milestones: typeof FIEL_MILESTONES): void {
+    for (const m of milestones) {
+      if (prevCount < m.level && newCount >= m.level) {
+        this.events.emit('milestone:reached', {
+          id,
+          level: m.level,
+          multiplier: m.multiplier,
+          label: m.label
+        });
+      }
+    }
+  }
+
   public checkUnlocks(peakResources: Record<ResourceId, number>): boolean {
     let anyNewlyUnlocked = false;
     const fiesCount = this.states.get('fiel')?.count || 0;
 
-    // Check monument unlock (10,000 Ouro)
     const monumentState = this.states.get('monument');
     if (monumentState && !monumentState.unlocked) {
       const peakGold = peakResources['gold'] || 0;
@@ -596,6 +644,7 @@ export class UpgradeManager {
   }
 
   public resetAll(): void {
+    this.fractionalFiel = 0;
     this.configs.forEach(cfg => {
       this.states.set(cfg.id, {
         id: cfg.id,

@@ -3,6 +3,7 @@ import { THEME } from '../theme';
 import { ClickerOrb } from './ClickerOrb';
 import { UIButton } from './UIButton';
 import { Formatters } from '../utils/Formatters';
+import { MilestoneProgress } from '../../engine/GameMath';
 
 export interface ActionCardInitialProps {
   width?: number;
@@ -21,6 +22,13 @@ export class ActionCardInitial extends Container {
   private dividerGraphics: Graphics;
 
   public orb: ClickerOrb;
+
+  // Milestone Progress Bar
+  private milestoneLabelText: Text;
+  private milestoneBarBg: Graphics;
+  private milestoneBarFill: Graphics;
+
+  // Dual Action Buttons
   private convertButton: UIButton;
   private convertMaxButton: UIButton;
   private buttonHelperText: Text;
@@ -76,19 +84,46 @@ export class ActionCardInitial extends Container {
     this.orb = new ClickerOrb((x, y) => {
       props.onOrbClick(x, y);
     });
-    this.orb.position.set(this.cardWidth / 2, 195);
+    this.orb.position.set(this.cardWidth / 2, 185);
     this.addChild(this.orb);
 
     // 4. Subtle Divider
     this.dividerGraphics = new Graphics();
     this.addChild(this.dividerGraphics);
 
-    // 5. Dual Action Buttons: "Converter Fiel" e "Converter Max"
+    // 5. Milestone Progress Bar
+    const barW = this.cardWidth - 40;
+    const barY = this.cardHeight - 128;
+
+    this.milestoneLabelText = new Text({
+      text: '⭐ Marco: 0/10 Fiéis (Próximo: 2x Bônus)',
+      style: new TextStyle({
+        fontFamily: THEME.fonts.numbers,
+        fontSize: 10,
+        fontWeight: '700',
+        fill: THEME.colors.silverLight,
+        align: 'center'
+      })
+    });
+    this.milestoneLabelText.anchor.set(0.5, 0);
+    this.milestoneLabelText.position.set(this.cardWidth / 2, barY - 16);
+    this.addChild(this.milestoneLabelText);
+
+    this.milestoneBarBg = new Graphics();
+    this.milestoneBarBg.roundRect(20, barY, barW, 6, 3);
+    this.milestoneBarBg.fill({ color: 0x1a1a1a });
+    this.milestoneBarBg.stroke({ width: 1, color: 0x333333 });
+    this.addChild(this.milestoneBarBg);
+
+    this.milestoneBarFill = new Graphics();
+    this.addChild(this.milestoneBarFill);
+
+    // 6. Dual Action Buttons: "Converter Fiel" e "Converter Max"
     const margin = 20;
     const gap = 10;
     const btnWidth = Math.floor((this.cardWidth - margin * 2 - gap) / 2);
-    const btnHeight = 52;
-    const btnY = this.cardHeight - 66;
+    const btnHeight = 48;
+    const btnY = this.cardHeight - 64;
 
     // Left Button: Converter Fiel
     this.convertButton = new UIButton({
@@ -122,7 +157,7 @@ export class ActionCardInitial extends Container {
     this.convertMaxButton.position.set(margin + btnWidth + gap + btnWidth / 2, btnY);
     this.addChild(this.convertMaxButton);
 
-    // 6. Helper text below buttons
+    // 7. Helper text below buttons
     this.buttonHelperText = new Text({
       text: 'Você possui 0 fiéis (+0 PF/s)',
       style: new TextStyle({
@@ -134,7 +169,7 @@ export class ActionCardInitial extends Container {
       })
     });
     this.buttonHelperText.anchor.set(0.5, 0);
-    this.buttonHelperText.position.set(this.cardWidth / 2, this.cardHeight - 30);
+    this.buttonHelperText.position.set(this.cardWidth / 2, this.cardHeight - 24);
     this.addChild(this.buttonHelperText);
 
     this.drawBackground();
@@ -152,11 +187,11 @@ export class ActionCardInitial extends Container {
     this.bgGraphics.roundRect(2, 2, this.cardWidth - 4, 1.5, 8);
     this.bgGraphics.fill({ color: THEME.colors.pureWhite, alpha: 0.15 });
 
-    // Divider line above action buttons
+    // Divider line above milestone bar
     this.dividerGraphics.clear();
-    this.dividerGraphics.moveTo(20, this.cardHeight - 104);
-    this.dividerGraphics.lineTo(this.cardWidth - 20, this.cardHeight - 104);
-    this.dividerGraphics.stroke({ width: 1, color: THEME.colors.cardBorderLight, alpha: 0.5 });
+    this.dividerGraphics.moveTo(20, this.cardHeight - 150);
+    this.dividerGraphics.lineTo(this.cardWidth - 20, this.cardHeight - 150);
+    this.dividerGraphics.stroke({ width: 1, color: THEME.colors.cardBorderLight, alpha: 0.4 });
   }
 
   public updateData(
@@ -166,7 +201,9 @@ export class ActionCardInitial extends Container {
     canAffordFiel: boolean,
     fiesCount: number,
     maxCount: number,
-    maxCost: number
+    maxCost: number,
+    milestoneProgress?: MilestoneProgress,
+    milestoneMult?: number
   ): void {
     this.targetFaith = faith;
     this.rateText.text = `+${Formatters.formatNumber(faithRate)}/s`;
@@ -180,7 +217,27 @@ export class ActionCardInitial extends Container {
     this.convertMaxButton.setLabel('Converter Max', maxSubLabel);
     this.convertMaxButton.setDisabled(maxCount <= 0);
 
-    this.buttonHelperText.text = `Você possui ${Formatters.formatNumber(fiesCount)} fiéis (+${Formatters.formatNumber(faithRate)} PF/s)`;
+    const multStr = milestoneMult && milestoneMult > 1 ? ` (${milestoneMult}x)` : '';
+    this.buttonHelperText.text = `Você possui ${Formatters.formatNumber(fiesCount)} fiéis${multStr} (+${Formatters.formatNumber(faithRate)} PF/s)`;
+
+    // Update Milestone Progress Bar
+    if (milestoneProgress) {
+      const barW = this.cardWidth - 40;
+      const barY = this.cardHeight - 128;
+
+      if (milestoneProgress.isMaxed) {
+        this.milestoneLabelText.text = `⭐ Todos os Marcos de Fiéis Alcançados! (${milestoneMult || 1000}x)`;
+        this.milestoneLabelText.style.fill = THEME.colors.pureWhite;
+      } else {
+        this.milestoneLabelText.text = `⭐ Marco: ${fiesCount}/${milestoneProgress.nextLevel} Fiéis (Próximo: ${milestoneProgress.nextMultiplier}x Bônus)`;
+        this.milestoneLabelText.style.fill = THEME.colors.silverLight;
+      }
+
+      this.milestoneBarFill.clear();
+      const fillW = Math.max(2, barW * milestoneProgress.progress);
+      this.milestoneBarFill.roundRect(20, barY, fillW, 6, 3);
+      this.milestoneBarFill.fill({ color: THEME.colors.pureWhite });
+    }
   }
 
   public update(dt: number): void {

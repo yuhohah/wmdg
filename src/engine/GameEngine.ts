@@ -1,10 +1,11 @@
-import { GameState, ResourceId, GameEventMap, OfflineEarningsReport } from './types';
+import { GameState, ResourceId, GameEventMap, OfflineEarningsReport, PrestigeState } from './types';
 import { EventEmitter } from './EventEmitter';
 import { GameLoop } from './GameLoop';
 import { ResourceManager } from './ResourceManager';
 import { UpgradeManager, MonumentConfig } from './UpgradeManager';
 import { SaveSystem } from './SaveSystem';
 import { OfflineProgressCalculator } from './OfflineProgress';
+import { GameMath, MilestoneProgress } from './GameMath';
 
 export class GameEngine {
   public readonly events: EventEmitter<GameEventMap>;
@@ -16,6 +17,7 @@ export class GameEngine {
   private offlineReport: OfflineEarningsReport | null = null;
   private stats: GameState['stats'];
   private multipliers: GameState['multipliers'];
+  private prestige: PrestigeState;
 
   constructor() {
     this.events = new EventEmitter<GameEventMap>();
@@ -24,6 +26,11 @@ export class GameEngine {
     const savedState = SaveSystem.load();
     this.stats = savedState.stats;
     this.multipliers = savedState.multipliers;
+    this.prestige = savedState.prestige || {
+      essence: 0,
+      totalEssenceEarned: 0,
+      resetsCount: 0
+    };
 
     // 2. Initialize sub-systems
     this.resources = new ResourceManager(this.events, savedState.resources);
@@ -94,15 +101,19 @@ export class GameEngine {
       incomeThisTick['gold'] = goldGained;
     }
 
-    // 3. Unlock progression check
+    // 3. Sacerdotes generate Fiéis
+    this.upgrades.addSacerdoteFies(dt);
+
+    // 4. Unlock progression check
     const allRes = this.resources.getAllResources();
     const peakMap: Record<ResourceId, number> = {
       faith: allRes.faith?.peakAmount || 0,
-      gold: allRes.gold?.peakAmount || 0
+      gold: allRes.gold?.peakAmount || 0,
+      essence: this.prestige.essence
     };
     this.upgrades.checkUnlocks(peakMap);
 
-    // 4. Broadcast tick to view
+    // 5. Broadcast tick to view
     this.events.emit('tick', {
       dt,
       totalIncome: incomeThisTick
@@ -130,13 +141,21 @@ export class GameEngine {
   }
 
   /**
-   * Calculate manual click power (Base 1 * temple click multiplier * monument click multiplier)
+   * Bônus concedido pela Essência Divina (Transcendência)
+   */
+  public getEssenceBonusMultiplier(): number {
+    return GameMath.getEssenceBonusMultiplier(this.prestige.essence);
+  }
+
+  /**
+   * Calculate manual click power
    */
   public getClickPower(): number {
     const baseClick = 1;
     const templeClickMult = this.upgrades.getTempleClickMultiplier();
     const monumentClickMult = this.upgrades.getMonumentClickMultiplier();
-    return Math.max(1, Math.round(baseClick * templeClickMult * monumentClickMult * this.multipliers.globalClick));
+    const essenceMult = this.getEssenceBonusMultiplier();
+    return Math.max(1, Math.round(baseClick * templeClickMult * monumentClickMult * essenceMult * this.multipliers.globalClick));
   }
 
   /**
@@ -145,7 +164,8 @@ export class GameEngine {
   public getIncomePerSecond(id: ResourceId = 'faith'): number {
     const faithAmount = this.resources.getResource('faith').amount;
     const base = this.upgrades.getTotalProductionPerSecond(id, faithAmount);
-    return base * this.multipliers.globalProduction;
+    const essenceMult = this.getEssenceBonusMultiplier();
+    return base * essenceMult * this.multipliers.globalProduction;
   }
 
   /**
@@ -159,16 +179,10 @@ export class GameEngine {
     return success;
   }
 
-  /**
-   * Convert a single faithful devotee
-   */
   public convertFiel(): boolean {
     return this.buyUpgrade('fiel', 1);
   }
 
-  /**
-   * Convert maximum affordable faithful devotees
-   */
   public convertMaxFiel(): { count: number; cost: number } {
     const max = this.upgrades.getMaxAffordable('fiel');
     if (max.count > 0) {
@@ -177,39 +191,66 @@ export class GameEngine {
     return max;
   }
 
-  /**
-   * Get maximum affordable count and cost for faithful
-   */
   public getMaxAffordableFiel(): { count: number; cost: number } {
     return this.upgrades.getMaxAffordable('fiel');
   }
 
-  /**
-   * Check if player can afford a sacred temple (costs 30 fiéis)
-   */
   public canAffordTemple(): boolean {
     return this.upgrades.canAffordTemple();
   }
 
-  /**
-   * Check if sacred temple was already built (one-time purchase)
-   */
   public isTempleBuilt(): boolean {
     return this.upgrades.isTempleBuilt();
   }
 
-  /**
-   * Buy sacred temple (deducts 30 fiéis, one-time cost)
-   */
   public buyTemple(): boolean {
     return this.upgrades.buyTemple();
   }
 
-  /**
-   * Buy temple upgrade with gold
-   */
   public buyTempleUpgrade(upgradeId: string): boolean {
     return this.upgrades.buyUpgrade(upgradeId, 1);
+  }
+
+  /**
+   * Sacerdotes System
+   */
+  public getSacerdotesCount(): number {
+    return this.upgrades.getSacerdotesCount();
+  }
+
+  public buySacerdote(): boolean {
+    return this.buyUpgrade('sacerdote', 1);
+  }
+
+  public buyMaxSacerdote(): { count: number; cost: number } {
+    const max = this.upgrades.getMaxAffordable('sacerdote');
+    if (max.count > 0) {
+      this.buyUpgrade('sacerdote', max.count);
+    }
+    return max;
+  }
+
+  public getMaxAffordableSacerdote(): { count: number; cost: number } {
+    return this.upgrades.getMaxAffordable('sacerdote');
+  }
+
+  /**
+   * Milestone info getters
+   */
+  public getFielMilestoneMultiplier(): number {
+    return this.upgrades.getFielMilestoneMultiplier();
+  }
+
+  public getFielMilestoneProgress(): MilestoneProgress {
+    return this.upgrades.getFielMilestoneProgress();
+  }
+
+  public getSacerdoteMilestoneMultiplier(): number {
+    return this.upgrades.getSacerdoteMilestoneMultiplier();
+  }
+
+  public getSacerdoteMilestoneProgress(): MilestoneProgress {
+    return this.upgrades.getSacerdoteMilestoneProgress();
   }
 
   /**
@@ -258,23 +299,14 @@ export class GameEngine {
     return this.upgrades.buyNextMonument();
   }
 
-  /**
-   * Count of faithful devotees
-   */
   public getFiesCount(): number {
     return this.upgrades.getState('fiel')?.count || 0;
   }
 
-  /**
-   * Count of temples built
-   */
   public getTemplosCount(): number {
     return this.upgrades.getState('templo')?.count || 0;
   }
 
-  /**
-   * Multipliers for temple upgrades
-   */
   public getTempleClickMultiplier(): number {
     return this.upgrades.getTempleClickMultiplier();
   }
@@ -287,17 +319,53 @@ export class GameEngine {
     return this.upgrades.getTempleGoldFaithMultiplier();
   }
 
-  /**
-   * Checks if temples action card is unlocked (>= 30 fiéis)
-   */
   public isTemplesUnlocked(): boolean {
     const temploState = this.upgrades.getState('templo');
     return (temploState?.unlocked ?? false) || this.getFiesCount() >= 30;
   }
 
   /**
-   * Time acceleration scale (1x to 10x)
+   * Sistema de Prestígio (Transcendência Divina)
    */
+  public getPrestigeState(): PrestigeState {
+    return { ...this.prestige };
+  }
+
+  public getPrestigeGain(): number {
+    const faithRes = this.resources.getResource('faith');
+    const goldRes = this.resources.getResource('gold');
+    const totalFaith = faithRes ? (faithRes.totalEarned || faithRes.amount) : 0;
+    const totalGold = goldRes ? (goldRes.totalEarned || goldRes.amount) : 0;
+    return GameMath.calculatePrestigeGain(totalFaith, totalGold);
+  }
+
+  public canPrestige(): boolean {
+    return this.getPrestigeGain() > 0;
+  }
+
+  public performPrestige(): boolean {
+    const essenceGain = this.getPrestigeGain();
+    if (essenceGain <= 0) return false;
+
+    this.prestige.essence += essenceGain;
+    this.prestige.totalEssenceEarned += essenceGain;
+    this.prestige.resetsCount += 1;
+    this.stats.totalResets += 1;
+    this.stats.totalEssenceEarned += essenceGain;
+
+    // Reset standard resources and upgrades
+    this.resources.resetAll();
+    this.upgrades.resetAll();
+
+    this.save();
+    this.events.emit('prestige:performed', {
+      essenceGained: essenceGain,
+      totalEssence: this.prestige.essence
+    });
+
+    return true;
+  }
+
   public setTimeScale(scale: number): void {
     this.loop.setTimeScale(scale);
   }
@@ -306,9 +374,6 @@ export class GameEngine {
     return this.loop.getTimeScale();
   }
 
-  /**
-   * Claim offline earnings
-   */
   public claimOfflineEarnings(): void {
     if (!this.offlineReport) return;
     Object.entries(this.offlineReport.gains).forEach(([resId, amount]) => {
@@ -318,9 +383,6 @@ export class GameEngine {
     this.save();
   }
 
-  /**
-   * Save current state snapshot to storage
-   */
   public save(): boolean {
     const state = this.getState();
     const success = SaveSystem.save(state);
@@ -330,33 +392,26 @@ export class GameEngine {
     return success;
   }
 
-  /**
-   * Reset game progress (completely wipe everything to 0)
-   */
   public resetGame(): void {
     SaveSystem.clear();
     const defaults = SaveSystem.getDefaultState();
     this.stats = defaults.stats;
     this.multipliers = defaults.multipliers;
+    this.prestige = defaults.prestige;
 
-    // Reset resources completely (amounts, peak, totals)
     this.resources.resetAll();
-
-    // Reset upgrades completely
     this.upgrades.resetAll();
 
     this.save();
     this.events.emit('game:reset', undefined);
   }
 
-  /**
-   * Get complete game state snapshot
-   */
   public getState(): GameState {
     return {
-      version: 3,
+      version: 4,
       resources: this.resources.getAllResources(),
       upgrades: this.upgrades.getAllStates(),
+      prestige: { ...this.prestige },
       stats: {
         ...this.stats,
         lastSaveTimestamp: Date.now()

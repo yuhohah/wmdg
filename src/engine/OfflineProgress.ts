@@ -27,6 +27,12 @@ export class OfflineProgressCalculator {
     const effectiveSeconds = Math.min(elapsedSeconds, this.MAX_OFFLINE_SECONDS);
     const gains: Record<ResourceId, number> = {};
 
+    // Sacerdotes generate Fiéis offline
+    const sacerdotes = upgradeManager.getSacerdotesCount();
+    if (sacerdotes > 0) {
+      upgradeManager.addSacerdoteFies(effectiveSeconds * efficiency);
+    }
+
     const faithPerSec = upgradeManager.getTotalProductionPerSecond('faith');
     if (faithPerSec > 0) {
       gains['faith'] = Math.floor(faithPerSec * effectiveSeconds * efficiency);
