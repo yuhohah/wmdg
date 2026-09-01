@@ -32,7 +32,10 @@ export class PixiApp {
     try {
       await Assets.load([
         '/assets/icons/icon_entity_eye.png',
-        '/assets/icons/icon_cathedral.png'
+        '/assets/icons/temple1.jpeg',
+        '/assets/icons/temple2.jpeg',
+        '/assets/icons/temple3.jpeg',
+        '/assets/icons/temple4.jpeg'
       ]);
     } catch (e) {
       console.warn('[PixiApp] Asset preload completed with fallback:', e);
