@@ -1,12 +1,13 @@
 import { GameState } from './types';
 
 export class SaveSystem {
-  private static readonly STORAGE_KEY = 'IDLE_CLICKER_FAITH_SAVE_V4';
+  private static readonly STORAGE_KEY = 'IDLE_CLICKER_FAITH_SAVE_V5';
   private static readonly PREVIOUS_STORAGE_KEYS = [
+    'IDLE_CLICKER_FAITH_SAVE_V4',
     'IDLE_CLICKER_FAITH_SAVE_V3',
     'IDLE_CLICKER_FAITH_SAVE_V2'
   ];
-  private static readonly CURRENT_VERSION = 4;
+  private static readonly CURRENT_VERSION = 5;
 
   public static getDefaultState(): GameState {
     return {
@@ -17,6 +18,7 @@ export class SaveSystem {
         essence: { id: 'essence', amount: 0, totalEarned: 0, peakAmount: 0 }
       },
       upgrades: {},
+      achievements: {},
       prestige: {
         essence: 0,
         totalEssenceEarned: 0,
@@ -80,6 +82,10 @@ export class SaveSystem {
         upgrades: {
           ...defaults.upgrades,
           ...(parsed.upgrades || {})
+        },
+        achievements: {
+          ...defaults.achievements,
+          ...(parsed.achievements || {})
         },
         prestige: {
           ...defaults.prestige,

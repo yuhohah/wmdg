@@ -277,6 +277,21 @@ export class UpgradeManager {
     return GameMath.calculateMaxBuy(config.baseCost, config.costMultiplier, state.count, balance);
   }
 
+  public getFiesCount(): number {
+    return this.states.get('fiel')?.count || 0;
+  }
+
+  public getTemplosCount(): number {
+    return this.states.get('templo')?.count || 0;
+  }
+
+  public isTemplesUnlocked(): boolean {
+    const temploState = this.states.get('templo');
+    if (temploState?.unlocked || (temploState?.count || 0) > 0) return true;
+    const faithRes = this.resourceManager.getResource('faith');
+    return (faithRes.amount >= 200 || faithRes.peakAmount >= 200 || this.getFiesCount() >= 15);
+  }
+
   /**
    * Multiplicadores do Templo
    */
@@ -391,8 +406,7 @@ export class UpgradeManager {
     if (resourceId === 'faith') {
       const fiesCount = this.states.get('fiel')?.count || 0;
       const monumentMult = this.getMonumentFaithMultiplier();
-      const milestoneMult = this.getFielMilestoneMultiplier();
-      return fiesCount * 1.0 * this.getTempleFielMultiplier() * monumentMult * milestoneMult;
+      return fiesCount * 1.0 * this.getTempleFielMultiplier() * monumentMult;
     }
     if (resourceId === 'gold') {
       return this.getGoldProductionPerSecond(faithAmount);
@@ -452,9 +466,7 @@ export class UpgradeManager {
       this.fractionalFiel -= whole;
       const fielState = this.states.get('fiel');
       if (fielState) {
-        const prevCount = fielState.count;
         fielState.count += whole;
-        this.checkMilestoneCross('fiel', prevCount, fielState.count, FIEL_MILESTONES);
       }
     }
 
@@ -577,9 +589,7 @@ export class UpgradeManager {
     const prevCount = state.count;
     state.count += count;
 
-    if (id === 'fiel') {
-      this.checkMilestoneCross('fiel', prevCount, state.count, FIEL_MILESTONES);
-    } else if (id === 'sacerdote') {
+    if (id === 'sacerdote') {
       this.checkMilestoneCross('sacerdote', prevCount, state.count, SACERDOTE_MILESTONES);
     }
 

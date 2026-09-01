@@ -3,6 +3,7 @@ import { EventEmitter } from './EventEmitter';
 import { GameLoop } from './GameLoop';
 import { ResourceManager } from './ResourceManager';
 import { UpgradeManager, MonumentConfig } from './UpgradeManager';
+import { AchievementManager } from './AchievementManager';
 import { SaveSystem } from './SaveSystem';
 import { OfflineProgressCalculator } from './OfflineProgress';
 import { GameMath, MilestoneProgress } from './GameMath';
@@ -11,6 +12,7 @@ export class GameEngine {
   public readonly events: EventEmitter<GameEventMap>;
   public readonly resources: ResourceManager;
   public readonly upgrades: UpgradeManager;
+  public readonly achievements: AchievementManager;
   private readonly loop: GameLoop;
   private autoSaveTimer: number = 0;
   private readonly autoSaveIntervalMs: number = 5000;
@@ -35,6 +37,7 @@ export class GameEngine {
     // 2. Initialize sub-systems
     this.resources = new ResourceManager(this.events, savedState.resources);
     this.upgrades = new UpgradeManager(this.events, this.resources, savedState.upgrades);
+    this.achievements = new AchievementManager(this.events, savedState.achievements);
 
     // 3. Check for offline progress
     this.offlineReport = OfflineProgressCalculator.calculate(
@@ -113,7 +116,21 @@ export class GameEngine {
     };
     this.upgrades.checkUnlocks(peakMap);
 
-    // 5. Broadcast tick to view
+    // 5. Check Achievement Unlocks
+    this.achievements.checkConditions({
+      totalClicks: this.stats.totalClicks,
+      faithRate: faithPerSec,
+      totalFaith: this.resources.getResource('faith').totalEarned || this.resources.getResource('faith').amount,
+      fiesCount: this.getFiesCount(),
+      sacerdotesCount: this.getSacerdotesCount(),
+      isTempleBuilt: this.isTempleBuilt(),
+      goldAmount: this.resources.getResource('gold').amount,
+      templeEnhLevel: this.getTempleEnhancementLevel(),
+      monumentsCount: this.getMonumentsCount(),
+      playTimeSeconds: this.stats.playTimeSeconds
+    });
+
+    // 6. Broadcast tick to view
     this.events.emit('tick', {
       dt,
       totalIncome: incomeThisTick
@@ -180,13 +197,14 @@ export class GameEngine {
   }
 
   public convertFiel(): boolean {
-    return this.buyUpgrade('fiel', 1);
+    return this.upgrades.buyUpgrade('fiel', 1);
   }
 
   public convertMaxFiel(): { count: number; cost: number } {
     const max = this.upgrades.getMaxAffordable('fiel');
     if (max.count > 0) {
-      this.buyUpgrade('fiel', max.count);
+      this.upgrades.buyUpgrade('fiel', max.count);
+      this.save();
     }
     return max;
   }
@@ -195,67 +213,26 @@ export class GameEngine {
     return this.upgrades.getMaxAffordable('fiel');
   }
 
-  public canAffordTemple(): boolean {
-    return this.upgrades.canAffordTemple();
+  public isTemplesUnlocked(): boolean {
+    return this.upgrades.isTemplesUnlocked();
   }
 
   public isTempleBuilt(): boolean {
     return this.upgrades.isTempleBuilt();
   }
 
+  public canAffordTemple(): boolean {
+    return this.upgrades.canAffordTemple();
+  }
+
   public buyTemple(): boolean {
-    return this.upgrades.buyTemple();
-  }
-
-  public buyTempleUpgrade(upgradeId: string): boolean {
-    return this.upgrades.buyUpgrade(upgradeId, 1);
-  }
-
-  /**
-   * Sacerdotes System
-   */
-  public getSacerdotesCount(): number {
-    return this.upgrades.getSacerdotesCount();
-  }
-
-  public buySacerdote(): boolean {
-    return this.buyUpgrade('sacerdote', 1);
-  }
-
-  public buyMaxSacerdote(): { count: number; cost: number } {
-    const max = this.upgrades.getMaxAffordable('sacerdote');
-    if (max.count > 0) {
-      this.buyUpgrade('sacerdote', max.count);
+    const success = this.upgrades.buyTemple();
+    if (success) {
+      this.save();
     }
-    return max;
+    return success;
   }
 
-  public getMaxAffordableSacerdote(): { count: number; cost: number } {
-    return this.upgrades.getMaxAffordable('sacerdote');
-  }
-
-  /**
-   * Milestone info getters
-   */
-  public getFielMilestoneMultiplier(): number {
-    return this.upgrades.getFielMilestoneMultiplier();
-  }
-
-  public getFielMilestoneProgress(): MilestoneProgress {
-    return this.upgrades.getFielMilestoneProgress();
-  }
-
-  public getSacerdoteMilestoneMultiplier(): number {
-    return this.upgrades.getSacerdoteMilestoneMultiplier();
-  }
-
-  public getSacerdoteMilestoneProgress(): MilestoneProgress {
-    return this.upgrades.getSacerdoteMilestoneProgress();
-  }
-
-  /**
-   * Temple enhancement with Faith (PF): 10 levels
-   */
   public getTempleEnhancementLevel(): number {
     return this.upgrades.getTempleEnhancementLevel();
   }
@@ -269,12 +246,62 @@ export class GameEngine {
   }
 
   public upgradeTempleWithFaith(): boolean {
-    return this.upgrades.upgradeTempleWithFaith();
+    const success = this.upgrades.upgradeTempleWithFaith();
+    if (success) {
+      this.save();
+    }
+    return success;
   }
 
-  /**
-   * Monument System (7 mythical monuments)
-   */
+  public buyTempleUpgrade(id: string): boolean {
+    return this.buyUpgrade(id, 1);
+  }
+
+  public getTempleClickMultiplier(): number {
+    return this.upgrades.getTempleClickMultiplier();
+  }
+
+  public getTempleFielMultiplier(): number {
+    return this.upgrades.getTempleFielMultiplier();
+  }
+
+  public getTempleGoldFaithMultiplier(): number {
+    return this.upgrades.getTempleGoldFaithMultiplier();
+  }
+
+  public getFiesCount(): number {
+    return this.upgrades.getFiesCount();
+  }
+
+  public getTemplosCount(): number {
+    return this.upgrades.getTemplosCount();
+  }
+
+  public getSacerdotesCount(): number {
+    return this.upgrades.getSacerdotesCount();
+  }
+
+  public buySacerdote(count: number = 1): boolean {
+    const success = this.upgrades.buySacerdote(count);
+    if (success) {
+      this.save();
+    }
+    return success;
+  }
+
+  public buyMaxSacerdote(): { count: number; cost: number } {
+    const max = this.upgrades.getMaxAffordableSacerdote();
+    if (max.count > 0) {
+      this.upgrades.buySacerdote(max.count);
+      this.save();
+    }
+    return max;
+  }
+
+  public getMaxAffordableSacerdote(): { count: number; cost: number } {
+    return this.upgrades.getMaxAffordableSacerdote();
+  }
+
   public isMonumentsUnlocked(): boolean {
     return this.upgrades.isMonumentsUnlocked();
   }
@@ -296,37 +323,21 @@ export class GameEngine {
   }
 
   public buyNextMonument(): boolean {
-    return this.upgrades.buyNextMonument();
+    const success = this.upgrades.buyNextMonument();
+    if (success) {
+      this.save();
+    }
+    return success;
   }
 
-  public getFiesCount(): number {
-    return this.upgrades.getState('fiel')?.count || 0;
+  public getSacerdoteMilestoneProgress(): MilestoneProgress {
+    return this.upgrades.getSacerdoteMilestoneProgress();
   }
 
-  public getTemplosCount(): number {
-    return this.upgrades.getState('templo')?.count || 0;
+  public getSacerdoteMilestoneMultiplier(): number {
+    return this.upgrades.getSacerdoteMilestoneMultiplier();
   }
 
-  public getTempleClickMultiplier(): number {
-    return this.upgrades.getTempleClickMultiplier();
-  }
-
-  public getTempleFielMultiplier(): number {
-    return this.upgrades.getTempleFielMultiplier();
-  }
-
-  public getTempleGoldFaithMultiplier(): number {
-    return this.upgrades.getTempleGoldFaithMultiplier();
-  }
-
-  public isTemplesUnlocked(): boolean {
-    const temploState = this.upgrades.getState('templo');
-    return (temploState?.unlocked ?? false) || this.getFiesCount() >= 30;
-  }
-
-  /**
-   * Sistema de Prestígio (Transcendência Divina)
-   */
   public getPrestigeState(): PrestigeState {
     return { ...this.prestige };
   }
@@ -401,6 +412,7 @@ export class GameEngine {
 
     this.resources.resetAll();
     this.upgrades.resetAll();
+    this.achievements.resetAll();
 
     this.save();
     this.events.emit('game:reset', undefined);
@@ -408,9 +420,10 @@ export class GameEngine {
 
   public getState(): GameState {
     return {
-      version: 4,
+      version: 5,
       resources: this.resources.getAllResources(),
       upgrades: this.upgrades.getAllStates(),
+      achievements: this.achievements.getAllStates(),
       prestige: { ...this.prestige },
       stats: {
         ...this.stats,

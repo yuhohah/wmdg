@@ -31,6 +31,12 @@ export interface UpgradeState {
   unlocked: boolean;
 }
 
+export interface AchievementState {
+  id: string;
+  unlocked: boolean;
+  unlockedAt?: number;
+}
+
 export interface GameStats {
   totalClicks: number;
   manualFaithEarned: number;
@@ -51,6 +57,7 @@ export interface GameState {
   version: number;
   resources: Record<ResourceId, ResourceState>;
   upgrades: Record<string, UpgradeState>;
+  achievements: Record<string, AchievementState>;
   prestige: PrestigeState;
   stats: GameStats;
   multipliers: {
@@ -69,6 +76,7 @@ export type GameEventMap = {
   'resource:changed': { id: ResourceId; amount: number; delta: number; isManual: boolean };
   'upgrade:purchased': { upgradeId: string; newCount: number; cost: number };
   'milestone:reached': { id: string; level: number; multiplier: number; label: string };
+  'achievement:unlocked': { id: string; title: string; description: string; icon: string };
   'prestige:performed': { essenceGained: number; totalEssence: number };
   'click:produced': { resourceId: ResourceId; amount: number; screenX?: number; screenY?: number };
   'offline:collected': OfflineEarningsReport;

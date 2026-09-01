@@ -8,7 +8,8 @@ import { ActionCardMonuments } from '../components/ActionCardMonuments';
 import { UIButton } from '../components/UIButton';
 import { FloatingTextManager } from '../components/FloatingTextManager';
 import { OfflineModal } from '../components/OfflineModal';
-import { PrestigeModal } from '../components/PrestigeModal';
+import { AchievementModal } from '../components/AchievementModal';
+import { AchievementToast } from '../components/AchievementToast';
 import { BackgroundStars } from '../components/BackgroundStars';
 import { ZoomControls } from '../components/ZoomControls';
 import { Formatters } from '../utils/Formatters';
@@ -25,14 +26,15 @@ export class GameScreen extends Container {
   private hudContainer: Container;
   private headerContainer: Container;
   private zoomControls: ZoomControls;
+  private achievementsBtn: UIButton;
   private offlineModal: OfflineModal;
-  private prestigeModal: PrestigeModal;
+  private achievementModal: AchievementModal;
+  private achievementToast: AchievementToast;
 
   // Header components
   private headerIconSprite: Sprite;
   private gameTitleText: Text;
   private saveStatusText: Text;
-  private prestigeBtn: UIButton;
   private timeSpeedBtn: UIButton;
   private manualSaveBtn: UIButton;
   private resetBtn: UIButton;
@@ -131,29 +133,12 @@ export class GameScreen extends Container {
     });
     this.headerContainer.addChild(this.saveStatusText);
 
-    // Header Buttons: Transcendence (Prestige), Speed, Save, Reset
-    this.prestigeBtn = new UIButton({
-      width: 140,
-      height: 30,
-      label: '✨ Transcender (+0)',
-      fontSize: 11,
-      bgColor: THEME.colors.pureWhite,
-      hoverColor: THEME.colors.silverLight,
-      textColor: THEME.colors.textDark,
-      onClick: () => {
-        const gain = this.engine.getPrestigeGain();
-        const cur = this.engine.getPrestigeState().essence;
-        this.prestigeModal.show(gain, cur, this.currentWidth, this.currentHeight);
-      }
-    });
-    this.prestigeBtn.visible = false;
-    this.headerContainer.addChild(this.prestigeBtn);
-
+    // Header Buttons: Speed, Save, Reset
     const SPEED_STEPS = [1, 2, 3, 5, 10];
     let currentSpeedIndex = 0;
 
     this.timeSpeedBtn = new UIButton({
-      width: 70,
+      width: 75,
       height: 30,
       label: '⚡ 1x',
       fontSize: 11,
@@ -170,7 +155,7 @@ export class GameScreen extends Container {
     this.headerContainer.addChild(this.timeSpeedBtn);
 
     this.manualSaveBtn = new UIButton({
-      width: 75,
+      width: 80,
       height: 30,
       label: 'Salvar',
       fontSize: 11,
@@ -185,7 +170,7 @@ export class GameScreen extends Container {
     this.headerContainer.addChild(this.manualSaveBtn);
 
     this.resetBtn = new UIButton({
-      width: 70,
+      width: 75,
       height: 30,
       label: 'Reset',
       fontSize: 11,
@@ -293,7 +278,24 @@ export class GameScreen extends Container {
     this.monumentsCard.visible = this.engine.isMonumentsUnlocked();
     this.actionCardsContainer.addChild(this.monumentsCard);
 
-    // 9. Stats Footer Text
+    // 9. Bottom-Left Achievements Menu Button
+    this.achievementsBtn = new UIButton({
+      width: 160,
+      height: 34,
+      label: '🏆 Conquistas (0/17)',
+      fontSize: 11,
+      bgColor: THEME.colors.cardBg,
+      hoverColor: THEME.colors.cardBgHover,
+      textColor: THEME.colors.pureWhite,
+      onClick: () => {
+        const defs = this.engine.achievements.getDefinitions();
+        const states = this.engine.achievements.getAllStates();
+        this.achievementModal.show(defs, states, this.currentWidth, this.currentHeight);
+      }
+    });
+    this.hudContainer.addChild(this.achievementsBtn);
+
+    // 10. Stats Footer Text
     this.statsText = new Text({
       text: '',
       style: new TextStyle({
@@ -307,7 +309,7 @@ export class GameScreen extends Container {
     this.statsText.anchor.set(0.5, 1);
     this.hudContainer.addChild(this.statsText);
 
-    // 10. Zoom & Viewport Controls HUD Pill
+    // 11. Zoom & Viewport Controls HUD Pill
     this.zoomControls = new ZoomControls({
       onZoomIn: () => this.zoomStep(1.2),
       onZoomOut: () => this.zoomStep(1 / 1.2),
@@ -316,23 +318,21 @@ export class GameScreen extends Container {
     });
     this.hudContainer.addChild(this.zoomControls);
 
-    // 11. Modals Layer: Offline & Prestige
+    // 12. Modals Layer: Offline & Achievements
     this.offlineModal = new OfflineModal(() => {
       this.engine.claimOfflineEarnings();
       this.updateHUD();
     });
     this.addChild(this.offlineModal);
 
-    this.prestigeModal = new PrestigeModal({
-      onPrestigeConfirm: () => {
-        const success = this.engine.performPrestige();
-        if (success) {
-          this.updateHUD();
-          this.resetViewport();
-        }
-      }
+    this.achievementModal = new AchievementModal({
+      onClose: () => {}
     });
-    this.addChild(this.prestigeModal);
+    this.addChild(this.achievementModal);
+
+    // 13. Toast Notification Overlay
+    this.achievementToast = new AchievementToast();
+    this.addChild(this.achievementToast);
 
     // Setup Drag, Wheel & Pinch Viewport Handlers
     this.setupViewportInteractivity();
@@ -440,9 +440,9 @@ export class GameScreen extends Container {
       this.flashSaveText();
     });
 
-    this.engine.events.on('milestone:reached', ({ label, multiplier }) => {
-      const localPos = this.worldContainer.toLocal({ x: this.currentWidth / 2, y: 160 });
-      this.floatingText.spawn(localPos.x, localPos.y, `⭐ MARCO: ${label} (${multiplier}x Bônus)!`);
+    this.engine.events.on('achievement:unlocked', (item) => {
+      this.achievementToast.notify(item);
+      this.updateHUD();
     });
   }
 
@@ -466,7 +466,6 @@ export class GameScreen extends Container {
     const sacerdotesCount = this.engine.getSacerdotesCount();
     const monumentsCount = this.engine.getMonumentsCount();
     const isMonumentsUnlocked = this.engine.isMonumentsUnlocked();
-    const curEssence = this.engine.getPrestigeState().essence;
 
     // 1. Update Resource HUD Card
     this.resourceCard.setValues(
@@ -479,8 +478,7 @@ export class GameScreen extends Container {
       isTempleUnlocked,
       sacerdotesCount,
       monumentsCount,
-      isMonumentsUnlocked,
-      curEssence
+      isMonumentsUnlocked
     );
 
     // 2. Check if Temples card or Monuments card should unlock/toggle
@@ -500,12 +498,10 @@ export class GameScreen extends Container {
       this.layoutCards(this.currentWidth, this.currentHeight);
     }
 
-    // 3. Update Initial Action Card (Fiéis Milestones)
+    // 3. Update Initial Action Card (Clean layout without milestone bar)
     const fielCost = this.engine.upgrades.getUpgradeCost('fiel', 1);
     const canAffordFiel = this.engine.resources.hasAmount('faith', fielCost);
     const maxAffordable = this.engine.getMaxAffordableFiel();
-    const fielMilestoneProg = this.engine.getFielMilestoneProgress();
-    const fielMilestoneMult = this.engine.getFielMilestoneMultiplier();
 
     this.initialCard.updateData(
       faith,
@@ -514,9 +510,7 @@ export class GameScreen extends Container {
       canAffordFiel,
       fiesCount,
       maxAffordable.count,
-      maxAffordable.cost,
-      fielMilestoneProg,
-      fielMilestoneMult
+      maxAffordable.cost
     );
 
     // 4. Update Temples Action Card (Sacerdotes Milestones)
@@ -589,19 +583,14 @@ export class GameScreen extends Container {
       );
     }
 
-    // 6. Update Prestige Button Status
-    const prestigeGain = this.engine.getPrestigeGain();
-    if (prestigeGain > 0 || curEssence > 0) {
-      this.prestigeBtn.visible = true;
-      this.prestigeBtn.setLabel(`✨ Transcender (+${Formatters.formatNumber(prestigeGain)})`);
-    } else {
-      this.prestigeBtn.visible = false;
-    }
+    // 6. Update Achievements Button Label
+    const unlockedCount = this.engine.achievements.getUnlockedCount();
+    const totalCount = this.engine.achievements.getTotalCount();
+    this.achievementsBtn.setLabel(`🏆 Conquistas (${unlockedCount}/${totalCount})`);
 
     // 7. Update Stats Footer
     const state = this.engine.getState();
-    const essenceStr = curEssence > 0 ? `   •   Essência: ${Formatters.formatNumber(curEssence)} (+${curEssence * 10}% Global)` : '';
-    this.statsText.text = `Adorações Manuais: ${Formatters.formatNumber(state.stats.totalClicks)}   •   Tempo de Devoção: ${Formatters.formatDuration(state.stats.playTimeSeconds)}${essenceStr}`;
+    this.statsText.text = `Adorações Manuais: ${Formatters.formatNumber(state.stats.totalClicks)}   •   Tempo de Devoção: ${Formatters.formatDuration(state.stats.playTimeSeconds)}`;
 
     // 8. Update Zoom Controls Label
     this.zoomControls.update();
@@ -617,31 +606,32 @@ export class GameScreen extends Container {
     this.panLayer.rect(0, 0, width, height);
     this.panLayer.fill({ color: 0x000000, alpha: 0.001 });
 
-    const isDesktop = width >= 860;
+    const isDesktop = width >= 820;
 
     if (isDesktop) {
-      this.headerIconSprite.position.set(width - 560, 24);
-      this.gameTitleText.position.set(width - 526, 24);
-      this.saveStatusText.position.set(width - 526, 46);
+      this.headerIconSprite.position.set(width - 480, 24);
+      this.gameTitleText.position.set(width - 446, 24);
+      this.saveStatusText.position.set(width - 446, 46);
 
-      this.prestigeBtn.position.set(width - 325, 34);
-      this.timeSpeedBtn.position.set(width - 200, 34);
-      this.manualSaveBtn.position.set(width - 120, 34);
-      this.resetBtn.position.set(width - 40, 34);
+      this.timeSpeedBtn.position.set(width - 225, 34);
+      this.manualSaveBtn.position.set(width - 140, 34);
+      this.resetBtn.position.set(width - 50, 34);
     } else {
       this.headerIconSprite.position.set(width - 170, 20);
       this.gameTitleText.position.set(width - 138, 20);
       this.saveStatusText.position.set(width - 138, 40);
 
-      this.prestigeBtn.position.set(width - 260, 68);
-      this.timeSpeedBtn.position.set(width - 160, 68);
-      this.manualSaveBtn.position.set(width - 90, 68);
+      this.timeSpeedBtn.position.set(width - 180, 68);
+      this.manualSaveBtn.position.set(width - 100, 68);
       this.resetBtn.position.set(width - 20, 68);
     }
 
+    // Position Bottom HUD Elements
+    this.achievementsBtn.position.set(24 + 160 / 2, height - 34);
     this.statsText.position.set(width / 2, height - 16);
     this.zoomControls.position.set(width - 110, height - 42);
 
+    this.achievementToast.resize(width, height);
     this.layoutCards(width, height);
 
     if (this.offlineModal.visible) {
@@ -716,5 +706,6 @@ export class GameScreen extends Container {
       this.monumentsCard.update(dt);
     }
     this.floatingText.update(dt);
+    this.achievementToast.update(dt);
   }
 }
