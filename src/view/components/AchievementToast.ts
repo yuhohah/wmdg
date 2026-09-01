@@ -1,5 +1,6 @@
 import { Container, Graphics, Sprite, Text, TextStyle } from 'pixi.js';
 import { THEME } from '../theme';
+import { IconManager } from '../utils/IconManager';
 
 export interface ToastItem {
   id: string;
@@ -51,14 +52,10 @@ export class AchievementToast extends Container {
     bg.roundRect(0, 0, toastW, toastH, 14);
     bg.fill({ color: 0x0a0a0a, alpha: 0.96 });
     bg.stroke({ width: 1.5, color: THEME.colors.pureWhite });
-
-    // Inner top highlight line
-    bg.roundRect(2, 2, toastW - 4, 1.5, 6);
-    bg.fill({ color: THEME.colors.pureWhite, alpha: 0.3 });
     toast.addChild(bg);
 
     // Icon Sprite
-    const icon = Sprite.from(item.icon || '/assets/icons/icon_star.png');
+    const icon = new Sprite(IconManager.getTexture(item.icon || 'icon_star'));
     icon.width = 36;
     icon.height = 36;
     icon.position.set(16, (toastH - 36) / 2);

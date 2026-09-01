@@ -2,6 +2,7 @@ import { Container, Graphics, Sprite, Text, TextStyle } from 'pixi.js';
 import { THEME } from '../theme';
 import { Formatters } from '../utils/Formatters';
 import { OfflineEarningsReport } from '../../engine/types';
+import { IconManager } from '../utils/IconManager';
 import { UIButton } from './UIButton';
 
 export class OfflineModal extends Container {
@@ -114,7 +115,7 @@ export class OfflineModal extends Container {
     rewardBox.stroke({ width: 1, color: THEME.colors.cardBorder });
     this.earningsContainer.addChild(rewardBox);
 
-    const starSprite = Sprite.from('/assets/icons/icon_star.png');
+    const starSprite = new Sprite(IconManager.getTexture('icon_star'));
     starSprite.width = 24;
     starSprite.height = 24;
     starSprite.position.set(centerX - 115, centerY - 2);

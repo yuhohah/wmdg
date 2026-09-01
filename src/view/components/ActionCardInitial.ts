@@ -150,10 +150,6 @@ export class ActionCardInitial extends Container {
     this.bgGraphics.fill({ color: THEME.colors.panelBg, alpha: 0.94 });
     this.bgGraphics.stroke({ width: 1.5, color: THEME.colors.cardBorder });
 
-    // Inner top highlight line
-    this.bgGraphics.roundRect(2, 2, this.cardWidth - 4, 1.5, 8);
-    this.bgGraphics.fill({ color: THEME.colors.pureWhite, alpha: 0.15 });
-
     // Divider line above buttons
     this.dividerGraphics.clear();
     this.dividerGraphics.moveTo(20, this.cardHeight - 110);

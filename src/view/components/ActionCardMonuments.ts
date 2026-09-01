@@ -3,6 +3,7 @@ import { THEME } from '../theme';
 import { UIButton } from './UIButton';
 import { Formatters } from '../utils/Formatters';
 import { MonumentConfig, MONUMENTS } from '../../engine/UpgradeManager';
+import { IconManager } from '../utils/IconManager';
 
 export interface ActionCardMonumentsProps {
   width?: number;
@@ -88,7 +89,7 @@ export class ActionCardMonuments extends Container {
     this.addChild(this.progressText);
 
     // 4. Central Monument Icon
-    this.monumentSprite = Sprite.from('/assets/icons/icon_monument.png');
+    this.monumentSprite = new Sprite(IconManager.getTexture('icon_monument'));
     this.monumentSprite.anchor.set(0.5);
     this.monumentSprite.width = 130;
     this.monumentSprite.height = 130;
@@ -181,10 +182,6 @@ export class ActionCardMonuments extends Container {
     this.bgGraphics.roundRect(0, 0, this.cardWidth, this.cardHeight, 18);
     this.bgGraphics.fill({ color: THEME.colors.panelBg, alpha: 0.94 });
     this.bgGraphics.stroke({ width: 1.5, color: THEME.colors.cardBorder });
-
-    // Inner top highlight line
-    this.bgGraphics.roundRect(2, 2, this.cardWidth - 4, 1.5, 8);
-    this.bgGraphics.fill({ color: THEME.colors.pureWhite, alpha: 0.15 });
 
     // Divider line
     this.dividerGraphics.clear();

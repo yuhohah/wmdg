@@ -1,6 +1,7 @@
 import { Container, Graphics, Sprite, Text, TextStyle } from 'pixi.js';
 import { THEME } from '../theme';
 import { Formatters } from '../utils/Formatters';
+import { IconManager } from '../utils/IconManager';
 
 export class ResourceCard extends Container {
   private bgGraphics: Graphics;
@@ -70,7 +71,7 @@ export class ResourceCard extends Container {
     this.addChild(this.headerLabel);
 
     // 2. Faith Row
-    this.faithSprite = Sprite.from('/assets/icons/icon_star.png');
+    this.faithSprite = new Sprite(IconManager.getTexture('icon_star'));
     this.faithSprite.width = 18;
     this.faithSprite.height = 18;
     this.faithSprite.position.set(16, 34);
@@ -101,7 +102,7 @@ export class ResourceCard extends Container {
     this.addChild(this.faithRateText);
 
     // 3. Faithful Row
-    this.fielSprite = Sprite.from('/assets/icons/icon_flame.png');
+    this.fielSprite = new Sprite(IconManager.getTexture('icon_flame'));
     this.fielSprite.width = 18;
     this.fielSprite.height = 18;
     this.fielSprite.position.set(16, 60);
@@ -137,7 +138,7 @@ export class ResourceCard extends Container {
     this.goldContainer.visible = false;
     this.addChild(this.goldContainer);
 
-    this.goldSprite = Sprite.from('/assets/icons/icon_shrine.png');
+    this.goldSprite = new Sprite(IconManager.getTexture('icon_shrine'));
     this.goldSprite.width = 18;
     this.goldSprite.height = 18;
     this.goldSprite.position.set(0, 0);
@@ -173,7 +174,7 @@ export class ResourceCard extends Container {
     this.temploContainer.visible = false;
     this.addChild(this.temploContainer);
 
-    this.temploSprite = Sprite.from('/assets/icons/icon_cathedral.png');
+    this.temploSprite = new Sprite(IconManager.getTexture('/assets/icons/icon_cathedral.png'));
     this.temploSprite.width = 18;
     this.temploSprite.height = 18;
     this.temploSprite.position.set(0, 0);
@@ -197,7 +198,7 @@ export class ResourceCard extends Container {
     this.sacerdoteContainer.visible = false;
     this.addChild(this.sacerdoteContainer);
 
-    this.sacerdoteSprite = Sprite.from('/assets/icons/icon_shrine.png');
+    this.sacerdoteSprite = new Sprite(IconManager.getTexture('icon_shrine'));
     this.sacerdoteSprite.width = 18;
     this.sacerdoteSprite.height = 18;
     this.sacerdoteSprite.position.set(0, 0);
@@ -221,7 +222,7 @@ export class ResourceCard extends Container {
     this.monumentoContainer.visible = false;
     this.addChild(this.monumentoContainer);
 
-    this.monumentoSprite = Sprite.from('/assets/icons/icon_monument.png');
+    this.monumentoSprite = new Sprite(IconManager.getTexture('icon_monument'));
     this.monumentoSprite.width = 18;
     this.monumentoSprite.height = 18;
     this.monumentoSprite.position.set(0, 0);
@@ -245,7 +246,7 @@ export class ResourceCard extends Container {
     this.essenceContainer.visible = false;
     this.addChild(this.essenceContainer);
 
-    this.essenceSprite = Sprite.from('/assets/icons/icon_entity_eye.png');
+    this.essenceSprite = new Sprite(IconManager.getTexture('/assets/icons/icon_entity_eye.png'));
     this.essenceSprite.width = 18;
     this.essenceSprite.height = 18;
     this.essenceSprite.position.set(0, 0);
@@ -298,10 +299,6 @@ export class ResourceCard extends Container {
     this.bgGraphics.roundRect(0, 0, this.widthPx, actualHeight, 14);
     this.bgGraphics.fill({ color: THEME.colors.panelBg, alpha: 0.94 });
     this.bgGraphics.stroke({ width: 1.5, color: THEME.colors.cardBorder });
-
-    // Inner subtle highlight line
-    this.bgGraphics.roundRect(2, 2, this.widthPx - 4, 1.5, 6);
-    this.bgGraphics.fill({ color: THEME.colors.pureWhite, alpha: 0.15 });
   }
 
   public setValues(

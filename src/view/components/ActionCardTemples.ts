@@ -18,8 +18,6 @@ export class ActionCardTemples extends Container {
   private cardWidth: number;
   private cardHeight: number;
   private bgGraphics: Graphics;
-  private glowGraphics: Graphics;
-  private haloGraphics: Graphics;
   private templeSprite: Sprite;
 
   // Header: "VOCÊ TEM X OURO" e abaixo "+Y/s"
@@ -62,7 +60,6 @@ export class ActionCardTemples extends Container {
 
   private currentDisplayGold: number = 0;
   private targetGold: number = 0;
-  private rotationAngle: number = 0;
   private onBuyTempleCallback: () => void;
   private onUpgradeTempleWithFaithCallback: () => void;
   private onBuySacerdoteCallback: () => void;
@@ -84,14 +81,7 @@ export class ActionCardTemples extends Container {
     this.bgGraphics = new Graphics();
     this.addChild(this.bgGraphics);
 
-    // 2. Halo & Glow behind Temple Icon
-    this.glowGraphics = new Graphics();
-    this.addChild(this.glowGraphics);
-
-    this.haloGraphics = new Graphics();
-    this.addChild(this.haloGraphics);
-
-    // 3. Header: "VOCÊ TEM 0 OURO" e abaixo "+0/s"
+    // 2. Header: "VOCÊ TEM 0 OURO" e abaixo "+0/s"
     this.titleText = new Text({
       text: 'VOCÊ TEM 0 OURO',
       style: new TextStyle({
@@ -121,15 +111,15 @@ export class ActionCardTemples extends Container {
     this.rateText.position.set(this.cardWidth / 2, 32);
     this.addChild(this.rateText);
 
-    // 4. Temple Icon
-    this.templeSprite = Sprite.from('/assets/icons/icon_cathedral.png');
+    // 3. Grand Temple Monolith Image (Enlarged without outer circles)
+    this.templeSprite = Sprite.from('/assets/temple/temple_monolith.jpg');
     this.templeSprite.anchor.set(0.5);
-    this.templeSprite.width = 54;
-    this.templeSprite.height = 54;
-    this.templeSprite.position.set(this.cardWidth / 2, 74);
+    this.templeSprite.width = 96;
+    this.templeSprite.height = 96;
+    this.templeSprite.position.set(this.cardWidth / 2, 80);
     this.addChild(this.templeSprite);
 
-    // 5. Temple Status Text
+    // 4. Temple Status Text
     this.templeStatusText = new Text({
       text: 'Desperte o Templo Sagrado',
       style: new TextStyle({
@@ -141,7 +131,7 @@ export class ActionCardTemples extends Container {
       })
     });
     this.templeStatusText.anchor.set(0.5, 0);
-    this.templeStatusText.position.set(this.cardWidth / 2, 106);
+    this.templeStatusText.position.set(this.cardWidth / 2, 126);
     this.addChild(this.templeStatusText);
 
     // 6. Build Temple Button (Custo Único de 30 Fiéis) / Aprimorar Templo com PF
@@ -427,10 +417,6 @@ export class ActionCardTemples extends Container {
     this.bgGraphics.fill({ color: THEME.colors.panelBg, alpha: 0.94 });
     this.bgGraphics.stroke({ width: 1.5, color: THEME.colors.cardBorder });
 
-    // Inner top highlight line
-    this.bgGraphics.roundRect(2, 2, this.cardWidth - 4, 1.5, 8);
-    this.bgGraphics.fill({ color: THEME.colors.pureWhite, alpha: 0.15 });
-
     // Divider 1 line
     this.divider1Graphics.clear();
     this.divider1Graphics.moveTo(20, 168);
@@ -457,11 +443,6 @@ export class ActionCardTemples extends Container {
     this.bgGraphics.roundRect(20, 393, rowW, rowH, 8);
     this.bgGraphics.fill({ color: 0x080808, alpha: 0.7 });
     this.bgGraphics.stroke({ width: 1, color: 0x1f1f1f });
-
-    // Outer subtle halo behind icon
-    this.glowGraphics.clear();
-    this.glowGraphics.circle(this.cardWidth / 2, 74, 40);
-    this.glowGraphics.fill({ color: THEME.colors.pureWhite, alpha: 0.04 });
   }
 
   public updateData(
@@ -592,24 +573,9 @@ export class ActionCardTemples extends Container {
       this.titleText.text = `VOCÊ TEM ${Formatters.formatNumber(this.targetGold)} OURO`;
     }
 
-    // Subtle rotation of architectural halo
-    this.rotationAngle += dt * 0.6;
-    this.haloGraphics.clear();
-
-    const cx = this.cardWidth / 2;
-    const cy = 74;
-    const r = 34;
-
-    for (let i = 0; i < 4; i++) {
-      const startAngle = this.rotationAngle + (i * Math.PI) / 2;
-      const endAngle = startAngle + Math.PI / 4;
-      this.haloGraphics.arc(cx, cy, r, startAngle, endAngle);
-      this.haloGraphics.stroke({ width: 1.5, color: THEME.colors.pureWhite, alpha: 0.3 });
-    }
-
-    // Subtle breathing
-    const breath = Math.sin(performance.now() * 0.002) * 1.0;
-    this.templeSprite.position.y = 74 + breath;
+    // Subtle floating breathing of temple monolith
+    const breath = Math.sin(performance.now() * 0.0018) * 1.5;
+    this.templeSprite.position.y = 80 + breath;
   }
 
   public reset(): void {

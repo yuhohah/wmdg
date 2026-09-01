@@ -28,14 +28,15 @@ export class PixiApp {
     // In PixiJS v8, the canvas element is accessed via app.canvas
     this.containerElement.appendChild(this.app.canvas);
 
-    // Preload custom monochromatic icon assets
-    await Assets.load([
-      '/assets/icons/icon_entity_eye.png',
-      '/assets/icons/icon_flame.png',
-      '/assets/icons/icon_star.png',
-      '/assets/icons/icon_shrine.png',
-      '/assets/icons/icon_cathedral.png'
-    ]);
+    // Safely preload custom monochromatic icon assets if available
+    try {
+      await Assets.load([
+        '/assets/icons/icon_entity_eye.png',
+        '/assets/icons/icon_cathedral.png'
+      ]);
+    } catch (e) {
+      console.warn('[PixiApp] Asset preload completed with fallback:', e);
+    }
 
     // Initialize View Screen
     this.gameScreen = new GameScreen(this.engine);

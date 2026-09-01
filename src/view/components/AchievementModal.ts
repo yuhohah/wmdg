@@ -2,6 +2,7 @@ import { Container, Graphics, Sprite, Text, TextStyle, FederatedPointerEvent, Fe
 import { THEME } from '../theme';
 import { AchievementDefinition, AchievementState } from '../../engine/AchievementManager';
 import { UIButton } from './UIButton';
+import { IconManager } from '../utils/IconManager';
 
 export interface AchievementModalProps {
   onClose: () => void;
@@ -222,10 +223,6 @@ export class AchievementModal extends Container {
     this.cardGraphics.fill({ color: THEME.colors.panelBg });
     this.cardGraphics.stroke({ width: 1.5, color: THEME.colors.cardBorderLight });
 
-    // Inner top highlight line
-    this.cardGraphics.roundRect(modalX + 2, modalY + 2, modalW - 4, 1.5, 8);
-    this.cardGraphics.fill({ color: THEME.colors.pureWhite, alpha: 0.2 });
-
     // 3. Header Text
     this.titleText.position.set(modalX + 24, modalY + 18);
 
@@ -342,7 +339,7 @@ export class AchievementModal extends Container {
         tile.addChild(tileBg);
 
         // Achievement Icon Sprite
-        const icon = Sprite.from(ach.icon || '/assets/icons/icon_star.png');
+        const icon = new Sprite(IconManager.getTexture(ach.icon || 'icon_star'));
         icon.width = 28;
         icon.height = 28;
         icon.anchor.set(0.5);
@@ -413,10 +410,6 @@ export class AchievementModal extends Container {
         width: isHovered ? 2 : 1.5,
         color: isHovered ? THEME.colors.pureWhite : THEME.colors.cardBorderLight
       });
-
-      // Top subtle inner shine
-      g.roundRect(-half + 2, -half + 2, size - 4, 1.5, 4);
-      g.fill({ color: THEME.colors.pureWhite, alpha: 0.25 });
     } else {
       g.roundRect(-half, -half, size, size, 10);
       g.fill({ color: isHovered ? 0x121212 : 0x0a0a0a, alpha: 0.8 });
@@ -447,10 +440,6 @@ export class AchievementModal extends Container {
     this.tooltipBg.roundRect(0, 0, tipW, tipH, 10);
     this.tooltipBg.fill({ color: 0x050505, alpha: 0.97 });
     this.tooltipBg.stroke({ width: 1.5, color: isUnlocked ? THEME.colors.pureWhite : THEME.colors.cardBorderLight });
-
-    // Inner shine line
-    this.tooltipBg.roundRect(2, 2, tipW - 4, 1.5, 4);
-    this.tooltipBg.fill({ color: THEME.colors.pureWhite, alpha: 0.25 });
 
     // Position tooltip near cursor with boundary clamping
     let tipX = globalX + 16;
