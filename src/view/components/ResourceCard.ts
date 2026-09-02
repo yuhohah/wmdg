@@ -308,7 +308,7 @@ export class ResourceCard extends Container {
     gold: number = 0,
     goldRate: number = 0,
     templosCount: number = 0,
-    isTempleUnlocked: boolean = false,
+    _isTempleUnlocked: boolean = false,
     sacerdotesCount: number = 0,
     monumentsCount: number = 0,
     isMonumentsUnlocked: boolean = false,
@@ -317,7 +317,7 @@ export class ResourceCard extends Container {
     this.targetFaith = faith;
     this.targetGold = gold;
 
-    this.faithRateText.text = `(+${Formatters.formatNumber(faithRate)}/s)`;
+    this.faithRateText.text = `(${Formatters.formatRate(faithRate)})`;
     this.faithRateText.position.x = this.faithValueText.position.x + this.faithValueText.width + 6;
 
     this.fielValueText.text = `${Formatters.formatNumber(fiesCount)} Fiéis`;
@@ -331,14 +331,14 @@ export class ResourceCard extends Container {
 
     let needRedraw = false;
 
-    // Show Gold row
-    const shouldShowGold = isTempleUnlocked || templosCount > 0 || gold > 0;
+    // Show Gold row (visible once temple is built or gold > 0)
+    const shouldShowGold = templosCount > 0 || gold > 0;
     if (shouldShowGold !== this.goldContainer.visible) {
       this.goldContainer.visible = shouldShowGold;
       needRedraw = true;
     }
     if (shouldShowGold) {
-      this.goldRateText.text = `(+${Formatters.formatNumber(goldRate)}/s)`;
+      this.goldRateText.text = `(${Formatters.formatRate(goldRate)})`;
       this.goldRateText.position.x = this.goldValueText.position.x + this.goldValueText.width + 6;
     }
 

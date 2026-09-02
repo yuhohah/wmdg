@@ -81,6 +81,37 @@ export class ActionCardInitial extends Container {
     this.orb.position.set(this.cardWidth / 2, 195);
     this.addChild(this.orb);
 
+    // Static Entity Labels (outside scaling orb container so they don't shrink/enlarge on click)
+    const entityNameText = new Text({
+      text: 'A ENTIDADE DIVINA',
+      style: new TextStyle({
+        fontFamily: THEME.fonts.heading,
+        fontSize: 13,
+        fontWeight: '900',
+        letterSpacing: 2.5,
+        fill: THEME.colors.pureWhite,
+        align: 'center'
+      })
+    });
+    entityNameText.anchor.set(0.5);
+    entityNameText.position.set(this.cardWidth / 2, 350);
+    this.addChild(entityNameText);
+
+    const hintText = new Text({
+      text: 'CLIQUE OU PRESSIONE [C] PARA GERAR FÉ',
+      style: new TextStyle({
+        fontFamily: THEME.fonts.heading,
+        fontSize: 10,
+        fontWeight: '700',
+        letterSpacing: 1.5,
+        fill: THEME.colors.grayMuted,
+        align: 'center'
+      })
+    });
+    hintText.anchor.set(0.5);
+    hintText.position.set(this.cardWidth / 2, 370);
+    this.addChild(hintText);
+
     // 4. Subtle Divider
     this.dividerGraphics = new Graphics();
     this.addChild(this.dividerGraphics);
@@ -167,7 +198,7 @@ export class ActionCardInitial extends Container {
     maxCost: number
   ): void {
     this.targetFaith = faith;
-    this.rateText.text = `+${Formatters.formatNumber(faithRate)}/s`;
+    this.rateText.text = Formatters.formatRate(faithRate);
 
     this.convertButton.setLabel('Converter Fiel', `${Formatters.formatNumber(fielCost)} PF`);
     this.convertButton.setDisabled(!canAffordFiel);
@@ -178,7 +209,7 @@ export class ActionCardInitial extends Container {
     this.convertMaxButton.setLabel('Converter Max', maxSubLabel);
     this.convertMaxButton.setDisabled(maxCount <= 0);
 
-    this.buttonHelperText.text = `Você possui ${Formatters.formatNumber(fiesCount)} fiéis (+${Formatters.formatNumber(faithRate)} PF/s)`;
+    this.buttonHelperText.text = `Você possui ${Formatters.formatNumber(fiesCount)} fiéis (+${Formatters.formatNumber(faithRate, true)} PF/s)`;
   }
 
   public update(dt: number): void {

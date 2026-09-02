@@ -281,6 +281,30 @@ export class GameEngine {
     return this.upgrades.getSacerdotesCount();
   }
 
+  public getApostolosCount(): number {
+    return this.upgrades.getApostolosCount();
+  }
+
+  public isApostoloPurchased(slotIndex: number): boolean {
+    return this.upgrades.isApostoloPurchased(slotIndex);
+  }
+
+  public getApostoloCost(slotIndex: number): number {
+    return this.upgrades.getApostoloCost(slotIndex);
+  }
+
+  public canUpgradeApostolo(slotIndex: number): boolean {
+    return this.upgrades.canUpgradeApostolo(slotIndex);
+  }
+
+  public upgradeApostolo(slotIndex: number): boolean {
+    const success = this.upgrades.upgradeApostolo(slotIndex);
+    if (success) {
+      this.save();
+    }
+    return success;
+  }
+
   public buySacerdote(count: number = 1): boolean {
     const success = this.upgrades.buySacerdote(count);
     if (success) {
@@ -375,6 +399,15 @@ export class GameEngine {
     });
 
     return true;
+  }
+
+  public hasSeenIntro(): boolean {
+    return !!this.stats.hasSeenIntro;
+  }
+
+  public setHasSeenIntro(seen: boolean = true): void {
+    this.stats.hasSeenIntro = seen;
+    this.save();
   }
 
   public setTimeScale(scale: number): void {

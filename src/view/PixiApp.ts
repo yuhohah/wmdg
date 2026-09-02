@@ -31,7 +31,13 @@ export class PixiApp {
     // Safely preload custom monochromatic icon assets if available
     try {
       await Assets.load([
+        '/assets/entity/entity_orb_1.png',
+        '/assets/entity/entity_orb_2.png',
+        '/assets/entity/entity_orb_3.png',
+        '/assets/icons/icon_sacerdote.jpg',
         '/assets/icons/icon_entity_eye.png',
+        '/assets/icons/icon_cathedral.png',
+        '/assets/temple/temple_monolith.jpg',
         '/assets/icons/temple1.jpeg',
         '/assets/icons/temple2.jpeg',
         '/assets/icons/temple3.jpeg',

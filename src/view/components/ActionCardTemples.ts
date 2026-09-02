@@ -3,6 +3,7 @@ import { THEME } from '../theme';
 import { UIButton } from './UIButton';
 import { Formatters } from '../utils/Formatters';
 import { MilestoneProgress } from '../../engine/GameMath';
+import { IconManager } from '../utils/IconManager';
 
 export interface ActionCardTemplesProps {
   width?: number;
@@ -10,8 +11,7 @@ export interface ActionCardTemplesProps {
   onBuyTemple: () => void;
   onUpgradeTempleWithFaith: () => void;
   onBuySacerdote: () => void;
-  onBuyMaxSacerdote: () => void;
-  onBuyUpgrade: (upgradeId: string) => void;
+  onUpgradeApostolo: (slotIndex: number) => void;
 }
 
 export class ActionCardTemples extends Container {
@@ -20,68 +20,61 @@ export class ActionCardTemples extends Container {
   private bgGraphics: Graphics;
   private templeSprite: Sprite;
 
-  // Header: "VOCÊ TEM X OURO" e abaixo "+Y/s"
+  // Header: "VOCÊ TEM X OURO" e "+Y/s" (Centered across 360px card)
   private titleText: Text;
   private rateText: Text;
-  private divider1Graphics: Graphics;
-  private divider2Graphics: Graphics;
+  private dividerGraphics: Graphics;
 
-  // Temple status & build button
+  // Temple status & build / enhancement / apostolo buttons
   private templeStatusText: Text;
   private buildTempleBtn: UIButton;
   private enhancementBtn: UIButton;
+  private apostoloBtn: UIButton;
 
-  // Sacerdotes Section
+  // Sacerdotes & Apóstolos Management Section
   private sacerdotesTitleText: Text;
-  private sacerdoteMilestoneLabel: Text;
-  private sacerdoteMilestoneBarBg: Graphics;
-  private sacerdoteMilestoneBarFill: Graphics;
   private buySacerdoteBtn: UIButton;
-  private buyMaxSacerdoteBtn: UIButton;
   private sacerdotesHelperText: Text;
 
-  // Upgrades Section
-  private upgradesTitleText: Text;
+  // Salão dos Sacerdotes & Apóstolos Grid (8 slots)
+  private priestsGridGraphics: Graphics;
+  private priestSprites: Sprite[] = [];
+  private priestSlotLabels: Text[] = [];
+  private priestSlotClickContainers: Container[] = [];
 
-  // Upgrade 1: Click power
-  private u1Title: Text;
-  private u1Mult: Text;
-  private u1Btn: UIButton;
-
-  // Upgrade 2: Faithful production
-  private u2Title: Text;
-  private u2Mult: Text;
-  private u2Btn: UIButton;
-
-  // Upgrade 3: Faith boosts gold
-  private u3Title: Text;
-  private u3Mult: Text;
-  private u3Btn: UIButton;
-
+  private MAX_HALL_PRIESTS = 8;
   private currentDisplayGold: number = 0;
   private targetGold: number = 0;
+  private currentSacerdotesCount: number = 0;
+  private currentApostolosCount: number = 0;
+  private apostolosPurchased: boolean[] = new Array(8).fill(false);
+  private isBuiltState: boolean = false;
+
   private onBuyTempleCallback: () => void;
   private onUpgradeTempleWithFaithCallback: () => void;
   private onBuySacerdoteCallback: () => void;
-  private onBuyMaxSacerdoteCallback: () => void;
-  private onBuyUpgradeCallback: (id: string) => void;
+  private onUpgradeApostoloCallback: (slotIndex: number) => void;
 
   constructor(props: ActionCardTemplesProps) {
     super();
 
+    // Standard card width (360px wide x 520px high)
     this.cardWidth = props.width || 360;
     this.cardHeight = props.height || 520;
+
     this.onBuyTempleCallback = props.onBuyTemple;
     this.onUpgradeTempleWithFaithCallback = props.onUpgradeTempleWithFaith;
     this.onBuySacerdoteCallback = props.onBuySacerdote;
-    this.onBuyMaxSacerdoteCallback = props.onBuyMaxSacerdote;
-    this.onBuyUpgradeCallback = props.onBuyUpgrade;
+    this.onUpgradeApostoloCallback = props.onUpgradeApostolo;
 
     // 1. Card Background
     this.bgGraphics = new Graphics();
     this.addChild(this.bgGraphics);
 
-    // 2. Header: "VOCÊ TEM 0 OURO" e abaixo "+0/s"
+    this.dividerGraphics = new Graphics();
+    this.addChild(this.dividerGraphics);
+
+    // 2. Header: "VOCÊ TEM 0 OURO" e "+0/s"
     this.titleText = new Text({
       text: 'VOCÊ TEM 0 OURO',
       style: new TextStyle({
@@ -111,12 +104,12 @@ export class ActionCardTemples extends Container {
     this.rateText.position.set(this.cardWidth / 2, 32);
     this.addChild(this.rateText);
 
-    // 3. Grand Temple Monolith Image (Enlarged without outer circles)
-    this.templeSprite = Sprite.from('/assets/temple/temple_monolith.jpg');
+    // 3. Temple Monolith Image
+    this.templeSprite = new Sprite(IconManager.getTexture('/assets/temple/temple_monolith.jpg'));
     this.templeSprite.anchor.set(0.5);
-    this.templeSprite.width = 96;
-    this.templeSprite.height = 96;
-    this.templeSprite.position.set(this.cardWidth / 2, 80);
+    this.templeSprite.width = 95;
+    this.templeSprite.height = 95;
+    this.templeSprite.position.set(this.cardWidth / 2, 102);
     this.addChild(this.templeSprite);
 
     // 4. Temple Status Text
@@ -131,13 +124,13 @@ export class ActionCardTemples extends Container {
       })
     });
     this.templeStatusText.anchor.set(0.5, 0);
-    this.templeStatusText.position.set(this.cardWidth / 2, 126);
+    this.templeStatusText.position.set(this.cardWidth / 2, 160);
     this.addChild(this.templeStatusText);
 
-    // 6. Build Temple Button (Custo Único de 30 Fiéis) / Aprimorar Templo com PF
+    // 5. Build Temple Button (Unbuilt state)
     this.buildTempleBtn = new UIButton({
-      width: this.cardWidth - 40,
-      height: 42,
+      width: 300,
+      height: 50,
       label: 'CONSTRUIR TEMPLO SAGRADO',
       subLabel: 'Custo Único: 30 Fiéis',
       fontSize: 12,
@@ -147,302 +140,271 @@ export class ActionCardTemples extends Container {
       disabled: false,
       onClick: () => this.onBuyTempleCallback()
     });
-    this.buildTempleBtn.position.set(this.cardWidth / 2, 142);
+    this.buildTempleBtn.position.set(this.cardWidth / 2, 260);
     this.addChild(this.buildTempleBtn);
 
-    this.enhancementBtn = new UIButton({
-      width: this.cardWidth - 40,
-      height: 40,
-      label: 'APRIMORAR TEMPLO (Nv. 0/10)',
-      subLabel: '10.000 PF (+100% Ouro)',
-      fontSize: 11,
-      bgColor: THEME.colors.cardBgHover,
-      hoverColor: 0x2e2e2e,
-      textColor: THEME.colors.pureWhite,
-      disabled: true,
-      onClick: () => this.onUpgradeTempleWithFaithCallback()
-    });
-    this.enhancementBtn.position.set(this.cardWidth / 2, 142);
-    this.enhancementBtn.visible = false;
-    this.addChild(this.enhancementBtn);
-
-    // 7. Divider 1
-    this.divider1Graphics = new Graphics();
-    this.addChild(this.divider1Graphics);
-
-    // 8. Sacerdotes Section
+    // 6. Sacerdotes & Apóstolos Title Text
     this.sacerdotesTitleText = new Text({
-      text: 'SACERDOTES DO TEMPLO',
+      text: 'SALÃO DOS SACERDOTES & APÓSTOLOS',
       style: new TextStyle({
         fontFamily: THEME.fonts.heading,
         fontSize: 10,
         fontWeight: '800',
         letterSpacing: 1.5,
-        fill: THEME.colors.silverDark
+        fill: THEME.colors.silverLight,
+        align: 'center'
       })
     });
-    this.sacerdotesTitleText.position.set(20, 172);
+    this.sacerdotesTitleText.anchor.set(0.5, 0);
+    this.sacerdotesTitleText.position.set(this.cardWidth / 2, 198);
     this.addChild(this.sacerdotesTitleText);
 
-    // Sacerdote Milestone Bar
-    const sBarW = this.cardWidth - 40;
-    this.sacerdoteMilestoneLabel = new Text({
-      text: '⭐ Marco: 0/5 Sacerdotes (Próximo: 2x Conversão)',
+    // Graphics layer for 8 priest slot backgrounds
+    this.priestsGridGraphics = new Graphics();
+    this.addChild(this.priestsGridGraphics);
+
+    // Initialize 8 Priest Sprites & Labels
+    this.initPriestsGrid();
+
+    // Helper text above bottom button
+    this.sacerdotesHelperText = new Text({
+      text: 'Sacerdotes geram Ouro (+10/s). Promova-os a Apóstolos (+50/s).',
       style: new TextStyle({
-        fontFamily: THEME.fonts.numbers,
+        fontFamily: THEME.fonts.body,
         fontSize: 9,
-        fontWeight: '700',
-        fill: THEME.colors.silverLight,
-        align: 'right'
+        fontWeight: '500',
+        fill: THEME.colors.silverDark,
+        align: 'center',
+        wordWrap: true,
+        wordWrapWidth: 310
       })
     });
-    this.sacerdoteMilestoneLabel.anchor.set(1, 0);
-    this.sacerdoteMilestoneLabel.position.set(this.cardWidth - 20, 172);
-    this.addChild(this.sacerdoteMilestoneLabel);
+    this.sacerdotesHelperText.anchor.set(0.5, 0);
+    this.sacerdotesHelperText.position.set(this.cardWidth / 2, 385);
+    this.addChild(this.sacerdotesHelperText);
 
-    this.sacerdoteMilestoneBarBg = new Graphics();
-    this.sacerdoteMilestoneBarBg.roundRect(20, 188, sBarW, 4, 2);
-    this.sacerdoteMilestoneBarBg.fill({ color: 0x1a1a1a });
-    this.addChild(this.sacerdoteMilestoneBarBg);
-
-    this.sacerdoteMilestoneBarFill = new Graphics();
-    this.addChild(this.sacerdoteMilestoneBarFill);
-
-    // Sacerdote Dual Buttons (Left: Comprar Sacerdote, Right: Comprar Max)
-    const margin = 20;
-    const gap = 10;
-    const sBtnWidth = Math.floor((this.cardWidth - margin * 2 - gap) / 2);
-    const sBtnHeight = 44;
-    const sBtnY = 218;
-
+    // 7. Single Buy Sacerdote Button (Bottom position x = 180, y = 445)
     this.buySacerdoteBtn = new UIButton({
-      width: sBtnWidth,
-      height: sBtnHeight,
+      width: 300,
+      height: 46,
       label: 'Comprar Sacerdote',
-      subLabel: '20 Ouro',
-      fontSize: 11,
+      subLabel: '20 Ouro (+10 Ouro/s)',
+      fontSize: 12,
       bgColor: THEME.colors.btnSuccess,
       hoverColor: THEME.colors.btnSuccessHover,
       textColor: THEME.colors.textDark,
       disabled: true,
       onClick: () => this.onBuySacerdoteCallback()
     });
-    this.buySacerdoteBtn.position.set(margin + sBtnWidth / 2, sBtnY);
+    this.buySacerdoteBtn.position.set(this.cardWidth / 2, 445);
     this.addChild(this.buySacerdoteBtn);
 
-    this.buyMaxSacerdoteBtn = new UIButton({
-      width: sBtnWidth,
-      height: sBtnHeight,
-      label: 'Comprar Max',
-      subLabel: '+0 (0 Ouro)',
+    // 8. Consagrar Apóstolo Button (Same position x = 180, y = 445)
+    this.apostoloBtn = new UIButton({
+      width: 300,
+      height: 46,
+      label: 'CONSAGRAR 1º APÓSTOLO',
+      subLabel: '50.000 PF (+50 Ouro/s)',
       fontSize: 11,
-      bgColor: THEME.colors.cardBgHover,
-      hoverColor: 0x2a2a2a,
+      bgColor: 0x9333ea,
+      hoverColor: 0xa855f7,
       textColor: THEME.colors.pureWhite,
       disabled: true,
-      onClick: () => this.onBuyMaxSacerdoteCallback()
+      onClick: () => {
+        const nextIndex = this.apostolosPurchased.findIndex(p => !p);
+        if (nextIndex >= 0 && nextIndex < this.currentSacerdotesCount) {
+          this.onUpgradeApostoloCallback(nextIndex);
+        }
+      }
     });
-    this.buyMaxSacerdoteBtn.position.set(margin + sBtnWidth + gap + sBtnWidth / 2, sBtnY);
-    this.addChild(this.buyMaxSacerdoteBtn);
+    this.apostoloBtn.position.set(this.cardWidth / 2, 445);
+    this.apostoloBtn.visible = false;
+    this.addChild(this.apostoloBtn);
 
-    this.sacerdotesHelperText = new Text({
-      text: 'Você possui 0 sacerdotes (+0 fiéis/s)',
-      style: new TextStyle({
-        fontFamily: THEME.fonts.body,
-        fontSize: 10,
-        fontWeight: '500',
-        fill: THEME.colors.silverDark,
-        align: 'center'
-      })
-    });
-    this.sacerdotesHelperText.anchor.set(0.5, 0);
-    this.sacerdotesHelperText.position.set(this.cardWidth / 2, 246);
-    this.addChild(this.sacerdotesHelperText);
-
-    // 9. Divider 2
-    this.divider2Graphics = new Graphics();
-    this.addChild(this.divider2Graphics);
-
-    // 10. Upgrades Header Title
-    this.upgradesTitleText = new Text({
-      text: 'MELHORIAS DO TEMPLO (OURO)',
-      style: new TextStyle({
-        fontFamily: THEME.fonts.heading,
-        fontSize: 10,
-        fontWeight: '800',
-        letterSpacing: 1.5,
-        fill: THEME.colors.silverDark
-      })
-    });
-    this.upgradesTitleText.position.set(20, 264);
-    this.addChild(this.upgradesTitleText);
-
-    // Row layout coordinates
-    const rowStartX = 20;
-    const btnW = 95;
-    const btnH = 34;
-    const btnRightX = this.cardWidth - 20 - btnW / 2;
-
-    // --- UPGRADE 1: Prece Dourada (Fé por Toque) ---
-    const y1 = 286;
-    this.u1Title = new Text({
-      text: 'Prece Dourada',
-      style: new TextStyle({
-        fontFamily: THEME.fonts.heading,
-        fontSize: 12,
-        fontWeight: '700',
-        fill: THEME.colors.pureWhite
-      })
-    });
-    this.u1Title.position.set(rowStartX, y1);
-    this.addChild(this.u1Title);
-
-    this.u1Mult = new Text({
-      text: 'Fé/toque: 1.00x',
-      style: new TextStyle({
-        fontFamily: THEME.fonts.numbers,
-        fontSize: 10,
-        fontWeight: '600',
-        fill: THEME.colors.silverLight
-      })
-    });
-    this.u1Mult.position.set(rowStartX, y1 + 16);
-    this.addChild(this.u1Mult);
-
-    this.u1Btn = new UIButton({
-      width: btnW,
-      height: btnH,
-      label: '+Melhorar',
-      subLabel: '10 Ouro',
-      fontSize: 11,
+    // 9. Enhancement Button (Same position x = 180, y = 445, revealed when all 8 are Apóstolos)
+    this.enhancementBtn = new UIButton({
+      width: 300,
+      height: 46,
+      label: 'APRIMORAR TEMPLO (Nv. 0/4)',
+      subLabel: '10.000 PF (+100% Ouro)',
+      fontSize: 12,
       bgColor: THEME.colors.cardBgHover,
       hoverColor: 0x2e2e2e,
       textColor: THEME.colors.pureWhite,
       disabled: true,
-      onClick: () => this.onBuyUpgradeCallback('temple_click')
+      onClick: () => this.onUpgradeTempleWithFaithCallback()
     });
-    this.u1Btn.position.set(btnRightX, y1 + 14);
-    this.addChild(this.u1Btn);
+    this.enhancementBtn.position.set(this.cardWidth / 2, 445);
+    this.enhancementBtn.visible = false;
+    this.addChild(this.enhancementBtn);
 
-    // --- UPGRADE 2: Glória aos Devotos (Produção dos Fiéis) ---
-    const y2 = 342;
-    this.u2Title = new Text({
-      text: 'Glória aos Devotos',
-      style: new TextStyle({
-        fontFamily: THEME.fonts.heading,
-        fontSize: 12,
-        fontWeight: '700',
-        fill: THEME.colors.pureWhite
-      })
-    });
-    this.u2Title.position.set(rowStartX, y2);
-    this.addChild(this.u2Title);
-
-    this.u2Mult = new Text({
-      text: 'Ganho Fiéis: 1.00x',
-      style: new TextStyle({
-        fontFamily: THEME.fonts.numbers,
-        fontSize: 10,
-        fontWeight: '600',
-        fill: THEME.colors.silverLight
-      })
-    });
-    this.u2Mult.position.set(rowStartX, y2 + 16);
-    this.addChild(this.u2Mult);
-
-    this.u2Btn = new UIButton({
-      width: btnW,
-      height: btnH,
-      label: '+Melhorar',
-      subLabel: '15 Ouro',
-      fontSize: 11,
-      bgColor: THEME.colors.cardBgHover,
-      hoverColor: 0x2e2e2e,
-      textColor: THEME.colors.pureWhite,
-      disabled: true,
-      onClick: () => this.onBuyUpgradeCallback('temple_fiel')
-    });
-    this.u2Btn.position.set(btnRightX, y2 + 14);
-    this.addChild(this.u2Btn);
-
-    // --- UPGRADE 3: Alquimia Espiritual (Fé aumenta Ouro/s) ---
-    const y3 = 398;
-    this.u3Title = new Text({
-      text: 'Alquimia Espiritual',
-      style: new TextStyle({
-        fontFamily: THEME.fonts.heading,
-        fontSize: 12,
-        fontWeight: '700',
-        fill: THEME.colors.pureWhite
-      })
-    });
-    this.u3Title.position.set(rowStartX, y3);
-    this.addChild(this.u3Title);
-
-    this.u3Mult = new Text({
-      text: 'Mult: 1.00x',
-      style: new TextStyle({
-        fontFamily: THEME.fonts.numbers,
-        fontSize: 10,
-        fontWeight: '600',
-        fill: THEME.colors.silverLight
-      })
-    });
-    this.u3Mult.position.set(rowStartX, y3 + 16);
-    this.addChild(this.u3Mult);
-
-    this.u3Btn = new UIButton({
-      width: btnW,
-      height: btnH,
-      label: '+Melhorar',
-      subLabel: '25 Ouro',
-      fontSize: 11,
-      bgColor: THEME.colors.cardBgHover,
-      hoverColor: 0x2e2e2e,
-      textColor: THEME.colors.pureWhite,
-      disabled: true,
-      onClick: () => this.onBuyUpgradeCallback('temple_gold_faith')
-    });
-    this.u3Btn.position.set(btnRightX, y3 + 14);
-    this.addChild(this.u3Btn);
-
-    this.drawBackground();
+    this.setElementsVisibility(false);
+    this.drawBackground(false);
   }
 
-  private drawBackground(): void {
-    this.bgGraphics.clear();
+  private initPriestsGrid(): void {
+    const gridStartX = 36;
+    const gridStartY = 218;
+    const slotW = 64;
+    const slotH = 72;
+    const gapX = 8;
+    const gapY = 8;
+    const cols = 4;
 
-    // Dark monochrome glass container
+    const priestTexture = IconManager.getTexture('/assets/icons/icon_sacerdote.jpg');
+
+    for (let i = 0; i < this.MAX_HALL_PRIESTS; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const slotX = gridStartX + col * (slotW + gapX);
+      const slotY = gridStartY + row * (slotH + gapY);
+
+      const clickContainer = new Container();
+      clickContainer.eventMode = 'static';
+      clickContainer.cursor = 'pointer';
+      clickContainer.on('pointerdown', () => {
+        if (i < this.currentSacerdotesCount && !this.apostolosPurchased[i]) {
+          this.onUpgradeApostoloCallback(i);
+        }
+      });
+      this.addChild(clickContainer);
+      this.priestSlotClickContainers.push(clickContainer);
+
+      // Priest Sprite
+      const sprite = new Sprite(priestTexture);
+      sprite.anchor.set(0.5);
+      sprite.width = 40;
+      sprite.height = 40;
+      sprite.position.set(slotX + slotW / 2, slotY + slotH / 2 - 6);
+      sprite.visible = false;
+      clickContainer.addChild(sprite);
+      this.priestSprites.push(sprite);
+
+      // Slot Label
+      const label = new Text({
+        text: `Nº ${i + 1}`,
+        style: new TextStyle({
+          fontFamily: THEME.fonts.numbers,
+          fontSize: 8,
+          fontWeight: '700',
+          fill: THEME.colors.silverDark,
+          align: 'center'
+        })
+      });
+      label.anchor.set(0.5);
+      label.position.set(slotX + slotW / 2, slotY + slotH - 10);
+      label.visible = false;
+      clickContainer.addChild(label);
+      this.priestSlotLabels.push(label);
+    }
+  }
+
+  private setElementsVisibility(isTempleBuilt: boolean): void {
+    this.isBuiltState = isTempleBuilt;
+
+    this.titleText.visible = isTempleBuilt;
+    this.rateText.visible = isTempleBuilt;
+
+    this.buildTempleBtn.visible = !isTempleBuilt;
+    this.dividerGraphics.visible = isTempleBuilt;
+
+    this.sacerdotesTitleText.visible = isTempleBuilt;
+    this.sacerdotesHelperText.visible = isTempleBuilt;
+    this.priestsGridGraphics.visible = isTempleBuilt;
+
+    if (isTempleBuilt) {
+      const isMaxSacerdotes = this.currentSacerdotesCount >= this.MAX_HALL_PRIESTS;
+      const isMaxApostolos = this.currentApostolosCount >= this.MAX_HALL_PRIESTS;
+
+      if (!isMaxSacerdotes) {
+        this.buySacerdoteBtn.visible = true;
+        this.apostoloBtn.visible = false;
+        this.enhancementBtn.visible = false;
+      } else if (!isMaxApostolos) {
+        this.buySacerdoteBtn.visible = false;
+        this.apostoloBtn.visible = true;
+        this.enhancementBtn.visible = false;
+      } else {
+        this.buySacerdoteBtn.visible = false;
+        this.apostoloBtn.visible = false;
+        this.enhancementBtn.visible = true;
+      }
+    } else {
+      this.buySacerdoteBtn.visible = false;
+      this.apostoloBtn.visible = false;
+      this.enhancementBtn.visible = false;
+    }
+
+    // Update visibility of priest sprites & slot labels
+    for (let i = 0; i < this.MAX_HALL_PRIESTS; i++) {
+      const isSlotActive = isTempleBuilt && i < this.currentSacerdotesCount;
+      const isApostolo = isSlotActive && this.apostolosPurchased[i];
+
+      this.priestSprites[i].visible = isSlotActive;
+      this.priestSlotLabels[i].visible = isTempleBuilt;
+
+      if (isApostolo) {
+        this.priestSlotLabels[i].text = `APÓSTOLO ${i + 1}`;
+        this.priestSlotLabels[i].style.fill = 0xffd700; // Gold text
+      } else if (isSlotActive) {
+        this.priestSlotLabels[i].text = `SACERDOTE ${i + 1}`;
+        this.priestSlotLabels[i].style.fill = THEME.colors.pureWhite;
+      } else {
+        this.priestSlotLabels[i].text = `#${i + 1}`;
+        this.priestSlotLabels[i].style.fill = THEME.colors.grayMuted;
+      }
+    }
+  }
+
+  private drawBackground(isTempleBuilt: boolean = true): void {
+    this.bgGraphics.clear();
     this.bgGraphics.roundRect(0, 0, this.cardWidth, this.cardHeight, 18);
     this.bgGraphics.fill({ color: THEME.colors.panelBg, alpha: 0.94 });
     this.bgGraphics.stroke({ width: 1.5, color: THEME.colors.cardBorder });
 
-    // Divider 1 line
-    this.divider1Graphics.clear();
-    this.divider1Graphics.moveTo(20, 168);
-    this.divider1Graphics.lineTo(this.cardWidth - 20, 168);
-    this.divider1Graphics.stroke({ width: 1, color: THEME.colors.cardBorderLight, alpha: 0.4 });
+    this.dividerGraphics.clear();
+    this.priestsGridGraphics.clear();
 
-    // Divider 2 line
-    this.divider2Graphics.clear();
-    this.divider2Graphics.moveTo(20, 258);
-    this.divider2Graphics.lineTo(this.cardWidth - 20, 258);
-    this.divider2Graphics.stroke({ width: 1, color: THEME.colors.cardBorderLight, alpha: 0.4 });
+    if (isTempleBuilt) {
+      // Horizontal Divider Line
+      this.dividerGraphics.moveTo(25, 185);
+      this.dividerGraphics.lineTo(335, 185);
+      this.dividerGraphics.stroke({ width: 1, color: THEME.colors.cardBorderLight, alpha: 0.4 });
 
-    // Background boxes for the 3 upgrade rows
-    const rowW = this.cardWidth - 40;
-    const rowH = 46;
-    this.bgGraphics.roundRect(20, 281, rowW, rowH, 8);
-    this.bgGraphics.fill({ color: 0x080808, alpha: 0.7 });
-    this.bgGraphics.stroke({ width: 1, color: 0x1f1f1f });
+      // Draw 8 Priest Grid Slot Boxes
+      const gridStartX = 36;
+      const gridStartY = 218;
+      const slotW = 64;
+      const slotH = 72;
+      const gapX = 8;
+      const gapY = 8;
+      const cols = 4;
 
-    this.bgGraphics.roundRect(20, 337, rowW, rowH, 8);
-    this.bgGraphics.fill({ color: 0x080808, alpha: 0.7 });
-    this.bgGraphics.stroke({ width: 1, color: 0x1f1f1f });
+      for (let i = 0; i < this.MAX_HALL_PRIESTS; i++) {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const slotX = gridStartX + col * (slotW + gapX);
+        const slotY = gridStartY + row * (slotH + gapY);
 
-    this.bgGraphics.roundRect(20, 393, rowW, rowH, 8);
-    this.bgGraphics.fill({ color: 0x080808, alpha: 0.7 });
-    this.bgGraphics.stroke({ width: 1, color: 0x1f1f1f });
+        const isActive = i < this.currentSacerdotesCount;
+        const isApostolo = isActive && this.apostolosPurchased[i];
+
+        this.priestsGridGraphics.roundRect(slotX, slotY, slotW, slotH, 8);
+        if (isApostolo) {
+          // Glowing Golden Frame for Apóstolos
+          this.priestsGridGraphics.fill({ color: 0x221800, alpha: 0.95 });
+          this.priestsGridGraphics.stroke({ width: 2, color: 0xffd700, alpha: 0.9 });
+        } else if (isActive) {
+          // Silver Frame for Sacerdotes
+          this.priestsGridGraphics.fill({ color: 0x161616, alpha: 0.9 });
+          this.priestsGridGraphics.stroke({ width: 1.5, color: THEME.colors.pureWhite, alpha: 0.6 });
+        } else {
+          // Locked Frame
+          this.priestsGridGraphics.fill({ color: 0x060606, alpha: 0.5 });
+          this.priestsGridGraphics.stroke({ width: 1, color: 0x1a1a1a, alpha: 0.4 });
+        }
+      }
+    }
   }
 
   public updateData(
@@ -456,82 +418,77 @@ export class ActionCardTemples extends Container {
     sacerdotesCount: number,
     sacerdoteCost: number,
     canAffordSacerdote: boolean,
-    maxSacerdotesCount: number,
-    maxSacerdotesCost: number,
-    u1Cost: number,
-    u1Afford: boolean,
-    u1MultVal: number,
-    u2Cost: number,
-    u2Afford: boolean,
-    u2MultVal: number,
-    u3Cost: number,
-    u3Afford: boolean,
-    u3MultVal: number,
-    faithBonusPct: number,
-    sacerdoteMilestoneProgress?: MilestoneProgress,
-    sacerdoteMilestoneMult?: number
+    apostolosCount: number,
+    apostolosPurchased: boolean[],
+    nextApostoloCost: number,
+    canAffordNextApostolo: boolean,
+    _maxSacerdotesCount: number = 8,
+    _maxSacerdotesCost: number = 0,
+    _u1Cost: number = 0,
+    _u1Afford: boolean = false,
+    _u1MultVal: number = 0,
+    _u2Cost: number = 0,
+    _u2Afford: boolean = false,
+    _u2MultVal: number = 0,
+    _u3Cost: number = 0,
+    _u3Afford: boolean = false,
+    _u3MultVal: number = 0,
+    _faithBonusPct: number = 0,
+    _sacerdoteMilestoneProgress?: MilestoneProgress,
+    _sacerdoteMilestoneMult?: number
   ): void {
     this.targetGold = goldAmount;
     this.rateText.text = `+${Formatters.formatNumber(goldRate)}/s`;
+    this.currentSacerdotesCount = sacerdotesCount;
+    this.currentApostolosCount = apostolosCount;
+    this.apostolosPurchased = apostolosPurchased || new Array(8).fill(false);
+
+    this.setElementsVisibility(isTempleBuilt);
+    this.drawBackground(isTempleBuilt);
 
     if (isTempleBuilt) {
-      this.buildTempleBtn.visible = false;
-      this.enhancementBtn.visible = true;
-
       this.templeStatusText.text = enhLevel > 0
         ? `🏛️ TEMPLO SAGRADO • NÍVEL ${enhLevel}`
         : '🏛️ TEMPLO SAGRADO ATIVO';
       this.templeStatusText.style.fill = THEME.colors.pureWhite;
-      this.templeStatusText.position.y = 110;
 
-      // Update Temple Enhancement button
-      if (enhLevel >= 10) {
-        this.enhancementBtn.setLabel('TEMPLO NO NÍVEL MÁXIMO', '10/10 Aprimorado');
-        this.enhancementBtn.setDisabled(true);
+      const isMaxSacerdotes = sacerdotesCount >= this.MAX_HALL_PRIESTS;
+      const isMaxApostolos = apostolosCount >= this.MAX_HALL_PRIESTS;
+
+      this.sacerdotesTitleText.text = `SACERDOTES (${sacerdotesCount}/8) • APÓSTOLOS (${apostolosCount}/8)`;
+
+      if (!isMaxSacerdotes) {
+        this.buySacerdoteBtn.setLabel('Comprar Sacerdote', `${Formatters.formatNumber(sacerdoteCost)} Ouro (+10 Ouro/s)`);
+        this.buySacerdoteBtn.setDisabled(!canAffordSacerdote);
+        
+        const currentGoldRate = (sacerdotesCount - apostolosCount) * 10 + apostolosCount * 50;
+        this.sacerdotesHelperText.text = `Você possui ${sacerdotesCount}/8 sacerdotes (+${currentGoldRate} Ouro/s). Ordene os 8 para consagrar Apóstolos.`;
+      } else if (!isMaxApostolos) {
+        const nextIndex = this.apostolosPurchased.findIndex(p => !p);
+        const nextNum = nextIndex >= 0 ? nextIndex + 1 : 1;
+
+        this.apostoloBtn.setLabel(`CONSAGRAR ${nextNum}º APÓSTOLO`, `${Formatters.formatNumber(nextApostoloCost)} PF (+50 Ouro/s)`);
+        this.apostoloBtn.setDisabled(!canAffordNextApostolo);
+
+        const currentGoldRate = (sacerdotesCount - apostolosCount) * 10 + apostolosCount * 50;
+        this.sacerdotesHelperText.text = `✦ Sacerdotes Prontos! Promova-os a Apóstolos (+50 Ouro/s cada) (Atual: +${currentGoldRate} Ouro/s)`;
       } else {
-        this.enhancementBtn.setLabel(
-          `APRIMORAR TEMPLO (Nv. ${enhLevel}/10)`,
-          `${Formatters.formatNumber(enhCost)} PF (+100% Ouro)`
-        );
-        this.enhancementBtn.setDisabled(!canEnhance);
-      }
-
-      // Sacerdotes Buttons
-      this.buySacerdoteBtn.setLabel('Comprar Sacerdote', `${Formatters.formatNumber(sacerdoteCost)} Ouro`);
-      this.buySacerdoteBtn.setDisabled(!canAffordSacerdote);
-
-      if (maxSacerdotesCount > 0) {
-        this.buyMaxSacerdoteBtn.setLabel('Comprar Max', `+${maxSacerdotesCount} (${Formatters.formatNumber(maxSacerdotesCost)} Ouro)`);
-        this.buyMaxSacerdoteBtn.setDisabled(false);
-      } else {
-        this.buyMaxSacerdoteBtn.setLabel('Comprar Max', `+0 (0 Ouro)`);
-        this.buyMaxSacerdoteBtn.setDisabled(true);
-      }
-
-      const multStr = sacerdoteMilestoneMult && sacerdoteMilestoneMult > 1 ? ` (${sacerdoteMilestoneMult}x)` : '';
-      this.sacerdotesHelperText.text = `Você possui ${Formatters.formatNumber(sacerdotesCount)} sacerdotes${multStr} (+${Formatters.formatNumber(sacerdotesCount * (sacerdoteMilestoneMult || 1))} fiéis/s)`;
-
-      // Sacerdotes Milestone Bar
-      if (sacerdoteMilestoneProgress) {
-        const sBarW = this.cardWidth - 40;
-        if (sacerdoteMilestoneProgress.isMaxed) {
-          this.sacerdoteMilestoneLabel.text = `⭐ Marcos no Máximo (${sacerdoteMilestoneMult || 50}x)`;
+        if (enhLevel >= 4) {
+          this.enhancementBtn.setLabel('TEMPLO NO NÍVEL MÁXIMO', '4/4 Aprimorado');
+          this.enhancementBtn.setDisabled(true);
         } else {
-          this.sacerdoteMilestoneLabel.text = `⭐ ${sacerdotesCount}/${sacerdoteMilestoneProgress.nextLevel} (${sacerdoteMilestoneProgress.nextMultiplier}x)`;
+          this.enhancementBtn.setLabel(
+            `APRIMORAR TEMPLO (Nv. ${enhLevel}/4)`,
+            `${Formatters.formatNumber(enhCost)} PF (+100% Ouro)`
+          );
+          this.enhancementBtn.setDisabled(!canEnhance);
         }
 
-        this.sacerdoteMilestoneBarFill.clear();
-        const fillW = Math.max(2, sBarW * sacerdoteMilestoneProgress.progress);
-        this.sacerdoteMilestoneBarFill.roundRect(20, 188, fillW, 4, 2);
-        this.sacerdoteMilestoneBarFill.fill({ color: THEME.colors.pureWhite });
+        this.sacerdotesHelperText.text = `✦ Conclave Apostólico Supremo! 8 Apóstolos em Oração Sagrada (+400 Ouro/s base)`;
       }
     } else {
-      this.buildTempleBtn.visible = true;
-      this.enhancementBtn.visible = false;
-
       this.templeStatusText.text = 'Desperte o Templo Sagrado';
       this.templeStatusText.style.fill = THEME.colors.silver;
-      this.templeStatusText.position.y = 106;
 
       const canAfford = fiesCount >= 30;
       this.buildTempleBtn.setLabel('CONSTRUIR TEMPLO SAGRADO', `Custo Único: 30 Fiéis (${fiesCount}/30)`);
@@ -539,31 +496,11 @@ export class ActionCardTemples extends Container {
 
       this.buySacerdoteBtn.setLabel('Comprar Sacerdote', `${Formatters.formatNumber(sacerdoteCost)} Ouro`);
       this.buySacerdoteBtn.setDisabled(true);
-      this.buyMaxSacerdoteBtn.setLabel('Comprar Max', `+0 (0 Ouro)`);
-      this.buyMaxSacerdoteBtn.setDisabled(true);
       this.sacerdotesHelperText.text = `Construa o Templo para ordenar sacerdotes`;
-      this.sacerdoteMilestoneLabel.text = `⭐ Marco: 0/5`;
-      this.sacerdoteMilestoneBarFill.clear();
     }
-
-    // Upgrade 1
-    this.u1Mult.text = `Fé/toque: ${u1MultVal.toFixed(2)}x (+0.50x)`;
-    this.u1Btn.setLabel('+Melhorar', `${Formatters.formatNumber(u1Cost)} Ouro`);
-    this.u1Btn.setDisabled(!u1Afford || !isTempleBuilt);
-
-    // Upgrade 2
-    this.u2Mult.text = `Ganho Fiéis: ${u2MultVal.toFixed(2)}x (+0.25x)`;
-    this.u2Btn.setLabel('+Melhorar', `${Formatters.formatNumber(u2Cost)} Ouro`);
-    this.u2Btn.setDisabled(!u2Afford || !isTempleBuilt);
-
-    // Upgrade 3
-    this.u3Mult.text = `Mult: ${u3MultVal.toFixed(2)}x (+${faithBonusPct.toFixed(0)}% Fé)`;
-    this.u3Btn.setLabel('+Melhorar', `${Formatters.formatNumber(u3Cost)} Ouro`);
-    this.u3Btn.setDisabled(!u3Afford || !isTempleBuilt);
   }
 
   public update(dt: number): void {
-    // Smooth interpolation for gold in header
     if (Math.abs(this.targetGold - this.currentDisplayGold) > 0.01) {
       const diff = this.targetGold - this.currentDisplayGold;
       this.currentDisplayGold += diff * Math.min(1, dt * 15);
@@ -573,21 +510,42 @@ export class ActionCardTemples extends Container {
       this.titleText.text = `VOCÊ TEM ${Formatters.formatNumber(this.targetGold)} OURO`;
     }
 
-    // Subtle floating breathing of temple monolith
     const breath = Math.sin(performance.now() * 0.0018) * 1.5;
-    this.templeSprite.position.y = 80 + breath;
+    this.templeSprite.position.y = 102 + breath;
+
+    if (this.isBuiltState) {
+      const gridStartY = 218;
+      const slotH = 72;
+      const gapY = 8;
+      const cols = 4;
+
+      for (let i = 0; i < Math.min(8, this.currentSacerdotesCount); i++) {
+        const row = Math.floor(i / cols);
+        const slotY = gridStartY + row * (slotH + gapY);
+        const isApostolo = this.apostolosPurchased[i];
+        const breathSpeed = isApostolo ? 0.004 : 0.0025;
+        const breathAmount = isApostolo ? 2.5 : 1.2;
+        const priestBreath = Math.sin(performance.now() * breathSpeed + i * 0.5) * breathAmount;
+
+        if (this.priestSprites[i]) {
+          this.priestSprites[i].position.y = slotY + slotH / 2 - 6 + priestBreath;
+        }
+      }
+    }
   }
 
   public reset(): void {
     this.targetGold = 0;
     this.currentDisplayGold = 0;
+    this.currentSacerdotesCount = 0;
+    this.currentApostolosCount = 0;
+    this.apostolosPurchased = new Array(8).fill(false);
     this.titleText.text = 'VOCÊ TEM 0 OURO';
     this.rateText.text = '+0/s';
-    this.buildTempleBtn.visible = true;
+    this.setElementsVisibility(false);
+    this.drawBackground(false);
     this.buildTempleBtn.setDisabled(true);
-    this.enhancementBtn.visible = false;
     this.templeStatusText.text = 'Desperte o Templo Sagrado';
     this.templeStatusText.style.fill = THEME.colors.silver;
-    this.templeStatusText.position.y = 106;
   }
 }

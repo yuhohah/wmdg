@@ -31,7 +31,8 @@ export class SaveSystem {
         playTimeSeconds: 0,
         lastSaveTimestamp: Date.now(),
         totalResets: 0,
-        totalEssenceEarned: 0
+        totalEssenceEarned: 0,
+        hasSeenIntro: false
       },
       multipliers: {
         globalProduction: 1.0,

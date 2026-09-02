@@ -45,6 +45,7 @@ export interface GameStats {
   lastSaveTimestamp: number;
   totalResets: number;
   totalEssenceEarned: number;
+  hasSeenIntro?: boolean;
 }
 
 export interface PrestigeState {

@@ -4,18 +4,21 @@ export class Formatters {
    * - Up to 999 999 999: formatted standard numbers (e.g. 1 500, 250 000, 999 999 999)
    * - From 1 000 000 000 (10^9) upwards: scientific notation (e.g. 1e9, 1.2e9, 9.9e9, 1e10, 1.5e10)
    */
-  public static formatNumber(num: number): string {
+  public static formatNumber(num: number, allowDecimals: boolean = false): string {
     if (isNaN(num) || !isFinite(num)) return '0';
-    if (num < 0) return '-' + this.formatNumber(-num);
+    if (num < 0) return '-' + this.formatNumber(-num, allowDecimals);
 
     // Below 1 billion (999 999 999 max before scientific notation)
     if (num < 1e9) {
       if (num < 1000) {
-        // For fractional numbers under 1000 (e.g. rate per second), show 1 decimal place if not whole
-        if (Math.abs(num - Math.round(num)) < 0.05) {
-          return Math.round(num).toString();
+        // For rates or explicit decimal formatting, show 1 decimal place if not whole
+        if (allowDecimals) {
+          if (Math.abs(num - Math.round(num)) < 0.05) {
+            return Math.round(num).toString();
+          }
+          return num.toFixed(1);
         }
-        return num.toFixed(1);
+        return Math.floor(num).toString();
       }
 
       // Format with spaces as thousand separators (e.g. 1 000, 250 000, 999 999 999)
@@ -43,7 +46,7 @@ export class Formatters {
    * Format rate per second
    */
   public static formatRate(num: number): string {
-    return `+${this.formatNumber(num)}/s`;
+    return `+${this.formatNumber(num, true)}/s`;
   }
 
   /**

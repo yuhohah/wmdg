@@ -92,14 +92,110 @@ export const DEFAULT_UPGRADES: UpgradeConfig[] = [
   },
   {
     id: 'sacerdote',
-    name: 'Sacerdotes',
-    description: 'Líderes sagrados no Templo que acolhem e consagram +1 Fiel por segundo continuamente.',
+    name: 'Sacerdote',
+    description: 'Líder sagrado do Templo que gera Ouro continuamente (+10 Ouro/s). Podem ser promovidos a Apóstolos.',
     baseCost: 20,
-    costMultiplier: 1.12,
-    baseOutput: 1, // 1 Fiel/s por sacerdote
-    icon: '/assets/icons/icon_shrine.png',
-    targetResource: 'faith',
+    costMultiplier: 2.4,
+    baseOutput: 10,
+    icon: '/assets/icons/icon_sacerdote.jpg',
+    targetResource: 'gold',
     consumesResource: 'gold',
+    unlockCost: 0
+  },
+  {
+    id: 'apostolo_1',
+    name: '1º Apóstolo',
+    description: 'Promove o 1º Sacerdote a Apóstolo (+50 Ouro/s).',
+    baseCost: 50000,
+    costMultiplier: 1.0,
+    baseOutput: 50,
+    icon: '/assets/icons/icon_star.png',
+    targetResource: 'gold',
+    consumesResource: 'faith',
+    unlockCost: 0
+  },
+  {
+    id: 'apostolo_2',
+    name: '2º Apóstolo',
+    description: 'Promove o 2º Sacerdote a Apóstolo (+50 Ouro/s).',
+    baseCost: 150000,
+    costMultiplier: 1.0,
+    baseOutput: 50,
+    icon: '/assets/icons/icon_star.png',
+    targetResource: 'gold',
+    consumesResource: 'faith',
+    unlockCost: 0
+  },
+  {
+    id: 'apostolo_3',
+    name: '3º Apóstolo',
+    description: 'Promove o 3º Sacerdote a Apóstolo (+50 Ouro/s).',
+    baseCost: 450000,
+    costMultiplier: 1.0,
+    baseOutput: 50,
+    icon: '/assets/icons/icon_star.png',
+    targetResource: 'gold',
+    consumesResource: 'faith',
+    unlockCost: 0
+  },
+  {
+    id: 'apostolo_4',
+    name: '4º Apóstolo',
+    description: 'Promove o 4º Sacerdote a Apóstolo (+50 Ouro/s).',
+    baseCost: 1350000,
+    costMultiplier: 1.0,
+    baseOutput: 50,
+    icon: '/assets/icons/icon_star.png',
+    targetResource: 'gold',
+    consumesResource: 'faith',
+    unlockCost: 0
+  },
+  {
+    id: 'apostolo_5',
+    name: '5º Apóstolo',
+    description: 'Promove o 5º Sacerdote a Apóstolo (+50 Ouro/s).',
+    baseCost: 4050000,
+    costMultiplier: 1.0,
+    baseOutput: 50,
+    icon: '/assets/icons/icon_star.png',
+    targetResource: 'gold',
+    consumesResource: 'faith',
+    unlockCost: 0
+  },
+  {
+    id: 'apostolo_6',
+    name: '6º Apóstolo',
+    description: 'Promove o 6º Sacerdote a Apóstolo (+50 Ouro/s).',
+    baseCost: 12150000,
+    costMultiplier: 1.0,
+    baseOutput: 50,
+    icon: '/assets/icons/icon_star.png',
+    targetResource: 'gold',
+    consumesResource: 'faith',
+    unlockCost: 0
+  },
+  {
+    id: 'apostolo_7',
+    name: '7º Apóstolo',
+    description: 'Promove o 7º Sacerdote a Apóstolo (+50 Ouro/s).',
+    baseCost: 36450000,
+    costMultiplier: 1.0,
+    baseOutput: 50,
+    icon: '/assets/icons/icon_star.png',
+    targetResource: 'gold',
+    consumesResource: 'faith',
+    unlockCost: 0
+  },
+  {
+    id: 'apostolo_8',
+    name: '8º Apóstolo',
+    description: 'Promove o 8º Sacerdote a Apóstolo (+50 Ouro/s).',
+    baseCost: 109350000,
+    costMultiplier: 1.0,
+    baseOutput: 50,
+    icon: '/assets/icons/icon_star.png',
+    targetResource: 'gold',
+    consumesResource: 'faith',
     unlockCost: 0
   },
   {
@@ -154,6 +250,54 @@ export const DEFAULT_UPGRADES: UpgradeConfig[] = [
     icon: '/assets/icons/icon_shrine.png',
     targetResource: 'gold',
     consumesResource: 'gold',
+    unlockCost: 0
+  },
+  {
+    id: 'reza_1',
+    name: 'Prece dos Fiéis',
+    description: 'Bênção do Nível 1 do Templo. Fiéis produzem +25% de Fé por escala logarítmica a cada nível.',
+    baseCost: 50000,
+    costMultiplier: 1.8,
+    baseOutput: 0,
+    icon: '/assets/icons/icon_star.png',
+    targetResource: 'faith',
+    consumesResource: 'faith',
+    unlockCost: 0
+  },
+  {
+    id: 'reza_2',
+    name: 'Prece do Ouro Sagrado',
+    description: 'Bênção do Nível 2 do Templo. Ouro gerado pelo Templo aumenta +25% por escala logarítmica a cada nível.',
+    baseCost: 250000,
+    costMultiplier: 1.8,
+    baseOutput: 0,
+    icon: '/assets/icons/icon_star.png',
+    targetResource: 'gold',
+    consumesResource: 'faith',
+    unlockCost: 0
+  },
+  {
+    id: 'reza_3',
+    name: 'Invocação Celestial',
+    description: 'Bênção do Nível 3 do Templo. Dobra a eficiência de todos os Sacerdotes (+100% Fiéis/s).',
+    baseCost: 1250000,
+    costMultiplier: 1.0,
+    baseOutput: 0,
+    icon: '/assets/icons/icon_star.png',
+    targetResource: 'faith',
+    consumesResource: 'faith',
+    unlockCost: 0
+  },
+  {
+    id: 'reza_4',
+    name: 'Oração Absoluta',
+    description: 'Bênção do Nível 4 do Templo. Dobra a produção global de todas as fontes de Fé (+100% Geral).',
+    baseCost: 10000000,
+    costMultiplier: 1.0,
+    baseOutput: 0,
+    icon: '/assets/icons/icon_star.png',
+    targetResource: 'faith',
+    consumesResource: 'faith',
     unlockCost: 0
   },
   {
@@ -298,7 +442,8 @@ export class UpgradeManager {
   public getTempleClickMultiplier(): number {
     const state = this.states.get('temple_click');
     const level = state?.count || 0;
-    return 1.00 + (level * 0.50);
+    const reza2Mult = (this.states.get('reza_2')?.count || 0) > 0 ? 3.0 : 1.0;
+    return (1.00 + (level * 0.50)) * reza2Mult;
   }
 
   public getTempleFielMultiplier(): number {
@@ -340,7 +485,7 @@ export class UpgradeManager {
   }
 
   /**
-   * Aprimoramento do Templo
+   * Aprimoramento do Templo (Máximo de 4 Níveis)
    */
   public getTempleEnhancementLevel(): number {
     return this.states.get('temple_enhancement')?.count || 0;
@@ -348,15 +493,15 @@ export class UpgradeManager {
 
   public getTempleEnhancementCost(): number {
     const level = this.getTempleEnhancementLevel();
-    if (level >= 10) return Infinity;
-    return Math.floor(10000 * Math.pow(2.2, level));
+    if (level >= 4) return Infinity;
+    return Math.floor(10000 * Math.pow(3.5, level));
   }
 
   public canUpgradeTempleWithFaith(): boolean {
     const isBuilt = this.isTempleBuilt();
     if (!isBuilt) return false;
     const level = this.getTempleEnhancementLevel();
-    if (level >= 10) return false;
+    if (level >= 4) return false;
     const cost = this.getTempleEnhancementCost();
     return this.resourceManager.hasAmount('faith', cost);
   }
@@ -379,7 +524,77 @@ export class UpgradeManager {
   }
 
   /**
-   * Produção de Ouro por segundo (com Softcap na fé logarítmica)
+   * Multiplicador Logarítmico Sem Limite da Reza 1 para os Fiéis (+25% por escala log10)
+   */
+  public getFielFaithLogMultiplier(faithAmount: number = 0): number {
+    const level = this.states.get('reza_1')?.count || 0;
+    if (level <= 0) return 1.0;
+    const logBonus = Math.log10(Math.max(1, faithAmount)) * (0.25 * level);
+    return 1.0 + logBonus;
+  }
+
+  /**
+   * Multiplicador Logarítmico Sem Limite da Reza 2 para o Ouro do Templo (+25% por escala log10)
+   */
+  public getTempleGoldLogMultiplier(faithAmount: number = 0): number {
+    const level = this.states.get('reza_2')?.count || 0;
+    if (level <= 0) return 1.0;
+    const logBonus = Math.log10(Math.max(1, faithAmount)) * (0.25 * level);
+    return 1.0 + logBonus;
+  }
+
+  /**
+   * Apóstolos System
+   */
+  public getApostolosCount(): number {
+    let count = 0;
+    for (let i = 1; i <= 8; i++) {
+      if ((this.states.get(`apostolo_${i}`)?.count || 0) > 0) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  public isApostoloPurchased(slotIndex: number): boolean {
+    if (slotIndex < 0 || slotIndex >= 8) return false;
+    return (this.states.get(`apostolo_${slotIndex + 1}`)?.count || 0) > 0;
+  }
+
+  public getApostoloCost(slotIndex: number): number {
+    if (slotIndex < 0 || slotIndex >= 8) return Infinity;
+    const cfg = this.getConfig(`apostolo_${slotIndex + 1}`);
+    return cfg?.baseCost || (50000 * Math.pow(3, slotIndex));
+  }
+
+  public canUpgradeApostolo(slotIndex: number): boolean {
+    const sacerdotesCount = this.getSacerdotesCount();
+    if (slotIndex >= sacerdotesCount) return false;
+    if (this.isApostoloPurchased(slotIndex)) return false;
+    const cost = this.getApostoloCost(slotIndex);
+    return this.resourceManager.hasAmount('faith', cost);
+  }
+
+  public upgradeApostolo(slotIndex: number): boolean {
+    if (!this.canUpgradeApostolo(slotIndex)) return false;
+    const cost = this.getApostoloCost(slotIndex);
+    if (!this.resourceManager.spend('faith', cost)) return false;
+
+    const stateId = `apostolo_${slotIndex + 1}`;
+    const state = this.states.get(stateId);
+    if (!state) return false;
+    state.count = 1;
+
+    this.events.emit('upgrade:purchased', {
+      upgradeId: stateId,
+      newCount: 1,
+      cost
+    });
+    return true;
+  }
+
+  /**
+   * Produção de Ouro por segundo (Sacerdotes +10/s, Apóstolos +50/s)
    */
   public getGoldProductionPerSecond(faithAmount: number = 0): number {
     const templosCount = this.states.get('templo')?.count || 0;
@@ -388,7 +603,16 @@ export class UpgradeManager {
     const enhLevel = this.getTempleEnhancementLevel();
     const enhMult = Math.pow(2, enhLevel);
 
-    const baseGold = templosCount * 1.0 * enhMult;
+    const baseTempleGold = templosCount * 1.0 * enhMult;
+
+    // Direct Sacerdotes (+10 Gold/s) & Apóstolos (+50 Gold/s) income
+    const sacerdotesCount = this.getSacerdotesCount();
+    const apostolosCount = this.getApostolosCount();
+    const normalSacerdotes = Math.max(0, sacerdotesCount - apostolosCount);
+    const sacerdotesGold = (normalSacerdotes * 10) + (apostolosCount * 50);
+
+    const totalBaseGold = baseTempleGold + sacerdotesGold;
+
     const faithBonusMult = this.getTempleGoldFaithMultiplier();
     
     // Logarithmic faith scaling com Power Softcap em 5.0x
@@ -396,17 +620,20 @@ export class UpgradeManager {
     const softcappedFaithBonus = GameMath.applyPowerSoftcap(rawFaithBonus, 5.0, 0.5);
 
     const monumentMult = this.getMonumentGoldMultiplier();
-    return baseGold * (1.0 + softcappedFaithBonus) * monumentMult;
+    const reza2GoldLogMult = this.getTempleGoldLogMultiplier(faithAmount);
+
+    return totalBaseGold * (1.0 + softcappedFaithBonus) * monumentMult * reza2GoldLogMult;
   }
 
   /**
-   * Produção de Fé por segundo (Multiplicada por Milestones e Monumentos)
+   * Produção de Fé por segundo (Multiplicada por Milestones, Reza 1 e Monumentos)
    */
   public getTotalProductionPerSecond(resourceId: ResourceId, faithAmount: number = 0): number {
     if (resourceId === 'faith') {
       const fiesCount = this.states.get('fiel')?.count || 0;
       const monumentMult = this.getMonumentFaithMultiplier();
-      return fiesCount * 1.0 * this.getTempleFielMultiplier() * monumentMult;
+      const reza1LogMult = this.getFielFaithLogMultiplier(faithAmount);
+      return fiesCount * 1.0 * this.getTempleFielMultiplier() * monumentMult * reza1LogMult;
     }
     if (resourceId === 'gold') {
       return this.getGoldProductionPerSecond(faithAmount);
@@ -575,6 +802,10 @@ export class UpgradeManager {
     }
     if (id === 'monument') {
       return this.buyNextMonument();
+    }
+
+    if (id === 'sacerdote' && state.count >= 8) {
+      return false;
     }
 
     const totalCost = this.getUpgradeCost(id, count);

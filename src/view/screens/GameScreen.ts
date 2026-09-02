@@ -5,11 +5,13 @@ import { ResourceCard } from '../components/ResourceCard';
 import { ActionCardInitial } from '../components/ActionCardInitial';
 import { ActionCardTemples } from '../components/ActionCardTemples';
 import { ActionCardMonuments } from '../components/ActionCardMonuments';
+import { ActionCardPrayers, PrayerItemState } from '../components/ActionCardPrayers';
 import { UIButton } from '../components/UIButton';
 import { FloatingTextManager } from '../components/FloatingTextManager';
 import { OfflineModal } from '../components/OfflineModal';
 import { AchievementModal } from '../components/AchievementModal';
 import { AchievementToast } from '../components/AchievementToast';
+import { IntroStoryModal } from '../components/IntroStoryModal';
 import { BackgroundStars } from '../components/BackgroundStars';
 import { ZoomControls } from '../components/ZoomControls';
 import { Formatters } from '../utils/Formatters';
@@ -30,6 +32,7 @@ export class GameScreen extends Container {
   private offlineModal: OfflineModal;
   private achievementModal: AchievementModal;
   private achievementToast: AchievementToast;
+  private introStoryModal: IntroStoryModal;
 
   // Header components
   private headerIconSprite: Sprite;
@@ -42,6 +45,7 @@ export class GameScreen extends Container {
   // HUD & Action Cards
   private resourceCard: ResourceCard;
   private initialCard: ActionCardInitial;
+  private prayersCard: ActionCardPrayers;
   private templesCard: ActionCardTemples;
   private monumentsCard: ActionCardMonuments;
   private statsText: Text;
@@ -226,7 +230,21 @@ export class GameScreen extends Container {
     });
     this.actionCardsContainer.addChild(this.initialCard);
 
-    // 7. Action Card 2: Temples Card
+    // 7. Action Card 2: Prayers Card (Unlocked when Temple is Level 1)
+    this.prayersCard = new ActionCardPrayers({
+      width: 360,
+      height: 520,
+      onBuyPrayer: (prayerId: string) => {
+        const bought = this.engine.buyUpgrade(prayerId, 1);
+        if (bought) {
+          this.updateHUD();
+        }
+      }
+    });
+    this.prayersCard.visible = false;
+    this.actionCardsContainer.addChild(this.prayersCard);
+
+    // 8. Action Card 3: Temples Card
     this.templesCard = new ActionCardTemples({
       width: 360,
       height: 520,
@@ -248,14 +266,8 @@ export class GameScreen extends Container {
           this.updateHUD();
         }
       },
-      onBuyMaxSacerdote: () => {
-        const result = this.engine.buyMaxSacerdote();
-        if (result.count > 0) {
-          this.updateHUD();
-        }
-      },
-      onBuyUpgrade: (upgradeId: string) => {
-        const bought = this.engine.buyTempleUpgrade(upgradeId);
+      onUpgradeApostolo: (slotIndex: number) => {
+        const bought = this.engine.upgradeApostolo(slotIndex);
         if (bought) {
           this.updateHUD();
         }
@@ -318,7 +330,12 @@ export class GameScreen extends Container {
     });
     this.hudContainer.addChild(this.zoomControls);
 
-    // 12. Modals Layer: Offline & Achievements
+    // 12. Modals Layer: Intro Story, Offline & Achievements
+    this.introStoryModal = new IntroStoryModal(() => {
+      this.engine.setHasSeenIntro(true);
+    });
+    this.addChild(this.introStoryModal);
+
     this.offlineModal = new OfflineModal(() => {
       this.engine.claimOfflineEarnings();
       this.updateHUD();
@@ -340,6 +357,29 @@ export class GameScreen extends Container {
     // Setup Engine Event Listeners
     this.bindEngineEvents();
     this.updateHUD();
+
+    // 14. Setup Keyboard Shortcuts
+    this.setupKeybindings();
+
+    // Check First-Time Storytelling Intro
+    if (!this.engine.hasSeenIntro()) {
+      setTimeout(() => {
+        this.introStoryModal.show(this.currentWidth, this.currentHeight);
+      }, 150);
+    }
+  }
+
+  private setupKeybindings(): void {
+    window.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.code === 'KeyC' || e.key === 'c' || e.key === 'C') {
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+          return;
+        }
+        if (this.initialCard && this.initialCard.orb) {
+          this.initialCard.orb.triggerClick();
+        }
+      }
+    });
   }
 
   private setupViewportInteractivity(): void {
@@ -467,6 +507,9 @@ export class GameScreen extends Container {
     const monumentsCount = this.engine.getMonumentsCount();
     const isMonumentsUnlocked = this.engine.isMonumentsUnlocked();
 
+    // 0. Update Cosmic Background Monuments
+    this.backgroundStars.setMonumentsCount(monumentsCount);
+
     // 1. Update Resource HUD Card
     this.resourceCard.setValues(
       faith,
@@ -481,11 +524,20 @@ export class GameScreen extends Container {
       isMonumentsUnlocked
     );
 
-    // 2. Check if Temples card or Monuments card should unlock/toggle
+    // 2. Check if Temples card, Prayers card or Monuments card should unlock/toggle
     let layoutChanged = false;
+
+    const isTempleBuilt = this.engine.isTempleBuilt();
+    const enhLevel = this.engine.getTempleEnhancementLevel();
+    const isPrayersUnlocked = isTempleBuilt && enhLevel >= 1;
 
     if (isTempleUnlocked !== this.templesCard.visible) {
       this.templesCard.visible = isTempleUnlocked;
+      layoutChanged = true;
+    }
+
+    if (isPrayersUnlocked !== this.prayersCard.visible) {
+      this.prayersCard.visible = isPrayersUnlocked;
       layoutChanged = true;
     }
 
@@ -496,6 +548,32 @@ export class GameScreen extends Container {
 
     if (layoutChanged) {
       this.layoutCards(this.currentWidth, this.currentHeight);
+    }
+
+    // Update Prayers Action Card
+    if (this.prayersCard.visible) {
+      const prayerIds = ['reza_1', 'reza_2', 'reza_3', 'reza_4'];
+      const prayerStates: PrayerItemState[] = prayerIds.map((id, index) => {
+        const cfg = this.engine.upgrades.getConfig(id);
+        const state = this.engine.upgrades.getState(id);
+        const requiredTempleLevel = index + 1;
+        const level = state?.count || 0;
+        const cost = this.engine.upgrades.getUpgradeCost(id, 1);
+        const isUnlockedByTemple = enhLevel >= requiredTempleLevel;
+        const canAfford = faith >= cost;
+        return {
+          id,
+          name: cfg?.name || `Prece ${index + 1}`,
+          description: cfg?.description || '',
+          requiredTempleLevel,
+          level,
+          cost,
+          isUnlockedByTemple,
+          canAfford
+        };
+      });
+
+      this.prayersCard.updateData(prayerStates, enhLevel);
     }
 
     // 3. Update Initial Action Card (Clean layout without milestone bar)
@@ -522,23 +600,12 @@ export class GameScreen extends Container {
 
       const sacerdoteCost = this.engine.upgrades.getUpgradeCost('sacerdote', 1);
       const canAffordSacerdote = this.engine.resources.hasAmount('gold', sacerdoteCost);
-      const maxSacerdotes = this.engine.getMaxAffordableSacerdote();
-      const sacerdoteMilestoneProg = this.engine.getSacerdoteMilestoneProgress();
-      const sacerdoteMilestoneMult = this.engine.getSacerdoteMilestoneMultiplier();
 
-      const u1Cost = this.engine.upgrades.getUpgradeCost('temple_click', 1);
-      const u1Afford = this.engine.resources.hasAmount('gold', u1Cost);
-      const u1Mult = this.engine.getTempleClickMultiplier();
-
-      const u2Cost = this.engine.upgrades.getUpgradeCost('temple_fiel', 1);
-      const u2Afford = this.engine.resources.hasAmount('gold', u2Cost);
-      const u2Mult = this.engine.getTempleFielMultiplier();
-
-      const u3Cost = this.engine.upgrades.getUpgradeCost('temple_gold_faith', 1);
-      const u3Afford = this.engine.resources.hasAmount('gold', u3Cost);
-      const u3Mult = this.engine.getTempleGoldFaithMultiplier();
-
-      const faithBonusPct = (Math.log10(Math.max(1, faith)) * 0.25 * u3Mult) * 100;
+      const apostolosCount = this.engine.getApostolosCount();
+      const apostolosPurchased = Array.from({ length: 8 }, (_, i) => this.engine.isApostoloPurchased(i));
+      const nextApostoloIndex = apostolosPurchased.findIndex(p => !p);
+      const nextApostoloCost = nextApostoloIndex >= 0 ? this.engine.getApostoloCost(nextApostoloIndex) : Infinity;
+      const canAffordNextApostolo = nextApostoloIndex >= 0 ? this.engine.canUpgradeApostolo(nextApostoloIndex) : false;
 
       this.templesCard.updateData(
         gold,
@@ -551,20 +618,10 @@ export class GameScreen extends Container {
         sacerdotesCount,
         sacerdoteCost,
         canAffordSacerdote,
-        maxSacerdotes.count,
-        maxSacerdotes.cost,
-        u1Cost,
-        u1Afford,
-        u1Mult,
-        u2Cost,
-        u2Afford,
-        u2Mult,
-        u3Cost,
-        u3Afford,
-        u3Mult,
-        faithBonusPct,
-        sacerdoteMilestoneProg,
-        sacerdoteMilestoneMult
+        apostolosCount,
+        apostolosPurchased,
+        nextApostoloCost,
+        canAffordNextApostolo
       );
     }
 
@@ -634,6 +691,10 @@ export class GameScreen extends Container {
     this.achievementToast.resize(width, height);
     this.layoutCards(width, height);
 
+    if (this.introStoryModal && this.introStoryModal.visible) {
+      this.introStoryModal.show(width, height);
+    }
+
     if (this.offlineModal.visible) {
       const report = { elapsedSeconds: 60, gains: { faith: 100 } };
       this.offlineModal.show(report, width, height);
@@ -642,48 +703,89 @@ export class GameScreen extends Container {
 
   private layoutCards(width: number, _height: number): void {
     const cardW = 360;
+    const cardH = 520;
     const cardGap = 20;
+    const stepY = cardH + cardGap; // 540px step Y prevents any vertical overlap
     const cardsTopY = Math.max(130, this.resourceCard.position.y + 140);
 
+    const hasPrayers = this.prayersCard.visible;
     const hasTemples = this.templesCard.visible;
     const hasMonuments = this.monumentsCard.visible;
 
-    if (hasTemples && hasMonuments) {
-      if (width >= 1180) {
-        const totalCardsW = cardW * 3 + cardGap * 2;
-        const startX = Math.max(20, (width - totalCardsW) / 2);
+    if (width >= 1180) {
+      // 3-Column Wide Desktop Layout
+      if (hasPrayers && hasTemples) {
+        const totalW = cardW * 3 + cardGap * 2; // 1120px
+        const startX = Math.max(20, (width - totalW) / 2);
 
+        // Column 1: Initial Card (top) & Monuments Card (bottom)
         this.initialCard.position.set(startX, cardsTopY);
-        this.templesCard.position.set(startX + cardW + cardGap, cardsTopY);
-        this.monumentsCard.position.set(startX + (cardW + cardGap) * 2, cardsTopY);
-      } else if (width >= 780) {
-        const totalTopW = cardW * 2 + cardGap;
-        const startX = Math.max(20, (width - totalTopW) / 2);
+        if (hasMonuments) {
+          this.monumentsCard.position.set(startX, cardsTopY + stepY);
+        }
 
-        this.initialCard.position.set(startX, cardsTopY);
+        // Column 2: Temples Card (beside Initial Card)
         this.templesCard.position.set(startX + cardW + cardGap, cardsTopY);
-        this.monumentsCard.position.set((width - cardW) / 2, cardsTopY + 520 + cardGap);
+
+        // Column 3: Upgrades / Prayers Card (directly BESIDE Temples Card)
+        this.prayersCard.position.set(startX + (cardW + cardGap) * 2, cardsTopY);
       } else {
-        const centerX = Math.max(0, (width - cardW) / 2);
-        this.initialCard.position.set(centerX, cardsTopY);
-        this.templesCard.position.set(centerX, cardsTopY + 520 + cardGap);
-        this.monumentsCard.position.set(centerX, cardsTopY + (520 + cardGap) * 2);
+        // 2-Column Desktop Layout
+        const totalW = cardW * 2 + cardGap; // 740px
+        const startX = Math.max(20, (width - totalW) / 2);
+
+        this.initialCard.position.set(startX, cardsTopY);
+        if (hasMonuments) {
+          this.monumentsCard.position.set(startX, cardsTopY + stepY);
+        }
+
+        if (hasTemples) {
+          this.templesCard.position.set(startX + cardW + cardGap, cardsTopY);
+        }
+        if (hasPrayers) {
+          this.prayersCard.position.set(startX + cardW + cardGap, cardsTopY + (hasTemples ? stepY : 0));
+        }
       }
-    } else if (hasTemples) {
-      if (width >= 780) {
-        const totalCardsW = cardW * 2 + cardGap;
-        const startX = Math.max(24, (width - totalCardsW) / 2);
+    } else if (width >= 780) {
+      // 2-Column Medium Layout
+      const totalW = cardW * 2 + cardGap;
+      const startX = Math.max(20, (width - totalW) / 2);
 
-        this.initialCard.position.set(startX, cardsTopY);
-        this.templesCard.position.set(startX + cardW + cardGap, cardsTopY);
-      } else {
-        const centerX = Math.max(0, (width - cardW) / 2);
-        this.initialCard.position.set(centerX, cardsTopY);
-        this.templesCard.position.set(centerX, cardsTopY + 520 + cardGap);
+      this.initialCard.position.set(startX, cardsTopY);
+      if (hasMonuments) {
+        this.monumentsCard.position.set(startX, cardsTopY + stepY);
+      }
+
+      const col2X = startX + cardW + cardGap;
+      if (hasTemples && hasPrayers) {
+        this.templesCard.position.set(col2X, cardsTopY);
+        this.prayersCard.position.set(col2X, cardsTopY + stepY);
+      } else if (hasTemples) {
+        this.templesCard.position.set(col2X, cardsTopY);
+      } else if (hasPrayers) {
+        this.prayersCard.position.set(col2X, cardsTopY);
       }
     } else {
-      const centerX = Math.max(24, (width - cardW) / 2);
-      this.initialCard.position.set(centerX, cardsTopY);
+      // Mobile Single Column Stacked Layout
+      const centerX = Math.max(0, (width - cardW) / 2);
+      let currentY = cardsTopY;
+
+      this.initialCard.position.set(centerX, currentY);
+      currentY += stepY;
+
+      if (hasTemples) {
+        this.templesCard.position.set(centerX, currentY);
+        currentY += stepY;
+      }
+
+      if (hasPrayers) {
+        this.prayersCard.position.set(centerX, currentY);
+        currentY += stepY;
+      }
+
+      if (hasMonuments) {
+        this.monumentsCard.position.set(centerX, currentY);
+      }
     }
   }
 

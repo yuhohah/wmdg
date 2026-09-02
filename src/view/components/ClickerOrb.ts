@@ -1,5 +1,6 @@
-import { Container, Graphics, Sprite, Text, TextStyle, Texture } from 'pixi.js';
+import { Container, Graphics, Sprite, Texture } from 'pixi.js';
 import { THEME } from '../theme';
+import { IconManager } from '../utils/IconManager';
 
 export class ClickerOrb extends Container {
   private baseRadius: number = 90;
@@ -8,8 +9,6 @@ export class ClickerOrb extends Container {
   private ringGraphics: Graphics;
   private raysGraphics: Graphics;
   private entitySprite: Sprite;
-  private entityNameText: Text;
-  private hintText: Text;
 
   // Multi-frame Entity Orb Textures
   private entityTextures: Texture[] = [];
@@ -30,9 +29,9 @@ export class ClickerOrb extends Container {
 
     // Load the 3 entity images provided by the user
     this.entityTextures = [
-      Texture.from('/assets/entity/entity_orb_1.png'),
-      Texture.from('/assets/entity/entity_orb_2.png'),
-      Texture.from('/assets/entity/entity_orb_3.png')
+      IconManager.getTexture('/assets/entity/entity_orb_1.png'),
+      IconManager.getTexture('/assets/entity/entity_orb_2.png'),
+      IconManager.getTexture('/assets/entity/entity_orb_3.png')
     ];
 
     // Outer cosmic halo
@@ -57,38 +56,6 @@ export class ClickerOrb extends Container {
     this.entitySprite.width = 175;
     this.entitySprite.height = 175;
     this.addChild(this.entitySprite);
-
-    // Entity Label
-    this.entityNameText = new Text({
-      text: 'A ENTIDADE DIVINA',
-      style: new TextStyle({
-        fontFamily: THEME.fonts.heading,
-        fontSize: 14,
-        fontWeight: '900',
-        letterSpacing: 3,
-        fill: THEME.colors.pureWhite,
-        align: 'center'
-      })
-    });
-    this.entityNameText.anchor.set(0.5);
-    this.entityNameText.position.set(0, this.baseRadius + 26);
-    this.addChild(this.entityNameText);
-
-    // Subtitle Hint
-    this.hintText = new Text({
-      text: 'TOQUE PARA ADORAR E GERAR FÉ',
-      style: new TextStyle({
-        fontFamily: THEME.fonts.heading,
-        fontSize: 10,
-        fontWeight: '700',
-        letterSpacing: 1.5,
-        fill: THEME.colors.grayMuted,
-        align: 'center'
-      })
-    });
-    this.hintText.anchor.set(0.5);
-    this.hintText.position.set(0, this.baseRadius + 46);
-    this.addChild(this.hintText);
 
     this.drawEntity();
     this.setupInteractivity();
@@ -141,16 +108,12 @@ export class ClickerOrb extends Container {
     this.on('pointerenter', () => {
       this.isHovered = true;
       this.targetScale = 1.05;
-      this.entityNameText.style.fill = THEME.colors.pureWhite;
-      this.hintText.style.fill = THEME.colors.silverLight;
     });
 
     this.on('pointerleave', () => {
       this.isHovered = false;
       this.isPressed = false;
       this.targetScale = 1.0;
-      this.entityNameText.style.fill = THEME.colors.silver;
-      this.hintText.style.fill = THEME.colors.grayMuted;
     });
 
     this.on('pointerdown', (e) => {
@@ -177,6 +140,28 @@ export class ClickerOrb extends Container {
       this.isPressed = false;
       this.bounceScale = 1.0;
     });
+  }
+
+  public triggerClick(customX?: number, customY?: number): void {
+    this.isPressed = true;
+    this.bounceScale = 0.90;
+    this.clickFlashTimer = 0.18;
+
+    this.currentFrameIndex = (this.currentFrameIndex + 1) % this.entityTextures.length;
+    this.entitySprite.texture = this.entityTextures[this.currentFrameIndex];
+
+    const globalPos = this.getGlobalPosition();
+    const clickX = customX ?? globalPos.x;
+    const clickY = customY ?? globalPos.y;
+
+    if (this.onClickCallback) {
+      this.onClickCallback(clickX, clickY);
+    }
+
+    setTimeout(() => {
+      this.isPressed = false;
+      this.bounceScale = 1.12;
+    }, 80);
   }
 
   /**

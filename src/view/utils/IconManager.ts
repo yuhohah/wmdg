@@ -1,4 +1,4 @@
-import { Texture, CanvasSource } from 'pixi.js';
+import { Texture, CanvasSource, Assets } from 'pixi.js';
 
 export class IconManager {
   private static cachedTextures: Map<string, Texture> = new Map();
@@ -12,8 +12,16 @@ export class IconManager {
     }
 
     try {
+      if (Assets.has(name)) {
+        const loaded = Assets.get(name);
+        if (loaded && loaded instanceof Texture) {
+          this.cachedTextures.set(name, loaded);
+          return loaded;
+        }
+      }
+
       const tex = Texture.from(name);
-      if (tex) {
+      if (tex && tex.width > 1 && tex.height > 1) {
         this.cachedTextures.set(name, tex);
         return tex;
       }
@@ -58,12 +66,31 @@ export class IconManager {
       ctx.quadraticCurveTo(32, 32, 6, 32);
       ctx.quadraticCurveTo(32, 32, 32, 6);
       ctx.fill();
-    } else if (name.includes('shrine')) {
-      // Stylized Torii Shrine / Alter icon
-      ctx.fillRect(10, 14, 44, 6);
-      ctx.fillRect(14, 24, 36, 4);
-      ctx.fillRect(18, 24, 6, 32);
-      ctx.fillRect(40, 24, 6, 32);
+    } else if (name.includes('shrine') || name.includes('sacerdote')) {
+      // Stylized Priest / Torii Shrine icon
+      ctx.beginPath();
+      ctx.arc(32, 20, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(18, 56);
+      ctx.quadraticCurveTo(32, 32, 46, 56);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(32, 20, 16, Math.PI, Math.PI * 2);
+      ctx.stroke();
+    } else if (name.includes('cathedral') || name.includes('temple')) {
+      // Stylized Gothic Temple Cathedral icon
+      ctx.beginPath();
+      ctx.moveTo(32, 8);
+      ctx.lineTo(52, 28);
+      ctx.lineTo(52, 56);
+      ctx.lineTo(12, 56);
+      ctx.lineTo(12, 28);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(26, 36, 12, 20);
     } else if (name.includes('monument')) {
       // Stylized Obelisk / Monolith icon
       ctx.beginPath();
