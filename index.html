@@ -21,24 +21,31 @@
       <!-- UI Container Layer -->
       <div class="ui-container">
         
-        <!-- Top HUD Bar (Matches Presentation Slide Header) -->
+        <!-- Top HUD Bar -->
         <header class="top-hud-bar">
-          <!-- Left Gold Box: Faith Points -->
-          <div class="hud-box">
-            <div class="hud-box-left">
-              <span class="hud-label">PONTOS DE FÉ</span>
-              <span id="faith-counter" class="hud-value">001 / H</span>
+          <!-- Left: Integrated Resources Box (Fé & Fervor) -->
+          <div class="resources-hud-card">
+            <div class="resources-hud-header">RECURSOS</div>
+            <div class="resources-hud-row">
+              <div class="resource-item">
+                <span class="res-name">FÉ:</span>
+                <span id="faith-counter" class="res-num">1</span>
+                <span class="res-unit">PF</span>
+                <span class="res-dash">-</span>
+                <span id="faith-per-sec-counter" class="res-rate">0/s</span>
+              </div>
+              <div class="resource-divider"></div>
+              <div class="resource-item">
+                <span class="res-name">FERVOR:</span>
+                <span id="fervor-counter-hud" class="res-num">0</span>
+                <span class="res-dash">-</span>
+                <span id="fervor-rate-counter-hud" class="res-rate">1.0/s</span>
+              </div>
             </div>
-            <div class="hud-badge"></div>
           </div>
 
-          <!-- Right Group: Faithful Count & Settings Button -->
+          <!-- Right Group: Settings Button (Followers removed from HUD) -->
           <div class="top-right-group">
-            <div class="hud-box hud-box-right">
-              <span class="hud-label">FIÉIS</span>
-              <span id="followers-counter" class="hud-value-large">00</span>
-            </div>
-
             <button id="settings-btn" class="icon-btn-gold" title="Configurações" aria-label="Configurações">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
@@ -53,12 +60,7 @@
           <div class="slide-card">
             <div class="slide-card-header">
               <h1 class="slide-title">CULT OF THE SPHERE</h1>
-              <div class="gold-divider"></div>
-              <h2 class="slide-subtitle">Uma Jornada Épica entre Mundos e Destinos</h2>
             </div>
-
-            <div class="slide-tagline">VISÃO GERAL DO JOGO</div>
-            <div class="slide-author">Uma produção da equipe Esfera</div>
 
             <div class="play-btn-container">
               <button id="play-btn" class="btn-slide-play">
@@ -69,50 +71,243 @@
               </button>
             </div>
           </div>
-
-          <!-- Bottom Right Procession Pixel Sprite -->
-          <div class="procession-path">
-            <img src="/assets/cultist_leader.jpg" alt="Líder do Culto" class="cultist-sprite">
-          </div>
         </main>
 
-        <!-- GAMEPLAY SCREEN WITH CLICKABLE SPHERE IN THE CENTER -->
+        <!-- GAMEPLAY SCREEN WITH 3-FRAME LAYOUT -->
         <main id="gameplay-screen" class="main-content screen">
-          <div class="gameplay-container">
-            <div class="slide-card sphere-game-layout">
-              <div class="click-hint">CLIQUE NA ESFERA DIVINA PARA GERAR FÉ</div>
-              
-              <!-- CLICKABLE DIVINE SPHERE IN THE MIDDLE OF THE SCREEN -->
-              <div class="sphere-wrapper" id="divine-sphere-container">
-                <div class="sphere-aura"></div>
-                <div id="divine-sphere-btn" class="divine-sphere-btn" role="button" aria-label="Canalizar Esfera Divina"></div>
-              </div>
-
-              <div style="display: flex; gap: 16px; align-items: center;">
-                <button id="recruitment-btn" class="btn-slide-play" style="padding: 12px 28px; font-size: 15px; background: linear-gradient(135deg, #d97706 0%, #b91c1c 100%);">
-                  <span>RECRUTAR FIÉIS (10 FÉ)</span>
-                </button>
-
-                <button id="back-to-menu-btn" class="btn-slide-play" style="padding: 12px 24px; font-size: 15px; background: rgba(8, 12, 22, 0.9); border-color: var(--gold-border);">
-                  <span>MENU</span>
+          <div class="gameplay-3frame-container">
+            
+            <!-- LEFT FRAME: SIDE PANEL (COLLAPSIBLE) -->
+            <aside id="panel-left" class="side-panel side-panel-left open">
+              <!-- Panel Header with Title and Toggle Button -->
+              <div class="panel-header">
+                <div class="panel-title-group">
+                  <span class="panel-tag">PAINEL ESQUERDO</span>
+                  <h3 class="panel-title">DEVOTOS & FERVOR</h3>
+                </div>
+                <button id="toggle-left-btn" class="panel-toggle-btn" title="Recolher Painel Esquerdo" aria-label="Recolher Painel Esquerdo">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
                 </button>
               </div>
-            </div>
+
+              <!-- Options Navigation Tabs -->
+              <nav class="panel-tabs-bar" aria-label="Opções do Painel Esquerdo">
+                <button class="panel-tab-btn active" data-panel="left" data-tab="tab-followers">
+                  <span class="tab-icon">👥</span>
+                  <span class="tab-label">Fiéis</span>
+                </button>
+                <button class="panel-tab-btn" data-panel="left" data-tab="tab-fervor">
+                  <span class="tab-icon">🔥</span>
+                  <span class="tab-label">Fervor</span>
+                </button>
+                <button class="panel-tab-btn" data-panel="left" data-tab="tab-stats">
+                  <span class="tab-icon">📜</span>
+                  <span class="tab-label">Status</span>
+                </button>
+              </nav>
+
+              <!-- Panel Tab Contents -->
+              <div class="panel-body custom-scrollbar">
+                <!-- Tab: Fiéis & Recrutamento -->
+                <div id="tab-followers" class="tab-pane active">
+                  <!-- Header: Congregation stats -->
+                  <div class="followers-tab-header">
+                    <div class="followers-stat-group">
+                      <span class="followers-stat-label">CONGREGAÇÃO REUNIDA</span>
+                      <div class="followers-stat-row">
+                        <span id="followers-total-count" class="followers-total-val">0</span>
+                        <span class="followers-stat-unit">Fiéis</span>
+                      </div>
+                    </div>
+                    <div class="followers-rate-badge" id="followers-rate-badge">+0 PF/s</div>
+                  </div>
+
+                  <!-- Arena: Animated walking sprites -->
+                  <div class="followers-arena-wrapper">
+                    <canvas id="followers-walk-canvas" class="followers-walk-canvas"></canvas>
+                    <div class="followers-arena-overlay">
+                      <span class="followers-arena-hint">PÁTIO DO CULTO</span>
+                    </div>
+                  </div>
+
+                  <!-- Action Controls -->
+                  <div class="followers-controls">
+                    <!-- Buy 1 Button -->
+                    <button id="btn-convert-one" class="btn-follower-action btn-convert-primary">
+                      <div class="btn-action-main">
+                        <span class="btn-action-title">CONVERTER +1 FIEL</span>
+                        <span class="btn-action-benefit" id="convert-one-benefit">+1 Fé / seg</span>
+                      </div>
+                      <div class="btn-action-cost">
+                        <span>CUSTO:</span>
+                        <span class="cost-val" id="convert-one-cost-val">10 Fé</span>
+                      </div>
+                    </button>
+
+                    <!-- Buy Max Button (Future Unlock at 25 followers) -->
+                    <button id="btn-convert-max" class="btn-follower-action btn-convert-max locked" disabled>
+                      <div class="btn-action-main">
+                        <span class="btn-action-title" id="convert-max-title">CONVERTER MÁXIMO</span>
+                        <span class="btn-action-benefit" id="convert-max-sub">Desbloqueia com 25 Fiéis</span>
+                      </div>
+                      <div class="btn-action-cost" id="convert-max-cost">
+                        <span id="convert-max-cost-label">BLOQUEADO</span>
+                        <span class="cost-val" id="convert-max-cost-val">🔒</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Tab: Fervor & Upgrades -->
+                <div id="tab-fervor" class="tab-pane">
+                  <div class="fervor-header-card">
+                    <div class="fervor-header-row">
+                      <div class="fervor-badge-group">
+                        <span class="fervor-flame-icon">🔥</span>
+                        <div class="fervor-text-col">
+                          <span class="fervor-label">CHAMA DO CULTO</span>
+                          <div class="fervor-val-row">
+                            <span id="fervor-counter" class="fervor-val">0</span>
+                            <span class="fervor-unit">Fervor</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="fervor-rate-tag" id="fervor-rate-counter">+1.0 / seg</div>
+                    </div>
+                  </div>
+                  <div class="card-list" id="fervor-upgrades-list"></div>
+                </div>
+
+                <!-- Tab: Estatísticas -->
+                <div id="tab-stats" class="tab-pane">
+                  <div class="stats-panel-content">
+                    <div class="stat-box">
+                      <span class="stat-label">FÉ TOTAL ACUMULADA</span>
+                      <span id="stat-total-faith" class="stat-val">1</span>
+                    </div>
+                    <div class="stat-box">
+                      <span class="stat-label">FÉ POR CLIQUE (FPC)</span>
+                      <span id="stat-click-faith" class="stat-val">+1</span>
+                    </div>
+                    <div class="stat-box">
+                      <span class="stat-label">FÉ POR SEGUNDO (FPS)</span>
+                      <span id="stat-passive-faith" class="stat-val">+0 / seg</span>
+                    </div>
+                    <div class="stat-box">
+                      <span class="stat-label">FERVOR ACUMULADO</span>
+                      <span id="stat-fervor-accum" class="stat-val">0</span>
+                    </div>
+                    <div class="stat-box">
+                      <span class="stat-label">PRODUÇÃO DE FERVOR</span>
+                      <span id="stat-fervor-rate" class="stat-val">+1.0 / seg</span>
+                    </div>
+                    <div class="stat-box">
+                      <span class="stat-label">TOTAL DE FIÉIS</span>
+                      <span id="stat-total-followers" class="stat-val">0</span>
+                    </div>
+                    <div class="stat-box">
+                      <span class="stat-label">CLIQUES NA ESFERA</span>
+                      <span id="stat-total-clicks" class="stat-val">0</span>
+                    </div>
+                    <div class="stat-box">
+                      <span class="stat-label">CONQUISTAS DESBLOQUEADAS</span>
+                      <span id="stat-achievements-count" class="stat-val">0 / 18</span>
+                    </div>
+                    <div class="stat-box">
+                      <span class="stat-label">ESTÁGIO DO CULTO</span>
+                      <span id="stat-cult-tier" class="stat-val">Círculo Inicial</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            <!-- Expander Bar when Left Panel is Collapsed -->
+            <button id="expand-left-btn" class="panel-expand-strip expand-left" title="Abrir Menu Esquerdo" aria-label="Abrir Menu Esquerdo">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+              <span class="expand-label">DEVOTOS & FERVOR</span>
+            </button>
+
+            <!-- CENTER FRAME: DIVINE SPHERE (FIXED & PROMINENT) -->
+            <section id="panel-center" class="center-frame">
+              <div class="center-frame-content">
+                <div class="sphere-presentation-area">
+                  <!-- CLICKABLE DIVINE SPHERE IN THE MIDDLE OF THE SCREEN -->
+                  <div class="sphere-wrapper" id="divine-sphere-container">
+                    <div class="sphere-orbit-ring ring-1"></div>
+                    <div class="sphere-orbit-ring ring-2"></div>
+                    <div class="sphere-aura"></div>
+                    <div id="divine-sphere-btn" class="divine-sphere-btn" role="button" aria-label="Canalizar Esfera Divina">
+                      <div class="sphere-inner-pulse"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Expander Bar when Right Panel is Collapsed -->
+            <button id="expand-right-btn" class="panel-expand-strip expand-right" title="Abrir Menu Direito" aria-label="Abrir Menu Direito">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+              <span class="expand-label">MONUMENTOS</span>
+            </button>
+
+            <!-- RIGHT FRAME: SIDE PANEL (COLLAPSIBLE) -->
+            <aside id="panel-right" class="side-panel side-panel-right open">
+              <!-- Panel Header with Title and Toggle Button -->
+              <div class="panel-header">
+                <button id="toggle-right-btn" class="panel-toggle-btn" title="Recolher Painel Direito" aria-label="Recolher Painel Direito">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+                <div class="panel-title-group text-right">
+                  <span class="panel-tag">PAINEL DIREITO</span>
+                  <h3 class="panel-title">MONUMENTOS & CONQUISTAS</h3>
+                </div>
+              </div>
+
+              <!-- Options Navigation Tabs -->
+              <nav class="panel-tabs-bar" aria-label="Opções do Painel Direito">
+                <button class="panel-tab-btn active" data-panel="right" data-tab="tab-monuments">
+                  <span class="tab-icon">🗿</span>
+                  <span class="tab-label">Monumentos</span>
+                </button>
+                <button class="panel-tab-btn" data-panel="right" data-tab="tab-achievements">
+                  <span class="tab-icon">🏆</span>
+                  <span class="tab-label">Conquistas</span>
+                </button>
+              </nav>
+
+              <!-- Panel Tab Contents -->
+              <div class="panel-body custom-scrollbar">
+                <!-- Tab: Monumentos -->
+                <div id="tab-monuments" class="tab-pane active">
+                  <div class="card-list" id="monuments-list"></div>
+                </div>
+
+                <!-- Tab: Conquistas -->
+                <div id="tab-achievements" class="tab-pane">
+                  <div class="card-list" id="achievements-list"></div>
+                </div>
+              </div>
+            </aside>
+
           </div>
         </main>
-
-        <!-- BOTTOM FOOTER BAR (Slide Footer) -->
-        <footer class="bottom-footer-bar">
-          <div class="footer-left">
-            <span>01</span>
-            <span id="footer-status-text">A PROCISSÃO CRESCE</span>
-          </div>
-          <div class="footer-right">
-            <span>CULT OF THE SPHERE</span>
-          </div>
-        </footer>
 
       </div>
+
+      <!-- Dynamic Hover Inspection Tooltip Container -->
+      <div id="cult-tooltip" class="cult-tooltip" style="display: none;"></div>
+
+      <!-- Achievement Notifications Container (Top-Right Square Popups) -->
+      <div id="achievements-popup-container" class="achievements-popup-container"></div>
 
       <!-- SETTINGS MODAL OVERLAY -->
       <div id="settings-modal" class="modal-overlay">
@@ -142,6 +337,14 @@
                 <div class="setting-desc">Sons de rituais e cliques</div>
               </div>
               <input type="checkbox" id="sfx-toggle" style="accent-color: var(--gold-accent);" checked>
+            </div>
+
+            <div class="setting-item">
+              <div>
+                <div class="setting-name">Modo Apenas Texto</div>
+                <div class="setting-desc">Ocultar artes, ilustrações, emojis e símbolos visuais</div>
+              </div>
+              <input type="checkbox" id="text-only-toggle" style="accent-color: var(--gold-accent);" checked>
             </div>
           </div>
 
