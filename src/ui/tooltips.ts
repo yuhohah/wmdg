@@ -1,4 +1,4 @@
-import type { BuyableItem, FervorUpgrade, Achievement, GameState } from '../types.js';
+import type { BuyableItem, FervorUpgrade, Achievement, GameState, MechanicUnlock, RelicUpgrade } from '../types.js';
 import { formatNumber } from '../systems/calculations.js';
 import { DISPLAY_CONFIG } from '../config/display.js';
 
@@ -139,6 +139,84 @@ export class TooltipManager {
         <div class="tooltip-stat-item" style="grid-column: span 2;">
           <span class="tooltip-stat-label">PROGRESSO ATUAL</span>
           <span class="tooltip-stat-val" id="tooltip-ach-progress-val">${progress.label} (${Math.round(progress.percent)}%)</span>
+        </div>
+      </div>
+    `;
+
+    this.tooltipEl.style.display = 'flex';
+    this.position(e);
+  }
+
+  public showUnlockTooltip(unlock: MechanicUnlock, canAfford: boolean, e: MouseEvent): void {
+    this.currentAch = null;
+
+    const symbolHtml = DISPLAY_CONFIG.showEmojisAndSymbols
+      ? `<span class="cult-tooltip-symbol">${unlock.symbol}</span>`
+      : '';
+
+    this.tooltipEl.innerHTML = `
+      <div class="cult-tooltip-header">
+        <div class="cult-tooltip-title">
+          ${symbolHtml}
+          <span>${unlock.name}</span>
+        </div>
+        <span class="cult-tooltip-tag">MECÂNICA SAGRADA</span>
+      </div>
+
+      ${DISPLAY_CONFIG.showItemDescriptions && unlock.lore ? `<div class="cult-tooltip-lore">${unlock.lore}</div>` : ''}
+
+      <div class="cult-tooltip-stats">
+        <div class="tooltip-stat-item">
+          <span class="tooltip-stat-label">STATUS</span>
+          <span class="tooltip-stat-val" style="color: ${unlock.unlocked ? '#34d399' : (canAfford ? '#fbbf24' : '#94a3b8')}">
+            ${unlock.unlocked ? '✓ DESBLOQUEADO' : 'AGUARDANDO FÉ'}
+          </span>
+        </div>
+        <div class="tooltip-stat-item">
+          <span class="tooltip-stat-label">CUSTO</span>
+          <span class="tooltip-stat-val" style="color: var(--gold-accent);">${formatNumber(unlock.cost)} Fé</span>
+        </div>
+      </div>
+    `;
+
+    this.tooltipEl.style.display = 'flex';
+    this.position(e);
+  }
+
+  public showRelicTooltip(relic: RelicUpgrade, relicPoints: number, e: MouseEvent): void {
+    this.currentAch = null;
+
+    const symbolHtml = DISPLAY_CONFIG.showEmojisAndSymbols
+      ? `<span class="cult-tooltip-symbol">${relic.icon}</span>`
+      : '';
+
+    const isMax = relic.level >= relic.maxLevel;
+    const effectText = relic.effectText(relic.level, relicPoints);
+
+    this.tooltipEl.innerHTML = `
+      <div class="cult-tooltip-header">
+        <div class="cult-tooltip-title">
+          ${symbolHtml}
+          <span>${relic.name}</span>
+        </div>
+        <span class="cult-tooltip-tag" style="color: #c084fc; border-color: #8b5cf6;">RELÍQUIA MITOLÓGICA</span>
+      </div>
+
+      <div class="cult-tooltip-lore">${relic.lore}</div>
+
+      <div class="tooltip-buff-highlight" style="background: rgba(139, 92, 246, 0.1); border-color: rgba(139, 92, 246, 0.4); color: #e9d5ff;">
+        <span>✦ EFEITO ATUAL:</span>
+        <span>${effectText}</span>
+      </div>
+
+      <div class="cult-tooltip-stats">
+        <div class="tooltip-stat-item">
+          <span class="tooltip-stat-label">NÍVEL DA RELÍQUIA</span>
+          <span class="tooltip-stat-val">${relic.level} / ${relic.maxLevel}</span>
+        </div>
+        <div class="tooltip-stat-item">
+          <span class="tooltip-stat-label">CUSTO DE CONSAGRAÇÃO</span>
+          <span class="tooltip-stat-val" style="color: #c084fc;">${isMax ? 'MÁXIMO' : `${formatNumber(relic.cost)} Relíquias`}</span>
         </div>
       </div>
     `;

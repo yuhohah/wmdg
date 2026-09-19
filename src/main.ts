@@ -1,10 +1,13 @@
 // --- App Manager for Cult of the Sphere (Modular Orchestrator) ---
 
-import type { BuyableItem, FervorUpgrade, Achievement, GameState } from './types.js';
+import type { BuyableItem, FervorUpgrade, Achievement, GameState, MechanicUnlock, RelicUpgrade } from './types.js';
 import { initialFollowers } from './config/followers.js';
 import { initialMonuments } from './config/monuments.js';
 import { initialFervorUpgrades, BASE_FERVOR_RATE, getFervorUpgradeMultiplier } from './config/fervor.js';
 import { initialAchievements } from './config/achievements.js';
+import { initialUnlocks } from './config/unlocks.js';
+import { initialRelicUpgrades } from './config/relics.js';
+import { INCARNATION_STAGES } from './config/incarnation.js';
 import {
   calculateItemCost,
   calculateFervorUpgradeCost,
@@ -18,6 +21,9 @@ import {
   calculateFervorRate,
   calculateFaithPerClick,
   calculateFaithPerSecond,
+  calculateRelicsToGet,
+  calculateExtraRelicsPerSecond,
+  calculateRelicFaithMultiplier,
   formatNumber
 } from './systems/calculations.js';
 import { AudioManager } from './systems/audio.js';
@@ -25,6 +31,7 @@ import { NotificationManager } from './systems/notifications.js';
 import { TooltipManager } from './ui/tooltips.js';
 import { loadDisplayConfig, DISPLAY_CONFIG, setTextOnlyMode } from './config/display.js';
 import { FollowersArena } from './ui/followersArena.js';
+import { IncarnationArena } from './ui/incarnationArena.js';
 
 class AppManager {
   // Screens & Panels
@@ -70,7 +77,8 @@ class AppManager {
 
   // List Containers for Options
   private fervorUpgradesListEl: HTMLElement;
-  private monumentsListEl: HTMLElement;
+  private unlocksListEl: HTMLElement;
+  private tabBtnRelicsEl: HTMLButtonElement | null = null;
   private achievementsListEl: HTMLElement;
 
   // Fervor Elements
@@ -104,6 +112,37 @@ class AppManager {
   private fervorUpgrades: FervorUpgrade[] = initialFervorUpgrades;
   private monuments: BuyableItem[] = initialMonuments;
   private achievements: Achievement[] = initialAchievements;
+  private unlocks: MechanicUnlock[] = initialUnlocks;
+
+  // Incarnation Elements & State
+  private incarnationArena?: IncarnationArena;
+  private incarnationStage: number = 1;
+  private tabBtnIncarnationEl: HTMLElement | null = null;
+  private tabBtnFervorEl: HTMLElement | null = null;
+  private hudFervorDividerEl: HTMLElement | null = null;
+  private hudFervorItemEl: HTMLElement | null = null;
+  private incarnationStageBadgeEl: HTMLElement | null = null;
+  private incarnationTitleEl: HTMLElement | null = null;
+  private incarnationDescSubEl: HTMLElement | null = null;
+  private incarnationRateBadgeEl: HTMLElement | null = null;
+  private btnUpgradeIncarnationEl: HTMLButtonElement | null = null;
+  private incarnationUpgradeTitleEl: HTMLElement | null = null;
+  private incarnationUpgradeBenefitEl: HTMLElement | null = null;
+  private incarnationUpgradeCostValEl: HTMLElement | null = null;
+
+  // Relics (Alchemy) Elements
+  private btnConvertRelicsEl: HTMLButtonElement | null = null;
+  private relicsToGetEl: HTMLElement | null = null;
+  private relicsConvertCooldownEl: HTMLElement | null = null;
+  private relicsBalanceValEl: HTMLElement | null = null;
+  private relicsExtraValEl: HTMLElement | null = null;
+  private relicUpgradesListEl: HTMLElement | null = null;
+
+  // Relics State
+  private relicPoints: number = 0;
+  private bestRelicsToGet: number = 0;
+  private relicConvertCooldown: number = 0;
+  private relicUpgrades: RelicUpgrade[] = initialRelicUpgrades;
 
   constructor() {
     // Cache DOM Elements
@@ -143,6 +182,21 @@ class AppManager {
     this.convertMaxCostLabelEl = document.getElementById('convert-max-cost-label');
     this.convertMaxCostValEl = document.getElementById('convert-max-cost-val');
 
+    // Incarnation Elements
+    this.tabBtnIncarnationEl = document.getElementById('tab-btn-incarnation');
+    this.tabBtnFervorEl = document.getElementById('tab-btn-fervor');
+    this.hudFervorDividerEl = document.getElementById('hud-fervor-divider');
+    this.hudFervorItemEl = document.getElementById('hud-fervor-item');
+
+    this.incarnationStageBadgeEl = document.getElementById('incarnation-stage-badge');
+    this.incarnationTitleEl = document.getElementById('incarnation-title');
+    this.incarnationDescSubEl = document.getElementById('incarnation-desc-sub');
+    this.incarnationRateBadgeEl = document.getElementById('incarnation-rate-badge');
+    this.btnUpgradeIncarnationEl = document.getElementById('btn-upgrade-incarnation') as HTMLButtonElement | null;
+    this.incarnationUpgradeTitleEl = document.getElementById('incarnation-upgrade-title');
+    this.incarnationUpgradeBenefitEl = document.getElementById('incarnation-upgrade-benefit');
+    this.incarnationUpgradeCostValEl = document.getElementById('incarnation-cost-val');
+
     const arenaCanvas = document.getElementById('followers-walk-canvas');
     if (arenaCanvas) {
       this.followersArena = new FollowersArena('followers-walk-canvas');
@@ -152,9 +206,25 @@ class AppManager {
       });
     }
 
+    const incCanvas = document.getElementById('incarnation-canvas');
+    if (incCanvas) {
+      this.incarnationArena = new IncarnationArena('incarnation-canvas');
+      this.incarnationArena.setOnClickCallback((clientX, clientY) => {
+        this.audio.playTone(880, 'sine', 0.12);
+        this.spawnFloatingText(clientX, clientY, '✨ BENÇÃO');
+      });
+    }
+
     this.fervorUpgradesListEl = document.getElementById('fervor-upgrades-list')!;
-    this.monumentsListEl = document.getElementById('monuments-list')!;
+    this.unlocksListEl = document.getElementById('unlocks-list')!;
+    this.tabBtnRelicsEl = document.getElementById('tab-btn-relics') as HTMLButtonElement | null;
     this.achievementsListEl = document.getElementById('achievements-list')!;
+    this.btnConvertRelicsEl = document.getElementById('btn-convert-relics') as HTMLButtonElement | null;
+    this.relicsToGetEl = document.getElementById('relics-to-get');
+    this.relicsConvertCooldownEl = document.getElementById('relics-convert-cooldown');
+    this.relicsBalanceValEl = document.getElementById('relics-balance-val');
+    this.relicsExtraValEl = document.getElementById('relics-extra-val');
+    this.relicUpgradesListEl = document.getElementById('relic-upgrades-list');
 
     this.fervorCounterEl = document.getElementById('fervor-counter')!;
     this.fervorRateCounterEl = document.getElementById('fervor-rate-counter')!;
@@ -179,6 +249,7 @@ class AppManager {
 
     this.initEvents();
     this.renderAllLists();
+    this.updateUnlockedTabsAndHUD();
     this.startPassiveFaithLoop();
     this.updateHUD();
   }
@@ -202,6 +273,16 @@ class AppManager {
     });
     this.btnConvertMaxEl?.addEventListener('click', () => {
       this.buyMaxFollowers();
+    });
+
+    // Incarnation Upgrade Button
+    this.btnUpgradeIncarnationEl?.addEventListener('click', () => {
+      this.upgradeIncarnation();
+    });
+
+    // Relics Conversion Button
+    this.btnConvertRelicsEl?.addEventListener('click', () => {
+      this.convertFaithToRelics();
     });
 
     // Panels Toggle
@@ -255,7 +336,9 @@ class AppManager {
       followers: this.getTotalFollowersCount(),
       monuments: this.getTotalMonumentsCount(),
       fps: this.getFaithPerSecond(),
-      fervor: this.fervorPoints
+      fervor: this.fervorPoints,
+      relics: this.relicPoints,
+      totalRelics: this.relicPoints
     };
   }
 
@@ -277,6 +360,11 @@ class AppManager {
     const fervorEffectMult = getFervorUpgradeMultiplier(this.fervorUpgrades[1]);
     const fervorFaithBonus = calculateFervorFaithBonus(this.fervorPoints, fervorEffectMult);
 
+    // Relic multipliers: Cornucópia (+20% per level) & Arca da Aliança (scale with relics count)
+    const cornucopiaMult = 1 + (this.relicUpgrades[0].level * 0.20);
+    const arkMult = calculateRelicFaithMultiplier(this.relicPoints, this.relicUpgrades[5].level);
+    const relicFaithMult = cornucopiaMult * arkMult;
+
     return calculateFaithPerSecond(
       this.followers,
       this.monuments,
@@ -284,13 +372,46 @@ class AppManager {
       monumentBuff,
       passiveBuff,
       globalBuff,
-      fervorFaithBonus
+      fervorFaithBonus,
+      relicFaithMult
     );
   }
 
+  private isIncarnationUnlocked(): boolean {
+    return this.unlocks.find(u => u.id === 'unlock_incarnation')?.unlocked ?? false;
+  }
+
+  private isFervorUpgradesUnlocked(): boolean {
+    return this.unlocks.find(u => u.id === 'unlock_fervor_upgrades')?.unlocked ?? false;
+  }
+
+  private isRelicsUnlocked(): boolean {
+    return this.unlocks.find(u => u.id === 'unlock_relics')?.unlocked ?? false;
+  }
+
+  private getIncarnationStageMultiplier(): number {
+    const st = INCARNATION_STAGES.find(s => s.stage === this.incarnationStage);
+    return st ? st.multiplier : 1;
+  }
+
   private getFervorRatePerSecond(): number {
-    const prodMult = getFervorUpgradeMultiplier(this.fervorUpgrades[0]);
-    const synergyMult = getFervorUpgradeMultiplier(this.fervorUpgrades[4]);
+    if (!this.isIncarnationUnlocked()) {
+      return 0;
+    }
+
+    let prodMult = getFervorUpgradeMultiplier(this.fervorUpgrades[0]);
+    // Tocha de Prometeu (+20% Fervor per level)
+    const torchMult = 1 + (this.relicUpgrades[1].level * 0.20);
+    prodMult *= torchMult;
+
+    // Incarnation Stage multiplier (Stage 1 is 1x, Stage 2 is 100x, Stage 3 is 10000x)
+    prodMult *= this.getIncarnationStageMultiplier();
+
+    let synergyMult = getFervorUpgradeMultiplier(this.fervorUpgrades[4]);
+    // Pena Solar de Fênix (1.5x boost on synergy)
+    if (this.relicUpgrades[2].level >= 1) {
+      synergyMult *= 1.5;
+    }
     const hasSynergy = this.fervorUpgrades[4].level > 0;
 
     return calculateFervorRate(BASE_FERVOR_RATE, prodMult, this.faithPoints, synergyMult, hasSynergy);
@@ -304,9 +425,15 @@ class AppManager {
     return this.monuments.reduce((acc, curr) => acc + curr.count, 0);
   }
 
+  private getDevoteeBaseMultiplier(): number {
+    const caduceusLevel = this.relicUpgrades[3]?.level || 0;
+    return Math.max(1.05, 1.10 - (caduceusLevel * 0.005));
+  }
+
   private getItemCost(item: BuyableItem): number {
     const discount = calculateCostDiscountMultiplier(this.achievements);
-    return calculateItemCost(item, discount);
+    const customMult = item.id === 'f_devotee' ? this.getDevoteeBaseMultiplier() : undefined;
+    return calculateItemCost(item, discount, customMult);
   }
 
   // --- Actions ---
@@ -334,23 +461,6 @@ class AppManager {
       y = e.clientY;
     }
     this.spawnFloatingText(x, y, `+${formatNumber(fpc)} FÉ`);
-  }
-
-  private buyItem(item: BuyableItem): void {
-    const cost = this.getItemCost(item);
-    if (this.faithPoints >= cost) {
-      this.faithPoints -= cost;
-      item.count += 1;
-
-      this.audio.playTone(620, 'triangle', 0.15);
-      this.updateHUD();
-      this.updateStatsTab();
-      this.checkAchievements();
-      this.updateAchievementsRealtime();
-      this.renderAllLists();
-    } else {
-      this.audio.playTone(180, 'sawtooth', 0.1);
-    }
   }
 
   private buyFervorUpgrade(upg: FervorUpgrade): void {
@@ -394,7 +504,8 @@ class AppManager {
     if (this.getTotalFollowersCount() < 25) return;
 
     const discount = calculateCostDiscountMultiplier(this.achievements);
-    const { count, totalCost } = calculateMaxAffordableFollowers(devotee, this.faithPoints, discount);
+    const mult = this.getDevoteeBaseMultiplier();
+    const { count, totalCost } = calculateMaxAffordableFollowers(devotee, this.faithPoints, discount, mult);
 
     if (count > 0 && this.faithPoints >= totalCost) {
       this.faithPoints -= totalCost;
@@ -456,7 +567,8 @@ class AppManager {
       } else {
         this.btnConvertMaxEl.classList.remove('locked');
         const discount = calculateCostDiscountMultiplier(this.achievements);
-        const { count: maxCount, totalCost } = calculateMaxAffordableFollowers(devotee, this.faithPoints, discount);
+        const mult = this.getDevoteeBaseMultiplier();
+        const { count: maxCount, totalCost } = calculateMaxAffordableFollowers(devotee, this.faithPoints, discount, mult);
 
         if (maxCount > 0) {
           this.btnConvertMaxEl.disabled = false;
@@ -475,6 +587,99 @@ class AppManager {
     }
 
     this.followersArena?.syncFollowerCount(totalCount);
+  }
+
+  // --- Incarnation Management ---
+
+  private updateIncarnationTab(): void {
+    const currentStage = INCARNATION_STAGES.find((s) => s.stage === this.incarnationStage) || INCARNATION_STAGES[0];
+    const nextStage = INCARNATION_STAGES.find((s) => s.stage === this.incarnationStage + 1);
+
+    if (this.incarnationStageBadgeEl) {
+      this.incarnationStageBadgeEl.textContent = `ESTÁGIO ${this.incarnationStage}`;
+    }
+    if (this.incarnationTitleEl) {
+      this.incarnationTitleEl.textContent = currentStage.name;
+    }
+    if (this.incarnationDescSubEl) {
+      this.incarnationDescSubEl.textContent = currentStage.title;
+    }
+    if (this.incarnationRateBadgeEl) {
+      this.incarnationRateBadgeEl.textContent = `+${this.getFervorRatePerSecond().toFixed(1)} Fervor/s`;
+    }
+
+    if (this.btnUpgradeIncarnationEl && this.incarnationUpgradeTitleEl && this.incarnationUpgradeBenefitEl && this.incarnationUpgradeCostValEl) {
+      if (nextStage) {
+        this.incarnationUpgradeTitleEl.textContent = `EVOLUIR PARA ${nextStage.name.toUpperCase()}`;
+        this.incarnationUpgradeBenefitEl.textContent = nextStage.desc;
+        this.incarnationUpgradeCostValEl.textContent = `${formatNumber(nextStage.cost)} Fé`;
+        this.btnUpgradeIncarnationEl.disabled = this.faithPoints < nextStage.cost;
+      } else {
+        this.incarnationUpgradeTitleEl.textContent = 'ENCARNAÇÃO MÁXIMA';
+        this.incarnationUpgradeBenefitEl.textContent = 'Poder cósmico primordial atingido!';
+        this.incarnationUpgradeCostValEl.textContent = 'MÁX';
+        this.btnUpgradeIncarnationEl.disabled = true;
+      }
+    }
+  }
+
+  private updateIncarnationUpgradeButtonState(): void {
+    if (!this.btnUpgradeIncarnationEl) return;
+    const nextStage = INCARNATION_STAGES.find((s) => s.stage === this.incarnationStage + 1);
+    if (nextStage) {
+      this.btnUpgradeIncarnationEl.disabled = this.faithPoints < nextStage.cost;
+    } else {
+      this.btnUpgradeIncarnationEl.disabled = true;
+    }
+  }
+
+  private upgradeIncarnation(): void {
+    const nextStage = INCARNATION_STAGES.find((s) => s.stage === this.incarnationStage + 1);
+    if (!nextStage || this.faithPoints < nextStage.cost) return;
+
+    this.faithPoints -= nextStage.cost;
+    this.incarnationStage += 1;
+    this.incarnationArena?.setStage(this.incarnationStage);
+
+    this.audio.playChime();
+    this.notifications.showCustomPopup(
+      '✨ EVOLUÇÃO SAGRADA',
+      `A Encarnação atingiu o ${nextStage.name}! Multiplicador de Fervor: ${nextStage.multiplier}x.`,
+      '👁️'
+    );
+
+    this.updateIncarnationTab();
+    this.updateHUD();
+    this.updateItemButtonsState();
+  }
+
+  private updateUnlockedTabsAndHUD(): void {
+    const incarnationUnlocked = this.isIncarnationUnlocked();
+    const fervorUnlocked = this.isFervorUpgradesUnlocked();
+    const relicsUnlocked = this.isRelicsUnlocked();
+
+    // Left Panel: Incarnation Tab Button
+    if (this.tabBtnIncarnationEl) {
+      this.tabBtnIncarnationEl.style.display = incarnationUnlocked ? 'flex' : 'none';
+    }
+
+    // Top HUD Bar: Fervor Resource Box & Divider
+    if (this.hudFervorItemEl) {
+      this.hudFervorItemEl.style.display = incarnationUnlocked ? 'flex' : 'none';
+    }
+    if (this.hudFervorDividerEl) {
+      this.hudFervorDividerEl.style.display = incarnationUnlocked ? 'block' : 'none';
+    }
+
+    // Left Panel: Fervor Tab Button
+    if (this.tabBtnFervorEl) {
+      this.tabBtnFervorEl.style.display = fervorUnlocked ? 'flex' : 'none';
+    }
+
+    // Right Panel: Relics Tab Button
+    if (this.tabBtnRelicsEl) {
+      this.tabBtnRelicsEl.style.display = relicsUnlocked ? 'flex' : 'none';
+    }
   }
 
   // --- Panels & Tabs Management ---
@@ -515,89 +720,24 @@ class AppManager {
     if (targetTabId === 'tab-followers') {
       this.updateFollowersTab();
     }
+    if (targetTabId === 'tab-incarnation') {
+      this.updateIncarnationTab();
+      this.incarnationArena?.resize();
+    }
+    if (targetTabId === 'tab-relics') {
+      this.updateRelicsTab();
+    }
   }
 
   // --- Render Lists ---
 
   private renderAllLists(): void {
     this.updateFollowersTab();
+    this.updateIncarnationTab();
     this.renderFervorUpgradesList();
-    this.renderItemList(this.monuments, this.monumentsListEl, false);
+    this.renderUnlocksList();
+    this.renderRelicUpgradesList();
     this.renderAchievementsList();
-  }
-
-  private renderItemList(items: BuyableItem[], container: HTMLElement, isHeroFollower: boolean): void {
-    container.innerHTML = '';
-
-    items.forEach((item) => {
-      const cost = this.getItemCost(item);
-      const canAfford = this.faithPoints >= cost;
-
-      const card = document.createElement('div');
-      card.className = `cult-action-card ${canAfford ? '' : 'unaffordable'}`;
-      card.id = `card-${item.id}`;
-
-      let heroPreview = '';
-      if (DISPLAY_CONFIG.showCardHeroArts && isHeroFollower && item.artUrl) {
-        heroPreview = `
-          <div class="card-hero-preview">
-            <img src="${item.artUrl}" alt="${item.name}">
-          </div>
-        `;
-      }
-
-      const symbolHtml = DISPLAY_CONFIG.showEmojisAndSymbols
-        ? `<span class="card-symbol">${item.symbol}</span>`
-        : '';
-
-      card.innerHTML = `
-        ${heroPreview}
-        <div class="card-header-row">
-          <div class="card-title-group">
-            ${symbolHtml}
-            <span class="card-name">${item.name}</span>
-          </div>
-          <span class="card-count-badge">x${item.count}</span>
-        </div>
-        <div class="card-desc">
-          ${DISPLAY_CONFIG.showItemDescriptions && item.desc ? `<div class="card-desc-text">${item.desc}</div>` : ''}
-          <div class="card-benefit">${item.benefitText}</div>
-        </div>
-        <div class="card-footer-row">
-          <div class="cost-tag">
-            <span>CUSTO:</span>
-            <span>${formatNumber(cost)} Fé</span>
-          </div>
-          <button class="btn-buy-card" ${canAfford ? '' : 'disabled'}>
-            REUNIR
-          </button>
-        </div>
-      `;
-
-      const buyBtn = card.querySelector('.btn-buy-card') as HTMLButtonElement;
-      buyBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.buyItem(item);
-      });
-
-      card.addEventListener('mouseenter', (e: MouseEvent) => {
-        const totalFps = this.getFaithPerSecond();
-        const fervorFollowersMult = getFervorUpgradeMultiplier(this.fervorUpgrades[3]);
-        const perUnitBuffed = item.id.startsWith('m_')
-          ? item.baseEffect * calculateMonumentBuffMultiplier(this.achievements)
-          : item.baseEffect * fervorFollowersMult;
-        const currentTotalOutput = item.count * perUnitBuffed;
-        this.tooltips.showItemTooltip(item, totalFps, cost, currentTotalOutput, e);
-      });
-      card.addEventListener('mousemove', (e: MouseEvent) => {
-        this.tooltips.position(e);
-      });
-      card.addEventListener('mouseleave', () => {
-        this.tooltips.hide();
-      });
-
-      container.appendChild(card);
-    });
   }
 
   private renderFervorUpgradesList(): void {
@@ -710,6 +850,295 @@ class AppManager {
     });
   }
 
+  // --- Unlocks System ---
+
+  private renderUnlocksList(): void {
+    this.unlocksListEl.innerHTML = '';
+
+    this.unlocks.forEach((unlock) => {
+      // Sequential unlock display: only show if prerequisite is met or already unlocked
+      if (unlock.prerequisiteId) {
+        const prereq = this.unlocks.find((u) => u.id === unlock.prerequisiteId);
+        if (prereq && !prereq.unlocked) {
+          return;
+        }
+      }
+
+      const canAfford = this.faithPoints >= unlock.cost;
+      const card = document.createElement('div');
+      card.className = `cult-action-card unlock-action-card ${unlock.unlocked ? 'unlocked-card' : (canAfford ? '' : 'unaffordable')}`;
+      card.id = `card-${unlock.id}`;
+
+      const symbolHtml = DISPLAY_CONFIG.showEmojisAndSymbols
+        ? `<span class="card-symbol">${unlock.symbol}</span>`
+        : '';
+
+      const actionBtnHtml = unlock.unlocked
+        ? `<button class="btn-unlock-action unlocked-btn" disabled>
+             <span class="unlock-btn-check">✓</span> DESBLOQUEADO
+           </button>`
+        : `<button class="btn-unlock-action btn-buy-card" ${canAfford ? '' : 'disabled'}>
+             DESBLOQUEAR
+           </button>`;
+
+      let benefitText = '';
+      if (unlock.id === 'unlock_incarnation') {
+        benefitText = unlock.unlocked
+          ? '✓ Aba Incarnation e geração de Fervor (+1.0/s) ativadas'
+          : 'Desbloqueia a aba Incarnation e desperta o Fervor (+1.0/s)';
+      } else if (unlock.id === 'unlock_fervor_upgrades') {
+        benefitText = unlock.unlocked
+          ? '✓ Aba e Upgrades de Fervor ativados'
+          : 'Desbloqueia a árvore de Upgrades de Fervor';
+      } else if (unlock.id === 'unlock_relics') {
+        benefitText = unlock.unlocked
+          ? '✓ Aba de Relíquias disponível no painel'
+          : 'Desbloqueia a Câmara de Relíquias sagradas';
+      } else {
+        benefitText = unlock.unlocked ? '✓ Desbloqueado' : `Custo único de ${formatNumber(unlock.cost)} Fé`;
+      }
+
+      card.innerHTML = `
+        <div class="card-header-row">
+          <div class="card-title-group">
+            ${symbolHtml}
+            <span class="card-name">${unlock.name}</span>
+          </div>
+          <span class="unlock-type-badge ${unlock.unlocked ? 'badge-unlocked' : ''}">
+            ${unlock.unlocked ? 'ATIVADO' : 'NOVA MECÂNICA'}
+          </span>
+        </div>
+        <div class="card-desc">
+          ${DISPLAY_CONFIG.showItemDescriptions && unlock.desc ? `<div class="card-desc-text">${unlock.desc}</div>` : ''}
+          <div class="card-benefit" style="color: ${unlock.unlocked ? '#34d399' : 'var(--gold-accent)'}">
+            ${benefitText}
+          </div>
+        </div>
+        <div class="card-footer-row">
+          <div class="cost-tag">
+            <span>${unlock.unlocked ? 'STATUS:' : 'CUSTO:'}</span>
+            <span>${unlock.unlocked ? 'ADQUIRIDO' : `${formatNumber(unlock.cost)} Fé`}</span>
+          </div>
+          ${actionBtnHtml}
+        </div>
+      `;
+
+      if (!unlock.unlocked) {
+        const buyBtn = card.querySelector('.btn-unlock-action') as HTMLButtonElement | null;
+        buyBtn?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.buyUnlock(unlock);
+        });
+      }
+
+      card.addEventListener('mouseenter', (e: MouseEvent) => {
+        this.tooltips.showUnlockTooltip(unlock, this.faithPoints >= unlock.cost, e);
+      });
+      card.addEventListener('mousemove', (e: MouseEvent) => {
+        this.tooltips.position(e);
+      });
+      card.addEventListener('mouseleave', () => {
+        this.tooltips.hide();
+      });
+
+      this.unlocksListEl.appendChild(card);
+    });
+  }
+
+  private buyUnlock(unlock: MechanicUnlock): void {
+    if (unlock.unlocked || this.faithPoints < unlock.cost) return;
+
+    this.faithPoints -= unlock.cost;
+    unlock.unlocked = true;
+
+    if (unlock.id === 'unlock_incarnation') {
+      this.updateUnlockedTabsAndHUD();
+      this.updateIncarnationTab();
+      this.notifications.showCustomPopup(
+        '👁️ INCARNATION DESPERTADA',
+        'A Encarnação Sagrada foi convocada! O Fervor começou a queimar a +1.0/s.',
+        '👁️'
+      );
+    } else if (unlock.id === 'unlock_fervor_upgrades') {
+      this.updateUnlockedTabsAndHUD();
+      this.renderFervorUpgradesList();
+      this.notifications.showCustomPopup(
+        '🔥 RITOS DE FERVOR',
+        'Os Upgrades de Fervor foram revelados no painel esquerdo!',
+        '🔥'
+      );
+    } else if (unlock.id === 'unlock_relics') {
+      this.updateUnlockedTabsAndHUD();
+      this.updateRelicsTab();
+      this.renderRelicUpgradesList();
+      this.notifications.showCustomPopup(
+        '🏺 NOVA MECÂNICA',
+        'A aba de Relíquias sagradas foi despertada no santuário!',
+        '🏺'
+      );
+    }
+
+    this.audio.playChime();
+    this.renderUnlocksList();
+    this.updateHUD();
+    this.updateItemButtonsState();
+  }
+
+  // --- Relics (Mythological Alchemy) System ---
+
+  private convertFaithToRelics(): void {
+    const toGet = calculateRelicsToGet(this.faithPoints);
+    if (this.relicConvertCooldown > 0 || toGet <= 0) return;
+
+    this.relicPoints += toGet;
+    if (toGet > this.bestRelicsToGet) {
+      this.bestRelicsToGet = toGet;
+    }
+    this.faithPoints = 0;
+    this.relicConvertCooldown = 3;
+
+    this.audio.playChime();
+    this.spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, `+${toGet} RELÍQUIAS!`);
+    this.notifications.showCustomPopup('🏺 FÉ TRANSMUTADA', `Você consagrou ${toGet} Relíquias sagradas!`, '🏺', '✦ ALQUIMIA CÓSMICA ✦');
+
+    this.updateHUD();
+    this.updateRelicsTab();
+    this.renderRelicUpgradesList();
+    this.updateItemButtonsState();
+  }
+
+  private buyRelicUpgrade(relic: RelicUpgrade): void {
+    if (relic.level >= relic.maxLevel || this.relicPoints < relic.cost) return;
+
+    this.relicPoints -= relic.cost;
+    relic.level += 1;
+
+    this.audio.playTone(740, 'triangle', 0.2);
+    this.updateHUD();
+    this.updateRelicsTab();
+    this.renderRelicUpgradesList();
+    this.updateItemButtonsState();
+    this.updateFervorButtonsState();
+  }
+
+  private renderRelicUpgradesList(): void {
+    if (!this.relicUpgradesListEl) return;
+    this.relicUpgradesListEl.innerHTML = '';
+
+    this.relicUpgrades.forEach((relic) => {
+      const isMax = relic.level >= relic.maxLevel;
+      const canAfford = this.relicPoints >= relic.cost;
+      const effectDesc = relic.effectText(relic.level, this.relicPoints);
+
+      const card = document.createElement('div');
+      card.className = `cult-action-card relic-action-card ${isMax ? 'maxed' : (canAfford ? '' : 'unaffordable')}`;
+      card.id = `card-${relic.id}`;
+
+      const symbolHtml = DISPLAY_CONFIG.showEmojisAndSymbols
+        ? `<span class="card-symbol">${relic.icon}</span>`
+        : '';
+
+      const btnHtml = isMax
+        ? `<button class="btn-buy-relic maxed-btn" disabled>
+             MÁXIMO
+           </button>`
+        : `<button class="btn-buy-relic" ${canAfford ? '' : 'disabled'}>
+             CONSAGRAR
+           </button>`;
+
+      card.innerHTML = `
+        <div class="card-header-row">
+          <div class="card-title-group">
+            ${symbolHtml}
+            <span class="card-name">${relic.name}</span>
+          </div>
+          <span class="relic-level-badge ${isMax ? 'maxed' : ''}">(${relic.level}/${relic.maxLevel})</span>
+        </div>
+        <div class="card-desc">
+          ${DISPLAY_CONFIG.showItemDescriptions && relic.desc ? `<div class="card-desc-text">${relic.desc}</div>` : ''}
+          <div class="relic-benefit-text">${effectDesc}</div>
+        </div>
+        <div class="card-footer-row">
+          <div class="relic-cost-tag">
+            <span>CUSTO:</span>
+            <span>${isMax ? 'CONCLUÍDO' : `${formatNumber(relic.cost)} Relíquias`}</span>
+          </div>
+          ${btnHtml}
+        </div>
+      `;
+
+      if (!isMax) {
+        const buyBtn = card.querySelector('.btn-buy-relic') as HTMLButtonElement | null;
+        buyBtn?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.buyRelicUpgrade(relic);
+        });
+      }
+
+      card.addEventListener('mouseenter', (e: MouseEvent) => {
+        this.tooltips.showRelicTooltip(relic, this.relicPoints, e);
+      });
+      card.addEventListener('mousemove', (e: MouseEvent) => {
+        this.tooltips.position(e);
+      });
+      card.addEventListener('mouseleave', () => {
+        this.tooltips.hide();
+      });
+
+      this.relicUpgradesListEl!.appendChild(card);
+    });
+  }
+
+  private updateRelicsTab(): void {
+    const toGet = calculateRelicsToGet(this.faithPoints);
+    if (this.relicsToGetEl) {
+      this.relicsToGetEl.textContent = formatNumber(toGet);
+    }
+    if (this.relicsConvertCooldownEl) {
+      this.relicsConvertCooldownEl.textContent = `${Math.ceil(this.relicConvertCooldown)}`;
+    }
+    if (this.relicsBalanceValEl) {
+      this.relicsBalanceValEl.textContent = formatNumber(this.relicPoints);
+    }
+    if (this.relicsExtraValEl) {
+      const extra = calculateExtraRelicsPerSecond(this.bestRelicsToGet);
+      this.relicsExtraValEl.textContent = formatNumber(extra);
+    }
+
+    if (this.btnConvertRelicsEl) {
+      const canConvert = this.relicConvertCooldown <= 0 && toGet > 0;
+      this.btnConvertRelicsEl.disabled = !canConvert;
+    }
+
+    this.updateRelicButtonsState();
+  }
+
+  private updateRelicButtonsState(): void {
+    this.relicUpgrades.forEach((relic) => {
+      const isMax = relic.level >= relic.maxLevel;
+      const canAfford = this.relicPoints >= relic.cost;
+      const card = document.getElementById(`card-${relic.id}`);
+      if (card) {
+        const btn = card.querySelector<HTMLButtonElement>('.btn-buy-relic');
+        if (btn && !isMax) {
+          btn.disabled = !canAfford;
+        }
+        if (isMax) {
+          card.classList.remove('unaffordable');
+          card.classList.add('maxed');
+        } else if (canAfford) {
+          card.classList.remove('unaffordable');
+        } else {
+          card.classList.add('unaffordable');
+        }
+        const benefitEl = card.querySelector('.relic-benefit-text');
+        if (benefitEl && relic.id === 'relic_ark') {
+          benefitEl.textContent = relic.effectText(relic.level, this.relicPoints);
+        }
+      }
+    });
+  }
+
   // --- Realtime Achievements Progress Update ---
 
   private updateAchievementsRealtime(): void {
@@ -755,24 +1184,29 @@ class AppManager {
   }
 
   private updateItemButtonsState(): void {
-    const updateContainer = (items: BuyableItem[]) => {
-      items.forEach((item) => {
-        const cost = this.getItemCost(item);
-        const card = document.getElementById(`card-${item.id}`);
-        if (card) {
-          const btn = card.querySelector<HTMLButtonElement>('.btn-buy-card');
-          if (btn) btn.disabled = this.faithPoints < cost;
-          if (this.faithPoints >= cost) {
-            card.classList.remove('unaffordable');
-          } else {
-            card.classList.add('unaffordable');
-          }
-        }
-      });
-    };
-
     this.updateFollowersTab();
-    updateContainer(this.monuments);
+    this.updateIncarnationUpgradeButtonState();
+    this.updateUnlocksButtonsState();
+    if (this.isRelicsUnlocked()) {
+      this.updateRelicsTab();
+    }
+  }
+
+  private updateUnlocksButtonsState(): void {
+    this.unlocks.forEach((unlock) => {
+      if (unlock.unlocked) return;
+      const canAfford = this.faithPoints >= unlock.cost;
+      const card = document.getElementById(`card-${unlock.id}`);
+      if (card) {
+        const btn = card.querySelector<HTMLButtonElement>('.btn-unlock-action');
+        if (btn) btn.disabled = !canAfford;
+        if (canAfford) {
+          card.classList.remove('unaffordable');
+        } else {
+          card.classList.add('unaffordable');
+        }
+      }
+    });
   }
 
   private updateFervorButtonsState(): void {
@@ -800,13 +1234,12 @@ class AppManager {
         ach.unlocked = true;
         newlyUnlocked = true;
         this.notifications.showAchievementPopup(ach);
-        this.audio.playTone(784, 'sine', 0.35);
+        this.audio.playTone(880, 'sine', 0.25);
       }
     }
 
     if (newlyUnlocked) {
-      this.updateAchievementsRealtime();
-      this.updateHUD();
+      this.renderAchievementsList();
       this.updateStatsTab();
     }
   }
@@ -879,16 +1312,31 @@ class AppManager {
   private startPassiveFaithLoop(): void {
     const tickInterval = 100;
     window.setInterval(() => {
+      const deltaSec = tickInterval / 1000;
       const fps = this.getFaithPerSecond();
       if (fps > 0) {
-        const gained = fps * (tickInterval / 1000);
+        const gained = fps * deltaSec;
         this.faithPoints += gained;
         this.totalFaithAccumulated += gained;
       }
 
       const fervorRate = this.getFervorRatePerSecond();
-      const fervorGained = fervorRate * (tickInterval / 1000);
+      const fervorGained = fervorRate * deltaSec;
       this.fervorPoints += fervorGained;
+
+      if (this.relicConvertCooldown > 0) {
+        this.relicConvertCooldown = Math.max(0, this.relicConvertCooldown - deltaSec);
+      }
+
+      if (this.isRelicsUnlocked()) {
+        const extraPerSec = calculateExtraRelicsPerSecond(this.bestRelicsToGet);
+        this.relicPoints += extraPerSec * deltaSec;
+
+        if (this.relicUpgrades[4].level >= 1) {
+          const toGet = calculateRelicsToGet(this.faithPoints);
+          this.relicPoints += (toGet * 0.05) * deltaSec;
+        }
+      }
 
       this.updateHUD();
       this.updateStatsTab();

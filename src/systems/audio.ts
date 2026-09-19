@@ -33,4 +33,10 @@ export class AudioManager {
       // Safety catch for audio autoplay policies
     }
   }
+
+  public playChime(): void {
+    this.playTone(523.25, 'sine', 0.15);
+    setTimeout(() => this.playTone(659.25, 'sine', 0.18), 80);
+    setTimeout(() => this.playTone(783.99, 'sine', 0.25), 160);
+  }
 }

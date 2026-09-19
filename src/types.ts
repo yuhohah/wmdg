@@ -41,6 +41,8 @@ export interface GameState {
   monuments: number;
   fps: number;
   fervor: number;
+  relics?: number;
+  totalRelics?: number;
 }
 
 export interface AchievementProgress {
@@ -62,4 +64,30 @@ export interface Achievement {
   buffVal: number;
   check: (state: GameState) => boolean;
   getProgress: (state: GameState) => AchievementProgress;
+}
+
+export interface MechanicUnlock {
+  id: string;
+  name: string;
+  desc: string;
+  lore: string;
+  symbol: string;
+  cost: number;
+  costCurrency: 'faith' | 'fervor';
+  unlocked: boolean;
+  tabId?: string;
+  tabName?: string;
+  prerequisiteId?: string;
+}
+
+export interface RelicUpgrade {
+  id: string;
+  name: string;
+  desc: string;
+  lore: string;
+  icon: string;
+  cost: number;
+  level: number;
+  maxLevel: number;
+  effectText: (level: number, relicPoints?: number) => string;
 }

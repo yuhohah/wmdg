@@ -34,12 +34,12 @@
                 <span class="res-dash">-</span>
                 <span id="faith-per-sec-counter" class="res-rate">0/s</span>
               </div>
-              <div class="resource-divider"></div>
-              <div class="resource-item">
+              <div class="resource-divider" id="hud-fervor-divider" style="display: none;"></div>
+              <div class="resource-item" id="hud-fervor-item" style="display: none;">
                 <span class="res-name">FERVOR:</span>
                 <span id="fervor-counter-hud" class="res-num">0</span>
                 <span class="res-dash">-</span>
-                <span id="fervor-rate-counter-hud" class="res-rate">1.0/s</span>
+                <span id="fervor-rate-counter-hud" class="res-rate">0.0/s</span>
               </div>
             </div>
           </div>
@@ -98,7 +98,11 @@
                   <span class="tab-icon">👥</span>
                   <span class="tab-label">Fiéis</span>
                 </button>
-                <button class="panel-tab-btn" data-panel="left" data-tab="tab-fervor">
+                <button class="panel-tab-btn" data-panel="left" data-tab="tab-incarnation" id="tab-btn-incarnation" style="display: none;">
+                  <span class="tab-icon">👁️</span>
+                  <span class="tab-label">Incarnation</span>
+                </button>
+                <button class="panel-tab-btn" data-panel="left" data-tab="tab-fervor" id="tab-btn-fervor" style="display: none;">
                   <span class="tab-icon">🔥</span>
                   <span class="tab-label">Fervor</span>
                 </button>
@@ -142,7 +146,7 @@
                       </div>
                       <div class="btn-action-cost">
                         <span>CUSTO:</span>
-                        <span class="cost-val" id="convert-one-cost-val">10 Fé</span>
+                        <span class="cost-val" id="convert-one-cost-val">20 Fé</span>
                       </div>
                     </button>
 
@@ -155,6 +159,42 @@
                       <div class="btn-action-cost" id="convert-max-cost">
                         <span id="convert-max-cost-label">BLOQUEADO</span>
                         <span class="cost-val" id="convert-max-cost-val">🔒</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Tab: Incarnation (Encarnação Sagrada) -->
+                <div id="tab-incarnation" class="tab-pane">
+                  <div class="incarnation-tab-header">
+                    <div class="incarnation-stat-group">
+                      <span class="incarnation-stage-tag" id="incarnation-stage-badge">ESTÁGIO I</span>
+                      <div class="incarnation-stat-row">
+                        <span id="incarnation-title" class="incarnation-title-val">Avatar Neófito</span>
+                      </div>
+                      <span class="incarnation-desc-sub" id="incarnation-desc-sub">A Centelha Primordial da Esfera</span>
+                    </div>
+                    <div class="incarnation-rate-badge" id="incarnation-rate-badge">+1.0 Fervor/s</div>
+                  </div>
+
+                  <!-- Arena: The Grand Incarnation Canvas -->
+                  <div class="incarnation-arena-wrapper">
+                    <canvas id="incarnation-canvas" class="incarnation-canvas"></canvas>
+                    <div class="incarnation-arena-overlay">
+                      <span class="incarnation-arena-hint">SANTUÁRIO DA ENCARNAÇÃO</span>
+                    </div>
+                  </div>
+
+                  <!-- Upgrade Action Card -->
+                  <div class="incarnation-controls">
+                    <button id="btn-upgrade-incarnation" class="btn-follower-action btn-incarnation-upgrade">
+                      <div class="btn-action-main">
+                        <span class="btn-action-title" id="incarnation-upgrade-title">EVOLUIR ENCARNAÇÃO</span>
+                        <span class="btn-action-benefit" id="incarnation-upgrade-benefit">Multiplica Fervor por 100x</span>
+                      </div>
+                      <div class="btn-action-cost" id="incarnation-upgrade-cost-group">
+                        <span id="incarnation-cost-label">CUSTO:</span>
+                        <span class="cost-val" id="incarnation-cost-val">2.50M Fé</span>
                       </div>
                     </button>
                   </div>
@@ -254,7 +294,7 @@
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6"></polyline>
               </svg>
-              <span class="expand-label">MONUMENTOS</span>
+              <span class="expand-label">DESBLOQUEIOS</span>
             </button>
 
             <!-- RIGHT FRAME: SIDE PANEL (COLLAPSIBLE) -->
@@ -268,17 +308,21 @@
                 </button>
                 <div class="panel-title-group text-right">
                   <span class="panel-tag">PAINEL DIREITO</span>
-                  <h3 class="panel-title">MONUMENTOS & CONQUISTAS</h3>
+                  <h3 class="panel-title">DESBLOQUEIOS & CONQUISTAS</h3>
                 </div>
               </div>
 
               <!-- Options Navigation Tabs -->
               <nav class="panel-tabs-bar" aria-label="Opções do Painel Direito">
-                <button class="panel-tab-btn active" data-panel="right" data-tab="tab-monuments">
-                  <span class="tab-icon">🗿</span>
-                  <span class="tab-label">Monumentos</span>
+                <button class="panel-tab-btn active" data-panel="right" data-tab="tab-unlocks" id="tab-btn-unlocks">
+                  <span class="tab-icon">🔓</span>
+                  <span class="tab-label">Desbloqueios</span>
                 </button>
-                <button class="panel-tab-btn" data-panel="right" data-tab="tab-achievements">
+                <button class="panel-tab-btn" data-panel="right" data-tab="tab-relics" id="tab-btn-relics" style="display: none;">
+                  <span class="tab-icon">🏺</span>
+                  <span class="tab-label">Relíquias</span>
+                </button>
+                <button class="panel-tab-btn" data-panel="right" data-tab="tab-achievements" id="tab-btn-achievements">
                   <span class="tab-icon">🏆</span>
                   <span class="tab-label">Conquistas</span>
                 </button>
@@ -286,9 +330,48 @@
 
               <!-- Panel Tab Contents -->
               <div class="panel-body custom-scrollbar">
-                <!-- Tab: Monumentos -->
-                <div id="tab-monuments" class="tab-pane active">
-                  <div class="card-list" id="monuments-list"></div>
+                <!-- Tab: Desbloqueios -->
+                <div id="tab-unlocks" class="tab-pane active">
+                  <div class="unlocks-tab-header">
+                    <div class="unlocks-stat-group">
+                      <span class="unlocks-stat-label">EXPANSÃO DO CULTO</span>
+                      <div class="unlocks-header-title-row">
+                        <span class="unlocks-header-title">Novas Mecânicas</span>
+                      </div>
+                      <p class="unlocks-header-desc">Consagre os recursos do culto para desbloquear novas ordens cósmicas.</p>
+                    </div>
+                  </div>
+                  <div class="card-list" id="unlocks-list"></div>
+                </div>
+
+                <!-- Tab: Relíquias (Alquimia Sagrada) -->
+                <div id="tab-relics" class="tab-pane">
+                  <div class="relics-tab-header">
+                    <div class="relics-stat-group">
+                      <span class="relics-stat-label">ALQUIMIA SAGRADA</span>
+                      <div class="relics-header-title-row">
+                        <span class="relics-header-title">Câmara das Relíquias</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Conversion Section (Based on DodecaDragons Alchemy) -->
+                  <div class="relics-convert-section">
+                    <button id="btn-convert-relics" class="btn-convert-relics" disabled>
+                      Consagrar toda a Fé em <span id="relics-to-get">0</span> Relíquias (<span id="relics-convert-cooldown">0</span>)
+                    </button>
+                    <div class="relics-status-info">
+                      <div class="relics-balance-text">
+                        Você possui <span id="relics-balance-val">0</span> Relíquias
+                      </div>
+                      <div class="relics-extra-rate-text">
+                        + Ganho de <span id="relics-extra-val">1</span> Relíquias extras por segundo :)
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Mythological Relics Upgrades List -->
+                  <div class="card-list" id="relic-upgrades-list"></div>
                 </div>
 
                 <!-- Tab: Conquistas -->

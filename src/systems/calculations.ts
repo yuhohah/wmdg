@@ -1,7 +1,12 @@
 import type { BuyableItem, FervorUpgrade, Achievement } from '../types.js';
 
-export function calculateItemCost(item: BuyableItem, discountMultiplier: number = 1.0): number {
-  let cost = Math.floor(item.baseCost * Math.pow(item.costMultiplier, item.count));
+export function calculateItemCost(
+  item: BuyableItem,
+  discountMultiplier: number = 1.0,
+  customMultiplier?: number
+): number {
+  const mult = customMultiplier !== undefined ? customMultiplier : item.costMultiplier;
+  let cost = Math.floor(item.baseCost * Math.pow(mult, item.count));
   if (item.id === 'f_devotee') {
     cost = Math.floor(cost * discountMultiplier);
   }
@@ -69,12 +74,13 @@ export function calculateFaithPerSecond(
   monumentBuffMult: number,
   passiveBuffMult: number,
   globalBuffMult: number,
-  fervorFaithBonus: number
+  fervorFaithBonus: number,
+  relicFaithMult: number = 1.0
 ): number {
   const followersOutput = followers.reduce((acc, curr) => acc + curr.count * curr.baseEffect, 0) * fervorFollowersMult;
   const monumentsOutput = monuments.reduce((acc, curr) => acc + curr.count * curr.baseEffect, 0) * monumentBuffMult;
   const totalBase = followersOutput + monumentsOutput;
-  return totalBase * passiveBuffMult * globalBuffMult * fervorFaithBonus;
+  return totalBase * passiveBuffMult * globalBuffMult * fervorFaithBonus * relicFaithMult;
 }
 
 export function formatNumber(num: number): string {
@@ -90,15 +96,17 @@ export function formatNumber(num: number): string {
 export function calculateMaxAffordableFollowers(
   item: BuyableItem,
   currentFaith: number,
-  discountMultiplier: number = 1.0
+  discountMultiplier: number = 1.0,
+  customMultiplier?: number
 ): { count: number; totalCost: number } {
   let count = 0;
   let totalCost = 0;
   let remainingFaith = currentFaith;
   let tempCount = item.count;
+  const mult = customMultiplier !== undefined ? customMultiplier : item.costMultiplier;
 
   while (true) {
-    let nextCost = Math.floor(item.baseCost * Math.pow(item.costMultiplier, tempCount));
+    let nextCost = Math.floor(item.baseCost * Math.pow(mult, tempCount));
     if (item.id === 'f_devotee') {
       nextCost = Math.floor(nextCost * discountMultiplier);
     }
@@ -116,4 +124,20 @@ export function calculateMaxAffordableFollowers(
   }
 
   return { count, totalCost };
+}
+
+export function calculateRelicsToGet(faith: number): number {
+  if (faith < 100) return 0;
+  // Based on DodecaDragons formula: log2(faith + 1) * 1.75 (~25 Relics at 20,000 Faith, matching reference image)
+  return Math.max(0, Math.floor(Math.log2(faith + 1) * 1.75));
+}
+
+export function calculateExtraRelicsPerSecond(bestRelics: number): number {
+  return Math.max(1, Math.floor(bestRelics / 10));
+}
+
+export function calculateRelicFaithMultiplier(relicPoints: number, level: number): number {
+  if (level <= 0) return 1.0;
+  // Based on DodecaDragons: (log10(relics + 1) + 1) ^ (level * 1.2)
+  return Math.pow(Math.log10(Math.max(0, relicPoints) + 1) + 1, level * 1.2);
 }
