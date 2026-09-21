@@ -75,12 +75,13 @@ export function calculateFaithPerSecond(
   passiveBuffMult: number,
   globalBuffMult: number,
   fervorFaithBonus: number,
-  relicFaithMult: number = 1.0
+  relicFaithMult: number = 1.0,
+  incarnationBoostMult: number = 1.0
 ): number {
   const followersOutput = followers.reduce((acc, curr) => acc + curr.count * curr.baseEffect, 0) * fervorFollowersMult;
   const monumentsOutput = monuments.reduce((acc, curr) => acc + curr.count * curr.baseEffect, 0) * monumentBuffMult;
   const totalBase = followersOutput + monumentsOutput;
-  return totalBase * passiveBuffMult * globalBuffMult * fervorFaithBonus * relicFaithMult;
+  return totalBase * passiveBuffMult * globalBuffMult * fervorFaithBonus * relicFaithMult * incarnationBoostMult;
 }
 
 export function formatNumber(num: number): string {

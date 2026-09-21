@@ -13,6 +13,8 @@ export interface Walker {
   walkCycle: number;
   breathTimer: number;
   prayParticles: Array<{ x: number; y: number; vy: number; alpha: number; size: number }>;
+  isMiraclePlea?: boolean;
+  miracleTimer?: number;
 }
 
 export class FollowersArena {
@@ -25,17 +27,45 @@ export class FollowersArena {
   private height: number = 220;
   private dpr: number = 1;
   private onFollowerClickCallback?: (x: number, y: number) => void;
+  private onMiracleClickCallback?: (clientX: number, clientY: number, walker: Walker) => void;
+  private miracleSpawnCooldown: number = 300; // ~5 seconds after game starts
+  private spriteSheet: HTMLImageElement | null = null;
+  private spriteLoaded: boolean = false;
 
   constructor(canvasId: string = 'followers-walk-canvas') {
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     this.ctx = this.canvas.getContext('2d', { alpha: true })!;
     this.initCanvas();
+    this.loadSprite();
     this.setupEvents();
     this.startLoop();
   }
 
+  private loadSprite(): void {
+    this.spriteSheet = new Image();
+    this.spriteSheet.src = '/assets/cultist_spritesheet.png';
+    this.spriteSheet.onload = () => {
+      this.spriteLoaded = true;
+    };
+  }
+
   public setOnClickCallback(cb: (x: number, y: number) => void): void {
     this.onFollowerClickCallback = cb;
+  }
+
+  public setOnMiracleClickCallback(cb: (clientX: number, clientY: number, walker: Walker) => void): void {
+    this.onMiracleClickCallback = cb;
+  }
+
+  public triggerMiraclePlea(targetWalker?: Walker): void {
+    const available = this.walkers.filter((w) => !w.isMiraclePlea);
+    const w = targetWalker || (available.length > 0 ? available[Math.floor(Math.random() * available.length)] : null);
+    if (!w) return;
+    w.isMiraclePlea = true;
+    w.miracleTimer = 900; // 15 seconds (at 60fps)
+    w.state = 'pray';
+    w.stateTimer = 900;
+    this.spawnPrayerParticles(w, 10);
   }
 
   private initCanvas(): void {
@@ -67,12 +97,37 @@ export class FollowersArena {
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
 
-      // Check if clicked near a walker
+      // 1. Check if clicked on a walker requesting a miracle (prioritize miracle bubble)
+      let miracleWalker: Walker | null = null;
+      for (const w of this.walkers) {
+        if (w.isMiraclePlea) {
+          const dx = w.x - clickX;
+          const dy = (w.y - 34) - clickY;
+          if (Math.hypot(dx, dy) < 42) {
+            miracleWalker = w;
+            break;
+          }
+        }
+      }
+
+      if (miracleWalker) {
+        miracleWalker.isMiraclePlea = false;
+        miracleWalker.miracleTimer = 0;
+        miracleWalker.state = 'pray';
+        miracleWalker.stateTimer = 120;
+        this.spawnPrayerParticles(miracleWalker, 18);
+        if (this.onMiracleClickCallback) {
+          this.onMiracleClickCallback(e.clientX, e.clientY, miracleWalker);
+        }
+        return;
+      }
+
+      // 2. Check if clicked near a normal walker
       let hitWalker: Walker | null = null;
       for (const w of this.walkers) {
         const dx = w.x - clickX;
-        const dy = w.y - 10 - clickY;
-        if (Math.hypot(dx, dy) < 22) {
+        const dy = w.y - 20 - clickY;
+        if (Math.hypot(dx, dy) < 26) {
           hitWalker = w;
           break;
         }
@@ -230,9 +285,37 @@ export class FollowersArena {
         }
       }
 
+      // Miracle plea timer update
+      if (w.isMiraclePlea) {
+        w.miracleTimer = (w.miracleTimer || 0) - 1;
+        w.state = 'pray';
+        w.stateTimer = Math.max(20, w.miracleTimer);
+        if (Math.random() < 0.2) {
+          this.spawnPrayerParticles(w, 1);
+        }
+        if (w.miracleTimer <= 0) {
+          w.isMiraclePlea = false;
+          w.state = 'idle';
+          w.stateTimer = 60;
+        }
+      }
+
       // Keep within bounds
       w.x = Math.max(pad, Math.min(this.width - pad, w.x));
       w.y = Math.max(minY, Math.min(maxY, w.y));
+    }
+
+    // Periodically spawn a miracle plea
+    if (this.walkers.length > 0) {
+      const hasActiveMiracle = this.walkers.some((w) => w.isMiraclePlea);
+      if (!hasActiveMiracle) {
+        this.miracleSpawnCooldown -= 1;
+        if (this.miracleSpawnCooldown <= 0) {
+          this.triggerMiraclePlea();
+          // Next miracle in ~35 to 65 seconds (2100 - 3900 frames)
+          this.miracleSpawnCooldown = 2100 + Math.floor(Math.random() * 1800);
+        }
+      }
     }
   }
 
@@ -302,47 +385,161 @@ export class FollowersArena {
 
   private drawWalker(w: Walker): void {
     const ctx = this.ctx;
-    ctx.save();
-
     const x = Math.round(w.x);
     const y = Math.round(w.y);
 
     // 1. Drop shadow under feet
     ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
     ctx.beginPath();
-    ctx.ellipse(x, y + 1, 7, 3, 0, 0, Math.PI * 2);
+    ctx.ellipse(x, y + 1, 10, 3.5, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Bobbing & stepping offset
-    let bob = 0;
-    let stepOffset = 0;
-    if (w.state === 'walk') {
-      bob = Math.abs(Math.sin(w.walkCycle)) * 2;
-      stepOffset = Math.sin(w.walkCycle) * 2;
+    // 2. Draw sprite or procedural fallback
+    if (this.spriteLoaded && this.spriteSheet) {
+      this.drawFollowerSprite(w, x, y);
     } else {
-      bob = Math.sin(w.breathTimer) * 0.7;
+      ctx.save();
+      let bob = 0;
+      let stepOffset = 0;
+      if (w.state === 'walk') {
+        bob = Math.abs(Math.sin(w.walkCycle)) * 2;
+        stepOffset = Math.sin(w.walkCycle) * 2;
+      } else {
+        bob = Math.sin(w.breathTimer) * 0.7;
+      }
+      const spriteY = y - 18 - bob;
+      ctx.translate(x, spriteY);
+      ctx.scale(w.facing, 1);
+      this.renderCultistSprite(w, stepOffset);
+      ctx.restore();
     }
-
-    const spriteY = y - 18 - bob;
-
-    // Direction flip
-    ctx.translate(x, spriteY);
-    ctx.scale(w.facing, 1);
-
-    // 2. Draw procedural cultist sprite
-    this.renderCultistSprite(w, stepOffset);
-
-    ctx.restore();
 
     // 3. Draw prayer particles in absolute arena coordinates
     if (w.prayParticles.length > 0) {
       for (const p of w.prayParticles) {
-        ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
+        ctx.fillStyle = `rgba(251, 191, 36, ${p.alpha * 0.9})`;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
+
+        ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * 0.5, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
+
+    // 4. Draw miracle plea speech bubble if asking for miracle
+    if (w.isMiraclePlea) {
+      this.drawMiracleSpeechBubble(w, x, y);
+    }
+  }
+
+  private drawMiracleSpeechBubble(w: Walker, x: number, y: number): void {
+    const ctx = this.ctx;
+    ctx.save();
+
+    const bob = Math.sin(w.breathTimer * 4) * 2.5;
+    const pulse = 1 + Math.sin(w.breathTimer * 6) * 0.08;
+
+    const bx = x;
+    const by = y - 56 + bob;
+    const bw = 38 * pulse;
+    const bh = 24 * pulse;
+    const r = 7 * pulse;
+
+    // Glowing halo behind speech bubble
+    ctx.shadowColor = 'rgba(245, 158, 11, 0.9)';
+    ctx.shadowBlur = 12;
+
+    // Speech bubble path with bottom pointer/tail
+    ctx.beginPath();
+    ctx.moveTo(bx - bw / 2 + r, by - bh / 2);
+    ctx.lineTo(bx + bw / 2 - r, by - bh / 2);
+    ctx.arcTo(bx + bw / 2, by - bh / 2, bx + bw / 2, by + bh / 2, r);
+    ctx.lineTo(bx + bw / 2, by + bh / 2 - r);
+    ctx.arcTo(bx + bw / 2, by + bh / 2, bx - bw / 2, by + bh / 2, r);
+
+    // Tail pointing down to hood
+    ctx.lineTo(bx + 4, by + bh / 2);
+    ctx.lineTo(bx, by + bh / 2 + 6);
+    ctx.lineTo(bx - 4, by + bh / 2);
+
+    ctx.lineTo(bx - bw / 2 + r, by + bh / 2);
+    ctx.arcTo(bx - bw / 2, by + bh / 2, bx - bw / 2, by - bh / 2, r);
+    ctx.arcTo(bx - bw / 2, by - bh / 2, bx + bw / 2, by - bh / 2, r);
+    ctx.closePath();
+
+    ctx.fillStyle = '#0f172a';
+    ctx.fill();
+
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Inner glowing miracle icon (✨)
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#fef08a';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('✨', bx, by);
+
+    // Golden divine sparkles around bubble
+    const rayDist = 20 * pulse;
+    for (let i = 0; i < 4; i++) {
+      const angle = (i * Math.PI) / 2 + w.breathTimer * 2;
+      const rx = bx + Math.cos(angle) * rayDist;
+      const ry = by + Math.sin(angle) * (rayDist * 0.7);
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.7)';
+      ctx.beginPath();
+      ctx.arc(rx, ry, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
+  private drawFollowerSprite(w: Walker, x: number, y: number): void {
+    if (!this.spriteSheet) return;
+    const ctx = this.ctx;
+
+    let row = 0;
+    let col = 0;
+    let bob = 0;
+
+    if (w.state === 'walk') {
+      row = 0;
+      col = Math.floor(w.walkCycle) % 6;
+      bob = Math.abs(Math.sin(w.walkCycle)) * 1.2;
+    } else if (w.state === 'pray') {
+      row = 1;
+      // Cycle through praying/kneeling poses smoothly
+      col = Math.floor(Math.abs(w.breathTimer * 1.5)) % 6;
+      bob = 0;
+    } else {
+      // Idle breathing
+      row = 0;
+      col = 0;
+      bob = Math.sin(w.breathTimer) * 0.8;
+    }
+
+    const frameW = 1024 / 6;
+    const frameH = 341 / 2;
+    const sx = Math.floor(col * frameW);
+    const sy = Math.floor(row * frameH);
+    const sw = Math.floor((col + 1) * frameW) - sx;
+    const sh = Math.floor((row + 1) * frameH) - sy;
+
+    const destH = 44;
+    const destW = Math.round(destH * (sw / sh));
+
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.translate(x, y - bob);
+    ctx.scale(w.facing, 1);
+    ctx.drawImage(this.spriteSheet, sx, sy, sw, sh, -destW / 2, -destH + 2, destW, destH);
+    ctx.restore();
   }
 
   private renderCultistSprite(w: Walker, step: number): void {

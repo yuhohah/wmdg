@@ -181,7 +181,27 @@
                   <div class="incarnation-arena-wrapper">
                     <canvas id="incarnation-canvas" class="incarnation-canvas"></canvas>
                     <div class="incarnation-arena-overlay">
-                      <span class="incarnation-arena-hint">SANTUÁRIO DA ENCARNAÇÃO</span>
+                      <span class="incarnation-arena-hint">SANTUÁRIO DA ENCARNAÇÃO (CLIQUE P/ +2s DE 2x FÉ)</span>
+                    </div>
+                  </div>
+
+                  <!-- Incarnation Blessing / Boost Bar (2x Fé/s) -->
+                  <div class="incarnation-boost-card" id="incarnation-boost-card">
+                    <div class="incarnation-boost-header">
+                      <div class="boost-header-left">
+                        <span class="boost-badge-icon">⚡</span>
+                        <div class="boost-title-col">
+                          <span class="boost-card-title">BÊNÇÃO DA ENCARNAÇÃO</span>
+                          <span class="boost-card-sub" id="incarnation-boost-status">Clique na Encarnação (+2s) para dobrar Fé/s</span>
+                        </div>
+                      </div>
+                      <div class="boost-header-right">
+                        <span class="boost-active-tag inactive" id="incarnation-boost-badge">2x FÉ INATIVO</span>
+                        <span class="boost-timer-display" id="incarnation-boost-timer-text">0.0s / 60s</span>
+                      </div>
+                    </div>
+                    <div class="incarnation-boost-track">
+                      <div class="incarnation-boost-fill" id="incarnation-boost-fill" style="width: 0%;"></div>
                     </div>
                   </div>
 
@@ -281,6 +301,53 @@
                     <div class="sphere-orbit-ring ring-1"></div>
                     <div class="sphere-orbit-ring ring-2"></div>
                     <div class="sphere-aura"></div>
+
+                    <!-- 6 Round Satellite Figures Orbiting the Sphere -->
+                    <div class="sphere-satellites-orbit" id="sphere-satellites-orbit">
+                      <div class="sphere-satellite-node state-locked" data-node-index="0" style="--node-angle: 0deg;" title="Santuário Satélite I (Oculto)">
+                        <div class="satellite-node-inner">
+                          <div class="satellite-sprite-view frame-0"></div>
+                          <span class="satellite-roman">I</span>
+                          <div class="satellite-lock-icon">🔒</div>
+                        </div>
+                      </div>
+                      <div class="sphere-satellite-node state-locked" data-node-index="1" style="--node-angle: 60deg;" title="Santuário Satélite II (Oculto)">
+                        <div class="satellite-node-inner">
+                          <div class="satellite-sprite-view frame-1"></div>
+                          <span class="satellite-roman">II</span>
+                          <div class="satellite-lock-icon">🔒</div>
+                        </div>
+                      </div>
+                      <div class="sphere-satellite-node state-locked" data-node-index="2" style="--node-angle: 120deg;" title="Santuário Satélite III (Oculto)">
+                        <div class="satellite-node-inner">
+                          <div class="satellite-sprite-view frame-2"></div>
+                          <span class="satellite-roman">III</span>
+                          <div class="satellite-lock-icon">🔒</div>
+                        </div>
+                      </div>
+                      <div class="sphere-satellite-node state-locked" data-node-index="3" style="--node-angle: 180deg;" title="Santuário Satélite IV (Oculto)">
+                        <div class="satellite-node-inner">
+                          <div class="satellite-sprite-view frame-3"></div>
+                          <span class="satellite-roman">IV</span>
+                          <div class="satellite-lock-icon">🔒</div>
+                        </div>
+                      </div>
+                      <div class="sphere-satellite-node state-locked" data-node-index="4" style="--node-angle: 240deg;" title="Santuário Satélite V (Oculto)">
+                        <div class="satellite-node-inner">
+                          <div class="satellite-sprite-view frame-4"></div>
+                          <span class="satellite-roman">V</span>
+                          <div class="satellite-lock-icon">🔒</div>
+                        </div>
+                      </div>
+                      <div class="sphere-satellite-node state-locked" data-node-index="5" style="--node-angle: 300deg;" title="Santuário Satélite VI (Oculto)">
+                        <div class="satellite-node-inner">
+                          <div class="satellite-sprite-view frame-5"></div>
+                          <span class="satellite-roman">VI</span>
+                          <div class="satellite-lock-icon">🔒</div>
+                        </div>
+                      </div>
+                    </div>
+
                     <div id="divine-sphere-btn" class="divine-sphere-btn" role="button" aria-label="Canalizar Esfera Divina">
                       <div class="sphere-inner-pulse"></div>
                     </div>
@@ -431,10 +498,62 @@
             </div>
           </div>
 
+          <div class="settings-section-subtitle">💾 Progresso & Salvamento</div>
+          <div class="settings-group">
+            <div class="setting-item">
+              <div>
+                <div class="setting-name">Progresso do Culto</div>
+                <div id="save-status-text" class="setting-desc">Auto-salvamento ativo a cada 20s</div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button id="btn-manual-save" class="btn-setting-action">Salvar Agora</button>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div>
+                <div class="setting-name">Backup & Transferência</div>
+                <div class="setting-desc">Exporte ou importe sua chave de progresso</div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button id="btn-export-save" class="btn-setting-action">Exportar</button>
+                <button id="btn-import-save" class="btn-setting-action">Importar</button>
+              </div>
+            </div>
+
+            <div class="setting-item setting-danger">
+              <div>
+                <div class="setting-name" style="color: #f87171;">Reiniciar Culto</div>
+                <div class="setting-desc">Apaga todo o progresso e recomeça do zero</div>
+              </div>
+              <button id="btn-reset-save" class="btn-setting-danger">Reiniciar</button>
+            </div>
+          </div>
+
           <div style="display: flex; justify-content: flex-end;">
             <button id="close-settings-footer-btn" class="btn-slide-play" style="padding: 10px 24px; font-size: 15px;">
-              SALVAR
+              FECHAR
             </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SAVE DATA MODAL (EXPORT / IMPORT) -->
+      <div id="save-data-modal" class="modal-overlay">
+        <div class="modal-slide-card" style="max-width: 500px;">
+          <div class="modal-header">
+            <h3 id="save-data-modal-title" class="modal-title">Exportar Progresso</h3>
+            <button id="close-save-data-btn" class="close-btn-gold" aria-label="Fechar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          <p id="save-data-modal-desc" class="setting-desc" style="margin-bottom: 12px; font-size: 12px; line-height: 1.4;">Copie o código abaixo para guardar seu progresso ou transferir para outro navegador:</p>
+          <textarea id="save-data-textarea" class="save-data-textarea" rows="5" spellcheck="false"></textarea>
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+            <button id="btn-save-data-action" class="btn-slide-play" style="padding: 9px 20px; font-size: 14px;">Copiar</button>
           </div>
         </div>
       </div>

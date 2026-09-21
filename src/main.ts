@@ -32,6 +32,7 @@ import { TooltipManager } from './ui/tooltips.js';
 import { loadDisplayConfig, DISPLAY_CONFIG, setTextOnlyMode } from './config/display.js';
 import { FollowersArena } from './ui/followersArena.js';
 import { IncarnationArena } from './ui/incarnationArena.js';
+import { SaveSystem, type SaveData } from './systems/saveSystem.js';
 
 class AppManager {
   // Screens & Panels
@@ -108,11 +109,11 @@ class AppManager {
   private fervorPoints: number = 0;
 
   // Configured Data Arrays
-  private followers: BuyableItem[] = initialFollowers;
-  private fervorUpgrades: FervorUpgrade[] = initialFervorUpgrades;
-  private monuments: BuyableItem[] = initialMonuments;
-  private achievements: Achievement[] = initialAchievements;
-  private unlocks: MechanicUnlock[] = initialUnlocks;
+  private followers: BuyableItem[] = initialFollowers.map((item) => ({ ...item }));
+  private fervorUpgrades: FervorUpgrade[] = initialFervorUpgrades.map((u) => ({ ...u }));
+  private monuments: BuyableItem[] = initialMonuments.map((m) => ({ ...m }));
+  private achievements: Achievement[] = initialAchievements.map((a) => ({ ...a }));
+  private unlocks: MechanicUnlock[] = initialUnlocks.map((u) => ({ ...u }));
 
   // Incarnation Elements & State
   private incarnationArena?: IncarnationArena;
@@ -130,6 +131,15 @@ class AppManager {
   private incarnationUpgradeBenefitEl: HTMLElement | null = null;
   private incarnationUpgradeCostValEl: HTMLElement | null = null;
 
+  // Incarnation Boost (2x Fé/s) State & Elements
+  private incarnationBoostTimer: number = 0;
+  private readonly MAX_INCARNATION_BOOST: number = 60;
+  private incarnationBoostCardEl: HTMLElement | null = null;
+  private incarnationBoostBadgeEl: HTMLElement | null = null;
+  private incarnationBoostTimerTextEl: HTMLElement | null = null;
+  private incarnationBoostFillEl: HTMLElement | null = null;
+  private incarnationBoostStatusEl: HTMLElement | null = null;
+
   // Relics (Alchemy) Elements
   private btnConvertRelicsEl: HTMLButtonElement | null = null;
   private relicsToGetEl: HTMLElement | null = null;
@@ -142,7 +152,27 @@ class AppManager {
   private relicPoints: number = 0;
   private bestRelicsToGet: number = 0;
   private relicConvertCooldown: number = 0;
-  private relicUpgrades: RelicUpgrade[] = initialRelicUpgrades;
+  private relicUpgrades: RelicUpgrade[] = initialRelicUpgrades.map((r) => ({ ...r }));
+
+  // 6 Sphere Satellite Nodes State (Locked / Dormant by default)
+  private sphereSatellitesUnlocked: boolean[] = [false, false, false, false, false, false];
+
+  // Save & Progress State & Elements
+  private btnManualSaveEl: HTMLButtonElement | null = null;
+  private btnExportSaveEl: HTMLButtonElement | null = null;
+  private btnImportSaveEl: HTMLButtonElement | null = null;
+  private btnResetSaveEl: HTMLButtonElement | null = null;
+  private saveStatusTextEl: HTMLElement | null = null;
+
+  private saveDataModal: HTMLElement | null = null;
+  private saveDataModalTitle: HTMLElement | null = null;
+  private saveDataModalDesc: HTMLElement | null = null;
+  private saveDataTextarea: HTMLTextAreaElement | null = null;
+  private btnSaveDataAction: HTMLButtonElement | null = null;
+  private closeSaveDataBtn: HTMLButtonElement | null = null;
+  private saveDataMode: 'export' | 'import' = 'export';
+  private lastSaveTime: number = Date.now();
+  private isResetting: boolean = false;
 
   constructor() {
     // Cache DOM Elements
@@ -197,12 +227,21 @@ class AppManager {
     this.incarnationUpgradeBenefitEl = document.getElementById('incarnation-upgrade-benefit');
     this.incarnationUpgradeCostValEl = document.getElementById('incarnation-cost-val');
 
+    this.incarnationBoostCardEl = document.getElementById('incarnation-boost-card');
+    this.incarnationBoostBadgeEl = document.getElementById('incarnation-boost-badge');
+    this.incarnationBoostTimerTextEl = document.getElementById('incarnation-boost-timer-text');
+    this.incarnationBoostFillEl = document.getElementById('incarnation-boost-fill');
+    this.incarnationBoostStatusEl = document.getElementById('incarnation-boost-status');
+
     const arenaCanvas = document.getElementById('followers-walk-canvas');
     if (arenaCanvas) {
       this.followersArena = new FollowersArena('followers-walk-canvas');
       this.followersArena.setOnClickCallback((clientX, clientY) => {
         this.audio.playTone(660, 'sine', 0.08);
         this.spawnFloatingText(clientX, clientY, '🙏 ORAÇÃO');
+      });
+      this.followersArena.setOnMiracleClickCallback((clientX, clientY) => {
+        this.grantMiracle(clientX, clientY);
       });
     }
 
@@ -211,7 +250,8 @@ class AppManager {
       this.incarnationArena = new IncarnationArena('incarnation-canvas');
       this.incarnationArena.setOnClickCallback((clientX, clientY) => {
         this.audio.playTone(880, 'sine', 0.12);
-        this.spawnFloatingText(clientX, clientY, '✨ BENÇÃO');
+        this.addIncarnationBoost(2);
+        this.spawnFloatingText(clientX, clientY, '⚡ +2s (2x FÉ)');
       });
     }
 
@@ -239,6 +279,20 @@ class AppManager {
     this.statAchievementsCountEl = document.getElementById('stat-achievements-count')!;
     this.statCultTierEl = document.getElementById('stat-cult-tier')!;
 
+    // Save & Settings Elements
+    this.btnManualSaveEl = document.getElementById('btn-manual-save') as HTMLButtonElement | null;
+    this.btnExportSaveEl = document.getElementById('btn-export-save') as HTMLButtonElement | null;
+    this.btnImportSaveEl = document.getElementById('btn-import-save') as HTMLButtonElement | null;
+    this.btnResetSaveEl = document.getElementById('btn-reset-save') as HTMLButtonElement | null;
+    this.saveStatusTextEl = document.getElementById('save-status-text');
+
+    this.saveDataModal = document.getElementById('save-data-modal');
+    this.saveDataModalTitle = document.getElementById('save-data-modal-title');
+    this.saveDataModalDesc = document.getElementById('save-data-modal-desc');
+    this.saveDataTextarea = document.getElementById('save-data-textarea') as HTMLTextAreaElement | null;
+    this.btnSaveDataAction = document.getElementById('btn-save-data-action') as HTMLButtonElement | null;
+    this.closeSaveDataBtn = document.getElementById('close-save-data-btn') as HTMLButtonElement | null;
+
     // Instantiate Subsystems
     this.audio = new AudioManager();
     this.notifications = new NotificationManager('achievements-popup-container');
@@ -247,11 +301,35 @@ class AppManager {
     loadDisplayConfig();
     document.body.classList.toggle('text-only-mode', DISPLAY_CONFIG.textOnlyMode);
 
+    // Load saved game progress before initializing views
+    this.loadProgress();
+
+    if (this.followersArena) {
+      this.followersArena.syncFollowerCount(this.getTotalFollowersCount());
+    }
+    if (this.incarnationArena) {
+      this.incarnationArena.setStage(this.incarnationStage);
+    }
+
     this.initEvents();
     this.renderAllLists();
     this.updateUnlockedTabsAndHUD();
     this.startPassiveFaithLoop();
+    this.startAutoSaveLoop();
     this.updateHUD();
+    this.renderSphereSatellites();
+
+    // Expose helpers for satellite unlocking progression
+    (window as any).cultGame = this;
+    (window as any).unlockSphereSatellite = (index: number) => this.unlockSphereSatellite(index);
+    (window as any).lockSphereSatellite = (index: number) => this.lockSphereSatellite(index);
+    (window as any).unlockAllSphereSatellites = () => {
+      for (let i = 0; i < 6; i++) this.unlockSphereSatellite(i);
+    };
+    (window as any).lockAllSphereSatellites = () => {
+      for (let i = 0; i < 6; i++) this.lockSphereSatellite(i);
+    };
+    (window as any).triggerMiraclePlea = () => this.followersArena?.triggerMiraclePlea();
   }
 
   private initEvents(): void {
@@ -265,6 +343,24 @@ class AppManager {
     // Sphere Clicks
     this.divineSphereBtn.addEventListener('click', (e: MouseEvent) => {
       this.onSphereClicked(e);
+    });
+
+    // 6 Sphere Satellite Nodes Clicks
+    const satelliteNodes = document.querySelectorAll<HTMLElement>('.sphere-satellite-node');
+    satelliteNodes.forEach((node) => {
+      const idxStr = node.getAttribute('data-node-index');
+      const idx = idxStr ? parseInt(idxStr, 10) : 0;
+      node.addEventListener('click', (e: MouseEvent) => {
+        e.stopPropagation();
+        if (this.sphereSatellitesUnlocked[idx]) {
+          this.onSatelliteClicked(idx, e);
+        } else {
+          this.audio.playTone(220, 'sine', 0.08);
+          const clientX = e.clientX || window.innerWidth / 2;
+          const clientY = e.clientY || window.innerHeight / 2;
+          this.spawnFloatingText(clientX, clientY, '🔒 NÓ DORMENTE');
+        }
+      });
     });
 
     // Faithful Conversion Buttons
@@ -324,6 +420,53 @@ class AppManager {
         this.renderAllLists();
       });
     }
+
+    // Save System Events
+    this.btnManualSaveEl?.addEventListener('click', () => {
+      this.manualSave();
+    });
+
+    this.btnExportSaveEl?.addEventListener('click', () => {
+      this.openExportModal();
+    });
+
+    this.btnImportSaveEl?.addEventListener('click', () => {
+      this.openImportModal();
+    });
+
+    this.btnResetSaveEl?.addEventListener('click', () => {
+      this.confirmHardReset();
+    });
+
+    this.closeSaveDataBtn?.addEventListener('click', () => {
+      this.closeSaveDataModal();
+    });
+
+    this.btnSaveDataAction?.addEventListener('click', () => {
+      this.handleSaveDataAction();
+    });
+
+    this.saveDataModal?.addEventListener('click', (e) => {
+      if (e.target === this.saveDataModal) this.closeSaveDataModal();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.saveDataModal?.classList.contains('open')) {
+        this.closeSaveDataModal();
+      }
+    });
+
+    window.addEventListener('beforeunload', () => {
+      if (!this.isResetting) {
+        this.saveProgress();
+      }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && !this.isResetting) {
+        this.saveProgress();
+      }
+    });
   }
 
   // --- Calculations Delegates ---
@@ -365,6 +508,9 @@ class AppManager {
     const arkMult = calculateRelicFaithMultiplier(this.relicPoints, this.relicUpgrades[5].level);
     const relicFaithMult = cornucopiaMult * arkMult;
 
+    // Incarnation boost: doubles faith per second when active!
+    const incarnationBoostMult = this.incarnationBoostTimer > 0 ? 2.0 : 1.0;
+
     return calculateFaithPerSecond(
       this.followers,
       this.monuments,
@@ -373,7 +519,8 @@ class AppManager {
       passiveBuff,
       globalBuff,
       fervorFaithBonus,
-      relicFaithMult
+      relicFaithMult,
+      incarnationBoostMult
     );
   }
 
@@ -463,6 +610,137 @@ class AppManager {
     this.spawnFloatingText(x, y, `+${formatNumber(fpc)} FÉ`);
   }
 
+  private onSatelliteClicked(idx: number, e: MouseEvent): void {
+    this.onSphereClicked(e);
+    this.audio.playTone(740 + idx * 45, 'triangle', 0.12);
+  }
+
+  public grantMiracle(clientX: number, clientY: number): number {
+    this.audio.init();
+
+    // Sacred chord chime progression
+    this.audio.playTone(523.25, 'sine', 0.14);
+    setTimeout(() => this.audio.playTone(659.25, 'sine', 0.16), 60);
+    setTimeout(() => this.audio.playTone(783.99, 'sine', 0.2), 120);
+    setTimeout(() => this.audio.playTone(1046.50, 'triangle', 0.3), 180);
+
+    const fps = this.getFaithPerSecond();
+    const currentFaith = this.faithPoints;
+
+    // Fórmula: 30x a produção por segundo + 10% dos Pontos de Fé atuais
+    // Piso de segurança mínimo (ao menos 30 Fé ou 15x o clique) para garantir relevância no início
+    const baseFromFps = 30 * fps;
+    const bonusFromStockpile = 0.10 * currentFaith;
+    const minReward = Math.max(30, this.getFaithPerClick() * 15);
+    const calculated = Math.floor(baseFromFps + bonusFromStockpile);
+    const finalReward = Math.max(minReward, calculated);
+
+    this.faithPoints += finalReward;
+    this.totalFaithAccumulated += finalReward;
+
+    this.spawnFloatingText(clientX, clientY, `✨ MILAGRE! +${formatNumber(finalReward)} FÉ`);
+
+    this.notifications.showCustomPopup(
+      'Milagre Concedido!',
+      `A prece fervorosa foi atendida: +${formatNumber(finalReward)} Fé cósmica!`,
+      '✨',
+      '✦ GRAÇA DIVINA ✦'
+    );
+
+    this.updateHUD();
+    this.updateStatsTab();
+    this.checkAchievements();
+    this.updateItemButtonsState();
+
+    return finalReward;
+  }
+
+  public unlockSphereSatellite(index: number): void {
+    if (index >= 0 && index < 6) {
+      this.sphereSatellitesUnlocked[index] = true;
+      this.renderSphereSatellites();
+      this.audio.playTone(880, 'sine', 0.25);
+    }
+  }
+
+  public lockSphereSatellite(index: number): void {
+    if (index >= 0 && index < 6) {
+      this.sphereSatellitesUnlocked[index] = false;
+      this.renderSphereSatellites();
+    }
+  }
+
+  public isSphereSatelliteUnlocked(index: number): boolean {
+    return !!this.sphereSatellitesUnlocked[index];
+  }
+
+  public renderSphereSatellites(): void {
+    const satelliteNodes = document.querySelectorAll<HTMLElement>('.sphere-satellite-node');
+    satelliteNodes.forEach((node) => {
+      const idxStr = node.getAttribute('data-node-index');
+      const idx = idxStr ? parseInt(idxStr, 10) : 0;
+      const isUnlocked = !!this.sphereSatellitesUnlocked[idx];
+      if (isUnlocked) {
+        node.classList.remove('state-locked');
+        node.classList.add('state-unlocked');
+        node.setAttribute('title', `Santuário Satélite ${this.getRomanNumeral(idx + 1)} (Desbloqueado)`);
+      } else {
+        node.classList.remove('state-unlocked');
+        node.classList.add('state-locked');
+        node.setAttribute('title', `Santuário Satélite ${this.getRomanNumeral(idx + 1)} (Oculto / Bloqueado)`);
+      }
+    });
+  }
+
+  private getRomanNumeral(num: number): string {
+    const romans = ['I', 'II', 'III', 'IV', 'V', 'VI'];
+    return romans[num - 1] || `${num}`;
+  }
+
+  // --- Incarnation Boost (2x Fé/seg) Methods ---
+
+  public addIncarnationBoost(seconds: number = 2): void {
+    this.incarnationBoostTimer = Math.min(this.MAX_INCARNATION_BOOST, this.incarnationBoostTimer + seconds);
+    this.updateIncarnationBoostUI();
+    this.updateHUD();
+  }
+
+  private updateIncarnationBoostUI(): void {
+    const timer = this.incarnationBoostTimer;
+    const max = this.MAX_INCARNATION_BOOST;
+    const percent = Math.max(0, Math.min(100, (timer / max) * 100));
+
+    if (this.incarnationBoostFillEl) {
+      this.incarnationBoostFillEl.style.width = `${percent.toFixed(1)}%`;
+    }
+
+    if (this.incarnationBoostTimerTextEl) {
+      this.incarnationBoostTimerTextEl.textContent = `${timer.toFixed(1)}s / ${max}s`;
+    }
+
+    if (this.incarnationBoostCardEl) {
+      this.incarnationBoostCardEl.classList.toggle('active', timer > 0);
+    }
+
+    if (this.incarnationBoostBadgeEl) {
+      if (timer > 0) {
+        this.incarnationBoostBadgeEl.classList.remove('inactive');
+        this.incarnationBoostBadgeEl.textContent = '2x FÉ ATIVO 🔥';
+      } else {
+        this.incarnationBoostBadgeEl.classList.add('inactive');
+        this.incarnationBoostBadgeEl.textContent = '2x FÉ INATIVO';
+      }
+    }
+
+    if (this.incarnationBoostStatusEl) {
+      if (timer > 0) {
+        this.incarnationBoostStatusEl.textContent = 'Bênção ativa! Dobrando produção de Fé/seg';
+      } else {
+        this.incarnationBoostStatusEl.textContent = 'Clique na Encarnação (+2s) para dobrar Fé/s';
+      }
+    }
+  }
+
   private buyFervorUpgrade(upg: FervorUpgrade): void {
     const cost = calculateFervorUpgradeCost(upg);
     if (this.fervorPoints >= cost) {
@@ -470,6 +748,7 @@ class AppManager {
       upg.level += 1;
 
       this.audio.playTone(720, 'sine', 0.18);
+      this.tooltips.hide();
       this.updateHUD();
       this.updateStatsTab();
       this.renderFervorUpgradesList();
@@ -773,15 +1052,13 @@ class AppManager {
             <span>CUSTO:</span>
             <span>${formatNumber(cost)} Fervor</span>
           </div>
-          <button class="btn-buy-fervor" ${canAfford ? '' : 'disabled'}>
-            AUMENTAR
-          </button>
+          <div class="card-click-prompt">
+            <span class="card-click-hint">CLIQUE PARA AUMENTAR ➔</span>
+          </div>
         </div>
       `;
 
-      const buyBtn = card.querySelector('.btn-buy-fervor') as HTMLButtonElement;
-      buyBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
+      card.addEventListener('click', () => {
         this.buyFervorUpgrade(upg);
       });
 
@@ -873,14 +1150,6 @@ class AppManager {
         ? `<span class="card-symbol">${unlock.symbol}</span>`
         : '';
 
-      const actionBtnHtml = unlock.unlocked
-        ? `<button class="btn-unlock-action unlocked-btn" disabled>
-             <span class="unlock-btn-check">✓</span> DESBLOQUEADO
-           </button>`
-        : `<button class="btn-unlock-action btn-buy-card" ${canAfford ? '' : 'disabled'}>
-             DESBLOQUEAR
-           </button>`;
-
       let benefitText = '';
       if (unlock.id === 'unlock_incarnation') {
         benefitText = unlock.unlocked
@@ -897,6 +1166,14 @@ class AppManager {
       } else {
         benefitText = unlock.unlocked ? '✓ Desbloqueado' : `Custo único de ${formatNumber(unlock.cost)} Fé`;
       }
+
+      const promptHtml = unlock.unlocked
+        ? `<div class="card-click-prompt">
+             <span class="card-status-badge unlocked-badge">✓ DESBLOQUEADO</span>
+           </div>`
+        : `<div class="card-click-prompt">
+             <span class="card-click-hint">CLIQUE PARA DESBLOQUEAR ➔</span>
+           </div>`;
 
       card.innerHTML = `
         <div class="card-header-row">
@@ -917,16 +1194,14 @@ class AppManager {
         <div class="card-footer-row">
           <div class="cost-tag">
             <span>${unlock.unlocked ? 'STATUS:' : 'CUSTO:'}</span>
-            <span>${unlock.unlocked ? 'ADQUIRIDO' : `${formatNumber(unlock.cost)} Fé`}</span>
+            <span style="color: ${unlock.unlocked ? '#34d399' : 'var(--gold-accent)'};">${unlock.unlocked ? 'ADQUIRIDO' : `${formatNumber(unlock.cost)} Fé`}</span>
           </div>
-          ${actionBtnHtml}
+          ${promptHtml}
         </div>
       `;
 
       if (!unlock.unlocked) {
-        const buyBtn = card.querySelector('.btn-unlock-action') as HTMLButtonElement | null;
-        buyBtn?.addEventListener('click', (e) => {
-          e.stopPropagation();
+        card.addEventListener('click', () => {
           this.buyUnlock(unlock);
         });
       }
@@ -946,10 +1221,15 @@ class AppManager {
   }
 
   private buyUnlock(unlock: MechanicUnlock): void {
-    if (unlock.unlocked || this.faithPoints < unlock.cost) return;
+    if (unlock.unlocked) return;
+    if (this.faithPoints < unlock.cost) {
+      this.audio.playTone(180, 'sawtooth', 0.1);
+      return;
+    }
 
     this.faithPoints -= unlock.cost;
     unlock.unlocked = true;
+    this.tooltips.hide();
 
     if (unlock.id === 'unlock_incarnation') {
       this.updateUnlockedTabsAndHUD();
@@ -1008,12 +1288,17 @@ class AppManager {
   }
 
   private buyRelicUpgrade(relic: RelicUpgrade): void {
-    if (relic.level >= relic.maxLevel || this.relicPoints < relic.cost) return;
+    if (relic.level >= relic.maxLevel) return;
+    if (this.relicPoints < relic.cost) {
+      this.audio.playTone(180, 'sawtooth', 0.1);
+      return;
+    }
 
     this.relicPoints -= relic.cost;
     relic.level += 1;
 
     this.audio.playTone(740, 'triangle', 0.2);
+    this.tooltips.hide();
     this.updateHUD();
     this.updateRelicsTab();
     this.renderRelicUpgradesList();
@@ -1038,13 +1323,13 @@ class AppManager {
         ? `<span class="card-symbol">${relic.icon}</span>`
         : '';
 
-      const btnHtml = isMax
-        ? `<button class="btn-buy-relic maxed-btn" disabled>
-             MÁXIMO
-           </button>`
-        : `<button class="btn-buy-relic" ${canAfford ? '' : 'disabled'}>
-             CONSAGRAR
-           </button>`;
+      const promptHtml = isMax
+        ? `<div class="card-click-prompt">
+             <span class="card-status-badge maxed-badge">✓ NÍVEL MÁXIMO</span>
+           </div>`
+        : `<div class="card-click-prompt">
+             <span class="card-click-hint relic-hint">CLIQUE PARA CONSAGRAR ➔</span>
+           </div>`;
 
       card.innerHTML = `
         <div class="card-header-row">
@@ -1063,14 +1348,12 @@ class AppManager {
             <span>CUSTO:</span>
             <span>${isMax ? 'CONCLUÍDO' : `${formatNumber(relic.cost)} Relíquias`}</span>
           </div>
-          ${btnHtml}
+          ${promptHtml}
         </div>
       `;
 
       if (!isMax) {
-        const buyBtn = card.querySelector('.btn-buy-relic') as HTMLButtonElement | null;
-        buyBtn?.addEventListener('click', (e) => {
-          e.stopPropagation();
+        card.addEventListener('click', () => {
           this.buyRelicUpgrade(relic);
         });
       }
@@ -1119,10 +1402,6 @@ class AppManager {
       const canAfford = this.relicPoints >= relic.cost;
       const card = document.getElementById(`card-${relic.id}`);
       if (card) {
-        const btn = card.querySelector<HTMLButtonElement>('.btn-buy-relic');
-        if (btn && !isMax) {
-          btn.disabled = !canAfford;
-        }
         if (isMax) {
           card.classList.remove('unaffordable');
           card.classList.add('maxed');
@@ -1198,8 +1477,6 @@ class AppManager {
       const canAfford = this.faithPoints >= unlock.cost;
       const card = document.getElementById(`card-${unlock.id}`);
       if (card) {
-        const btn = card.querySelector<HTMLButtonElement>('.btn-unlock-action');
-        if (btn) btn.disabled = !canAfford;
         if (canAfford) {
           card.classList.remove('unaffordable');
         } else {
@@ -1214,8 +1491,6 @@ class AppManager {
       const cost = calculateFervorUpgradeCost(upg);
       const card = document.getElementById(`card-${upg.id}`);
       if (card) {
-        const btn = card.querySelector<HTMLButtonElement>('.btn-buy-fervor');
-        if (btn) btn.disabled = this.fervorPoints < cost;
         if (this.fervorPoints >= cost) {
           card.classList.remove('unaffordable');
         } else {
@@ -1251,7 +1526,8 @@ class AppManager {
     this.faithCounterEl.textContent = formatNumber(faithInt);
 
     const fps = this.getFaithPerSecond();
-    this.faithPerSecCounterEl.textContent = `${formatNumber(fps)}/s`;
+    this.faithPerSecCounterEl.textContent = `${formatNumber(fps)}/s${this.incarnationBoostTimer > 0 ? ' (2x)' : ''}`;
+    this.faithPerSecCounterEl.classList.toggle('boosted', this.incarnationBoostTimer > 0);
 
     if (this.followersCounterEl) {
       this.followersCounterEl.textContent = formatNumber(this.getTotalFollowersCount());
@@ -1280,7 +1556,7 @@ class AppManager {
   private updateStatsTab(): void {
     this.statTotalFaithEl.textContent = formatNumber(Math.floor(this.totalFaithAccumulated));
     this.statClickFaithEl.textContent = `+${formatNumber(this.getFaithPerClick())}`;
-    this.statPassiveFaithEl.textContent = `+${formatNumber(this.getFaithPerSecond())} / seg`;
+    this.statPassiveFaithEl.textContent = `+${formatNumber(this.getFaithPerSecond())} / seg${this.incarnationBoostTimer > 0 ? ' (2x Bênção)' : ''}`;
     this.statTotalFollowersEl.textContent = formatNumber(this.getTotalFollowersCount());
     this.statTotalClicksEl.textContent = formatNumber(this.totalClicks);
 
@@ -1338,6 +1614,12 @@ class AppManager {
         }
       }
 
+      // Incarnation 2x Faith Boost Countdown
+      if (this.incarnationBoostTimer > 0) {
+        this.incarnationBoostTimer = Math.max(0, this.incarnationBoostTimer - deltaSec);
+        this.updateIncarnationBoostUI();
+      }
+
       this.updateHUD();
       this.updateStatsTab();
       this.checkAchievements();
@@ -1373,11 +1655,282 @@ class AppManager {
   }
 
   private openSettings(): void {
+    this.updateSaveStatusText();
     this.settingsModal.classList.add('open');
   }
 
   private closeSettings(): void {
     this.settingsModal.classList.remove('open');
+  }
+
+  // --- Save / Load / Persistence ---
+
+  private buildSaveData(): SaveData {
+    return {
+      version: SaveSystem.CURRENT_VERSION,
+      timestamp: Date.now(),
+      stats: {
+        faithPoints: this.faithPoints,
+        totalFaithAccumulated: this.totalFaithAccumulated,
+        totalClicks: this.totalClicks,
+        fervorPoints: this.fervorPoints,
+        incarnationStage: this.incarnationStage,
+        relicPoints: this.relicPoints,
+        bestRelicsToGet: this.bestRelicsToGet,
+        incarnationBoostTimer: this.incarnationBoostTimer
+      },
+      followers: this.followers.map((f) => ({ id: f.id, count: f.count })),
+      monuments: this.monuments.map((m) => ({ id: m.id, count: m.count })),
+      fervorUpgrades: this.fervorUpgrades.map((u) => ({ id: u.id, level: u.level })),
+      relicUpgrades: this.relicUpgrades.map((r) => ({ id: r.id, level: r.level })),
+      unlocks: this.unlocks.filter((u) => u.unlocked).map((u) => u.id),
+      achievements: this.achievements.filter((a) => a.unlocked).map((a) => a.id),
+      sphereSatellites: [...this.sphereSatellitesUnlocked]
+    };
+  }
+
+  private applySaveData(save: SaveData): void {
+    if (!save || !save.stats) return;
+
+    // Numeric stats
+    this.faithPoints = typeof save.stats.faithPoints === 'number' ? Math.max(0, save.stats.faithPoints) : 1;
+    this.totalFaithAccumulated = typeof save.stats.totalFaithAccumulated === 'number' ? Math.max(1, save.stats.totalFaithAccumulated) : 1;
+    this.totalClicks = typeof save.stats.totalClicks === 'number' ? Math.max(0, save.stats.totalClicks) : 0;
+    this.fervorPoints = typeof save.stats.fervorPoints === 'number' ? Math.max(0, save.stats.fervorPoints) : 0;
+    this.incarnationStage = typeof save.stats.incarnationStage === 'number' ? Math.max(1, save.stats.incarnationStage) : 1;
+    this.relicPoints = typeof save.stats.relicPoints === 'number' ? Math.max(0, save.stats.relicPoints) : 0;
+    this.bestRelicsToGet = typeof save.stats.bestRelicsToGet === 'number' ? Math.max(0, save.stats.bestRelicsToGet) : 0;
+    this.incarnationBoostTimer = typeof save.stats.incarnationBoostTimer === 'number'
+      ? Math.max(0, Math.min(this.MAX_INCARNATION_BOOST, save.stats.incarnationBoostTimer))
+      : 0;
+    this.updateIncarnationBoostUI();
+
+    // Followers
+    if (Array.isArray(save.followers)) {
+      save.followers.forEach((savedItem) => {
+        const item = this.followers.find((f) => f.id === savedItem.id);
+        if (item && typeof savedItem.count === 'number') {
+          item.count = Math.max(0, savedItem.count);
+        }
+      });
+    }
+
+    // Monuments
+    if (Array.isArray(save.monuments)) {
+      save.monuments.forEach((savedItem) => {
+        const item = this.monuments.find((m) => m.id === savedItem.id);
+        if (item && typeof savedItem.count === 'number') {
+          item.count = Math.max(0, savedItem.count);
+        }
+      });
+    }
+
+    // Fervor Upgrades
+    if (Array.isArray(save.fervorUpgrades)) {
+      save.fervorUpgrades.forEach((savedItem) => {
+        const upg = this.fervorUpgrades.find((u) => u.id === savedItem.id);
+        if (upg && typeof savedItem.level === 'number') {
+          upg.level = Math.max(0, savedItem.level);
+        }
+      });
+    }
+
+    // Relic Upgrades
+    if (Array.isArray(save.relicUpgrades)) {
+      save.relicUpgrades.forEach((savedItem) => {
+        const rel = this.relicUpgrades.find((r) => r.id === savedItem.id);
+        if (rel && typeof savedItem.level === 'number') {
+          rel.level = Math.max(0, Math.min(rel.maxLevel, savedItem.level));
+        }
+      });
+    }
+
+    // Unlocks
+    if (Array.isArray(save.unlocks)) {
+      this.unlocks.forEach((u) => {
+        u.unlocked = save.unlocks.includes(u.id);
+      });
+    }
+
+    // Achievements
+    if (Array.isArray(save.achievements)) {
+      this.achievements.forEach((a) => {
+        a.unlocked = save.achievements.includes(a.id);
+      });
+    }
+
+    // 6 Sphere Satellite Nodes
+    if (Array.isArray(save.sphereSatellites)) {
+      for (let i = 0; i < 6; i++) {
+        this.sphereSatellitesUnlocked[i] = !!save.sphereSatellites[i];
+      }
+    } else {
+      this.sphereSatellitesUnlocked = [false, false, false, false, false, false];
+    }
+    this.renderSphereSatellites();
+  }
+
+  private saveProgress(): boolean {
+    if (this.isResetting) return false;
+    const data = this.buildSaveData();
+    const success = SaveSystem.save(data);
+    if (success) {
+      this.lastSaveTime = Date.now();
+      this.updateSaveStatusText();
+    }
+    return success;
+  }
+
+  private loadProgress(): boolean {
+    const data = SaveSystem.load();
+    if (data) {
+      this.applySaveData(data);
+      this.lastSaveTime = data.timestamp || Date.now();
+      console.log('🔮 Cult of the Sphere - Progresso carregado com sucesso do LocalStorage.');
+      return true;
+    }
+    return false;
+  }
+
+  private manualSave(): void {
+    const success = this.saveProgress();
+    if (success) {
+      this.audio.playTone(660, 'sine', 0.1);
+      this.notifications.showCustomPopup('Culto Salvo', 'Seu progresso sagrado foi gravado com sucesso.', '💾', '✦ REGISTRO SAGRADO ✦');
+      this.updateSaveStatusText();
+    } else {
+      this.notifications.showCustomPopup('Erro ao Salvar', 'Não foi possível gravar no armazenamento do navegador.', '⚠️', '✦ ALERTA ✦');
+    }
+  }
+
+  private openExportModal(): void {
+    this.saveDataMode = 'export';
+    if (this.saveDataModalTitle) this.saveDataModalTitle.textContent = 'Exportar Progresso';
+    if (this.saveDataModalDesc) {
+      this.saveDataModalDesc.textContent = 'Copie o código abaixo para guardar seu progresso ou transferir para outro navegador:';
+    }
+    if (this.btnSaveDataAction) {
+      this.btnSaveDataAction.textContent = 'Copiar Código';
+    }
+
+    const currentData = this.buildSaveData();
+    const exportStr = SaveSystem.exportSave(currentData);
+    if (this.saveDataTextarea) {
+      this.saveDataTextarea.value = exportStr;
+      this.saveDataTextarea.readOnly = true;
+      this.saveDataTextarea.focus();
+      this.saveDataTextarea.select();
+    }
+
+    this.saveDataModal?.classList.add('open');
+  }
+
+  private openImportModal(): void {
+    this.saveDataMode = 'import';
+    if (this.saveDataModalTitle) this.saveDataModalTitle.textContent = 'Importar Progresso';
+    if (this.saveDataModalDesc) {
+      this.saveDataModalDesc.textContent = 'Cole abaixo o código de backup gerado pela opção de Exportar:';
+    }
+    if (this.btnSaveDataAction) {
+      this.btnSaveDataAction.textContent = 'Carregar Save';
+    }
+
+    if (this.saveDataTextarea) {
+      this.saveDataTextarea.value = '';
+      this.saveDataTextarea.readOnly = false;
+      this.saveDataTextarea.placeholder = 'Cole o código Base64 do save aqui...';
+      this.saveDataTextarea.focus();
+    }
+
+    this.saveDataModal?.classList.add('open');
+  }
+
+  private closeSaveDataModal(): void {
+    this.saveDataModal?.classList.remove('open');
+  }
+
+  private handleSaveDataAction(): void {
+    if (this.saveDataMode === 'export') {
+      if (this.saveDataTextarea) {
+        const text = this.saveDataTextarea.value;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(() => {
+            this.notifications.showCustomPopup('Save Copiado', 'Chave de backup copiada para a área de transferência.', '📋', '✦ EXPORTAÇÃO ✦');
+            this.closeSaveDataModal();
+          }).catch(() => {
+            this.saveDataTextarea?.select();
+            document.execCommand('copy');
+            this.notifications.showCustomPopup('Save Copiado', 'Chave de backup copiada com sucesso.', '📋', '✦ EXPORTAÇÃO ✦');
+            this.closeSaveDataModal();
+          });
+        } else {
+          this.saveDataTextarea.select();
+          document.execCommand('copy');
+          this.notifications.showCustomPopup('Save Copiado', 'Chave de backup copiada com sucesso.', '📋', '✦ EXPORTAÇÃO ✦');
+          this.closeSaveDataModal();
+        }
+      }
+    } else {
+      // Import mode
+      const raw = this.saveDataTextarea?.value || '';
+      if (!raw.trim()) {
+        alert('Por favor, cole um código de save válido.');
+        return;
+      }
+
+      const imported = SaveSystem.importSave(raw);
+      if (!imported) {
+        alert('Código de save inválido ou incompatível.');
+        return;
+      }
+
+      const ok = window.confirm('Deseja substituir o progresso atual pelos dados importados?');
+      if (ok) {
+        SaveSystem.save(imported);
+        this.applySaveData(imported);
+        if (this.followersArena) {
+          this.followersArena.syncFollowerCount(this.getTotalFollowersCount());
+        }
+        if (this.incarnationArena) {
+          this.incarnationArena.setStage(this.incarnationStage);
+        }
+        this.renderAllLists();
+        this.updateUnlockedTabsAndHUD();
+        this.updateHUD();
+        this.updateStatsTab();
+        this.closeSaveDataModal();
+        this.notifications.showCustomPopup('Progresso Restaurado', 'Seu culto foi restabelecido a partir do backup.', '🔮', '✦ IMPORTAÇÃO ✦');
+      }
+    }
+  }
+
+  private confirmHardReset(): void {
+    const ok = window.confirm('ATENÇÃO: Deseja realmente reiniciar o culto do zero? Todo o progresso sagrado, fiéis e relíquias serão perdidos permanentemente.');
+    if (ok) {
+      this.isResetting = true;
+      SaveSystem.resetSave();
+      this.audio.playTone(220, 'sawtooth', 0.3);
+      window.location.reload();
+    }
+  }
+
+  private updateSaveStatusText(): void {
+    if (!this.saveStatusTextEl) return;
+    const diffSec = Math.floor((Date.now() - this.lastSaveTime) / 1000);
+    if (diffSec < 5) {
+      this.saveStatusTextEl.textContent = 'Salvo agora mesmo (Auto-save: 20s)';
+    } else if (diffSec < 60) {
+      this.saveStatusTextEl.textContent = `Salvo há ${diffSec}s (Auto-save: 20s)`;
+    } else {
+      const min = Math.floor(diffSec / 60);
+      this.saveStatusTextEl.textContent = `Salvo há ${min}min (Auto-save: 20s)`;
+    }
+  }
+
+  private startAutoSaveLoop(): void {
+    window.setInterval(() => {
+      this.saveProgress();
+    }, 20000);
   }
 }
 

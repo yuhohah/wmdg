@@ -70,15 +70,12 @@ export class IncarnationArena {
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
 
-      const cx = this.width / 2;
-      const cy = this.height / 2 + 15;
-
-      // Pulse wave and particles
+      // Pulse wave and particles at click location
       this.pulseRipples.push({ r: 15, alpha: 1.0 });
-      this.spawnBurst(cx, cy - 20, 16);
+      this.spawnBurst(clickX, clickY, 16);
 
       if (this.onClickCallback) {
-        this.onClickCallback(clickX, clickY);
+        this.onClickCallback(e.clientX, e.clientY);
       }
     });
   }
