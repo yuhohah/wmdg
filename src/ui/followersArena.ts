@@ -68,6 +68,20 @@ export class FollowersArena {
     this.spawnPrayerParticles(w, 10);
   }
 
+  public resize(): void {
+    const r = this.canvas.getBoundingClientRect();
+    if (r.width > 50 && r.height > 50) {
+      if (Math.abs(this.width - r.width) > 0.5 || Math.abs(this.height - r.height) > 0.5) {
+        this.width = r.width;
+        this.height = r.height;
+        this.canvas.width = Math.floor(this.width * this.dpr);
+        this.canvas.height = Math.floor(this.height * this.dpr);
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        this.ctx.scale(this.dpr, this.dpr);
+      }
+    }
+  }
+
   private initCanvas(): void {
     const rect = this.canvas.getBoundingClientRect();
     this.width = rect.width > 50 ? rect.width : 400;
@@ -79,16 +93,18 @@ export class FollowersArena {
     this.ctx.scale(this.dpr, this.dpr);
 
     window.addEventListener('resize', () => {
-      const r = this.canvas.getBoundingClientRect();
-      if (r.width > 50 && r.height > 50) {
-        this.width = r.width;
-        this.height = r.height;
-        this.canvas.width = Math.floor(this.width * this.dpr);
-        this.canvas.height = Math.floor(this.height * this.dpr);
-        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-        this.ctx.scale(this.dpr, this.dpr);
-      }
+      this.resize();
     });
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(() => {
+        this.resize();
+      });
+      ro.observe(this.canvas);
+      if (this.canvas.parentElement) {
+        ro.observe(this.canvas.parentElement);
+      }
+    }
   }
 
   private setupEvents(): void {
@@ -373,6 +389,13 @@ export class FollowersArena {
     ctx.arc(cx, cy, 85, 0, Math.PI * 2);
     ctx.stroke();
 
+    if (h > 290) {
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 115, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
     // Subtle runic cross
     ctx.beginPath();
     ctx.moveTo(cx - 20, cy);
@@ -477,13 +500,17 @@ export class FollowersArena {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Inner glowing miracle icon (✨)
+    // Inner glowing miracle golden star
     ctx.shadowBlur = 0;
     ctx.fillStyle = '#fef08a';
-    ctx.font = 'bold 13px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('✨', bx, by);
+    ctx.beginPath();
+    const starSize = 5;
+    ctx.moveTo(bx, by - starSize);
+    ctx.quadraticCurveTo(bx, by, bx + starSize, by);
+    ctx.quadraticCurveTo(bx, by, bx, by + starSize);
+    ctx.quadraticCurveTo(bx, by, bx - starSize, by);
+    ctx.quadraticCurveTo(bx, by, bx, by - starSize);
+    ctx.fill();
 
     // Golden divine sparkles around bubble
     const rayDist = 20 * pulse;

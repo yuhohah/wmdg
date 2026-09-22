@@ -29,7 +29,7 @@ import {
 import { AudioManager } from './systems/audio.js';
 import { NotificationManager } from './systems/notifications.js';
 import { TooltipManager } from './ui/tooltips.js';
-import { loadDisplayConfig, DISPLAY_CONFIG, setTextOnlyMode } from './config/display.js';
+import { loadDisplayConfig, DISPLAY_CONFIG } from './config/display.js';
 import { FollowersArena } from './ui/followersArena.js';
 import { IncarnationArena } from './ui/incarnationArena.js';
 import { SaveSystem, type SaveData } from './systems/saveSystem.js';
@@ -174,6 +174,14 @@ class AppManager {
   private lastSaveTime: number = Date.now();
   private isResetting: boolean = false;
 
+  // Audio UI Elements
+  private volumeSliderEl: HTMLInputElement | null = null;
+  private musicToggleEl: HTMLInputElement | null = null;
+  private sfxToggleEl: HTMLInputElement | null = null;
+  private musicQuickBtnEl: HTMLButtonElement | null = null;
+  private musicIconOnEl: HTMLElement | null = null;
+  private musicIconOffEl: HTMLElement | null = null;
+
   constructor() {
     // Cache DOM Elements
     this.startScreen = document.getElementById('start-screen')!;
@@ -200,6 +208,13 @@ class AppManager {
     this.settingsBtn = document.getElementById('settings-btn') as HTMLButtonElement;
     this.closeSettingsBtn = document.getElementById('close-settings-btn') as HTMLButtonElement;
     this.closeSettingsFooterBtn = document.getElementById('close-settings-footer-btn') as HTMLButtonElement;
+
+    this.volumeSliderEl = document.getElementById('volume-slider') as HTMLInputElement | null;
+    this.musicToggleEl = document.getElementById('music-toggle') as HTMLInputElement | null;
+    this.sfxToggleEl = document.getElementById('sfx-toggle') as HTMLInputElement | null;
+    this.musicQuickBtnEl = document.getElementById('music-quick-btn') as HTMLButtonElement | null;
+    this.musicIconOnEl = document.getElementById('music-icon-on');
+    this.musicIconOffEl = document.getElementById('music-icon-off');
 
     this.followersTotalCountEl = document.getElementById('followers-total-count');
     this.followersRateBadgeEl = document.getElementById('followers-rate-badge');
@@ -238,7 +253,7 @@ class AppManager {
       this.followersArena = new FollowersArena('followers-walk-canvas');
       this.followersArena.setOnClickCallback((clientX, clientY) => {
         this.audio.playTone(660, 'sine', 0.08);
-        this.spawnFloatingText(clientX, clientY, '🙏 ORAÇÃO');
+        this.spawnFloatingText(clientX, clientY, 'ORAÇÃO');
       });
       this.followersArena.setOnMiracleClickCallback((clientX, clientY) => {
         this.grantMiracle(clientX, clientY);
@@ -251,7 +266,7 @@ class AppManager {
       this.incarnationArena.setOnClickCallback((clientX, clientY) => {
         this.audio.playTone(880, 'sine', 0.12);
         this.addIncarnationBoost(2);
-        this.spawnFloatingText(clientX, clientY, '⚡ +2s (2x FÉ)');
+        this.spawnFloatingText(clientX, clientY, '+2s (2x FÉ)');
       });
     }
 
@@ -299,7 +314,6 @@ class AppManager {
     this.tooltips = new TooltipManager('cult-tooltip');
 
     loadDisplayConfig();
-    document.body.classList.toggle('text-only-mode', DISPLAY_CONFIG.textOnlyMode);
 
     // Load saved game progress before initializing views
     this.loadProgress();
@@ -336,6 +350,7 @@ class AppManager {
     // Start Game
     this.playBtn.addEventListener('click', () => {
       this.audio.init();
+      this.audio.playMusic();
       this.switchScreen('gameplay');
       this.audio.playTone(440, 'sine', 0.1);
     });
@@ -358,7 +373,7 @@ class AppManager {
           this.audio.playTone(220, 'sine', 0.08);
           const clientX = e.clientX || window.innerWidth / 2;
           const clientY = e.clientY || window.innerHeight / 2;
-          this.spawnFloatingText(clientX, clientY, '🔒 NÓ DORMENTE');
+          this.spawnFloatingText(clientX, clientY, 'NÓ DORMENTE');
         }
       });
     });
@@ -411,15 +426,8 @@ class AppManager {
       }
     });
 
-    const textOnlyToggle = document.getElementById('text-only-toggle') as HTMLInputElement | null;
-    if (textOnlyToggle) {
-      textOnlyToggle.checked = DISPLAY_CONFIG.textOnlyMode;
-      textOnlyToggle.addEventListener('change', () => {
-        setTextOnlyMode(textOnlyToggle.checked);
-        document.body.classList.toggle('text-only-mode', DISPLAY_CONFIG.textOnlyMode);
-        this.renderAllLists();
-      });
-    }
+    // Audio / Soundtrack & Volume Controls
+    this.initAudioEvents();
 
     // Save System Events
     this.btnManualSaveEl?.addEventListener('click', () => {
@@ -638,13 +646,13 @@ class AppManager {
     this.faithPoints += finalReward;
     this.totalFaithAccumulated += finalReward;
 
-    this.spawnFloatingText(clientX, clientY, `✨ MILAGRE! +${formatNumber(finalReward)} FÉ`);
+    this.spawnFloatingText(clientX, clientY, `MILAGRE! +${formatNumber(finalReward)} FÉ`);
 
     this.notifications.showCustomPopup(
       'Milagre Concedido!',
       `A prece fervorosa foi atendida: +${formatNumber(finalReward)} Fé cósmica!`,
-      '✨',
-      '✦ GRAÇA DIVINA ✦'
+      '',
+      'GRAÇA DIVINA'
     );
 
     this.updateHUD();
@@ -725,7 +733,7 @@ class AppManager {
     if (this.incarnationBoostBadgeEl) {
       if (timer > 0) {
         this.incarnationBoostBadgeEl.classList.remove('inactive');
-        this.incarnationBoostBadgeEl.textContent = '2x FÉ ATIVO 🔥';
+        this.incarnationBoostBadgeEl.textContent = '2x FÉ ATIVO';
       } else {
         this.incarnationBoostBadgeEl.classList.add('inactive');
         this.incarnationBoostBadgeEl.textContent = '2x FÉ INATIVO';
@@ -842,7 +850,7 @@ class AppManager {
         this.convertMaxTitleEl.textContent = 'CONVERTER MÁXIMO';
         this.convertMaxSubEl.textContent = `Desbloqueia com 25 Fiéis (${totalCount}/25)`;
         this.convertMaxCostLabelEl.textContent = 'BLOQUEADO';
-        this.convertMaxCostValEl.textContent = '🔒';
+        this.convertMaxCostValEl.textContent = '';
       } else {
         this.btnConvertMaxEl.classList.remove('locked');
         const discount = calculateCostDiscountMultiplier(this.achievements);
@@ -922,9 +930,9 @@ class AppManager {
 
     this.audio.playChime();
     this.notifications.showCustomPopup(
-      '✨ EVOLUÇÃO SAGRADA',
+      'EVOLUÇÃO SAGRADA',
       `A Encarnação atingiu o ${nextStage.name}! Multiplicador de Fervor: ${nextStage.multiplier}x.`,
-      '👁️'
+      ''
     );
 
     this.updateIncarnationTab();
@@ -998,6 +1006,7 @@ class AppManager {
 
     if (targetTabId === 'tab-followers') {
       this.updateFollowersTab();
+      this.followersArena?.resize();
     }
     if (targetTabId === 'tab-incarnation') {
       this.updateIncarnationTab();
@@ -1053,7 +1062,7 @@ class AppManager {
             <span>${formatNumber(cost)} Fervor</span>
           </div>
           <div class="card-click-prompt">
-            <span class="card-click-hint">CLIQUE PARA AUMENTAR ➔</span>
+            <span class="card-click-hint">CLIQUE PARA AUMENTAR</span>
           </div>
         </div>
       `;
@@ -1153,26 +1162,26 @@ class AppManager {
       let benefitText = '';
       if (unlock.id === 'unlock_incarnation') {
         benefitText = unlock.unlocked
-          ? '✓ Aba Incarnation e geração de Fervor (+1.0/s) ativadas'
+          ? 'Aba Incarnation e geração de Fervor (+1.0/s) ativadas'
           : 'Desbloqueia a aba Incarnation e desperta o Fervor (+1.0/s)';
       } else if (unlock.id === 'unlock_fervor_upgrades') {
         benefitText = unlock.unlocked
-          ? '✓ Aba e Upgrades de Fervor ativados'
+          ? 'Aba e Upgrades de Fervor ativados'
           : 'Desbloqueia a árvore de Upgrades de Fervor';
       } else if (unlock.id === 'unlock_relics') {
         benefitText = unlock.unlocked
-          ? '✓ Aba de Relíquias disponível no painel'
+          ? 'Aba de Relíquias disponível no painel'
           : 'Desbloqueia a Câmara de Relíquias sagradas';
       } else {
-        benefitText = unlock.unlocked ? '✓ Desbloqueado' : `Custo único de ${formatNumber(unlock.cost)} Fé`;
+        benefitText = unlock.unlocked ? 'Desbloqueado' : `Custo único de ${formatNumber(unlock.cost)} Fé`;
       }
 
       const promptHtml = unlock.unlocked
         ? `<div class="card-click-prompt">
-             <span class="card-status-badge unlocked-badge">✓ DESBLOQUEADO</span>
+             <span class="card-status-badge unlocked-badge">DESBLOQUEADO</span>
            </div>`
         : `<div class="card-click-prompt">
-             <span class="card-click-hint">CLIQUE PARA DESBLOQUEAR ➔</span>
+             <span class="card-click-hint">CLIQUE PARA DESBLOQUEAR</span>
            </div>`;
 
       card.innerHTML = `
@@ -1235,26 +1244,26 @@ class AppManager {
       this.updateUnlockedTabsAndHUD();
       this.updateIncarnationTab();
       this.notifications.showCustomPopup(
-        '👁️ INCARNATION DESPERTADA',
+        'INCARNATION DESPERTADA',
         'A Encarnação Sagrada foi convocada! O Fervor começou a queimar a +1.0/s.',
-        '👁️'
+        ''
       );
     } else if (unlock.id === 'unlock_fervor_upgrades') {
       this.updateUnlockedTabsAndHUD();
       this.renderFervorUpgradesList();
       this.notifications.showCustomPopup(
-        '🔥 RITOS DE FERVOR',
+        'RITOS DE FERVOR',
         'Os Upgrades de Fervor foram revelados no painel esquerdo!',
-        '🔥'
+        ''
       );
     } else if (unlock.id === 'unlock_relics') {
       this.updateUnlockedTabsAndHUD();
       this.updateRelicsTab();
       this.renderRelicUpgradesList();
       this.notifications.showCustomPopup(
-        '🏺 NOVA MECÂNICA',
+        'NOVA MECÂNICA',
         'A aba de Relíquias sagradas foi despertada no santuário!',
-        '🏺'
+        ''
       );
     }
 
@@ -1279,7 +1288,7 @@ class AppManager {
 
     this.audio.playChime();
     this.spawnFloatingText(window.innerWidth / 2, window.innerHeight / 2, `+${toGet} RELÍQUIAS!`);
-    this.notifications.showCustomPopup('🏺 FÉ TRANSMUTADA', `Você consagrou ${toGet} Relíquias sagradas!`, '🏺', '✦ ALQUIMIA CÓSMICA ✦');
+    this.notifications.showCustomPopup('FÉ TRANSMUTADA', `Você consagrou ${toGet} Relíquias sagradas!`, '', 'ALQUIMIA CÓSMICA');
 
     this.updateHUD();
     this.updateRelicsTab();
@@ -1325,10 +1334,10 @@ class AppManager {
 
       const promptHtml = isMax
         ? `<div class="card-click-prompt">
-             <span class="card-status-badge maxed-badge">✓ NÍVEL MÁXIMO</span>
+             <span class="card-status-badge maxed-badge">NÍVEL MÁXIMO</span>
            </div>`
         : `<div class="card-click-prompt">
-             <span class="card-click-hint relic-hint">CLIQUE PARA CONSAGRAR ➔</span>
+             <span class="card-click-hint relic-hint">CLIQUE PARA CONSAGRAR</span>
            </div>`;
 
       card.innerHTML = `
@@ -1648,6 +1657,8 @@ class AppManager {
     if (screen === 'gameplay') {
       this.startScreen.classList.remove('active');
       this.gameplayScreen.classList.add('active');
+      this.followersArena?.resize();
+      this.incarnationArena?.resize();
     } else {
       this.gameplayScreen.classList.remove('active');
       this.startScreen.classList.add('active');
@@ -1656,11 +1667,85 @@ class AppManager {
 
   private openSettings(): void {
     this.updateSaveStatusText();
+    if (this.volumeSliderEl) {
+      this.volumeSliderEl.value = String(Math.round(this.audio.getVolume() * 100));
+    }
+    if (this.musicToggleEl) {
+      this.musicToggleEl.checked = this.audio.isMusicEnabled();
+    }
+    if (this.sfxToggleEl) {
+      this.sfxToggleEl.checked = this.audio.isSfxEnabled();
+    }
     this.settingsModal.classList.add('open');
   }
 
   private closeSettings(): void {
     this.settingsModal.classList.remove('open');
+  }
+
+  private updateMusicUI(): void {
+    const isEnabled = this.audio.isMusicEnabled();
+    if (this.musicIconOnEl) {
+      this.musicIconOnEl.style.display = isEnabled ? 'block' : 'none';
+    }
+    if (this.musicIconOffEl) {
+      this.musicIconOffEl.style.display = isEnabled ? 'none' : 'block';
+    }
+    if (this.musicToggleEl) {
+      this.musicToggleEl.checked = isEnabled;
+    }
+    if (this.musicQuickBtnEl) {
+      this.musicQuickBtnEl.classList.toggle('muted', !isEnabled);
+      this.musicQuickBtnEl.title = isEnabled
+        ? 'Trilha Sonora: Ativa (Clique para silenciar)'
+        : 'Trilha Sonora: Silenciada (Clique para tocar)';
+    }
+  }
+
+  private initAudioEvents(): void {
+    if (this.volumeSliderEl) {
+      this.volumeSliderEl.value = String(Math.round(this.audio.getVolume() * 100));
+      this.volumeSliderEl.addEventListener('input', () => {
+        const val = parseFloat(this.volumeSliderEl!.value) / 100;
+        this.audio.setVolume(val);
+      });
+    }
+
+    if (this.musicToggleEl) {
+      this.musicToggleEl.checked = this.audio.isMusicEnabled();
+      this.musicToggleEl.addEventListener('change', () => {
+        this.audio.setMusicEnabled(this.musicToggleEl!.checked);
+        this.updateMusicUI();
+      });
+    }
+
+    if (this.sfxToggleEl) {
+      this.sfxToggleEl.checked = this.audio.isSfxEnabled();
+      this.sfxToggleEl.addEventListener('change', () => {
+        this.audio.setSfxEnabled(this.sfxToggleEl!.checked);
+      });
+    }
+
+    if (this.musicQuickBtnEl) {
+      this.musicQuickBtnEl.addEventListener('click', () => {
+        this.audio.toggleMusic();
+        this.updateMusicUI();
+      });
+    }
+
+    this.updateMusicUI();
+
+    // Start music on first user gesture anywhere if already inside gameplay
+    const triggerAudioOnGesture = () => {
+      this.audio.init();
+      if (this.audio.isMusicEnabled()) {
+        this.audio.playMusic();
+      }
+      window.removeEventListener('pointerdown', triggerAudioOnGesture);
+      window.removeEventListener('keydown', triggerAudioOnGesture);
+    };
+    window.addEventListener('pointerdown', triggerAudioOnGesture);
+    window.addEventListener('keydown', triggerAudioOnGesture);
   }
 
   // --- Save / Load / Persistence ---
@@ -1786,7 +1871,7 @@ class AppManager {
     if (data) {
       this.applySaveData(data);
       this.lastSaveTime = data.timestamp || Date.now();
-      console.log('🔮 Cult of the Sphere - Progresso carregado com sucesso do LocalStorage.');
+      console.log('Cult of the Sphere - Progresso carregado com sucesso do LocalStorage.');
       return true;
     }
     return false;
@@ -1796,10 +1881,10 @@ class AppManager {
     const success = this.saveProgress();
     if (success) {
       this.audio.playTone(660, 'sine', 0.1);
-      this.notifications.showCustomPopup('Culto Salvo', 'Seu progresso sagrado foi gravado com sucesso.', '💾', '✦ REGISTRO SAGRADO ✦');
+      this.notifications.showCustomPopup('Culto Salvo', 'Seu progresso sagrado foi gravado com sucesso.', '', 'REGISTRO SAGRADO');
       this.updateSaveStatusText();
     } else {
-      this.notifications.showCustomPopup('Erro ao Salvar', 'Não foi possível gravar no armazenamento do navegador.', '⚠️', '✦ ALERTA ✦');
+      this.notifications.showCustomPopup('Erro ao Salvar', 'Não foi possível gravar no armazenamento do navegador.', '', 'ALERTA');
     }
   }
 
@@ -1855,18 +1940,18 @@ class AppManager {
         const text = this.saveDataTextarea.value;
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(text).then(() => {
-            this.notifications.showCustomPopup('Save Copiado', 'Chave de backup copiada para a área de transferência.', '📋', '✦ EXPORTAÇÃO ✦');
+            this.notifications.showCustomPopup('Save Copiado', 'Chave de backup copiada para a área de transferência.', '', 'EXPORTAÇÃO');
             this.closeSaveDataModal();
           }).catch(() => {
             this.saveDataTextarea?.select();
             document.execCommand('copy');
-            this.notifications.showCustomPopup('Save Copiado', 'Chave de backup copiada com sucesso.', '📋', '✦ EXPORTAÇÃO ✦');
+            this.notifications.showCustomPopup('Save Copiado', 'Chave de backup copiada com sucesso.', '', 'EXPORTAÇÃO');
             this.closeSaveDataModal();
           });
         } else {
           this.saveDataTextarea.select();
           document.execCommand('copy');
-          this.notifications.showCustomPopup('Save Copiado', 'Chave de backup copiada com sucesso.', '📋', '✦ EXPORTAÇÃO ✦');
+          this.notifications.showCustomPopup('Save Copiado', 'Chave de backup copiada com sucesso.', '', 'EXPORTAÇÃO');
           this.closeSaveDataModal();
         }
       }
@@ -1899,7 +1984,7 @@ class AppManager {
         this.updateHUD();
         this.updateStatsTab();
         this.closeSaveDataModal();
-        this.notifications.showCustomPopup('Progresso Restaurado', 'Seu culto foi restabelecido a partir do backup.', '🔮', '✦ IMPORTAÇÃO ✦');
+        this.notifications.showCustomPopup('Progresso Restaurado', 'Seu culto foi restabelecido a partir do backup.', '', 'IMPORTAÇÃO');
       }
     }
   }
@@ -1937,5 +2022,5 @@ class AppManager {
 // Bootstrap Application
 window.addEventListener('DOMContentLoaded', () => {
   new AppManager();
-  console.log('🔮 Cult of the Sphere - Arquitetura Modular Inicializada.');
+  console.log('Cult of the Sphere - Arquitetura Modular Inicializada.');
 });

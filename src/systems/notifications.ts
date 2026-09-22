@@ -12,13 +12,13 @@ export class NotificationManager {
     const popup = document.createElement('div');
     popup.className = 'ach-popup-square';
 
-    const iconHtml = DISPLAY_CONFIG.showEmojisAndSymbols
+    const iconHtml = DISPLAY_CONFIG.showEmojisAndSymbols && ach.icon
       ? `<div class="ach-popup-icon">${ach.icon}</div>`
       : '';
 
     popup.innerHTML = `
       <div class="ach-popup-timer-bar"></div>
-      <span class="ach-popup-badge">✦ CONQUISTA DESBLOQUEADA ✦</span>
+      <span class="ach-popup-badge">CONQUISTA DESBLOQUEADA</span>
       ${iconHtml}
       <div class="ach-popup-title">${ach.name}</div>
       <div class="ach-popup-desc">${ach.desc}</div>
@@ -44,11 +44,11 @@ export class NotificationManager {
     }, 4600);
   }
 
-  public showCustomPopup(title: string, desc: string, icon: string = '🏺', badge: string = '✦ NOVA MECÂNICA ✦'): void {
+  public showCustomPopup(title: string, desc: string, icon: string = '', badge: string = 'NOVA MECÂNICA'): void {
     const popup = document.createElement('div');
     popup.className = 'ach-popup-square';
 
-    const iconHtml = DISPLAY_CONFIG.showEmojisAndSymbols
+    const iconHtml = DISPLAY_CONFIG.showEmojisAndSymbols && icon
       ? `<div class="ach-popup-icon">${icon}</div>`
       : '';
 

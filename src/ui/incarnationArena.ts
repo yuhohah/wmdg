@@ -40,12 +40,14 @@ export class IncarnationArena {
   public resize(): void {
     const r = this.canvas.getBoundingClientRect();
     if (r.width > 50 && r.height > 50) {
-      this.width = r.width;
-      this.height = r.height;
-      this.canvas.width = Math.floor(this.width * this.dpr);
-      this.canvas.height = Math.floor(this.height * this.dpr);
-      this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-      this.ctx.scale(this.dpr, this.dpr);
+      if (Math.abs(this.width - r.width) > 0.5 || Math.abs(this.height - r.height) > 0.5) {
+        this.width = r.width;
+        this.height = r.height;
+        this.canvas.width = Math.floor(this.width * this.dpr);
+        this.canvas.height = Math.floor(this.height * this.dpr);
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        this.ctx.scale(this.dpr, this.dpr);
+      }
     }
   }
 
@@ -62,6 +64,16 @@ export class IncarnationArena {
     window.addEventListener('resize', () => {
       this.resize();
     });
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(() => {
+        this.resize();
+      });
+      ro.observe(this.canvas);
+      if (this.canvas.parentElement) {
+        ro.observe(this.canvas.parentElement);
+      }
+    }
   }
 
   private setupEvents(): void {
@@ -241,6 +253,13 @@ export class IncarnationArena {
     ctx.beginPath();
     ctx.ellipse(cx, cy + 40, 95, 40, 0, 0, Math.PI * 2);
     ctx.stroke();
+
+    if (h > 290) {
+      ctx.strokeStyle = this.stage >= 2 ? 'rgba(245, 158, 11, 0.08)' : 'rgba(255, 255, 255, 0.02)';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy + 40, 120, 50, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
 
     // Subtle runic cross on altar center
     ctx.strokeStyle = this.stage >= 2 ? 'rgba(251, 191, 36, 0.25)' : 'rgba(255, 255, 255, 0.06)';

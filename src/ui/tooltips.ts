@@ -93,7 +93,7 @@ export class TooltipManager {
       <div class="cult-tooltip-lore">${upg.lore}</div>
 
       <div class="tooltip-buff-highlight" style="background: rgba(255, 255, 255, 0.05); border-color: #71717a; color: #ffffff;">
-        <span>✦ MULTIPLICADOR ATUAL:</span>
+        <span>MULTIPLICADOR ATUAL:</span>
         <span>x${mult.toFixed(2)}</span>
       </div>
 
@@ -169,7 +169,7 @@ export class TooltipManager {
         <div class="tooltip-stat-item">
           <span class="tooltip-stat-label">STATUS</span>
           <span class="tooltip-stat-val" style="color: ${unlock.unlocked ? '#34d399' : (canAfford ? '#fbbf24' : '#94a3b8')}">
-            ${unlock.unlocked ? '✓ DESBLOQUEADO' : 'AGUARDANDO FÉ'}
+            ${unlock.unlocked ? 'DESBLOQUEADO' : 'AGUARDANDO FÉ'}
           </span>
         </div>
         <div class="tooltip-stat-item">
@@ -205,7 +205,7 @@ export class TooltipManager {
       <div class="cult-tooltip-lore">${relic.lore}</div>
 
       <div class="tooltip-buff-highlight" style="background: rgba(139, 92, 246, 0.1); border-color: rgba(139, 92, 246, 0.4); color: #e9d5ff;">
-        <span>✦ EFEITO ATUAL:</span>
+        <span>EFEITO ATUAL:</span>
         <span>${effectText}</span>
       </div>
 

@@ -210,8 +210,18 @@ html, body {
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
 }
 
-.icon-btn-gold:hover svg {
+#settings-btn:hover svg {
   transform: rotate(90deg);
+}
+
+#music-quick-btn:hover svg {
+  transform: scale(1.15);
+}
+
+#music-quick-btn.muted {
+  opacity: 0.65;
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ef4444;
 }
 
 /* Center Content Screen */
@@ -862,6 +872,14 @@ html, body {
    FAITHFUL (FIÉIS) TAB: STATS, WALKING ARENA & CONTROLS
    =================================================== */
 
+#tab-followers.active {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
 .followers-tab-header {
   display: flex;
   align-items: center;
@@ -870,7 +888,8 @@ html, body {
   border: 1.5px solid var(--border-mid);
   border-radius: 8px;
   padding: 10px 14px;
-  margin-bottom: 10px;
+  margin-bottom: 0;
+  flex-shrink: 0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
@@ -922,14 +941,16 @@ html, body {
 .followers-arena-wrapper {
   position: relative;
   width: 100%;
-  height: 230px;
+  flex: 1 1 0;
+  min-height: 200px;
+  height: auto;
   background: radial-gradient(ellipse at center, rgba(17, 24, 39, 0.95) 0%, rgba(9, 11, 17, 0.98) 100%);
   border: 1.5px solid var(--border-mid);
   border-radius: 8px;
   overflow: hidden;
   box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.8), 0 4px 16px rgba(0, 0, 0, 0.5);
   cursor: crosshair;
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
 
 .followers-walk-canvas {
@@ -962,6 +983,8 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-top: auto;
+  flex-shrink: 0;
 }
 
 .btn-follower-action {
@@ -1063,6 +1086,14 @@ html, body {
 /* ==========================================================================
    INCARNATION TAB (SANTUÁRIO DA ENCARNAÇÃO SAGRADA)
    ========================================================================== */
+#tab-incarnation.active {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
 .incarnation-tab-header {
   display: flex;
   justify-content: space-between;
@@ -1071,7 +1102,8 @@ html, body {
   background: linear-gradient(135deg, rgba(24, 18, 38, 0.95) 0%, rgba(13, 16, 23, 0.98) 100%);
   border: 1.5px solid rgba(245, 158, 11, 0.35);
   border-radius: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 0;
+  flex-shrink: 0;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
@@ -1118,14 +1150,16 @@ html, body {
 .incarnation-arena-wrapper {
   position: relative;
   width: 100%;
-  height: 240px;
+  flex: 1 1 0;
+  min-height: 200px;
+  height: auto;
   background: radial-gradient(ellipse at center, rgba(30, 20, 48, 0.95) 0%, rgba(9, 11, 17, 0.98) 100%);
   border: 1.5px solid rgba(245, 158, 11, 0.25);
   border-radius: 8px;
   overflow: hidden;
   box-shadow: inset 0 2px 14px rgba(0, 0, 0, 0.85), 0 4px 20px rgba(245, 158, 11, 0.1);
   cursor: pointer;
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
 
 .incarnation-canvas {
@@ -1159,7 +1193,9 @@ html, body {
   border: 1.5px solid rgba(245, 158, 11, 0.3);
   border-radius: 8px;
   padding: 10px 14px;
-  margin-bottom: 10px;
+  margin-bottom: 0;
+  margin-top: auto;
+  flex-shrink: 0;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
@@ -1281,6 +1317,7 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .btn-incarnation-upgrade {
@@ -2829,36 +2866,4 @@ html, body {
   cursor: default;
   box-shadow: none;
 }
-
-/* ===================================================
-   TEXT-ONLY MODE (CLEAN MINIMAL TYPOGRAPHIC LAYOUT)
-   =================================================== */
-
-body.text-only-mode .card-hero-preview,
-body.text-only-mode .cult-tooltip-art-wrap,
-body.text-only-mode .card-symbol,
-body.text-only-mode .tab-icon,
-body.text-only-mode .fervor-flame-icon,
-body.text-only-mode .ach-popup-icon,
-body.text-only-mode .rune-icon {
-  display: none !important;
-}
-
-body.text-only-mode .card-title-group {
-  gap: 0;
-}
-
-body.text-only-mode .cult-tooltip-title {
-  gap: 0;
-}
-
-body.text-only-mode .fervor-badge-group {
-  gap: 0;
-}
-
-body.text-only-mode .panel-tab-btn {
-  gap: 0;
-}
-
-
 
