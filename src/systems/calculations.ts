@@ -42,21 +42,16 @@ export function calculateIncarnationFollowerMultiplier(fervorPoints: number, sta
 
 export function calculateFervorFaithBonus(fervorPoints: number, effectMult: number): number {
   const fervorAmount = Math.max(0, fervorPoints);
-  return 1 + (Math.log10(fervorAmount + 1) * 0.15) * effectMult;
+  // Fórmula DodecaDragons: (log10(fire / 10 + 1) * 2 + 1) * (1.25 ^ (level ^ 0.8))
+  return (Math.log10(fervorAmount / 10 + 1) * 2 + 1) * effectMult;
 }
 
 export function calculateFervorRate(
   baseRate: number,
   prodMult: number,
-  faithPoints: number,
-  synergyMult: number,
-  hasSynergy: boolean
+  synergyMult: number = 1.0
 ): number {
-  let synergyBonus = 0;
-  if (hasSynergy) {
-    synergyBonus = Math.pow(Math.max(0, faithPoints), 0.25) * 0.15 * synergyMult;
-  }
-  return (baseRate * prodMult) + synergyBonus;
+  return baseRate * prodMult * synergyMult;
 }
 
 export function calculateFaithPerClick(
@@ -130,9 +125,9 @@ export function calculateMaxAffordableFollowers(
 }
 
 export function calculateRelicsToGet(faith: number): number {
-  if (faith < 100) return 0;
-  // Based on DodecaDragons formula: log2(faith + 1) * 1.75 (~25 Relics at 20,000 Faith, matching reference image)
-  return Math.max(0, Math.floor(Math.log2(faith + 1) * 1.75));
+  if (faith <= 0) return 0;
+  // Fórmula DodecaDragons: floor(log2(faith + 1)) (com 20.000.000 de Fé, rende 24 relíquias)
+  return Math.max(0, Math.floor(Math.log2(faith + 1)));
 }
 
 export function calculateExtraRelicsPerSecond(bestRelics: number): number {

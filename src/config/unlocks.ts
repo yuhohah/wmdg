@@ -32,7 +32,7 @@ export const initialUnlocks: MechanicUnlock[] = [
     desc: 'Desperte o relicário ancestral e revele a aba de Relíquias mitológicas para consagrar Fé em artefatos de poder imensurável.',
     lore: 'Antigos mestres guardavam relicários imbuídos com a matéria primordial da Esfera, permitindo converter a devoção terrena em essência pura.',
     symbol: '',
-    cost: 20000,
+    cost: 20000000,
     costCurrency: 'faith',
     unlocked: false,
     tabId: 'tab-relics',

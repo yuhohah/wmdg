@@ -508,7 +508,7 @@ class AppManager {
   }
 
   private getFaithPerSecond(): number {
-    const fervorFollowersMult = getFervorUpgradeMultiplier(this.fervorUpgrades[3]);
+    const fervorFollowersMult = getFervorUpgradeMultiplier(this.fervorUpgrades[3], this.getTotalFollowersCount());
     const incFollowerMult = calculateIncarnationFollowerMultiplier(this.fervorPoints, this.incarnationStage);
     const passiveBuff = calculatePassiveBuffMultiplier(this.achievements);
     const globalBuff = calculateGlobalBuffMultiplier(this.achievements);
@@ -562,14 +562,13 @@ class AppManager {
     const torchMult = 1 + (this.relicUpgrades[1].level * 0.20);
     prodMult *= torchMult;
 
-    let synergyMult = getFervorUpgradeMultiplier(this.fervorUpgrades[4]);
+    let synergyMult = getFervorUpgradeMultiplier(this.fervorUpgrades[4], 0, this.faithPoints);
     // Pena Solar de Fênix (1.5x boost on synergy)
     if (this.relicUpgrades[2].level >= 1) {
       synergyMult *= 1.5;
     }
-    const hasSynergy = this.fervorUpgrades[4].level > 0;
 
-    return calculateFervorRate(BASE_FERVOR_RATE, prodMult, this.faithPoints, synergyMult, hasSynergy);
+    return calculateFervorRate(BASE_FERVOR_RATE, prodMult, synergyMult);
   }
 
   private getRelicsRatePerSecond(): number {
@@ -826,7 +825,7 @@ class AppManager {
     if (!devotee) return;
 
     const totalCount = this.getTotalFollowersCount();
-    const fervorFollowersMult = getFervorUpgradeMultiplier(this.fervorUpgrades[3]);
+    const fervorFollowersMult = getFervorUpgradeMultiplier(this.fervorUpgrades[3], totalCount);
     const incFollowerMult = calculateIncarnationFollowerMultiplier(this.fervorPoints, this.incarnationStage);
     const followerOutput = devotee.count * devotee.baseEffect * fervorFollowersMult * incFollowerMult;
 
@@ -948,7 +947,7 @@ class AppManager {
   private updateFollowersRealtime(): void {
     const devotee = this.followers[0];
     if (!devotee) return;
-    const fervorFollowersMult = getFervorUpgradeMultiplier(this.fervorUpgrades[3]);
+    const fervorFollowersMult = getFervorUpgradeMultiplier(this.fervorUpgrades[3], this.getTotalFollowersCount());
     const incFollowerMult = calculateIncarnationFollowerMultiplier(this.fervorPoints, this.incarnationStage);
     const followerOutput = devotee.count * devotee.baseEffect * fervorFollowersMult * incFollowerMult;
 
@@ -1083,7 +1082,7 @@ class AppManager {
 
     this.fervorUpgrades.forEach((upg) => {
       const cost = calculateFervorUpgradeCost(upg);
-      const mult = getFervorUpgradeMultiplier(upg);
+      const mult = getFervorUpgradeMultiplier(upg, this.getTotalFollowersCount(), this.faithPoints);
       const canAfford = this.fervorPoints >= cost;
 
       const card = document.createElement('div');

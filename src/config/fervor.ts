@@ -10,7 +10,7 @@ export const initialFervorUpgrades: FervorUpgrade[] = [
     lore: 'O fogo sagrado queima com resina cósmica, multiplicando a velocidade com que o Fervor é gerado.',
     icon: '',
     baseCost: 50,
-    costMultiplier: 1.6,
+    costMultiplier: 1.8,
     level: 0
   },
   {
@@ -20,7 +20,7 @@ export const initialFervorUpgrades: FervorUpgrade[] = [
     lore: 'A luz da chama dissipa as dúvidas e energiza as preces com poder transcendental contínuo.',
     icon: '',
     baseCost: 100,
-    costMultiplier: 1.7,
+    costMultiplier: 2.0,
     level: 0
   },
   {
@@ -30,7 +30,7 @@ export const initialFervorUpgrades: FervorUpgrade[] = [
     lore: 'A Esfera responde com descargas ardentes cada vez que seus dedos se aproximam do núcleo.',
     icon: '',
     baseCost: 100,
-    costMultiplier: 1.65,
+    costMultiplier: 1.4,
     level: 0
   },
   {
@@ -40,7 +40,7 @@ export const initialFervorUpgrades: FervorUpgrade[] = [
     lore: 'Os adeptos cantam hinos apaixonados à luz das tochas sagradas, ampliando drasticamente seu influxo.',
     icon: '',
     baseCost: 500,
-    costMultiplier: 1.75,
+    costMultiplier: 1.5,
     level: 0
   },
   {
@@ -50,41 +50,58 @@ export const initialFervorUpgrades: FervorUpgrade[] = [
     lore: 'Uma simbiose cósmica: quanto maior o oceano de fé, mais alto e rápido sobem as chamas do santuário.',
     icon: '',
     baseCost: 500,
-    costMultiplier: 1.8,
+    costMultiplier: 2.5,
     level: 0
   }
 ];
 
-export function getFervorUpgradeMultiplier(upg: FervorUpgrade): number {
+export function getFervorUpgradeMultiplier(
+  upg: FervorUpgrade,
+  followersCount: number = 0,
+  faithPoints: number = 0
+): number {
+  if (upg.level <= 0) return 1.0;
+
   switch (upg.id) {
     case 'fu_prod':
-      return Math.pow(1.25, upg.level);
+      // DodecaDragons FU1: 2 ^ (level ^ 0.6)
+      return Math.pow(2, Math.pow(upg.level, 0.6));
+
     case 'fu_effect':
-      return 1 + upg.level * 0.50;
+      // DodecaDragons FU2: 1.25 ^ (level ^ 0.8)
+      return Math.pow(1.25, Math.pow(upg.level, 0.8));
+
     case 'fu_click':
-      return 1 + upg.level * 0.50;
+      // DodecaDragons FU3: (level ^ 2.6) * 4 + 1
+      return Math.pow(upg.level, 2.6) * 4 + 1;
+
     case 'fu_followers':
-      return 1 + upg.level * 0.75;
+      // DodecaDragons FU4: ((level ^ 1.5) * miners / 50) + 1
+      return (Math.pow(upg.level, 1.5) * followersCount / 50) + 1;
+
     case 'fu_synergy':
-      return 1 + upg.level * 0.50;
+      // DodecaDragons FU5: ((level ^ 1.5) * log10(gold + 1) / 5) + 1
+      return (Math.pow(upg.level, 1.5) * Math.log10(Math.max(0, faithPoints) + 1) / 5) + 1;
+
     default:
-      return 1 + upg.level * 0.50;
+      return 1.0;
   }
 }
 
 export function getFervorUpgradeFormula(upg: FervorUpgrade): string {
   switch (upg.id) {
     case 'fu_prod':
-      return '1.25^Nível (+25% comp./nível)';
+      return '2^(Nível^0.6)';
     case 'fu_effect':
-      return '1 + (0.50 × Nível) (+50%/nível)';
+      return '1.25^(Nível^0.8)';
     case 'fu_click':
-      return '1 + (0.50 × Nível) (+50%/nível)';
+      return '(Nível^2.6 × 4) + 1';
     case 'fu_followers':
-      return '1 + (0.75 × Nível) (+75%/nível)';
+      return '((Nível^1.5 × Fiéis) / 50) + 1';
     case 'fu_synergy':
-      return '1 + (0.50 × Nível) (+50%/nível)';
+      return '((Nível^1.5 × log10(Fé + 1)) / 5) + 1';
     default:
-      return '1 + (0.50 × Nível)';
+      return '1.0';
   }
 }
+
