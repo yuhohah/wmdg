@@ -2,7 +2,6 @@
 
 import type { BuyableItem, FervorUpgrade, Achievement, GameState, MechanicUnlock, RelicUpgrade } from './types.js';
 import { initialFollowers } from './config/followers.js';
-import { initialMonuments } from './config/monuments.js';
 import { initialFervorUpgrades, BASE_FERVOR_RATE, getFervorUpgradeMultiplier } from './config/fervor.js';
 import { initialAchievements } from './config/achievements.js';
 import { initialUnlocks } from './config/unlocks.js';
@@ -14,9 +13,9 @@ import {
   calculateClickBuffMultiplier,
   calculatePassiveBuffMultiplier,
   calculateGlobalBuffMultiplier,
-  calculateMonumentBuffMultiplier,
   calculateCostDiscountMultiplier,
   calculateMaxAffordableFollowers,
+  calculateIncarnationFollowerMultiplier,
   calculateFervorFaithBonus,
   calculateFervorRate,
   calculateFaithPerClick,
@@ -113,7 +112,6 @@ class AppManager {
   // Configured Data Arrays
   private followers: BuyableItem[] = initialFollowers.map((item) => ({ ...item }));
   private fervorUpgrades: FervorUpgrade[] = initialFervorUpgrades.map((u) => ({ ...u }));
-  private monuments: BuyableItem[] = initialMonuments.map((m) => ({ ...m }));
   private achievements: Achievement[] = initialAchievements.map((a) => ({ ...a }));
   private unlocks: MechanicUnlock[] = initialUnlocks.map((u) => ({ ...u }));
 
@@ -492,7 +490,6 @@ class AppManager {
       totalFaith: this.totalFaithAccumulated,
       clicks: this.totalClicks,
       followers: this.getTotalFollowersCount(),
-      monuments: this.getTotalMonumentsCount(),
       fps: this.getFaithPerSecond(),
       fervor: this.fervorPoints,
       relics: this.relicPoints,
@@ -512,7 +509,7 @@ class AppManager {
 
   private getFaithPerSecond(): number {
     const fervorFollowersMult = getFervorUpgradeMultiplier(this.fervorUpgrades[3]);
-    const monumentBuff = calculateMonumentBuffMultiplier(this.achievements);
+    const incFollowerMult = calculateIncarnationFollowerMultiplier(this.fervorPoints, this.incarnationStage);
     const passiveBuff = calculatePassiveBuffMultiplier(this.achievements);
     const globalBuff = calculateGlobalBuffMultiplier(this.achievements);
     const fervorEffectMult = getFervorUpgradeMultiplier(this.fervorUpgrades[1]);
@@ -528,9 +525,8 @@ class AppManager {
 
     return calculateFaithPerSecond(
       this.followers,
-      this.monuments,
       fervorFollowersMult,
-      monumentBuff,
+      incFollowerMult,
       passiveBuff,
       globalBuff,
       fervorFaithBonus,
@@ -566,9 +562,6 @@ class AppManager {
     const torchMult = 1 + (this.relicUpgrades[1].level * 0.20);
     prodMult *= torchMult;
 
-    // Incarnation Stage multiplier (Stage 1 is 1x, Stage 2 is 100x, Stage 3 is 10000x)
-    prodMult *= this.getIncarnationStageMultiplier();
-
     let synergyMult = getFervorUpgradeMultiplier(this.fervorUpgrades[4]);
     // Pena Solar de Fênix (1.5x boost on synergy)
     if (this.relicUpgrades[2].level >= 1) {
@@ -591,10 +584,6 @@ class AppManager {
 
   private getTotalFollowersCount(): number {
     return this.followers.reduce((acc, curr) => acc + curr.count, 0);
-  }
-
-  private getTotalMonumentsCount(): number {
-    return this.monuments.reduce((acc, curr) => acc + curr.count, 0);
   }
 
   private getDevoteeBaseMultiplier(): number {
@@ -838,7 +827,8 @@ class AppManager {
 
     const totalCount = this.getTotalFollowersCount();
     const fervorFollowersMult = getFervorUpgradeMultiplier(this.fervorUpgrades[3]);
-    const followerOutput = devotee.count * devotee.baseEffect * fervorFollowersMult;
+    const incFollowerMult = calculateIncarnationFollowerMultiplier(this.fervorPoints, this.incarnationStage);
+    const followerOutput = devotee.count * devotee.baseEffect * fervorFollowersMult * incFollowerMult;
 
     if (this.followersTotalCountEl) {
       this.followersTotalCountEl.textContent = formatNumber(totalCount);
@@ -847,8 +837,9 @@ class AppManager {
       this.followersRateBadgeEl.textContent = `+${formatNumber(followerOutput)} PF/s`;
     }
     if (this.convertOneBenefitEl) {
-      const perFollower = (devotee.baseEffect * fervorFollowersMult).toFixed(1);
-      this.convertOneBenefitEl.textContent = `+${perFollower.endsWith('.0') ? Math.floor(devotee.baseEffect * fervorFollowersMult) : perFollower} Fé/s`;
+      const ratePerFollower = devotee.baseEffect * fervorFollowersMult * incFollowerMult;
+      const perFollower = ratePerFollower.toFixed(1);
+      this.convertOneBenefitEl.textContent = `+${perFollower.endsWith('.0') ? Math.floor(ratePerFollower) : perFollower} Fé/s`;
     }
 
     const costOne = this.getItemCost(devotee);
@@ -873,7 +864,7 @@ class AppManager {
         const discount = calculateCostDiscountMultiplier(this.achievements);
         const mult = this.getDevoteeBaseMultiplier();
         const { count: maxCount, totalCost } = calculateMaxAffordableFollowers(devotee, this.faithPoints, discount, mult);
-        const extraRate = maxCount * devotee.baseEffect * fervorFollowersMult;
+        const extraRate = maxCount * devotee.baseEffect * fervorFollowersMult * incFollowerMult;
 
         if (maxCount > 0) {
           this.btnConvertMaxEl.disabled = false;
@@ -911,7 +902,8 @@ class AppManager {
       this.incarnationDescSubEl.style.display = 'none';
     }
     if (this.incarnationRateBadgeEl) {
-      this.incarnationRateBadgeEl.textContent = `+${this.getFervorRatePerSecond().toFixed(1)} Fervor/s`;
+      const incFollowerMult = calculateIncarnationFollowerMultiplier(this.fervorPoints, this.incarnationStage);
+      this.incarnationRateBadgeEl.textContent = `x${incFollowerMult.toFixed(2)}`;
     }
 
     if (this.btnUpgradeIncarnationEl && this.incarnationUpgradeTitleEl && this.incarnationUpgradeCostValEl) {
@@ -945,6 +937,31 @@ class AppManager {
     }
   }
 
+  private updateIncarnationRealtime(): void {
+    if (this.incarnationRateBadgeEl) {
+      const incFollowerMult = calculateIncarnationFollowerMultiplier(this.fervorPoints, this.incarnationStage);
+      this.incarnationRateBadgeEl.textContent = `x${incFollowerMult.toFixed(2)}`;
+    }
+    this.updateIncarnationUpgradeButtonState();
+  }
+
+  private updateFollowersRealtime(): void {
+    const devotee = this.followers[0];
+    if (!devotee) return;
+    const fervorFollowersMult = getFervorUpgradeMultiplier(this.fervorUpgrades[3]);
+    const incFollowerMult = calculateIncarnationFollowerMultiplier(this.fervorPoints, this.incarnationStage);
+    const followerOutput = devotee.count * devotee.baseEffect * fervorFollowersMult * incFollowerMult;
+
+    if (this.followersRateBadgeEl) {
+      this.followersRateBadgeEl.textContent = `+${formatNumber(followerOutput)} PF/s`;
+    }
+    if (this.convertOneBenefitEl) {
+      const ratePerFollower = devotee.baseEffect * fervorFollowersMult * incFollowerMult;
+      const perFollower = ratePerFollower.toFixed(1);
+      this.convertOneBenefitEl.textContent = `+${perFollower.endsWith('.0') ? Math.floor(ratePerFollower) : perFollower} Fé/s`;
+    }
+  }
+
   private upgradeIncarnation(): void {
     const nextStage = INCARNATION_STAGES.find((s) => s.stage === this.incarnationStage + 1);
     if (!nextStage || this.faithPoints < nextStage.cost) return;
@@ -956,7 +973,7 @@ class AppManager {
     this.audio.playChime();
     this.notifications.showCustomPopup(
       'EVOLUÇÃO SAGRADA',
-      `A Encarnação atingiu o ${nextStage.name}! Multiplicador de Fervor: ${nextStage.multiplier}x.`,
+      `A Encarnação atingiu o ${nextStage.name}! Poder sobre os Fiéis ampliado (${nextStage.multiplier}x).`,
       ''
     );
 
@@ -1626,6 +1643,8 @@ class AppManager {
       this.updateItemButtonsState();
       this.updateFervorButtonsState();
       this.updateAchievementsRealtime();
+      this.updateIncarnationRealtime();
+      this.updateFollowersRealtime();
     }, tickInterval);
   }
 
@@ -1756,7 +1775,6 @@ class AppManager {
         incarnationBoostTimer: this.incarnationBoostTimer
       },
       followers: this.followers.map((f) => ({ id: f.id, count: f.count })),
-      monuments: this.monuments.map((m) => ({ id: m.id, count: m.count })),
       fervorUpgrades: this.fervorUpgrades.map((u) => ({ id: u.id, level: u.level })),
       relicUpgrades: this.relicUpgrades.map((r) => ({ id: r.id, level: r.level })),
       unlocks: this.unlocks.filter((u) => u.unlocked).map((u) => u.id),
@@ -1785,16 +1803,6 @@ class AppManager {
     if (Array.isArray(save.followers)) {
       save.followers.forEach((savedItem) => {
         const item = this.followers.find((f) => f.id === savedItem.id);
-        if (item && typeof savedItem.count === 'number') {
-          item.count = Math.max(0, savedItem.count);
-        }
-      });
-    }
-
-    // Monuments
-    if (Array.isArray(save.monuments)) {
-      save.monuments.forEach((savedItem) => {
-        const item = this.monuments.find((m) => m.id === savedItem.id);
         if (item && typeof savedItem.count === 'number') {
           item.count = Math.max(0, savedItem.count);
         }

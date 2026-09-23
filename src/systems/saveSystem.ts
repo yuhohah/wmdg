@@ -14,7 +14,7 @@ export interface SaveData {
     incarnationBoostTimer?: number;
   };
   followers: Array<{ id: string; count: number }>;
-  monuments: Array<{ id: string; count: number }>;
+  monuments?: Array<{ id: string; count: number }>;
   fervorUpgrades: Array<{ id: string; level: number }>;
   relicUpgrades: Array<{ id: string; level: number }>;
   unlocks: string[];

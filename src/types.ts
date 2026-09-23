@@ -4,8 +4,7 @@ export type BuffType =
   | 'fpc_mult'
   | 'fps_mult'
   | 'global_mult'
-  | 'cost_discount'
-  | 'monument_mult';
+  | 'cost_discount';
 
 export interface BuyableItem {
   id: string;
@@ -38,7 +37,6 @@ export interface GameState {
   totalFaith: number;
   clicks: number;
   followers: number;
-  monuments: number;
   fps: number;
   fervor: number;
   relics?: number;

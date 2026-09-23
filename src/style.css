@@ -1220,6 +1220,14 @@ html, body {
   gap: 2px;
 }
 
+.incarnation-stat-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
 .incarnation-stage-tag {
   font-family: var(--font-heading);
   font-size: 14px;

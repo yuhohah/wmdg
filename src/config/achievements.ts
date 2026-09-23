@@ -277,43 +277,6 @@ export const initialAchievements: Achievement[] = [
     })
   },
 
-  // --- Monument Milestones ---
-  {
-    id: 'ach_mon_1',
-    name: 'Primeira Relíquia',
-    desc: 'Desperte seu primeiro Monumento cósmico.',
-    lore: 'Uma estrutura ancestral de pedra negra e runas ganha vida após milênios dormente.',
-    icon: '',
-    unlocked: false,
-    buffText: '+15% de Produção dos Monumentos',
-    buffType: 'monument_mult',
-    buffVal: 0.15,
-    check: (s) => s.monuments >= 1,
-    getProgress: (s) => ({
-      current: Math.min(s.monuments, 1),
-      target: 1,
-      percent: Math.min(100, s.monuments * 100),
-      label: `${s.monuments} / 1 monumento`
-    })
-  },
-  {
-    id: 'ach_mon_5',
-    name: 'Panteão Cósmico',
-    desc: 'Desperte 5 monumentos no total.',
-    lore: 'A paisagem circundante pulsa com maravilhas arquitetônicas do cosmos.',
-    icon: '',
-    unlocked: false,
-    buffText: '+30% de Produção dos Monumentos',
-    buffType: 'monument_mult',
-    buffVal: 0.30,
-    check: (s) => s.monuments >= 5,
-    getProgress: (s) => ({
-      current: Math.min(s.monuments, 5),
-      target: 5,
-      percent: Math.min(100, (s.monuments / 5) * 100),
-      label: `${s.monuments} / 5 monumentos`
-    })
-  },
 
   // --- Production Rate Milestones ---
   {

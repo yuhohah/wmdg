@@ -29,12 +29,15 @@ export function calculateGlobalBuffMultiplier(_achievements: Achievement[]): num
   return 1.0;
 }
 
-export function calculateMonumentBuffMultiplier(_achievements: Achievement[]): number {
+export function calculateCostDiscountMultiplier(_achievements: Achievement[]): number {
   return 1.0;
 }
 
-export function calculateCostDiscountMultiplier(_achievements: Achievement[]): number {
-  return 1.0;
+export function calculateIncarnationFollowerMultiplier(fervorPoints: number, stage: number): number {
+  if (fervorPoints <= 0 || stage <= 0) return 1.0;
+  // Fórmula estilo DodecaDragons (Opção C): 1 + log10(1 + Fervor / 150) * 1.5 * Estágio
+  const fervorRatio = Math.max(0, fervorPoints) / 150;
+  return 1 + Math.log10(1 + fervorRatio) * 1.5 * Math.max(1, stage);
 }
 
 export function calculateFervorFaithBonus(fervorPoints: number, effectMult: number): number {
@@ -69,19 +72,18 @@ export function calculateFaithPerClick(
 
 export function calculateFaithPerSecond(
   followers: BuyableItem[],
-  monuments: BuyableItem[],
   fervorFollowersMult: number,
-  monumentBuffMult: number,
+  incarnationFollowerMult: number,
   passiveBuffMult: number,
   globalBuffMult: number,
   fervorFaithBonus: number,
   relicFaithMult: number = 1.0,
   incarnationBoostMult: number = 1.0
 ): number {
-  const followersOutput = followers.reduce((acc, curr) => acc + curr.count * curr.baseEffect, 0) * fervorFollowersMult;
-  const monumentsOutput = monuments.reduce((acc, curr) => acc + curr.count * curr.baseEffect, 0) * monumentBuffMult;
-  const totalBase = followersOutput + monumentsOutput;
-  return totalBase * passiveBuffMult * globalBuffMult * fervorFaithBonus * relicFaithMult * incarnationBoostMult;
+  const followersOutput = followers.reduce((acc, curr) => acc + curr.count * curr.baseEffect, 0)
+    * fervorFollowersMult
+    * incarnationFollowerMult;
+  return followersOutput * passiveBuffMult * globalBuffMult * fervorFaithBonus * relicFaithMult * incarnationBoostMult;
 }
 
 export function formatNumber(num: number): string {

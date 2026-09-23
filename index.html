@@ -199,9 +199,15 @@
               <div id="tab-incarnation" class="tab-pane">
                 <div class="incarnation-tab-header">
                   <div class="incarnation-stat-group">
-                    <span class="incarnation-stage-tag" id="incarnation-stage-badge">ESTÁGIO 1</span>
+                    <span class="incarnation-stat-label">ENCARNAÇÃO SAGRADA</span>
+                    <div class="incarnation-stat-row">
+                      <span class="incarnation-stage-tag" id="incarnation-stage-badge">ESTÁGIO 1</span>
+                    </div>
                   </div>
-                  <div class="incarnation-rate-badge" id="incarnation-rate-badge">+1.0 Fervor/s</div>
+                  <div class="incarnation-mult-wrapper" style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+                    <span class="incarnation-mult-sublabel" style="font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #a1a1aa; text-transform: uppercase;">MULTIPLICADOR DOS FIÉIS</span>
+                    <div class="incarnation-rate-badge" id="incarnation-rate-badge" title="Fórmula DodecaDragons: 1 + log10(1 + Fervor / 150) × 1.5 × Estágio">x1.00</div>
+                  </div>
                 </div>
 
                 <!-- Arena: The Grand Incarnation Canvas -->
