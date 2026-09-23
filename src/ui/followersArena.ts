@@ -31,12 +31,15 @@ export class FollowersArena {
   private miracleSpawnCooldown: number = 300; // ~5 seconds after game starts
   private spriteSheet: HTMLImageElement | null = null;
   private spriteLoaded: boolean = false;
+  private bgImage: HTMLImageElement | null = null;
+  private bgLoaded: boolean = false;
 
   constructor(canvasId: string = 'followers-walk-canvas') {
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     this.ctx = this.canvas.getContext('2d', { alpha: true })!;
     this.initCanvas();
     this.loadSprite();
+    this.loadBackground();
     this.setupEvents();
     this.startLoop();
   }
@@ -46,6 +49,14 @@ export class FollowersArena {
     this.spriteSheet.src = '/assets/cultist_spritesheet.png';
     this.spriteSheet.onload = () => {
       this.spriteLoaded = true;
+    };
+  }
+
+  private loadBackground(): void {
+    this.bgImage = new Image();
+    this.bgImage.src = '/assets/patio_fieis_bg.jpg';
+    this.bgImage.onload = () => {
+      this.bgLoaded = true;
     };
   }
 
@@ -356,7 +367,39 @@ export class FollowersArena {
     const w = this.width;
     const h = this.height;
 
-    // Subtle stone tile pattern
+    if (this.bgLoaded && this.bgImage) {
+      const imgW = this.bgImage.naturalWidth || this.bgImage.width;
+      const imgH = this.bgImage.naturalHeight || this.bgImage.height;
+
+      // Cover-fit keeping the ritual circle nicely centered
+      const scale = Math.max(w / imgW, h / imgH);
+      const drawW = imgW * scale;
+      const drawH = imgH * scale;
+      const offsetX = (w - drawW) / 2;
+      const offsetY = (h - drawH) / 2;
+
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(this.bgImage, offsetX, offsetY, drawW, drawH);
+
+      // Subtle atmospheric vignette & lighting tone to integrate cultist sprites and prayer sparks
+      const vignette = ctx.createRadialGradient(
+        w / 2,
+        h / 2,
+        Math.min(w, h) * 0.25,
+        w / 2,
+        h / 2,
+        Math.max(w, h) * 0.75
+      );
+      vignette.addColorStop(0, 'rgba(10, 14, 23, 0.1)');
+      vignette.addColorStop(1, 'rgba(5, 7, 12, 0.5)');
+      ctx.fillStyle = vignette;
+      ctx.fillRect(0, 0, w, h);
+      ctx.restore();
+      return;
+    }
+
+    // Fallback: subtle stone tile pattern
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.035)';
     ctx.lineWidth = 1;
 

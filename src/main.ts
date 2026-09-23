@@ -56,6 +56,8 @@ class AppManager {
   private followersCounterEl: HTMLElement | null;
   private fervorCounterHudEl: HTMLElement | null;
   private fervorRateCounterHudEl: HTMLElement | null;
+  private relicCounterHudEl: HTMLElement | null;
+  private relicRateCounterHudEl: HTMLElement | null;
 
   // Buttons & Navigation
   private playBtn: HTMLButtonElement;
@@ -122,6 +124,8 @@ class AppManager {
   private tabBtnFervorEl: HTMLElement | null = null;
   private hudFervorDividerEl: HTMLElement | null = null;
   private hudFervorItemEl: HTMLElement | null = null;
+  private hudRelicDividerEl: HTMLElement | null = null;
+  private hudRelicItemEl: HTMLElement | null = null;
   private incarnationStageBadgeEl: HTMLElement | null = null;
   private incarnationTitleEl: HTMLElement | null = null;
   private incarnationDescSubEl: HTMLElement | null = null;
@@ -203,6 +207,8 @@ class AppManager {
     this.followersCounterEl = document.getElementById('followers-counter');
     this.fervorCounterHudEl = document.getElementById('fervor-counter-hud');
     this.fervorRateCounterHudEl = document.getElementById('fervor-rate-counter-hud');
+    this.relicCounterHudEl = document.getElementById('relic-counter-hud');
+    this.relicRateCounterHudEl = document.getElementById('relic-rate-counter-hud');
 
     this.playBtn = document.getElementById('play-btn') as HTMLButtonElement;
     this.settingsBtn = document.getElementById('settings-btn') as HTMLButtonElement;
@@ -232,6 +238,8 @@ class AppManager {
     this.tabBtnFervorEl = document.getElementById('tab-btn-fervor');
     this.hudFervorDividerEl = document.getElementById('hud-fervor-divider');
     this.hudFervorItemEl = document.getElementById('hud-fervor-item');
+    this.hudRelicDividerEl = document.getElementById('hud-relic-divider');
+    this.hudRelicItemEl = document.getElementById('hud-relic-item');
 
     this.incarnationStageBadgeEl = document.getElementById('incarnation-stage-badge');
     this.incarnationTitleEl = document.getElementById('incarnation-title');
@@ -251,9 +259,8 @@ class AppManager {
     const arenaCanvas = document.getElementById('followers-walk-canvas');
     if (arenaCanvas) {
       this.followersArena = new FollowersArena('followers-walk-canvas');
-      this.followersArena.setOnClickCallback((clientX, clientY) => {
+      this.followersArena.setOnClickCallback((_clientX, _clientY) => {
         this.audio.playTone(660, 'sine', 0.08);
-        this.spawnFloatingText(clientX, clientY, 'ORAÇÃO');
       });
       this.followersArena.setOnMiracleClickCallback((clientX, clientY) => {
         this.grantMiracle(clientX, clientY);
@@ -572,6 +579,16 @@ class AppManager {
     return calculateFervorRate(BASE_FERVOR_RATE, prodMult, this.faithPoints, synergyMult, hasSynergy);
   }
 
+  private getRelicsRatePerSecond(): number {
+    const extraPerSec = calculateExtraRelicsPerSecond(this.bestRelicsToGet);
+    let autoGen = 0;
+    if (this.relicUpgrades[4]?.level >= 1) {
+      const toGet = calculateRelicsToGet(this.faithPoints);
+      autoGen = toGet * 0.05;
+    }
+    return Math.max(1.0, extraPerSec) + autoGen;
+  }
+
   private getTotalFollowersCount(): number {
     return this.followers.reduce((acc, curr) => acc + curr.count, 0);
   }
@@ -831,7 +848,7 @@ class AppManager {
     }
     if (this.convertOneBenefitEl) {
       const perFollower = (devotee.baseEffect * fervorFollowersMult).toFixed(1);
-      this.convertOneBenefitEl.textContent = `+${perFollower.endsWith('.0') ? Math.floor(devotee.baseEffect * fervorFollowersMult) : perFollower} Fé / seg`;
+      this.convertOneBenefitEl.textContent = `+${perFollower.endsWith('.0') ? Math.floor(devotee.baseEffect * fervorFollowersMult) : perFollower} Fé/s`;
     }
 
     const costOne = this.getItemCost(devotee);
@@ -856,17 +873,18 @@ class AppManager {
         const discount = calculateCostDiscountMultiplier(this.achievements);
         const mult = this.getDevoteeBaseMultiplier();
         const { count: maxCount, totalCost } = calculateMaxAffordableFollowers(devotee, this.faithPoints, discount, mult);
+        const extraRate = maxCount * devotee.baseEffect * fervorFollowersMult;
 
         if (maxCount > 0) {
           this.btnConvertMaxEl.disabled = false;
           this.convertMaxTitleEl.textContent = `CONVERTER MÁXIMO (+${formatNumber(maxCount)})`;
-          this.convertMaxSubEl.textContent = 'Comprar todos os fiéis possíveis';
+          this.convertMaxSubEl.textContent = `+${formatNumber(extraRate)} Fé/s`;
           this.convertMaxCostLabelEl.textContent = 'CUSTO:';
           this.convertMaxCostValEl.textContent = `${formatNumber(totalCost)} Fé`;
         } else {
           this.btnConvertMaxEl.disabled = true;
           this.convertMaxTitleEl.textContent = 'CONVERTER MÁXIMO (+0)';
-          this.convertMaxSubEl.textContent = 'Fé insuficiente para novos fiéis';
+          this.convertMaxSubEl.textContent = '+0 Fé/s';
           this.convertMaxCostLabelEl.textContent = 'CUSTO:';
           this.convertMaxCostValEl.textContent = `${formatNumber(costOne)} Fé`;
         }
@@ -879,31 +897,38 @@ class AppManager {
   // --- Incarnation Management ---
 
   private updateIncarnationTab(): void {
-    const currentStage = INCARNATION_STAGES.find((s) => s.stage === this.incarnationStage) || INCARNATION_STAGES[0];
     const nextStage = INCARNATION_STAGES.find((s) => s.stage === this.incarnationStage + 1);
 
     if (this.incarnationStageBadgeEl) {
       this.incarnationStageBadgeEl.textContent = `ESTÁGIO ${this.incarnationStage}`;
     }
     if (this.incarnationTitleEl) {
-      this.incarnationTitleEl.textContent = currentStage.name;
+      this.incarnationTitleEl.textContent = '';
+      this.incarnationTitleEl.style.display = 'none';
     }
     if (this.incarnationDescSubEl) {
-      this.incarnationDescSubEl.textContent = currentStage.title;
+      this.incarnationDescSubEl.textContent = '';
+      this.incarnationDescSubEl.style.display = 'none';
     }
     if (this.incarnationRateBadgeEl) {
       this.incarnationRateBadgeEl.textContent = `+${this.getFervorRatePerSecond().toFixed(1)} Fervor/s`;
     }
 
-    if (this.btnUpgradeIncarnationEl && this.incarnationUpgradeTitleEl && this.incarnationUpgradeBenefitEl && this.incarnationUpgradeCostValEl) {
+    if (this.btnUpgradeIncarnationEl && this.incarnationUpgradeTitleEl && this.incarnationUpgradeCostValEl) {
       if (nextStage) {
-        this.incarnationUpgradeTitleEl.textContent = `EVOLUIR PARA ${nextStage.name.toUpperCase()}`;
-        this.incarnationUpgradeBenefitEl.textContent = nextStage.desc;
+        this.incarnationUpgradeTitleEl.textContent = 'EVOLUIR';
+        if (this.incarnationUpgradeBenefitEl) {
+          this.incarnationUpgradeBenefitEl.textContent = '';
+          this.incarnationUpgradeBenefitEl.style.display = 'none';
+        }
         this.incarnationUpgradeCostValEl.textContent = `${formatNumber(nextStage.cost)} Fé`;
         this.btnUpgradeIncarnationEl.disabled = this.faithPoints < nextStage.cost;
       } else {
         this.incarnationUpgradeTitleEl.textContent = 'ENCARNAÇÃO MÁXIMA';
-        this.incarnationUpgradeBenefitEl.textContent = 'Poder cósmico primordial atingido!';
+        if (this.incarnationUpgradeBenefitEl) {
+          this.incarnationUpgradeBenefitEl.textContent = '';
+          this.incarnationUpgradeBenefitEl.style.display = 'none';
+        }
         this.incarnationUpgradeCostValEl.textContent = 'MÁX';
         this.btnUpgradeIncarnationEl.disabled = true;
       }
@@ -950,12 +975,12 @@ class AppManager {
       this.tabBtnIncarnationEl.style.display = incarnationUnlocked ? 'flex' : 'none';
     }
 
-    // Top HUD Bar: Fervor Resource Box & Divider
+    // Top HUD Bar: Fervor Resource Box & Divider (Always visible in resources HUD)
     if (this.hudFervorItemEl) {
-      this.hudFervorItemEl.style.display = incarnationUnlocked ? 'flex' : 'none';
+      this.hudFervorItemEl.style.display = 'flex';
     }
     if (this.hudFervorDividerEl) {
-      this.hudFervorDividerEl.style.display = incarnationUnlocked ? 'block' : 'none';
+      this.hudFervorDividerEl.style.display = 'block';
     }
 
     // Left Panel: Fervor Tab Button
@@ -966,6 +991,14 @@ class AppManager {
     // Right Panel: Relics Tab Button
     if (this.tabBtnRelicsEl) {
       this.tabBtnRelicsEl.style.display = relicsUnlocked ? 'flex' : 'none';
+    }
+
+    // Top HUD Bar: Relics Resource Box & Divider (Always visible in resources HUD)
+    if (this.hudRelicItemEl) {
+      this.hudRelicItemEl.style.display = 'flex';
+    }
+    if (this.hudRelicDividerEl) {
+      this.hudRelicDividerEl.style.display = 'block';
     }
   }
 
@@ -1053,11 +1086,10 @@ class AppManager {
           <span class="fervor-mult-tag">x${mult.toFixed(2)}</span>
         </div>
         <div class="card-desc">
-          ${upg.desc}
-          <div class="card-benefit" style="color: #fca5a5;">Nível ${upg.level} • Atualmente x${mult.toFixed(2)}</div>
+          <div class="card-benefit" style="color: #94a3b8;">Nível ${upg.level} • Atualmente x${mult.toFixed(2)}</div>
         </div>
         <div class="card-footer-row">
-          <div class="cost-tag" style="color: #fca5a5;">
+          <div class="cost-tag" style="color: #ef4444; font-weight: 800;">
             <span>CUSTO:</span>
             <span>${formatNumber(cost)} Fervor</span>
           </div>
@@ -1138,95 +1170,53 @@ class AppManager {
 
   // --- Unlocks System ---
 
+  private getCurrentUnlock(): MechanicUnlock | undefined {
+    return this.unlocks.find((u) => {
+      if (u.unlocked) return false;
+      if (u.prerequisiteId) {
+        const prereq = this.unlocks.find((p) => p.id === u.prerequisiteId);
+        return prereq?.unlocked ?? false;
+      }
+      return true;
+    });
+  }
+
   private renderUnlocksList(): void {
     this.unlocksListEl.innerHTML = '';
 
-    this.unlocks.forEach((unlock) => {
-      // Sequential unlock display: only show if prerequisite is met or already unlocked
-      if (unlock.prerequisiteId) {
-        const prereq = this.unlocks.find((u) => u.id === unlock.prerequisiteId);
-        if (prereq && !prereq.unlocked) {
-          return;
-        }
-      }
+    const currentUnlock = this.getCurrentUnlock();
 
-      const canAfford = this.faithPoints >= unlock.cost;
-      const card = document.createElement('div');
-      card.className = `cult-action-card unlock-action-card ${unlock.unlocked ? 'unlocked-card' : (canAfford ? '' : 'unaffordable')}`;
-      card.id = `card-${unlock.id}`;
-
-      const symbolHtml = DISPLAY_CONFIG.showEmojisAndSymbols
-        ? `<span class="card-symbol">${unlock.symbol}</span>`
-        : '';
-
-      let benefitText = '';
-      if (unlock.id === 'unlock_incarnation') {
-        benefitText = unlock.unlocked
-          ? 'Aba Incarnation e geração de Fervor (+1.0/s) ativadas'
-          : 'Desbloqueia a aba Incarnation e desperta o Fervor (+1.0/s)';
-      } else if (unlock.id === 'unlock_fervor_upgrades') {
-        benefitText = unlock.unlocked
-          ? 'Aba e Upgrades de Fervor ativados'
-          : 'Desbloqueia a árvore de Upgrades de Fervor';
-      } else if (unlock.id === 'unlock_relics') {
-        benefitText = unlock.unlocked
-          ? 'Aba de Relíquias disponível no painel'
-          : 'Desbloqueia a Câmara de Relíquias sagradas';
-      } else {
-        benefitText = unlock.unlocked ? 'Desbloqueado' : `Custo único de ${formatNumber(unlock.cost)} Fé`;
-      }
-
-      const promptHtml = unlock.unlocked
-        ? `<div class="card-click-prompt">
-             <span class="card-status-badge unlocked-badge">DESBLOQUEADO</span>
-           </div>`
-        : `<div class="card-click-prompt">
-             <span class="card-click-hint">CLIQUE PARA DESBLOQUEAR</span>
-           </div>`;
-
-      card.innerHTML = `
-        <div class="card-header-row">
-          <div class="card-title-group">
-            ${symbolHtml}
-            <span class="card-name">${unlock.name}</span>
-          </div>
-          <span class="unlock-type-badge ${unlock.unlocked ? 'badge-unlocked' : ''}">
-            ${unlock.unlocked ? 'ATIVADO' : 'NOVA MECÂNICA'}
-          </span>
-        </div>
-        <div class="card-desc">
-          ${DISPLAY_CONFIG.showItemDescriptions && unlock.desc ? `<div class="card-desc-text">${unlock.desc}</div>` : ''}
-          <div class="card-benefit" style="color: ${unlock.unlocked ? '#34d399' : 'var(--gold-accent)'}">
-            ${benefitText}
-          </div>
-        </div>
-        <div class="card-footer-row">
-          <div class="cost-tag">
-            <span>${unlock.unlocked ? 'STATUS:' : 'CUSTO:'}</span>
-            <span style="color: ${unlock.unlocked ? '#34d399' : 'var(--gold-accent)'};">${unlock.unlocked ? 'ADQUIRIDO' : `${formatNumber(unlock.cost)} Fé`}</span>
-          </div>
-          ${promptHtml}
-        </div>
+    if (!currentUnlock) {
+      const completedBanner = document.createElement('div');
+      completedBanner.className = 'unlocks-completed-banner';
+      completedBanner.innerHTML = `
+        <div class="completed-icon">✨</div>
+        <div class="completed-title">EXPANSÃO CÓSMICA CONCLUÍDA</div>
+        <p class="completed-desc">Todas as novas ordens e mecânicas cósmicas foram adquiridas e despertadas.</p>
       `;
+      this.unlocksListEl.appendChild(completedBanner);
+      return;
+    }
 
-      if (!unlock.unlocked) {
-        card.addEventListener('click', () => {
-          this.buyUnlock(unlock);
-        });
-      }
+    const canAfford = this.faithPoints >= currentUnlock.cost;
+    const card = document.createElement('div');
+    card.className = `cult-action-card unlock-action-card ${canAfford ? '' : 'unaffordable'}`;
+    card.id = `card-${currentUnlock.id}`;
 
-      card.addEventListener('mouseenter', (e: MouseEvent) => {
-        this.tooltips.showUnlockTooltip(unlock, this.faithPoints >= unlock.cost, e);
-      });
-      card.addEventListener('mousemove', (e: MouseEvent) => {
-        this.tooltips.position(e);
-      });
-      card.addEventListener('mouseleave', () => {
-        this.tooltips.hide();
-      });
+    card.innerHTML = `
+      <div class="card-header-row" style="margin-bottom: 0; width: 100%; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+        <span class="card-name" style="font-size: 13px; font-weight: 700; color: #ffffff;">${currentUnlock.name}</span>
+        <div class="card-click-prompt">
+          <span class="card-click-hint" style="font-size: 11px; padding: 5px 12px; font-weight: 800;">Desbloquear (${formatNumber(currentUnlock.cost)} Fé)</span>
+        </div>
+      </div>
+    `;
 
-      this.unlocksListEl.appendChild(card);
+    card.addEventListener('click', () => {
+      this.buyUnlock(currentUnlock);
     });
+
+    this.unlocksListEl.appendChild(card);
   }
 
   private buyUnlock(unlock: MechanicUnlock): void {
@@ -1349,7 +1339,6 @@ class AppManager {
           <span class="relic-level-badge ${isMax ? 'maxed' : ''}">(${relic.level}/${relic.maxLevel})</span>
         </div>
         <div class="card-desc">
-          ${DISPLAY_CONFIG.showItemDescriptions && relic.desc ? `<div class="card-desc-text">${relic.desc}</div>` : ''}
           <div class="relic-benefit-text">${effectDesc}</div>
         </div>
         <div class="card-footer-row">
@@ -1393,7 +1382,7 @@ class AppManager {
       this.relicsBalanceValEl.textContent = formatNumber(this.relicPoints);
     }
     if (this.relicsExtraValEl) {
-      const extra = calculateExtraRelicsPerSecond(this.bestRelicsToGet);
+      const extra = this.getRelicsRatePerSecond();
       this.relicsExtraValEl.textContent = formatNumber(extra);
     }
 
@@ -1481,18 +1470,17 @@ class AppManager {
   }
 
   private updateUnlocksButtonsState(): void {
-    this.unlocks.forEach((unlock) => {
-      if (unlock.unlocked) return;
-      const canAfford = this.faithPoints >= unlock.cost;
-      const card = document.getElementById(`card-${unlock.id}`);
-      if (card) {
-        if (canAfford) {
-          card.classList.remove('unaffordable');
-        } else {
-          card.classList.add('unaffordable');
-        }
+    const currentUnlock = this.getCurrentUnlock();
+    if (!currentUnlock) return;
+    const canAfford = this.faithPoints >= currentUnlock.cost;
+    const card = document.getElementById(`card-${currentUnlock.id}`);
+    if (card) {
+      if (canAfford) {
+        card.classList.remove('unaffordable');
+      } else {
+        card.classList.add('unaffordable');
       }
-    });
+    }
   }
 
   private updateFervorButtonsState(): void {
@@ -1560,6 +1548,14 @@ class AppManager {
     if (this.fervorRateCounterHudEl) {
       this.fervorRateCounterHudEl.textContent = `${this.getFervorRatePerSecond().toFixed(1)}/s`;
     }
+
+    if (this.relicCounterHudEl) {
+      this.relicCounterHudEl.textContent = formatNumber(Math.floor(this.relicPoints));
+    }
+    if (this.relicRateCounterHudEl) {
+      const relicRate = this.getRelicsRatePerSecond();
+      this.relicRateCounterHudEl.textContent = `${relicRate.toFixed(1)}/s`;
+    }
   }
 
   private updateStatsTab(): void {
@@ -1613,14 +1609,9 @@ class AppManager {
         this.relicConvertCooldown = Math.max(0, this.relicConvertCooldown - deltaSec);
       }
 
-      if (this.isRelicsUnlocked()) {
-        const extraPerSec = calculateExtraRelicsPerSecond(this.bestRelicsToGet);
-        this.relicPoints += extraPerSec * deltaSec;
-
-        if (this.relicUpgrades[4].level >= 1) {
-          const toGet = calculateRelicsToGet(this.faithPoints);
-          this.relicPoints += (toGet * 0.05) * deltaSec;
-        }
+      const relicRate = this.getRelicsRatePerSecond();
+      if (relicRate > 0) {
+        this.relicPoints += relicRate * deltaSec;
       }
 
       // Incarnation 2x Faith Boost Countdown

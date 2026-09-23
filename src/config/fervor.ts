@@ -71,3 +71,20 @@ export function getFervorUpgradeMultiplier(upg: FervorUpgrade): number {
       return 1 + upg.level * 0.50;
   }
 }
+
+export function getFervorUpgradeFormula(upg: FervorUpgrade): string {
+  switch (upg.id) {
+    case 'fu_prod':
+      return '1.25^Nível (+25% comp./nível)';
+    case 'fu_effect':
+      return '1 + (0.50 × Nível) (+50%/nível)';
+    case 'fu_click':
+      return '1 + (0.50 × Nível) (+50%/nível)';
+    case 'fu_followers':
+      return '1 + (0.75 × Nível) (+75%/nível)';
+    case 'fu_synergy':
+      return '1 + (0.50 × Nível) (+50%/nível)';
+    default:
+      return '1 + (0.50 × Nível)';
+  }
+}

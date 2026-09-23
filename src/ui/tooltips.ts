@@ -1,6 +1,7 @@
 import type { BuyableItem, FervorUpgrade, Achievement, GameState, MechanicUnlock, RelicUpgrade } from '../types.js';
 import { formatNumber } from '../systems/calculations.js';
 import { DISPLAY_CONFIG } from '../config/display.js';
+import { getFervorUpgradeFormula } from '../config/fervor.js';
 
 export class TooltipManager {
   private tooltipEl: HTMLElement;
@@ -93,8 +94,8 @@ export class TooltipManager {
       <div class="cult-tooltip-lore">${upg.lore}</div>
 
       <div class="tooltip-buff-highlight" style="background: rgba(255, 255, 255, 0.05); border-color: #71717a; color: #ffffff;">
-        <span>MULTIPLICADOR ATUAL:</span>
-        <span>x${mult.toFixed(2)}</span>
+        <span>FÓRMULA DE PROGRESSÃO:</span>
+        <span>${getFervorUpgradeFormula(upg)}</span>
       </div>
 
       <div class="cult-tooltip-stats">
@@ -103,8 +104,12 @@ export class TooltipManager {
           <span class="tooltip-stat-val">${upg.level}</span>
         </div>
         <div class="tooltip-stat-item">
+          <span class="tooltip-stat-label">MULTIPLICADOR ATUAL</span>
+          <span class="tooltip-stat-val">x${mult.toFixed(2)}</span>
+        </div>
+        <div class="tooltip-stat-item">
           <span class="tooltip-stat-label">PRÓXIMO CUSTO</span>
-          <span class="tooltip-stat-val">${formatNumber(cost)} Fervor</span>
+          <span class="tooltip-stat-val" style="color: #ef4444; font-weight: 700;">${formatNumber(cost)} Fervor</span>
         </div>
       </div>
     `;
@@ -199,12 +204,10 @@ export class TooltipManager {
           ${symbolHtml}
           <span>${relic.name}</span>
         </div>
-        <span class="cult-tooltip-tag" style="color: #c084fc; border-color: #8b5cf6;">RELÍQUIA MITOLÓGICA</span>
+        <span class="cult-tooltip-tag" style="color: #dbe6f0; border-color: rgba(186, 210, 235, 0.5);">RELÍQUIA MITOLÓGICA</span>
       </div>
 
-      <div class="cult-tooltip-lore">${relic.lore}</div>
-
-      <div class="tooltip-buff-highlight" style="background: rgba(139, 92, 246, 0.1); border-color: rgba(139, 92, 246, 0.4); color: #e9d5ff;">
+      <div class="tooltip-buff-highlight" style="background: rgba(186, 210, 235, 0.08); border-color: rgba(186, 210, 235, 0.35); color: #dbe6f0;">
         <span>EFEITO ATUAL:</span>
         <span>${effectText}</span>
       </div>
@@ -216,7 +219,7 @@ export class TooltipManager {
         </div>
         <div class="tooltip-stat-item">
           <span class="tooltip-stat-label">CUSTO DE CONSAGRAÇÃO</span>
-          <span class="tooltip-stat-val" style="color: #c084fc;">${isMax ? 'MÁXIMO' : `${formatNumber(relic.cost)} Relíquias`}</span>
+          <span class="tooltip-stat-val" style="color: #c5d3e2; font-weight: 800; text-shadow: 0 0 8px rgba(186, 210, 235, 0.7);">${isMax ? 'MÁXIMO' : `${formatNumber(relic.cost)} Relíquias`}</span>
         </div>
       </div>
     `;
