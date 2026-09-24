@@ -1,0 +1,422 @@
+/* Center Gameplay Frame Layout */
+.center-frame {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 10;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ===================================================
+   CLICKABLE DIVINE SPHERE (ESFERA DIVINA CLICÁVEL)
+   =================================================== */
+
+.sphere-game-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.sphere-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 220px;
+  height: 220px;
+  margin: 10px 0;
+  cursor: pointer;
+}
+
+/* Aura Ambient Glow */
+.sphere-aura {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(161, 161, 170, 0.04) 50%, rgba(0, 0, 0, 0) 75%);
+  filter: blur(15px);
+  animation: auraPulse 4s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes auraPulse {
+  0% { transform: scale(0.95); opacity: 0.6; }
+  100% { transform: scale(1.1); opacity: 1; }
+}
+
+/* Monochromatic Geometric Sphere */
+.divine-sphere-btn {
+  position: relative;
+  width: var(--sphere-size);
+  height: var(--sphere-size);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #d4d4d8 20%, #71717a 50%, #27272a 80%, #09090b 100%);
+  box-shadow: 0 0 35px rgba(255, 255, 255, 0.25), inset 0 0 25px rgba(255, 255, 255, 0.4);
+  border: 3px solid var(--border-light);
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, filter 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+}
+
+.sphere-wrapper:hover .divine-sphere-btn {
+  transform: scale(1.05);
+  box-shadow: 0 0 50px rgba(255, 255, 255, 0.45), inset 0 0 35px rgba(255, 255, 255, 0.6);
+  border-color: var(--border-white);
+  filter: brightness(1.1);
+}
+
+.sphere-wrapper:active .divine-sphere-btn {
+  transform: scale(0.94);
+  box-shadow: 0 0 60px rgba(255, 255, 255, 0.8), inset 0 0 40px #ffffff;
+  border-color: var(--border-white);
+  filter: brightness(1.25);
+}
+
+.click-hint {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--gold-accent);
+  text-transform: uppercase;
+  background: rgba(8, 12, 22, 0.7);
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-mid);
+}
+
+/* Floating Faith Numbers Effect (+1 FÉ) */
+.floating-faith-num {
+  position: fixed;
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--gold-light);
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.9), 0 2px 4px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  z-index: 1000;
+  animation: floatFaithNumber 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes floatFaithNumber {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.8) translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.3) translateY(-25px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1) translateY(-60px);
+  }
+}
+
+/* Orbit Rings */
+.sphere-orbit-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+}
+
+.ring-1 {
+  width: var(--ring-1-size);
+  height: var(--ring-1-size);
+  border-color: rgba(255, 255, 255, 0.35);
+  animation: orbitSpin 35s linear infinite;
+}
+
+.ring-2 {
+  width: var(--ring-2-size);
+  height: var(--ring-2-size);
+  border-color: rgba(161, 161, 170, 0.25);
+  animation: orbitSpinRev 50s linear infinite;
+}
+
+@keyframes orbitSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes orbitSpinRev {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* ===================================================
+   6 SATELLITE FIGURES AROUND DIVINE SPHERE
+   =================================================== */
+
+.sphere-satellites-orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--satellites-orbit-size);
+  height: var(--satellites-orbit-size);
+  margin-top: calc(var(--satellites-orbit-size) / -2);
+  margin-left: calc(var(--satellites-orbit-size) / -2);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: satellitesOrbitRotate 70s linear infinite;
+  z-index: 5;
+}
+
+.sphere-satellites-orbit:hover {
+  animation-play-state: paused;
+}
+
+.sphere-satellites-orbit:hover .satellite-node-inner {
+  animation-play-state: paused;
+}
+
+.sphere-satellite-node {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--satellite-node-size);
+  height: var(--satellite-node-size);
+  margin-top: calc(var(--satellite-node-size) / -2);
+  margin-left: calc(var(--satellite-node-size) / -2);
+  border-radius: 50%;
+  pointer-events: auto;
+  transform: rotate(var(--node-angle)) translateY(var(--satellite-offset));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease, opacity 0.3s ease;
+  touch-action: manipulation;
+}
+
+.satellite-node-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: satellitesNodeCounterRotate 70s linear infinite;
+  box-sizing: border-box;
+}
+
+/* Sprite inside the node */
+.satellite-sprite-view {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background-image: url('/assets/cultist_spritesheet.png');
+  background-size: 204px 68px;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  transition: filter 0.3s ease, transform 0.2s ease;
+}
+
+.satellite-sprite-view.frame-0 { background-position: 0px -34px; }
+.satellite-sprite-view.frame-1 { background-position: -34px -34px; }
+.satellite-sprite-view.frame-2 { background-position: -68px -34px; }
+.satellite-sprite-view.frame-3 { background-position: -102px -34px; }
+.satellite-sprite-view.frame-4 { background-position: -136px -34px; }
+.satellite-sprite-view.frame-5 { background-position: -170px -34px; }
+
+/* Roman Numeral Label */
+.satellite-roman {
+  position: absolute;
+  top: -7px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 1px 4px;
+  border-radius: 6px;
+  background: rgba(9, 9, 11, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  pointer-events: none;
+  line-height: 1;
+}
+
+/* Lock Icon for dormant nodes */
+.satellite-lock-icon {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  font-size: 9px;
+  background: #18181b;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a1a1aa;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+/* --- STATE: LOCKED / DORMANT --- */
+.sphere-satellite-node.state-locked {
+  opacity: 0.32;
+  filter: grayscale(100%) brightness(0.65) contrast(0.85);
+  cursor: default;
+}
+
+.sphere-satellite-node.state-locked .satellite-node-inner {
+  background: radial-gradient(circle, rgba(39, 39, 42, 0.6) 0%, rgba(9, 9, 11, 0.9) 100%);
+  border: 1.5px dashed rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+}
+
+.sphere-satellite-node.state-locked .satellite-roman {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.sphere-satellite-node.state-locked:hover {
+  opacity: 0.48;
+  filter: grayscale(100%) brightness(0.8);
+}
+
+/* --- STATE: UNLOCKED --- */
+.sphere-satellite-node.state-unlocked {
+  opacity: 1;
+  filter: none;
+  cursor: pointer;
+}
+
+.sphere-satellite-node.state-unlocked .satellite-node-inner {
+  background: radial-gradient(circle at 35% 30%, #3f3f46 0%, #18181b 60%, #09090b 100%);
+  border: 2px solid var(--gold-accent);
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.5), inset 0 0 8px rgba(245, 158, 11, 0.3);
+  animation: satellitesNodeCounterRotate 70s linear infinite, satelliteAuraPulse 3s ease-in-out infinite alternate;
+}
+
+.sphere-satellite-node.state-unlocked .satellite-lock-icon {
+  display: none;
+}
+
+.sphere-satellite-node.state-unlocked .satellite-roman {
+  color: var(--gold-light);
+  border-color: var(--border-gold);
+  text-shadow: 0 0 6px rgba(245, 158, 11, 0.9);
+}
+
+.sphere-satellite-node.state-unlocked:hover {
+  transform: rotate(var(--node-angle)) translateY(-155px) scale(1.18);
+  filter: brightness(1.2);
+}
+
+.sphere-satellite-node.state-unlocked:hover .satellite-node-inner {
+  border-color: #ffffff;
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.9), inset 0 0 12px rgba(255, 255, 255, 0.6);
+}
+
+.sphere-satellite-node.state-unlocked:active {
+  transform: rotate(var(--node-angle)) translateY(-155px) scale(0.92);
+}
+
+@keyframes satellitesOrbitRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes satellitesNodeCounterRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+@keyframes satelliteAuraPulse {
+  0% {
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.4), inset 0 0 6px rgba(245, 158, 11, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.75), inset 0 0 12px rgba(245, 158, 11, 0.45);
+  }
+}
+
+/* Realtime Rate Banner */
+.sphere-rates-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: rgba(8, 12, 22, 0.85);
+  border: 1.5px solid var(--border-mid);
+  border-radius: 8px;
+  padding: 8px 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+.rate-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.rate-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--gold-accent);
+  text-transform: uppercase;
+}
+
+.rate-value {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gold-light);
+}
+
+.rate-separator {
+  color: var(--border-mid);
+  font-size: 12px;
+}
+
+/* Center Actions Row */
+.center-actions-row {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.btn-subtle-gold {
+  background: rgba(8, 12, 22, 0.8);
+  border: 1px solid var(--border-mid);
+  border-radius: 8px;
+  color: var(--gold-accent);
+  padding: 10px 18px;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.btn-subtle-gold:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border-white);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.15);
+}

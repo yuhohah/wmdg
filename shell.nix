@@ -3,7 +3,6 @@
 pkgs.mkShell {
   buildInputs = with pkgs; [
     nodejs
-    google-chrome
   ];
 
   shellHook = ''

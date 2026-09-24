@@ -6,9 +6,53 @@ import { getFervorUpgradeFormula } from '../config/fervor.js';
 export class TooltipManager {
   private tooltipEl: HTMLElement;
   private currentAch: Achievement | null = null;
+  private mobileSheet: HTMLElement | null = null;
+  private mobileBackdrop: HTMLElement | null = null;
+  private mobileSheetContent: HTMLElement | null = null;
+  private mobileSheetTitle: HTMLElement | null = null;
+  private closeSheetBtn: HTMLElement | null = null;
 
   constructor(tooltipId: string = 'cult-tooltip') {
     this.tooltipEl = document.getElementById(tooltipId)!;
+    this.mobileSheet = document.getElementById('mobile-inspect-sheet');
+    this.mobileBackdrop = document.getElementById('mobile-sheet-backdrop');
+    this.mobileSheetContent = document.getElementById('mobile-sheet-content');
+    this.mobileSheetTitle = document.getElementById('mobile-sheet-title');
+    this.closeSheetBtn = document.getElementById('close-mobile-sheet-btn');
+
+    if (this.closeSheetBtn) {
+      this.closeSheetBtn.addEventListener('click', () => this.closeMobileSheet());
+    }
+    if (this.mobileBackdrop) {
+      this.mobileBackdrop.addEventListener('click', () => this.closeMobileSheet());
+    }
+  }
+
+  public isMobileMode(): boolean {
+    return window.innerWidth <= 860;
+  }
+
+  public openMobileSheet(): void {
+    if (this.mobileSheet) this.mobileSheet.classList.add('open');
+    if (this.mobileBackdrop) this.mobileBackdrop.classList.add('open');
+  }
+
+  public closeMobileSheet(): void {
+    if (this.mobileSheet) this.mobileSheet.classList.remove('open');
+    if (this.mobileBackdrop) this.mobileBackdrop.classList.remove('open');
+  }
+
+  private render(html: string, title: string, e: MouseEvent): void {
+    if (this.isMobileMode() && this.mobileSheet && this.mobileSheetContent) {
+      if (this.mobileSheetTitle) this.mobileSheetTitle.textContent = title;
+      this.mobileSheetContent.innerHTML = html;
+      this.openMobileSheet();
+      this.tooltipEl.style.display = 'none';
+    } else {
+      this.tooltipEl.innerHTML = html;
+      this.tooltipEl.style.display = 'flex';
+      this.position(e);
+    }
   }
 
   public showItemTooltip(
@@ -39,7 +83,7 @@ export class TooltipManager {
       ? `<span class="cult-tooltip-symbol">${item.symbol}</span>`
       : '';
 
-    this.tooltipEl.innerHTML = `
+    const html = `
       ${artHtml}
       <div class="cult-tooltip-header">
         <div class="cult-tooltip-title">
@@ -71,8 +115,7 @@ export class TooltipManager {
       </div>
     `;
 
-    this.tooltipEl.style.display = 'flex';
-    this.position(e);
+    this.render(html, item.name, e);
   }
 
   public showFervorTooltip(upg: FervorUpgrade, cost: number, mult: number, e: MouseEvent): void {
@@ -82,7 +125,7 @@ export class TooltipManager {
       ? `<span class="cult-tooltip-symbol">${upg.icon}</span>`
       : '';
 
-    this.tooltipEl.innerHTML = `
+    const html = `
       <div class="cult-tooltip-header">
         <div class="cult-tooltip-title">
           ${symbolHtml}
@@ -114,8 +157,7 @@ export class TooltipManager {
       </div>
     `;
 
-    this.tooltipEl.style.display = 'flex';
-    this.position(e);
+    this.render(html, upg.name, e);
   }
 
   public showAchievementTooltip(ach: Achievement, state: GameState, e: MouseEvent): void {
@@ -127,7 +169,7 @@ export class TooltipManager {
       ? `<span class="cult-tooltip-symbol">${ach.icon}</span>`
       : '';
 
-    this.tooltipEl.innerHTML = `
+    const html = `
       <div class="cult-tooltip-header">
         <div class="cult-tooltip-title">
           ${symbolHtml}
@@ -148,8 +190,7 @@ export class TooltipManager {
       </div>
     `;
 
-    this.tooltipEl.style.display = 'flex';
-    this.position(e);
+    this.render(html, ach.name, e);
   }
 
   public showUnlockTooltip(unlock: MechanicUnlock, canAfford: boolean, e: MouseEvent): void {
@@ -159,7 +200,7 @@ export class TooltipManager {
       ? `<span class="cult-tooltip-symbol">${unlock.symbol}</span>`
       : '';
 
-    this.tooltipEl.innerHTML = `
+    const html = `
       <div class="cult-tooltip-header">
         <div class="cult-tooltip-title">
           ${symbolHtml}
@@ -184,8 +225,7 @@ export class TooltipManager {
       </div>
     `;
 
-    this.tooltipEl.style.display = 'flex';
-    this.position(e);
+    this.render(html, unlock.name, e);
   }
 
   public showRelicTooltip(relic: RelicUpgrade, relicPoints: number, e: MouseEvent): void {
@@ -198,7 +238,7 @@ export class TooltipManager {
     const isMax = relic.level >= relic.maxLevel;
     const effectText = relic.effectText(relic.level, relicPoints);
 
-    this.tooltipEl.innerHTML = `
+    const html = `
       <div class="cult-tooltip-header">
         <div class="cult-tooltip-title">
           ${symbolHtml}
@@ -224,16 +264,21 @@ export class TooltipManager {
       </div>
     `;
 
-    this.tooltipEl.style.display = 'flex';
-    this.position(e);
+    this.render(html, relic.name, e);
   }
 
   public updateRealtimeProgress(state: GameState): void {
-    if (this.currentAch && this.tooltipEl.style.display !== 'none') {
+    if (this.currentAch) {
       const p = this.currentAch.getProgress(state);
       const valEl = this.tooltipEl.querySelector('#tooltip-ach-progress-val');
       if (valEl) {
         valEl.textContent = `${p.label} (${Math.round(p.percent)}%)`;
+      }
+      if (this.mobileSheetContent) {
+        const mobileValEl = this.mobileSheetContent.querySelector('#tooltip-ach-progress-val');
+        if (mobileValEl) {
+          mobileValEl.textContent = `${p.label} (${Math.round(p.percent)}%)`;
+        }
       }
     }
   }

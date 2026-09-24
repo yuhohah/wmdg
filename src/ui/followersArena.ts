@@ -81,7 +81,7 @@ export class FollowersArena {
 
   public resize(): void {
     const r = this.canvas.getBoundingClientRect();
-    if (r.width > 50 && r.height > 50) {
+    if (r.width > 30 && r.height > 30) {
       if (Math.abs(this.width - r.width) > 0.5 || Math.abs(this.height - r.height) > 0.5) {
         this.width = r.width;
         this.height = r.height;
@@ -89,6 +89,17 @@ export class FollowersArena {
         this.canvas.height = Math.floor(this.height * this.dpr);
         this.ctx.setTransform(1, 0, 0, 1, 0, 0);
         this.ctx.scale(this.dpr, this.dpr);
+
+        const pad = 24;
+        const minY = Math.max(52, Math.min(80, this.height * 0.22));
+        const maxY = Math.max(minY + 20, this.height - 24);
+        for (const w of this.walkers) {
+          w.x = Math.max(pad, Math.min(this.width - pad, w.x));
+          w.y = Math.max(minY, Math.min(maxY, w.y));
+          w.targetX = Math.max(pad, Math.min(this.width - pad, w.targetX));
+          w.targetY = Math.max(minY, Math.min(maxY, w.targetY));
+        }
+        this.draw();
       }
     }
   }
@@ -211,12 +222,14 @@ export class FollowersArena {
 
   private addWalker(atEdge: boolean = false): Walker {
     const pad = 24;
-    let x = pad + Math.random() * (this.width - pad * 2);
-    let y = 35 + Math.random() * (this.height - 55);
+    const minY = Math.max(52, Math.min(80, this.height * 0.22));
+    const maxY = Math.max(minY + 20, this.height - 24);
+    let x = pad + Math.random() * Math.max(10, this.width - pad * 2);
+    let y = minY + Math.random() * (maxY - minY);
 
     if (atEdge) {
-      x = Math.random() > 0.5 ? pad : this.width - pad;
-      y = 40 + Math.random() * (this.height - 60);
+      x = Math.random() > 0.5 ? pad : Math.max(pad, this.width - pad);
+      y = minY + Math.random() * (maxY - minY);
     }
 
     const walker: Walker = {
@@ -225,8 +238,8 @@ export class FollowersArena {
       y,
       vx: 0,
       vy: 0,
-      targetX: pad + Math.random() * (this.width - pad * 2),
-      targetY: 35 + Math.random() * (this.height - 55),
+      targetX: pad + Math.random() * Math.max(10, this.width - pad * 2),
+      targetY: minY + Math.random() * (maxY - minY),
       facing: Math.random() > 0.5 ? 1 : -1,
       variant: Math.floor(Math.random() * 5),
       state: 'walk',
@@ -254,8 +267,8 @@ export class FollowersArena {
 
   private update(): void {
     const pad = 20;
-    const minY = 30;
-    const maxY = this.height - 20;
+    const minY = Math.max(52, Math.min(80, this.height * 0.22));
+    const maxY = Math.max(minY + 20, this.height - 24);
 
     for (const w of this.walkers) {
       w.stateTimer -= 1;
@@ -277,7 +290,7 @@ export class FollowersArena {
         if (rand < 0.6) {
           w.state = 'walk';
           w.stateTimer = 90 + Math.floor(Math.random() * 180);
-          w.targetX = pad + Math.random() * (this.width - pad * 2);
+          w.targetX = pad + Math.random() * Math.max(10, this.width - pad * 2);
           w.targetY = minY + Math.random() * (maxY - minY);
         } else if (rand < 0.85) {
           w.state = 'idle';
@@ -419,23 +432,23 @@ export class FollowersArena {
 
     // Sacred ritual concentric circle on floor
     const cx = w / 2;
-    const cy = h / 2 + 10;
+    const cy = h / 2;
     ctx.save();
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.arc(cx, cy, 60, 0, Math.PI * 2);
+    ctx.arc(cx, cy, Math.min(60, h * 0.25), 0, Math.PI * 2);
     ctx.stroke();
 
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
     ctx.beginPath();
-    ctx.arc(cx, cy, 85, 0, Math.PI * 2);
+    ctx.arc(cx, cy, Math.min(85, h * 0.35), 0, Math.PI * 2);
     ctx.stroke();
 
-    if (h > 290) {
+    if (h > 260) {
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
       ctx.beginPath();
-      ctx.arc(cx, cy, 115, 0, Math.PI * 2);
+      ctx.arc(cx, cy, Math.min(115, h * 0.45), 0, Math.PI * 2);
       ctx.stroke();
     }
 
@@ -508,8 +521,8 @@ export class FollowersArena {
     const bob = Math.sin(w.breathTimer * 4) * 2.5;
     const pulse = 1 + Math.sin(w.breathTimer * 6) * 0.08;
 
-    const bx = x;
-    const by = y - 56 + bob;
+    const bx = Math.max(24, Math.min(this.width - 24, x));
+    const by = Math.max(18, y - 56 + bob);
     const bw = 38 * pulse;
     const bh = 24 * pulse;
     const r = 7 * pulse;
@@ -744,6 +757,14 @@ export class FollowersArena {
       cancelAnimationFrame(this.animFrameId);
       this.animFrameId = null;
     }
+  }
+
+  public pause(): void {
+    this.stopLoop();
+  }
+
+  public resume(): void {
+    this.startLoop();
   }
 
   public destroy(): void {

@@ -81,13 +81,76 @@ export function calculateFaithPerSecond(
   return followersOutput * passiveBuffMult * globalBuffMult * fervorFaithBonus * relicFaithMult * incarnationBoostMult;
 }
 
+const NUMBER_UNITS = [
+  { val: 1e15, symbol: 'Q' },
+  { val: 1e12, symbol: 'T' },
+  { val: 1e9,  symbol: 'B' },
+  { val: 1e6,  symbol: 'M' },
+  { val: 1e3,  symbol: 'K' },
+];
+
 export function formatNumber(num: number): string {
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(2) + 'M';
+  if (isNaN(num) || !isFinite(num)) return '0';
+  if (num < 0) return '-' + formatNumber(-num);
+
+  // 1. Notação Científica além de Quadrilhão (a partir de 1e18 / 1000Q): 1.0 até 9.9 eX
+  if (num >= 1e18) {
+    let exponent = Math.floor(Math.log10(num));
+    let mantissa = num / Math.pow(10, exponent);
+
+    // Ajuste se o arredondamento para 1 decimal der 10.0 (ex: 9.96e18 -> 1.0e19)
+    if (Number(mantissa.toFixed(1)) >= 10) {
+      mantissa /= 10;
+      exponent += 1;
+    }
+
+    return `${mantissa.toFixed(1)}e${exponent}`;
   }
-  if (num >= 1000) {
-    return (num / 1000).toFixed(1) + 'k';
+
+  // 2. Notação por letras até o Quadrilhão (K, M, B, T, Q)
+  for (let i = 0; i < NUMBER_UNITS.length; i++) {
+    const unit = NUMBER_UNITS[i];
+    if (num >= unit.val) {
+      const scaled = num / unit.val;
+      let formatted: string;
+
+      if (scaled >= 100) {
+        formatted = scaled.toFixed(1);
+      } else {
+        formatted = scaled.toFixed(2);
+      }
+
+      // Se o arredondamento atingir 1000 (ex: 999.96K vira 1M; 999.96T vira 1Q)
+      if (Number(formatted) >= 1000) {
+        if (i === 0) {
+          // Se for 1000Q, transiciona para notação científica
+          return '1.0e18';
+        }
+        const nextUnit = NUMBER_UNITS[i - 1];
+        const nextScaled = num / nextUnit.val;
+        let nextFormatted = nextScaled >= 100 ? nextScaled.toFixed(1) : nextScaled.toFixed(2);
+        nextFormatted = nextFormatted
+          .replace(/\.00$/, '')
+          .replace(/(\.[0-9])0$/, '$1')
+          .replace(/\.0$/, '');
+        return `${nextFormatted}${nextUnit.symbol}`;
+      }
+
+      // Remove zeros desnecessários (.00 -> '', .50 -> .5, .0 -> '')
+      formatted = formatted
+        .replace(/\.00$/, '')
+        .replace(/(\.[0-9])0$/, '$1')
+        .replace(/\.0$/, '');
+
+      return `${formatted}${unit.symbol}`;
+    }
   }
+
+  // 3. Menor que 1000
+  if (num < 10 && num > 0 && num % 1 !== 0) {
+    return num.toFixed(1);
+  }
+
   return String(Math.floor(num));
 }
 

@@ -1,0 +1,209 @@
+================================================================================
+DODECA DRAGONS - FÓRMULAS DE PROGRESSÃO: FIRE (UPGRADE 1) E MINERADORES
+Repositório de referência: https://github.com/DemoninCG/DodecaDragons
+================================================================================
+
+--------------------------------------------------------------------------------
+1. PRIMEIRO UPGRADE DE FOGO (FIRE UPGRADE 1: "Increase fire production")
+Arquivos de referência: scripts/constants.js, scripts/fire.js, scripts/script.js
+--------------------------------------------------------------------------------
+
+[VARIÁVEIS ENVOLVIDAS]
+- Quantidade comprada: n = game.fireUpgrade1Bought (inicia em 0)
+- Custo inicial (a): 50
+- Razão de crescimento (r): 1.8
+
+[A. FÓRMULA DE CUSTO]
+O custo para comprar o próximo nível é dado por uma progressão geométrica exponencial:
+
+    Custo(n) = floor( 50 * (1.8 ^ n) )
+
+Exemplos de custo:
+- Nível 1 (n = 0): floor(50 * 1.8^0)  = 50 fogo
+- Nível 2 (n = 1): floor(50 * 1.8^1)  = 90 fogo
+- Nível 3 (n = 2): floor(50 * 1.8^2)  = 162 fogo
+- Nível 4 (n = 3): floor(50 * 1.8^3)  = 291 fogo
+- Nível 5 (n = 4): floor(50 * 1.8^4)  = 524 fogo
+
+* Nota sobre "Buy Max" (Compra Máxima):
+  Calculado via série geométrica finita (Decimal.affordGeometricSeries e Decimal.sumGeometricSeries):
+  Total_Cost = 50 * (1.8^n) * ((1.8^Qtd - 1) / (1.8 - 1))
+
+[B. FÓRMULA DO BUFF / EFEITO]
+O upgrade fornece um multiplicador sobre a taxa de produção de fogo por segundo (firePerSecond).
+Possui duas fórmulas dependendo do Magic Upgrade 14 ("Fire upgrade 1 is boosted"):
+
+1. Padrão (Sem Magic Upgrade 14):
+   Buff(n) = 2 ^ (n ^ 0.6)
+
+   Exemplos:
+   - n = 0: 2 ^ (0 ^ 0.6)  = 2^0     = 1.00x (sem bônus)
+   - n = 1: 2 ^ (1 ^ 0.6)  = 2^1     = 2.00x
+   - n = 5: 2 ^ (5 ^ 0.6)  = 2^2.626 = ~6.18x
+   - n = 10: 2 ^ (10 ^ 0.6) = 2^3.981 = ~15.79x
+
+2. Melhorado (Com Magic Upgrade 14 ativo):
+   Buff(n) = 3.5 ^ (n ^ 0.7)
+
+   Exemplos:
+   - n = 0: 3.5 ^ (0 ^ 0.7)  = 3.5^0     = 1.00x
+   - n = 1: 3.5 ^ (1 ^ 0.7)  = 3.5^1     = 3.50x
+   - n = 5: 3.5 ^ (5 ^ 0.7)  = 3.5^3.085 = ~47.98x
+   - n = 10: 3.5 ^ (10 ^ 0.7) = 3.5^5.012 = ~546.68x
+
+[C. IMPACTO NA PRODUÇÃO DE FOGO (firePerSecond)]
+O valor do Buff(n) é a base de geração:
+firePerSecond = Buff(n) * Mult_Upg5 * Mult_Platina * Mult_Magia * Mult_Dragao ...
+
+
+--------------------------------------------------------------------------------
+2. MINERADORES (MINERS)
+Arquivos de referência: scripts/gold.js, scripts/script.js
+--------------------------------------------------------------------------------
+
+[VARIÁVEIS ENVOLVIDAS]
+- Quantidade comprada: M = game.miners (inicia em 0)
+- Nível de Platinum Upgrade 4: P4 = game.platinumUpgradesBought[3] (0 a 5)
+  (Efeito: "Miner cost scales 5% slower")
+- Custo base inicial: 20 ouro
+
+[A. FÓRMULA DE CUSTO]
+O custo do próximo minerador depende da quantidade atual M e do fator de escala B:
+
+    Base de escala (B):
+    B = 1.10 - (P4 * 0.005)
+    - Sem upgrade de platina (P4 = 0): B = 1.100
+    - Com upgrade no máximo (P4 = 5): B = 1.075
+
+    Custo(M):
+    Custo(M) = floor( 20 * (B ^ M) )
+
+Exemplos de custo (sem upgrade de platina, B = 1.10):
+- 1º minerador  (M = 0):  floor(20 * 1.10^0)  = 20 ouro
+- 2º minerador  (M = 1):  floor(20 * 1.10^1)  = 22 ouro
+- 10º minerador (M = 9):  floor(20 * 1.10^9)  = 47 ouro
+- 50º minerador (M = 49): floor(20 * 1.10^49) = 2.134 ouro
+- 100º minerador(M = 99): floor(20 * 1.10^99) = 250.771 ouro
+
+* Nota sobre "Buy Max" (buyMaxMiners):
+  Utiliza soma de PG finita:
+  Qtd_Comprável = Decimal.affordGeometricSeries(gold, 20, B, M)
+  Custo_Total   = Decimal.sumGeometricSeries(Qtd_Comprável, 20, B, M)
+  (Se o custo total for >= 1e1e9, o jogo deixa de subtrair ouro por ser custo negligível).
+
+[B. FÓRMULA DE PRODUÇÃO / VALOR GERADO (goldPerSecond)]
+A produção base de ouro gerada pelos mineradores por segundo é dada por:
+
+    goldPerSecond_base = M * ( 1 + 2 * log10( (Fire / 10) + 1 ) )
+
+- Sem fogo (Fire = 0): Cada minerador gera exatamente 1.0 ouro/s.
+- O fogo acumulado fornece um multiplicador logarítmico para todos os mineradores.
+
+[C. SUPER-SINERGIAS COM MINERADORES]
+O total de mineradores (M) também escala multiplicadores globais de ouro:
+
+1. Fire Upgrade 4 ("Increase gold gain based on miners"):
+   - Padrão:
+     Mult_FU4 = 1 + ( (FU4_Bought ^ 1.5) * M / 50 )
+   - Com Platinum Upgrade 9 (P9 > 0):
+     Mult_FU4 = 1 + ( (FU4_Bought ^ (M ^ 0.3)) ^ (P9 / 4) )
+
+2. Magic Upgrade 6:
+   - Padrão:
+     Mult_MU6 = 1 + (M ^ 1.5)
+   - Com Magic Upgrade 10 ativo:
+     Mult_MU6 = 1 + (M ^ 3)   <-- Escala cúbica com base na quantidade de mineradores!
+
+
+================================================================================
+3. DESBLOQUEIOS: ALCHEMY E MAGIC
+Arquivos de referência: scripts/dragon.js, scripts/alchemy.js, scripts/magic.js
+================================================================================
+
+[A. DESBLOQUEAR ALCHEMY (ALQUIMIA)]
+- Função: unlockAlchemy()
+- Requisito: Ter desbloqueado o Dragão
+- Custo: 20.000.000 Ouro (2e7 ou 20 Milhões)
+- Efeitos ao desbloquear:
+  * Abre a aba/recurso de Alquimia (conversão de Ouro em Platina).
+  * Revela os Upgrades de Platina (Platinum Upgrades).
+  * Revela o botão de desbloqueio de Magia (unlockMagicButton).
+
+[B. DESBLOQUEAR MAGIC (MAGIA)]
+- Função: unlockMagic()
+- Requisito: Ter desbloqueado Alchemy
+- Custo: 1.000.000.000.000.000 Ouro (1e15 ou 1 Quatrilhão)
+- Efeitos ao desbloquear:
+  * Abre a camada de prestígio de Magia (Magic Reset).
+  * Desbloqueia Tomos, Magifolds e a árvore de Magic Upgrades.
+  * Habilita caixas de confirmação para resets mágicos.
+
+
+================================================================================
+4. DRAGÃO: DESBLOQUEIO E TODOS OS ESTÁGIOS DE UPGRADE
+Arquivos de referência: scripts/dragon.js, scripts/script.js
+================================================================================
+
+[A. DESBLOQUEIO INICIAL DO DRAGÃO]
+- Função: unlockDragon()
+- Custo: 200 Ouro
+- Estágio Inicial: Estágio I - "Baby dragon"
+- Efeitos:
+  * Desbloqueia a aba do Dragão.
+  * Revela o botão de desbloquear Alquimia (custando 2e7 ouro).
+
+[B. ESTÁGIOS DE UPGRADE DO DRAGÃO (upgradeDragon(x))]
+O dragão possui 11 estágios no total. Todos os custos são pagos em Ouro (Gold):
+
+1. Estágio II - "Adult dragon" (upgradeDragon(1))
+   - Custo: 2.500.000 Ouro (2.5e6 ou 2,5 Milhões)
+   - Efeito: Multiplica a produção de Fogo por 100x (firePerSecond *= 100).
+
+2. Estágio III - "Elder dragon" (upgradeDragon(2))
+   - Custo: 1.000.000.000.000 Ouro (1e12 ou 1 Trilhão / 1 Trilhar)
+   - Efeito: Multiplica a produção de Fogo por 10.000x (firePerSecond *= 10000).
+
+3. Estágio IV - "Dark dragon" (upgradeDragon(3))
+   - Custo: 1e25 Ouro (10^25)
+   - Efeito: Multiplica a produção de Fogo por 100.000.000x (firePerSecond *= 1e8).
+
+4. Estágio V - "Light dragon" (upgradeDragon(4))
+   - Custo: 1e150 Ouro (10^150)
+   - Efeito na Produção: Multiplica Fogo por 10^15 (firePerSecond *= 1e15).
+   - Efeito Especial (Afeição do Dragão):
+     * Dragon Time (Passar tempo): Eleva a geração de ouro por segundo e por clique
+       a uma potência exponencial:
+       goldPerSecond = goldPerSecond ^ dragonTimeEffect
+       goldPerClick  = goldPerClick  ^ dragonTimeEffect
+     * Dragon Food (Alimentar o dragão com Magifolds): Eleva o fogo a uma super-potência:
+       firePerSecond = firePerSecond ^ (1.3 ^ dragonFood)
+
+5. Estágio VI - "Machine dragon" (upgradeDragon(5))
+   - Custo: e1.5e11 Ouro (10^(1,5 * 10^11))
+   - Efeito: Multiplica Fogo Azul por 100x (blueFirePerSecond *= 100).
+   - Desbloqueia: Botão de Sangue (unlockBloodButton).
+
+6. Estágio VII - "Holy dragon" (upgradeDragon(6))
+   - Custo: e1e55 Ouro (10^(10^55))
+   - Efeito: Multiplica Fogo Azul por 10^50 (blueFirePerSecond *= 1e50).
+   - Desbloqueia: Upgrades de Magia do Vazio (unlockVoidMagicUpgradesButton).
+
+7. Estágio VIII - "Multidimensional dragon" (upgradeDragon(7))
+   - Custo: e1e200 Ouro (10^(10^200))
+   - Efeito: Multiplica Fogo Sagrado por 10^10 (holyFirePerSecond *= 1e10).
+   - Desbloqueia: Sistema de Planetas (unlockPlanetsButton).
+
+8. Estágio IX - "Plague dragon" (upgradeDragon(8))
+   - Custo: ee35000 Ouro (10^(10^35000))
+   - Efeito: Multiplica Praga Cósmica por 100x (cosmicPlaguePerSecond *= 100).
+
+9. Estágio X - "Death dragon" (upgradeDragon(9))
+   - Custo: ee1.75e6 Ouro (10^(10^(1,75 * 10^6)))
+   - Efeito: Multiplica Essência de Luz e Trevas por 1000x (lightEssencePerSecond e darkEssencePerSecond *= 1000).
+   - Desbloqueia: Massa Nuclear (unlockNuclearPastaButton).
+
+10. Estágio XI - "Finality dragon" (upgradeDragon(10))
+    - Custo: ee1.5e9 Ouro (10^(10^(1,5 * 10^9)))
+    - Efeito: Multiplica Essência da Morte e da Finalidade por 100x (deathEssencePerSecond e finalityEssencePerSecond *= 100).
+    - Desbloqueia: Cubos de Finalidade (unlockFinalityCubesButton).
+================================================================================

@@ -1,0 +1,234 @@
+/* Top HUD Bar */
+.top-hud-bar {
+  width: 100%;
+  padding: 16px 36px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  position: relative;
+  z-index: 20;
+}
+
+/* Integrated Resources HUD (Top-Center) */
+.resources-hud-card {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(13, 16, 23, 0.92);
+  border: 1.5px solid var(--border-mid);
+  border-radius: 8px;
+  padding: 8px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  z-index: 25;
+}
+
+.resources-hud-header {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-dark);
+  padding-bottom: 3px;
+  width: 100%;
+  text-align: center;
+}
+
+.resources-hud-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+}
+
+.resource-item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  width: 100%;
+}
+
+.res-name {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  min-width: 60px;
+}
+
+.res-num {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.res-unit {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.res-dash {
+  font-size: 13px;
+  margin: 0 2px;
+}
+
+.res-rate {
+  font-size: 13px;
+  font-weight: 700;
+  transition: color 0.3s ease;
+}
+
+/* Fé Resource - Dourado */
+.resource-item-faith .res-name {
+  color: #fbbf24;
+}
+
+.resource-item-faith .res-num,
+#faith-counter {
+  color: #fbbf24;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.45);
+}
+
+.resource-item-faith .res-unit {
+  color: #fef08a;
+  opacity: 0.9;
+}
+
+.resource-item-faith .res-dash {
+  color: rgba(251, 191, 36, 0.45);
+}
+
+.resource-item-faith .res-rate,
+#faith-per-sec-counter {
+  color: #fbbf24;
+}
+
+.resource-item-faith .res-rate.boosted,
+#faith-per-sec-counter.boosted {
+  color: #f59e0b;
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.95);
+  animation: boostRatePulse 1.2s ease-in-out infinite alternate;
+}
+
+/* Fervor Resource - Vermelho */
+.resource-item-fervor .res-name,
+#hud-fervor-item .res-name {
+  color: #ef4444;
+}
+
+.resource-item-fervor .res-num,
+#hud-fervor-item #fervor-counter-hud {
+  color: #ef4444;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.45);
+}
+
+.resource-item-fervor .res-dash,
+#hud-fervor-item .res-dash {
+  color: rgba(239, 68, 68, 0.45);
+}
+
+.resource-item-fervor .res-rate,
+#hud-fervor-item #fervor-rate-counter-hud {
+  color: #f87171;
+}
+
+/* Relíquias Resource - Prateada (Silver) */
+.resource-item-relic .res-name,
+#hud-relic-item .res-name {
+  color: #c5d3e2 !important;
+  text-shadow: 0 0 8px rgba(186, 210, 235, 0.6);
+}
+
+.resource-item-relic .res-num,
+#hud-relic-item #relic-counter-hud {
+  color: #dbe6f0 !important;
+  text-shadow: none !important;
+}
+
+.resource-item-relic .res-unit,
+#hud-relic-item .res-unit {
+  color: #b0c2d4 !important;
+  text-shadow: 0 0 6px rgba(186, 210, 235, 0.4);
+}
+
+.resource-item-relic .res-dash,
+#hud-relic-item .res-dash {
+  color: rgba(186, 210, 235, 0.4) !important;
+}
+
+.resource-item-relic .res-rate,
+#hud-relic-item #relic-rate-counter-hud {
+  color: #c5d3e2 !important;
+  text-shadow: 0 0 8px rgba(186, 210, 235, 0.6);
+}
+
+@keyframes boostRatePulse {
+  0% { filter: brightness(1); }
+  100% { filter: brightness(1.35); }
+}
+
+.resource-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border-dark);
+  margin: 2px 0;
+}
+
+.top-right-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Settings Icon Button styled with slide theme */
+.icon-btn-gold {
+  background: rgba(13, 16, 23, 0.85);
+  border: 1.5px solid var(--border-mid);
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+.icon-btn-gold svg {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.4s ease;
+}
+
+.icon-btn-gold:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border-white);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+#settings-btn:hover svg {
+  transform: rotate(90deg);
+}
+
+#music-quick-btn:hover svg {
+  transform: scale(1.15);
+}
+
+#music-quick-btn.muted {
+  opacity: 0.65;
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+}

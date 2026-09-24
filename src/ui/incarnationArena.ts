@@ -39,7 +39,7 @@ export class IncarnationArena {
 
   public resize(): void {
     const r = this.canvas.getBoundingClientRect();
-    if (r.width > 50 && r.height > 50) {
+    if (r.width > 30 && r.height > 30) {
       if (Math.abs(this.width - r.width) > 0.5 || Math.abs(this.height - r.height) > 0.5) {
         this.width = r.width;
         this.height = r.height;
@@ -47,6 +47,7 @@ export class IncarnationArena {
         this.canvas.height = Math.floor(this.height * this.dpr);
         this.ctx.setTransform(1, 0, 0, 1, 0, 0);
         this.ctx.scale(this.dpr, this.dpr);
+        this.draw();
       }
     }
   }
@@ -109,7 +110,8 @@ export class IncarnationArena {
     }
   }
 
-  private startLoop(): void {
+  public startLoop(): void {
+    if (this.animFrameId !== null) return;
     const loop = () => {
       this.update();
       this.draw();
@@ -118,10 +120,23 @@ export class IncarnationArena {
     this.animFrameId = requestAnimationFrame(loop);
   }
 
-  public destroy(): void {
+  public stopLoop(): void {
     if (this.animFrameId !== null) {
       cancelAnimationFrame(this.animFrameId);
+      this.animFrameId = null;
     }
+  }
+
+  public pause(): void {
+    this.stopLoop();
+  }
+
+  public resume(): void {
+    this.startLoop();
+  }
+
+  public destroy(): void {
+    this.stopLoop();
   }
 
   private update(): void {
@@ -171,10 +186,11 @@ export class IncarnationArena {
     ctx.clearRect(0, 0, this.width, this.height);
 
     const cx = Math.round(this.width / 2);
-    const cy = Math.round(this.height / 2 + 15);
+    // Center ground level proportionally so altar and figure are centered vertically in the canvas
+    const groundY = Math.round(this.height * 0.54);
 
     // 1. Draw Sanctuary Patio Background (Stone grid & concentric ritual circles identical to Pátio dos Fiéis)
-    this.drawSanctuaryPatioBackground(cx, cy);
+    this.drawSanctuaryPatioBackground(cx, groundY);
 
     // 2. Pulse ripples from clicks
     for (const rip of this.pulseRipples) {
@@ -182,13 +198,13 @@ export class IncarnationArena {
       ctx.strokeStyle = this.stage >= 2 ? `rgba(251, 191, 36, ${rip.alpha})` : `rgba(255, 255, 255, ${rip.alpha})`;
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.ellipse(cx, cy + 42, rip.r, rip.r * 0.4, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx, groundY, rip.r, rip.r * 0.38, 0, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
     }
 
     // 3. Draw The Grand Cultist Incarnation (Identical figure to Pátio dos Fiéis, but larger and unique)
-    this.drawGrandCultistIncarnation(cx, cy);
+    this.drawGrandCultistIncarnation(cx, groundY);
 
     // 4. Ambient floating embers / particles
     for (const p of this.particles) {
@@ -227,7 +243,7 @@ export class IncarnationArena {
     }
 
     // Altar stone dais gradient below the grand figure
-    const altarGrad = ctx.createRadialGradient(cx, cy + 40, 10, cx, cy + 40, 110);
+    const altarGrad = ctx.createRadialGradient(cx, cy + 20, 10, cx, cy + 20, Math.min(120, this.width * 0.35));
     if (this.stage >= 2) {
       altarGrad.addColorStop(0, 'rgba(245, 158, 11, 0.12)');
       altarGrad.addColorStop(0.5, 'rgba(251, 191, 36, 0.03)');
@@ -239,25 +255,25 @@ export class IncarnationArena {
     }
     ctx.fillStyle = altarGrad;
     ctx.beginPath();
-    ctx.ellipse(cx, cy + 40, 110, 48, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, cy + 20, Math.min(110, this.width * 0.32), Math.min(36, this.height * 0.14), 0, 0, Math.PI * 2);
     ctx.fill();
 
     // Sacred ritual concentric circles on floor
     ctx.lineWidth = 1.5;
     ctx.strokeStyle = this.stage >= 2 ? 'rgba(245, 158, 11, 0.28)' : 'rgba(255, 255, 255, 0.08)';
     ctx.beginPath();
-    ctx.ellipse(cx, cy + 40, 75, 32, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, cy + 20, Math.min(75, this.width * 0.24), Math.min(26, this.height * 0.1), 0, 0, Math.PI * 2);
     ctx.stroke();
 
     ctx.strokeStyle = this.stage >= 2 ? 'rgba(245, 158, 11, 0.16)' : 'rgba(255, 255, 255, 0.04)';
     ctx.beginPath();
-    ctx.ellipse(cx, cy + 40, 95, 40, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, cy + 20, Math.min(95, this.width * 0.28), Math.min(32, this.height * 0.12), 0, 0, Math.PI * 2);
     ctx.stroke();
 
-    if (h > 290) {
+    if (h > 260) {
       ctx.strokeStyle = this.stage >= 2 ? 'rgba(245, 158, 11, 0.08)' : 'rgba(255, 255, 255, 0.02)';
       ctx.beginPath();
-      ctx.ellipse(cx, cy + 40, 120, 50, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx, cy + 20, Math.min(120, this.width * 0.35), Math.min(40, this.height * 0.15), 0, 0, Math.PI * 2);
       ctx.stroke();
     }
 
@@ -265,18 +281,18 @@ export class IncarnationArena {
     ctx.strokeStyle = this.stage >= 2 ? 'rgba(251, 191, 36, 0.25)' : 'rgba(255, 255, 255, 0.06)';
     ctx.lineWidth = 1.2;
     ctx.beginPath();
-    ctx.moveTo(cx - 24, cy + 40);
-    ctx.lineTo(cx + 24, cy + 40);
-    ctx.moveTo(cx, cy + 28);
-    ctx.lineTo(cx, cy + 52);
+    ctx.moveTo(cx - 24, cy + 20);
+    ctx.lineTo(cx + 24, cy + 20);
+    ctx.moveTo(cx, cy + 8);
+    ctx.lineTo(cx, cy + 32);
     ctx.stroke();
 
     // Radial runes along outer ring
     const runeCount = 8;
     for (let i = 0; i < runeCount; i++) {
       const angle = (i / runeCount) * Math.PI * 2 + (this.tick * 0.003);
-      const rx = cx + Math.cos(angle) * 75;
-      const ry = (cy + 40) + Math.sin(angle) * 32;
+      const rx = cx + Math.cos(angle) * Math.min(75, this.width * 0.24);
+      const ry = (cy + 20) + Math.sin(angle) * Math.min(26, this.height * 0.1);
       ctx.fillStyle = this.stage >= 2 ? 'rgba(251, 191, 36, 0.4)' : 'rgba(255, 255, 255, 0.15)';
       ctx.fillRect(rx - 2, ry - 2, 4, 4);
     }
@@ -287,30 +303,30 @@ export class IncarnationArena {
   /**
    * Renders the Grand Cultist Incarnation:
    * Uses the EXACT SAME anatomical geometry, silhouette, hood cowl, face void,
-   * eyes, and robe cut as the Pátio dos Fiéis, but scaled ~4.5x larger and unique!
+   * eyes, and robe cut as the Pátio dos Fiéis, scaled adaptively and unique!
    */
   private drawGrandCultistIncarnation(cx: number, cy: number): void {
     const ctx = this.ctx;
     const time = this.tick * 0.035;
 
     // Gentle rhythmic breathing / levitation bob
-    const bob = Math.sin(time) * 3.5;
-    const figureY = cy - 2 + bob;
+    const bob = Math.sin(time) * 3.0;
+
+    // Scale dynamically to fit the canvas height gracefully (from compact mobile up to iPad and desktop)
+    const scale = Math.min(4.5, Math.max(2.8, (this.height / 270) * 4.1));
+    const figureY = cy - (14 * scale) + bob;
 
     // 1. Drop shadow under feet (scaled with bob)
     const shadowScale = 1 - (bob / 20);
     ctx.save();
     ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
     ctx.beginPath();
-    ctx.ellipse(cx, cy + 42, 34 * shadowScale, 11 * shadowScale, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, cy + 20, 28 * shadowScale * (scale / 4.4), 8 * shadowScale * (scale / 4.4), 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
     ctx.save();
     ctx.translate(cx, figureY);
-
-    // Scale ~4.5x to be clearly grand and unique compared to standard 20px walkers
-    const scale = 4.4;
     ctx.scale(scale, scale);
 
     // 2. Halo / Aura (behind head for higher stages)
