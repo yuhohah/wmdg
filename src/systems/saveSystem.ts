@@ -12,6 +12,7 @@ export interface SaveData {
     relicPoints: number;
     bestRelicsToGet: number;
     incarnationBoostTimer?: number;
+    hasSeenIntro?: boolean;
   };
   followers: Array<{ id: string; count: number }>;
   monuments?: Array<{ id: string; count: number }>;

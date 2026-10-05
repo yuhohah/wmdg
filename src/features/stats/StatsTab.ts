@@ -64,7 +64,7 @@ export class StatsTab {
       this.statFervorAccumEl.textContent = formatNumber(Math.floor(fervor));
     }
     if (this.statFervorRateEl) {
-      this.statFervorRateEl.textContent = `+${fervorRate.toFixed(1)} / seg`;
+      this.statFervorRateEl.textContent = `+${formatNumber(fervorRate)} / seg`;
     }
 
     if (this.statAchievementsCountEl) {

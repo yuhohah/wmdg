@@ -61,7 +61,7 @@ export class IncarnationTab {
     this.btnUpgradeEl = document.getElementById('btn-upgrade-incarnation') as HTMLButtonElement | null;
     this.upgradeTitleEl = document.getElementById('incarnation-upgrade-title');
     this.upgradeBenefitEl = document.getElementById('incarnation-upgrade-benefit');
-    this.upgradeCostValEl = document.getElementById('incarnation-upgrade-cost-val');
+    this.upgradeCostValEl = document.getElementById('incarnation-cost-val');
 
     this.boostCardEl = document.getElementById('incarnation-boost-card');
     this.boostBadgeEl = document.getElementById('incarnation-boost-badge');
@@ -101,8 +101,9 @@ export class IncarnationTab {
       this.options.audio.playChime();
       this.options.notifications.showCustomPopup(
         'EVOLUÇÃO SAGRADA',
-        `A Encarnação atingiu o ${nextStage.name}! Poder sobre os Fiéis ampliado (${nextStage.multiplier}x).`,
-        ''
+        `A Encarnação atingiu o ${nextStage.name}! Produção de Fervor multiplicada por ${formatNumber(nextStage.multiplier)}x.`,
+        '👑',
+        'ASCENSÃO'
       );
       this.updateUI();
       this.options.onIncarnationEvolved?.(this.options.gameState.incarnationStage);
@@ -111,10 +112,13 @@ export class IncarnationTab {
 
   public updateUI(): void {
     const stage = this.options.gameState.incarnationStage;
+    const currentStage = INCARNATION_STAGES.find((s) => s.stage === stage);
     const nextStage = INCARNATION_STAGES.find((s) => s.stage === stage + 1);
 
     if (this.stageBadgeEl) {
-      this.stageBadgeEl.textContent = `ESTÁGIO ${stage}`;
+      const stageName = currentStage ? currentStage.name.toUpperCase() : `ESTÁGIO ${stage}`;
+      const multText = currentStage ? ` (${formatNumber(currentStage.multiplier)}x)` : '';
+      this.stageBadgeEl.textContent = `ESTÁGIO ${stage}: ${stageName}${multText}`;
     }
     if (this.titleEl) {
       this.titleEl.textContent = '';
@@ -136,16 +140,16 @@ export class IncarnationTab {
       if (nextStage) {
         this.upgradeTitleEl.textContent = 'EVOLUIR';
         if (this.upgradeBenefitEl) {
-          this.upgradeBenefitEl.textContent = '';
-          this.upgradeBenefitEl.style.display = 'none';
+          this.upgradeBenefitEl.textContent = `${formatNumber(nextStage.multiplier)}x Fervor/s`;
+          this.upgradeBenefitEl.style.display = 'block';
         }
         this.upgradeCostValEl.textContent = `${formatNumber(nextStage.cost)} Fé`;
         this.btnUpgradeEl.disabled = this.options.gameState.faithPoints < nextStage.cost;
       } else {
         this.upgradeTitleEl.textContent = 'ENCARNAÇÃO MÁXIMA';
         if (this.upgradeBenefitEl) {
-          this.upgradeBenefitEl.textContent = '';
-          this.upgradeBenefitEl.style.display = 'none';
+          this.upgradeBenefitEl.textContent = 'Ápice Atingido';
+          this.upgradeBenefitEl.style.display = 'block';
         }
         this.upgradeCostValEl.textContent = 'MÁX';
         this.btnUpgradeEl.disabled = true;

@@ -155,7 +155,7 @@ export class IncarnationArena {
         vy: -0.6 - Math.random() * 0.8,
         alpha: 0.9,
         size: 1.5 + Math.random() * 2.2,
-        color: this.stage >= 3 ? '#f59e0b' : (this.stage === 2 ? '#fbbf24' : '#e4e4e7')
+        color: this.stage >= 5 ? '#38bdf8' : (this.stage === 4 ? '#c084fc' : (this.stage >= 3 ? '#f59e0b' : (this.stage === 2 ? '#fbbf24' : '#e4e4e7')))
       });
     }
 
@@ -346,29 +346,35 @@ export class IncarnationArena {
     let eyeColor = '#ffffff';
 
     if (this.stage === 1) {
-      // Neophyte Avatar: Classic deep mystic cultist
+      // Neophyte Avatar: Classic deep mystic cultist (Baby dragon)
       robeColor = '#27272a';
       hoodColor = '#18181b';
       trimColor = '#e4e4e7';
       eyeColor = '#ffffff';
     } else if (this.stage === 2) {
-      // Consecrated: Golden trim, radiant holy eyes
+      // Consecrated: Golden trim, radiant holy eyes (Adult dragon)
       robeColor = '#1c1917';
       hoodColor = '#18181b';
       trimColor = '#fbbf24';
       eyeColor = '#fde047';
     } else if (this.stage === 3) {
-      // Illuminated: Deep obsidian robe, fiery gold accents
+      // Ancestral: Deep obsidian robe, fiery amber accents (Elder dragon)
       robeColor = '#18181b';
       hoodColor = '#09090b';
       trimColor = '#f59e0b';
       eyeColor = '#fef08a';
+    } else if (this.stage === 4) {
+      // Eclipse: Abyssal void dark robes, mystic violet trim (Dark dragon)
+      robeColor = '#09090b';
+      hoodColor = '#030712';
+      trimColor = '#a855f7';
+      eyeColor = '#c084fc';
     } else {
-      // Ascendant / Celestial: Transcendent celestial robes
-      robeColor = '#0f172a';
-      hoodColor = '#020617';
-      trimColor = '#38bdf8';
-      eyeColor = '#bae6fd';
+      // Solar: Radiant celestial golden robes, ethereal azure eyes (Light dragon)
+      robeColor = '#fef3c7';
+      hoodColor = '#fde68a';
+      trimColor = '#f59e0b';
+      eyeColor = '#38bdf8';
     }
 
     // 4. Feet (Cultist boots on stone altar)
@@ -475,8 +481,25 @@ export class IncarnationArena {
     const haloRadius = 7.5;
     const rayCount = this.stage >= 3 ? 8 : 6;
 
+    let ringColor = 'rgba(255, 255, 255, 0.35)';
+    let rayColor = 'rgba(255, 255, 255, 0.4)';
+
+    if (this.stage === 2) {
+      ringColor = 'rgba(251, 191, 36, 0.5)';
+      rayColor = 'rgba(252, 211, 77, 0.6)';
+    } else if (this.stage === 3) {
+      ringColor = 'rgba(245, 158, 11, 0.6)';
+      rayColor = 'rgba(251, 191, 36, 0.7)';
+    } else if (this.stage === 4) {
+      ringColor = 'rgba(168, 85, 247, 0.6)';
+      rayColor = 'rgba(192, 132, 252, 0.7)';
+    } else if (this.stage >= 5) {
+      ringColor = 'rgba(253, 224, 71, 0.8)';
+      rayColor = 'rgba(56, 189, 248, 0.9)';
+    }
+
     // Glowing halo ring
-    ctx.strokeStyle = this.stage >= 3 ? 'rgba(251, 191, 36, 0.5)' : 'rgba(255, 255, 255, 0.35)';
+    ctx.strokeStyle = ringColor;
     ctx.lineWidth = 0.8;
     ctx.beginPath();
     ctx.arc(hx, hy, haloRadius, 0, Math.PI * 2);
@@ -492,7 +515,7 @@ export class IncarnationArena {
       const outerX = hx + Math.cos(angle) * (haloRadius + len);
       const outerY = hy + Math.sin(angle) * (haloRadius + len);
 
-      ctx.strokeStyle = this.stage >= 3 ? 'rgba(252, 211, 77, 0.6)' : 'rgba(255, 255, 255, 0.4)';
+      ctx.strokeStyle = rayColor;
       ctx.lineWidth = 0.7;
       ctx.beginPath();
       ctx.moveTo(innerX, innerY);
@@ -523,9 +546,10 @@ export class IncarnationArena {
 
         ctx.save();
         // Flame glow
+        const glowColor = this.stage === 4 ? '#a855f7' : (this.stage >= 5 ? '#38bdf8' : '#f59e0b');
         const glowGrad = ctx.createRadialGradient(x, y, 0.5, x, y, 2.8);
         glowGrad.addColorStop(0, '#ffffff');
-        glowGrad.addColorStop(0.5, '#f59e0b');
+        glowGrad.addColorStop(0.5, glowColor);
         glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = glowGrad;
         ctx.beginPath();

@@ -105,21 +105,24 @@ export class UnlocksTab {
 
     if (unlock.id === 'unlock_incarnation') {
       this.notifications.showCustomPopup(
-        'INCARNATION DESPERTADA',
-        'A Encarnação Sagrada foi convocada! O Fervor começou a queimar a +1.0/s.',
-        ''
+        'ENCARNAÇÃO SAGRADA',
+        'A Encarnação da Divindade despertou no altar! Geração de Fervor iniciada a +1/s.',
+        '🔥',
+        'DESBLOQUEIO'
       );
     } else if (unlock.id === 'unlock_fervor_upgrades') {
       this.notifications.showCustomPopup(
         'RITOS DE FERVOR',
-        'Os Upgrades de Fervor foram revelados no painel esquerdo!',
-        ''
+        'Os Ritos e Upgrades de Fervor foram revelados! Acesse a aba Fervor para expandir seu poder.',
+        '🕯️',
+        'NOVA MECÂNICA'
       );
     } else if (unlock.id === 'unlock_relics') {
       this.notifications.showCustomPopup(
-        'NOVA MECÂNICA',
-        'A aba de Relíquias sagradas foi despertada no santuário!',
-        ''
+        'RELÍQUIAS CÓSMICAS',
+        'O altar de transmutação de Relíquias sagradas foi despertado no santuário!',
+        '⚱️',
+        'NOVA MECÂNICA'
       );
     }
 

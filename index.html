@@ -43,7 +43,7 @@
               <span class="res-name">FERVOR:</span>
               <span id="fervor-counter-hud" class="res-num">0</span>
               <span class="res-dash">-</span>
-              <span id="fervor-rate-counter-hud" class="res-rate">0.0/s</span>
+              <span id="fervor-rate-counter-hud" class="res-rate">0/s</span>
             </div>
             <div class="resource-divider" id="hud-relic-divider"></div>
             <div class="resource-item resource-item-relic" id="hud-relic-item">
@@ -240,6 +240,7 @@
                   <button id="btn-upgrade-incarnation" class="btn-follower-action btn-incarnation-upgrade">
                     <div class="btn-action-main">
                       <span class="btn-action-title" id="incarnation-upgrade-title">EVOLUIR</span>
+                      <span class="btn-action-benefit" id="incarnation-upgrade-benefit">100x Fervor/s</span>
                     </div>
                     <div class="btn-action-cost" id="incarnation-upgrade-cost-group">
                       <span id="incarnation-cost-label">CUSTO:</span>
@@ -262,7 +263,7 @@
                         </div>
                       </div>
                     </div>
-                    <div class="fervor-rate-tag" id="fervor-rate-counter">+1.0 / seg</div>
+                    <div class="fervor-rate-tag" id="fervor-rate-counter">+0 / seg</div>
                   </div>
                 </div>
                 <div class="card-list" id="fervor-upgrades-list"></div>
@@ -289,7 +290,7 @@
                   </div>
                   <div class="stat-box">
                     <span class="stat-label">PRODUÇÃO DE FERVOR</span>
-                    <span id="stat-fervor-rate" class="stat-val">+1.0 / seg</span>
+                    <span id="stat-fervor-rate" class="stat-val">+0 / seg</span>
                   </div>
                   <div class="stat-box">
                     <span class="stat-label">TOTAL DE FIÉIS</span>
@@ -559,8 +560,55 @@
       <div id="mobile-sheet-content" class="mobile-sheet-content custom-scrollbar"></div>
     </div>
 
-    <!-- Achievement Notifications Container (Top-Right Square Popups) -->
+    <!-- Achievement Notifications Container -->
     <div id="achievements-popup-container" class="achievements-popup-container"></div>
+
+    <!-- SPOTLIGHT ONBOARDING TOUR OVERLAY (FULL-SCREEN GRAYSCALE + SPOTLIGHT CUTOUT + BALLOON) -->
+    <div id="spotlight-tour-overlay" class="spotlight-tour-overlay" style="display: none;">
+      <!-- 4 Grayscale Backdrop Panels (Darken & Gray out everything outside target) -->
+      <div id="spotlight-panel-top" class="spotlight-panel"></div>
+      <div id="spotlight-panel-bottom" class="spotlight-panel"></div>
+      <div id="spotlight-panel-left" class="spotlight-panel"></div>
+      <div id="spotlight-panel-right" class="spotlight-panel"></div>
+
+      <!-- Glowing Focus Ring Around Target Action -->
+      <div id="spotlight-focus-ring" class="spotlight-focus-ring">
+        <div class="spotlight-focus-beacon"></div>
+      </div>
+
+      <!-- Highly Visible Floating Speech Balloon ("Balão") with Arrow -->
+      <div id="spotlight-balloon" class="spotlight-balloon" role="dialog" aria-modal="false">
+        <div class="spotlight-balloon-arrow" id="spotlight-balloon-arrow"></div>
+        <div class="spotlight-balloon-header">
+          <div class="spotlight-balloon-badge-group">
+            <span class="spotlight-balloon-icon" id="spotlight-balloon-icon">🔮</span>
+            <span class="spotlight-balloon-badge" id="spotlight-balloon-badge">ETAPA 1/2 • VOCÊ É O DEUS ESFERA</span>
+          </div>
+          <button id="spotlight-balloon-skip" class="spotlight-balloon-skip" title="Pular Tutorial">Pular</button>
+        </div>
+
+        <div class="spotlight-balloon-body">
+          <h3 class="spotlight-balloon-title" id="spotlight-balloon-title">Toque na Esfera Divina</h3>
+          <p class="spotlight-balloon-desc" id="spotlight-balloon-desc">
+            Você é uma divindade cósmica manifestada na Esfera Sagrada. Cada toque canaliza Fé cósmica pura para alimentar seu despertar divino!
+          </p>
+
+          <div class="spotlight-balloon-tracker" id="spotlight-balloon-tracker">
+            <div class="spotlight-tracker-header">
+              <span class="spotlight-tracker-meta" id="spotlight-tracker-meta">Meta inicial: 20 Fé</span>
+              <span class="spotlight-tracker-val" id="spotlight-tracker-val">0 / 20 Fé</span>
+            </div>
+            <div class="spotlight-tracker-bar-bg">
+              <div class="spotlight-tracker-bar-fill" id="spotlight-tracker-bar-fill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="spotlight-balloon-action-tip" id="spotlight-balloon-action-tip">
+            👉 Toque repetidamente na Esfera iluminada para acumular Fé!
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- SETTINGS MODAL OVERLAY -->
     <div id="settings-modal" class="modal-overlay">

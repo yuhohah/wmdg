@@ -22,6 +22,7 @@ import { UnlocksTab } from './features/unlocks/UnlocksTab.js';
 import { AchievementsTab } from './features/achievements/AchievementsTab.js';
 import { StatsTab } from './features/stats/StatsTab.js';
 import { SphereController } from './features/sphere/SphereController.js';
+import { OnboardingGuide } from './ui/OnboardingGuide.js';
 
 class AppManager {
   // Core Subsystems
@@ -37,6 +38,7 @@ class AppManager {
   public nav: NavigationManager;
   public settingsModal: SettingsModal;
   public saveDataModal: SaveDataModal;
+  public onboardingGuide: OnboardingGuide;
 
   // Feature Tabs
   public followersTab: FollowersTab;
@@ -78,6 +80,7 @@ class AppManager {
         if (screen === 'gameplay') {
           this.followersTab.resize();
           this.incarnationTab.resize();
+          this.onboardingGuide.update();
         }
       }
     });
@@ -177,6 +180,13 @@ class AppManager {
       notifications: this.notifications
     });
 
+    this.onboardingGuide = new OnboardingGuide({
+      gameState: this.gameState,
+      notifications: this.notifications,
+      nav: this.nav,
+      audio: this.audio
+    });
+
     this.settingsModal = new SettingsModal({
       audio: this.audio,
       getLastSaveTime: () => this.lastSaveTime,
@@ -204,6 +214,7 @@ class AppManager {
     this.startPassiveFaithLoop();
     this.startAutoSaveLoop();
     this.hud.update();
+    this.onboardingGuide.update();
 
     // 7. Global Window Helpers
     this.registerGlobalHelpers();
@@ -216,6 +227,7 @@ class AppManager {
       this.achievementsTab.checkAchievements();
       this.achievementsTab.updateRealtime();
       this.updateItemButtonsState();
+      this.onboardingGuide.update();
     });
 
     events.on(GameEvents.GAME_TICK, () => {
@@ -229,6 +241,7 @@ class AppManager {
       this.achievementsTab.updateRealtime();
       this.incarnationTab.updateRealtime();
       this.followersTab.updateRealtime();
+      this.onboardingGuide.update();
     });
   }
 
@@ -368,10 +381,10 @@ class AppManager {
     const success = this.saveProgress();
     if (success) {
       this.audio.playTone(660, 'sine', 0.1);
-      this.notifications.showCustomPopup('Culto Salvo', 'Seu progresso sagrado foi gravado com sucesso.', '', 'REGISTRO SAGRADO');
+      this.notifications.showCustomPopup('Culto Salvo', 'Seu progresso sagrado foi gravado com sucesso.', '💾', 'REGISTRO SAGRADO');
       this.settingsModal.updateSaveStatus();
     } else {
-      this.notifications.showCustomPopup('Erro ao Salvar', 'Não foi possível gravar no armazenamento do navegador.', '', 'ALERTA');
+      this.notifications.showCustomPopup('Erro ao Salvar', 'Não foi possível gravar no armazenamento do navegador.', '⚠️', 'ALERTA');
     }
   }
 

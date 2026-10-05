@@ -64,8 +64,8 @@ export class RelicsTab {
       );
       this.options.notifications.showCustomPopup(
         'FÉ TRANSMUTADA',
-        `Você consagrou ${result.gained} Relíquias sagradas!`,
-        '',
+        `Você consagrou +${formatNumber(result.gained)} Relíquias sagradas para o culto!`,
+        '✨',
         'ALQUIMIA CÓSMICA'
       );
       this.updateUI();

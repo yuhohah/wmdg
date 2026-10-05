@@ -8,74 +8,137 @@ export class NotificationManager {
     this.container = document.getElementById(containerId)!;
   }
 
+  private getAchievementFallbackIcon(ach: Achievement): string {
+    if (ach.icon && ach.icon.trim().length > 0) {
+      return ach.icon;
+    }
+    if (ach.id.startsWith('ach_click')) return '👆';
+    if (ach.id.startsWith('ach_f_')) return '👥';
+    if (ach.id.startsWith('ach_faith')) return '🔮';
+    if (ach.id.startsWith('ach_fps')) return '⚡';
+    if (ach.id.startsWith('ach_fervor')) return '🔥';
+    if (ach.id.startsWith('ach_relic')) return '✨';
+    return '🏆';
+  }
+
+  private getCustomFallbackIcon(title: string, badge: string): string {
+    const combined = `${title} ${badge}`.toUpperCase();
+    if (combined.includes('MILAGRE') || combined.includes('CLIQUE')) return '⚡';
+    if (combined.includes('CONQUISTA')) return '🏆';
+    if (combined.includes('INCARNA') || combined.includes('ASCENSÃO') || combined.includes('EVOLUÇÃO')) return '👑';
+    if (combined.includes('FERVOR') || combined.includes('CHAMA')) return '🔥';
+    if (combined.includes('RELÍQUIA') || combined.includes('TRANSMUTAÇÃO')) return '✨';
+    if (combined.includes('SALV') || combined.includes('REGISTRO')) return '💾';
+    if (combined.includes('EXPORT') || combined.includes('IMPORT')) return '📋';
+    if (combined.includes('ALERTA') || combined.includes('ERRO')) return '⚠️';
+    if (combined.includes('DESBLOQUEIO') || combined.includes('MECÂNICA')) return '🔓';
+    return '🔔';
+  }
+
+  private getToastVariant(title: string, badge: string): string {
+    const combined = `${title} ${badge}`.toUpperCase();
+    if (combined.includes('ALERTA') || combined.includes('ERRO')) return 'ach-popup-toast-alert';
+    if (combined.includes('FERVOR') || combined.includes('CHAMA')) return 'ach-popup-toast-crimson';
+    if (combined.includes('RELÍQUIA') || combined.includes('TRANSMUTAÇÃO')) return 'ach-popup-toast-silver';
+    if (combined.includes('SALV') || combined.includes('REGISTRO') || combined.includes('EXPORT') || combined.includes('IMPORT')) return 'ach-popup-toast-emerald';
+    if (combined.includes('DESBLOQUEIO') || combined.includes('MECÂNICA')) return 'ach-popup-toast-purple';
+    return 'ach-popup-toast-gold';
+  }
+
   public showAchievementPopup(ach: Achievement): void {
     const popup = document.createElement('div');
-    popup.className = 'ach-popup-square';
+    popup.className = 'ach-popup-toast ach-popup-toast-achievement ach-popup-square';
 
-    const iconHtml = DISPLAY_CONFIG.showEmojisAndSymbols && ach.icon
-      ? `<div class="ach-popup-icon">${ach.icon}</div>`
+    const icon = DISPLAY_CONFIG.showEmojisAndSymbols
+      ? this.getAchievementFallbackIcon(ach)
+      : '';
+
+    const iconHtml = icon
+      ? `<div class="ach-popup-icon-box"><span class="ach-popup-icon">${icon}</span></div>`
+      : '';
+
+    const buffHtml = ach.buffText
+      ? `<div class="ach-popup-buff">
+          <span class="ach-popup-buff-icon">✨</span>
+          <span class="ach-popup-buff-text">Bônus: ${ach.buffText}</span>
+        </div>`
       : '';
 
     popup.innerHTML = `
       <div class="ach-popup-timer-bar"></div>
-      <span class="ach-popup-badge">CONQUISTA DESBLOQUEADA</span>
       ${iconHtml}
-      <div class="ach-popup-title">${ach.name}</div>
-      <div class="ach-popup-desc">${ach.desc}</div>
+      <div class="ach-popup-content">
+        <div class="ach-popup-header-row">
+          <span class="ach-popup-badge">CONQUISTA DESBLOQUEADA</span>
+          <button type="button" class="ach-popup-close" aria-label="Fechar" title="Fechar">&times;</button>
+        </div>
+        <div class="ach-popup-title">${ach.name}</div>
+        <div class="ach-popup-desc">${ach.desc}</div>
+        ${buffHtml}
+      </div>
     `;
 
-    popup.addEventListener('click', () => {
-      popup.classList.add('closing');
-      setTimeout(() => {
-        if (popup.parentElement) popup.remove();
-      }, 400);
-    });
-
+    this.bindPopupLifecycle(popup);
     this.container.appendChild(popup);
-
-    // 5 seconds duration: start slide-out at 4.6s, remove at 5.0s
-    setTimeout(() => {
-      if (popup.parentElement) {
-        popup.classList.add('closing');
-        setTimeout(() => {
-          if (popup.parentElement) popup.remove();
-        }, 400);
-      }
-    }, 4600);
   }
 
-  public showCustomPopup(title: string, desc: string, icon: string = '', badge: string = 'NOVA MECÂNICA'): void {
+  public showCustomPopup(
+    title: string,
+    desc: string,
+    icon: string = '',
+    badge: string = 'NOVA MECÂNICA'
+  ): void {
     const popup = document.createElement('div');
-    popup.className = 'ach-popup-square';
+    const variantClass = this.getToastVariant(title, badge);
+    popup.className = `ach-popup-toast ${variantClass} ach-popup-square`;
 
-    const iconHtml = DISPLAY_CONFIG.showEmojisAndSymbols && icon
-      ? `<div class="ach-popup-icon">${icon}</div>`
+    const finalIcon = DISPLAY_CONFIG.showEmojisAndSymbols
+      ? (icon && icon.trim().length > 0 ? icon : this.getCustomFallbackIcon(title, badge))
+      : '';
+
+    const iconHtml = finalIcon
+      ? `<div class="ach-popup-icon-box"><span class="ach-popup-icon">${finalIcon}</span></div>`
       : '';
 
     popup.innerHTML = `
-      <div class="ach-popup-timer-bar" style="background: var(--gold-accent);"></div>
-      <span class="ach-popup-badge" style="color: var(--gold-accent); border-color: rgba(234, 179, 8, 0.4);">${badge}</span>
+      <div class="ach-popup-timer-bar"></div>
       ${iconHtml}
-      <div class="ach-popup-title">${title}</div>
-      <div class="ach-popup-desc">${desc}</div>
+      <div class="ach-popup-content">
+        <div class="ach-popup-header-row">
+          <span class="ach-popup-badge">${badge}</span>
+          <button type="button" class="ach-popup-close" aria-label="Fechar" title="Fechar">&times;</button>
+        </div>
+        <div class="ach-popup-title">${title}</div>
+        <div class="ach-popup-desc">${desc}</div>
+      </div>
     `;
 
-    popup.addEventListener('click', () => {
+    this.bindPopupLifecycle(popup);
+    this.container.appendChild(popup);
+  }
+
+  private bindPopupLifecycle(popup: HTMLElement): void {
+    let closed = false;
+    const closePopup = () => {
+      if (closed) return;
+      closed = true;
       popup.classList.add('closing');
       setTimeout(() => {
         if (popup.parentElement) popup.remove();
       }, 400);
-    });
+    };
 
-    this.container.appendChild(popup);
+    popup.addEventListener('click', closePopup);
 
-    setTimeout(() => {
-      if (popup.parentElement) {
-        popup.classList.add('closing');
-        setTimeout(() => {
-          if (popup.parentElement) popup.remove();
-        }, 400);
-      }
-    }, 4600);
+    const closeBtn = popup.querySelector('.ach-popup-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closePopup();
+      });
+    }
+
+    // Auto-dismiss after 4.8s with smooth exit animation
+    setTimeout(closePopup, 4800);
   }
 }

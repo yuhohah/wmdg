@@ -58,6 +58,9 @@ export class GameStateManager {
   // 6 Sphere Satellite Nodes State
   public sphereSatellitesUnlocked: boolean[] = [false, false, false, false, false, false];
 
+  // Onboarding & Intro Sequence
+  public hasSeenIntro: boolean = false;
+
   constructor() {
     this.resetToDefaults();
   }
@@ -73,6 +76,7 @@ export class GameStateManager {
     this.bestRelicsToGet = 0;
     this.relicConvertCooldown = 0;
     this.sphereSatellitesUnlocked = [false, false, false, false, false, false];
+    this.hasSeenIntro = false;
 
     this.followers = initialFollowers.map((item) => ({ ...item }));
     this.fervorUpgrades = initialFervorUpgrades.map((u) => ({ ...u }));
@@ -171,6 +175,7 @@ export class GameStateManager {
     let prodMult = getFervorUpgradeMultiplier(this.fervorUpgrades[0]);
     const torchMult = 1 + (this.relicUpgrades[1].level * 0.20);
     prodMult *= torchMult;
+    prodMult *= this.getIncarnationStageMultiplier();
 
     let synergyMult = getFervorUpgradeMultiplier(this.fervorUpgrades[4], 0, this.faithPoints);
     if (this.relicUpgrades[2].level >= 1) {
@@ -366,7 +371,8 @@ export class GameStateManager {
         incarnationStage: this.incarnationStage,
         relicPoints: this.relicPoints,
         bestRelicsToGet: this.bestRelicsToGet,
-        incarnationBoostTimer: this.incarnationBoostTimer
+        incarnationBoostTimer: this.incarnationBoostTimer,
+        hasSeenIntro: this.hasSeenIntro
       },
       followers: this.followers.map((f) => ({ id: f.id, count: f.count })),
       fervorUpgrades: this.fervorUpgrades.map((u) => ({ id: u.id, level: u.level })),
@@ -384,12 +390,15 @@ export class GameStateManager {
     this.totalFaithAccumulated = typeof save.stats.totalFaithAccumulated === 'number' ? Math.max(1, save.stats.totalFaithAccumulated) : 1;
     this.totalClicks = typeof save.stats.totalClicks === 'number' ? Math.max(0, save.stats.totalClicks) : 0;
     this.fervorPoints = typeof save.stats.fervorPoints === 'number' ? Math.max(0, save.stats.fervorPoints) : 0;
-    this.incarnationStage = typeof save.stats.incarnationStage === 'number' ? Math.max(1, save.stats.incarnationStage) : 1;
+    this.incarnationStage = typeof save.stats.incarnationStage === 'number'
+      ? Math.min(INCARNATION_STAGES.length, Math.max(1, save.stats.incarnationStage))
+      : 1;
     this.relicPoints = typeof save.stats.relicPoints === 'number' ? Math.max(0, save.stats.relicPoints) : 0;
     this.bestRelicsToGet = typeof save.stats.bestRelicsToGet === 'number' ? Math.max(0, save.stats.bestRelicsToGet) : 0;
     this.incarnationBoostTimer = typeof save.stats.incarnationBoostTimer === 'number'
       ? Math.max(0, Math.min(this.MAX_INCARNATION_BOOST, save.stats.incarnationBoostTimer))
       : 0;
+    this.hasSeenIntro = typeof save.stats.hasSeenIntro === 'boolean' ? save.stats.hasSeenIntro : false;
 
     if (Array.isArray(save.followers)) {
       save.followers.forEach((savedItem) => {

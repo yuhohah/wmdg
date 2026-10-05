@@ -77,13 +77,13 @@ export class HUDController {
       this.fervorCounterEl.textContent = formatNumber(fervor);
     }
     if (this.fervorRateCounterEl) {
-      this.fervorRateCounterEl.textContent = `+${fervorRate.toFixed(1)} / seg`;
+      this.fervorRateCounterEl.textContent = `+${formatNumber(fervorRate)} / seg`;
     }
     if (this.fervorCounterHudEl) {
       this.fervorCounterHudEl.textContent = formatNumber(fervor);
     }
     if (this.fervorRateCounterHudEl) {
-      this.fervorRateCounterHudEl.textContent = `${fervorRate.toFixed(1)}/s`;
+      this.fervorRateCounterHudEl.textContent = `${formatNumber(fervorRate)}/s`;
     }
 
     const relic = Math.floor(this.gameState.relicPoints);
@@ -92,7 +92,7 @@ export class HUDController {
       this.relicCounterHudEl.textContent = formatNumber(relic);
     }
     if (this.relicRateCounterHudEl) {
-      this.relicRateCounterHudEl.textContent = `${relicRate.toFixed(1)}/s`;
+      this.relicRateCounterHudEl.textContent = `${formatNumber(relicRate)}/s`;
     }
   }
 }
