@@ -4,7 +4,7 @@ import { TooltipManager } from '../../ui/tooltips.js';
 import { NotificationManager } from '../../systems/notifications.js';
 import { RelicUpgrade } from '../../types.js';
 import { DISPLAY_CONFIG } from '../../config/display.js';
-import { calculateRelicsToGet, formatNumber } from '../../systems/calculations.js';
+import { formatNumber } from '../../systems/calculations.js';
 
 export interface RelicsTabOptions {
   gameState: GameStateManager;
@@ -153,7 +153,7 @@ export class RelicsTab {
   }
 
   public updateUI(): void {
-    const toGet = calculateRelicsToGet(this.options.gameState.faithPoints);
+    const toGet = this.options.gameState.getRelicsToGet();
     if (this.relicsToGetEl) {
       this.relicsToGetEl.textContent = formatNumber(toGet);
     }

@@ -56,6 +56,10 @@ export class FervorTab {
     const fervor = this.options.gameState.fervorPoints;
 
     this.options.gameState.fervorUpgrades.forEach((upg) => {
+      if (upg.id === 'fu_relics' && !this.options.gameState.isPhoenixRelicUnlocked()) {
+        return;
+      }
+
       const cost = calculateFervorUpgradeCost(upg);
       const mult = getFervorUpgradeMultiplier(upg, totalFollowers, faith);
       const canAfford = fervor >= cost;
@@ -111,6 +115,9 @@ export class FervorTab {
   public updateButtonStates(): void {
     const fervor = this.options.gameState.fervorPoints;
     this.options.gameState.fervorUpgrades.forEach((upg) => {
+      if (upg.id === 'fu_relics' && !this.options.gameState.isPhoenixRelicUnlocked()) {
+        return;
+      }
       const cost = calculateFervorUpgradeCost(upg);
       const card = document.getElementById(`card-${upg.id}`);
       if (card) {

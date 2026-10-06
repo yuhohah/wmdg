@@ -187,10 +187,10 @@ export function calculateMaxAffordableFollowers(
   return { count, totalCost };
 }
 
-export function calculateRelicsToGet(faith: number): number {
+export function calculateRelicsToGet(faith: number, relicBonusMult: number = 1.0): number {
   if (faith <= 0) return 0;
-  // Fórmula DodecaDragons: floor(log2(faith + 1)) (com 20.000.000 de Fé, rende 24 relíquias)
-  return Math.max(0, Math.floor(Math.log2(faith + 1)));
+  // Fórmula DodecaDragons: floor(log2(faith + 1) * relicBonusMult) (com 20.000.000 de Fé, rende 24 relíquias base)
+  return Math.max(0, Math.floor(Math.log2(faith + 1) * relicBonusMult));
 }
 
 export function calculateExtraRelicsPerSecond(bestRelics: number): number {

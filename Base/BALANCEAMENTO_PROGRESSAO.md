@@ -59,24 +59,25 @@ Considerando um jogador ativo com ritmo médio de clique (3 a 5 cliques por segu
 - **Veredito**: Muito fluido. O bônus de 2x incentiva a alternância de cliques entre a Esfera e o Avatar, acelerando o percurso até os 5.000 Fé de Fervor.
 
 ### 3.3. Ritos de Fervor (Fórmulas Oficiais DodecaDragons)
-- **Como está**: Desbloqueado por 5.000 Fé. Revela 5 melhorias com as fórmulas exatas de *Fire* de DodecaDragons:
+- **Como está**: Desbloqueado por 5.000 Fé. Revela inicialmente 5 melhorias (e um 6º rito desbloqueável via Relíquia) com as fórmulas exatas de *Fire* de DodecaDragons:
   1. `fu_prod` (Custo base 50 Fervor, ×1.8): $2^{\text{Nível}^{0.6}}$ multiplicando a produção de Fervor/s.
   2. `fu_effect` (Custo base 100 Fervor, ×2.0): $1.25^{\text{Nível}^{0.8}}$ multiplicando o bônus passivo de Fervor na Fé:
      $$\text{Bônus} = \left(\log_{10}\left(\frac{\text{Fervor}}{10} + 1\right) \times 2 + 1\right) \times 1.25^{\text{Nível}^{0.8}}$$
   3. `fu_click` (Custo base 100 Fervor, ×1.4): $(\text{Nível}^{2.6} \times 4) + 1$ Fé direta por clique.
   4. `fu_followers` (Custo base 500 Fervor, ×1.5): $\left(\frac{\text{Nível}^{1.5} \times \text{Fiéis}}{50}\right) + 1$ multiplicando a produção de todos os Fiéis.
   5. `fu_synergy` (Custo base 500 Fervor, ×2.5): $\left(\frac{\text{Nível}^{1.5} \times \log_{10}(\text{Fé} + 1)}{5}\right) + 1$ multiplicando o Fervor/s.
-- **Veredito**: A combinação de `fu_followers` e `fu_synergy` cria o ciclo virtuoso característico do DodecaDragons: mais fiéis geram mais fé; mais fé acelera exponencialmente o fervor através do log10; e mais fervor impulsiona a Fé rumo aos milhões.
+  6. `fu_relics` (Custo base 20.000.000 Fervor, ×5.0 — *desbloqueado pela Pena de Fênix*): $3^{\text{Nível}^{0.6}}$ multiplicando o ganho de Relíquias.
+- **Veredito**: A combinação de `fu_followers` e `fu_synergy` cria o ciclo virtuoso característico do DodecaDragons: mais fiéis geram mais fé; mais fé acelera exponencialmente o fervor através do log10; e mais fervor impulsiona a Fé rumo aos milhões. O 6º rito (`fu_relics`) fecha a ponte de retorno do late game entre Fervor e Alquimia de Relíquias.
 
 ### 3.4. Relíquias e Consagração (Meta: 20.000.000 Fé)
 - **Como está**: Desbloqueia com **20.000.000 Fé** (equivalente ao custo de `unlockAlchemy` em DodecaDragons: 2e7 Gold).
-  - A consagração utiliza a fórmula DodecaDragons: $\lfloor\log_2(\text{Fé} + 1)\rfloor$.
-  - Aos 20.000.000 Fé, uma consagração rende **24 Relíquias** (exatamente $\lfloor\log_2(20000001)\rfloor$).
+  - A consagração utiliza a fórmula DodecaDragons: $\lfloor\log_2(\text{Fé} + 1) \times \text{Multiplicador de Relíquias}\rfloor$.
+  - Aos 20.000.000 Fé, uma consagração rende **24 Relíquias** base (exatamente $\lfloor\log_2(20000001)\rfloor$).
   - O ganho passivo base é de **1.0 Relíquia / seg**.
   - Custos das Relíquias:
     - *Cornucópia*: 200 Relíquias (+20% Fé/s por nível, máx 20).
     - *Tocha*: 500 Relíquias (+20% Fervor/s por nível, máx 20).
-    - *Pena de Fênix*: 750 Relíquias (+50% bônus na sinergia de Fervor).
+    - *Pena de Fênix*: 750 Relíquias (Desbloqueia o 6º Rito de Fervor: `fu_relics`, multiplicando ganho de Relíquias).
     - *Báculo de Hermes*: 1.500 Relíquias (Desacelera escala de custo dos Fiéis).
     - *Draupnir*: 2.000 Relíquias (Gera relíquias passivamente baseadas na Fé).
     - *Arca da Aliança*: 15.000 Relíquias (Multiplicador exponencial de Fé por Relíquias).

@@ -32,7 +32,7 @@ export const initialRelicUpgrades: RelicUpgrade[] = [
     cost: 750,
     level: 0,
     maxLevel: 1,
-    effectText: (level) => level >= 1 ? 'Consagração Mística de Fervor Ativa' : 'Desbloqueia novo rito de Fervor (0/1)'
+    effectText: (level) => level >= 1 ? 'Rito de Relíquias Desbloqueado no Fervor' : 'Desbloqueia novo rito de Fervor (0/1)'
   },
   {
     id: 'relic_caduceus',

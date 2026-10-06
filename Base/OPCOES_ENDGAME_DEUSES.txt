@@ -1,0 +1,178 @@
+================================================================================
+          PROPOSTAS DE END-GAME: OS 6 DESAFIOS DOS DEUSES & ESFERA SUPREMA
+                            CULT OF THE SPHERE (WMDG)
+================================================================================
+
+Este documento reúne o planejamento de design e opções arquiteturais para o 
+end-game do jogo, integrando as 6 esferas orbitais ao redor da Esfera Divina 
+central através do desbloqueio em 1 Trilhão (1T) de Pontos.
+
+--------------------------------------------------------------------------------
+1. ESCLARECIMENTO SOBRE O REQUISITO DE DESBLOQUEIO (1T DE PF)
+--------------------------------------------------------------------------------
+
+No jogo existem dois recursos principais compatíveis com a sigla "PF":
+
+A) PONTOS DE FÉ (1.000.000.000.000 / 1e12 Fé):
+   - Momento: Pós-Relíquias (Cornucópia, Tocha, Arca da Aliança).
+   - Significado: Marco de transição onde a Fé acumulada atinge a escala dos 
+     trilhões e os deuses antigos tomam conhecimento do culto mortal.
+   - Vantagem: Momento ideal para abrir o End-Game sem travar o jogador por dias.
+
+B) PONTOS DE FERVOR (1.000.000.000.000 / 1e12 Fervor):
+   - Momento: Deep Late-Game, após liberar a Pena de Fênix e o 6º Rito de Fervor.
+   - Significado: O culto já atingiu uma intensidade de chama astronômica.
+   - Vantagem: Filtro extremo para jogadores que já exploraram quase tudo.
+
+RECOMENDAÇÃO:
+Utilizar 1T de Pontos de Fé como marco do Unlock ("O Despertar do Panteão" na 
+aba Unlocks), e utilizar Pontos de Fervor como recurso consumível/combustível 
+para iniciar cada rito de desafio contra os deuses.
+
+
+--------------------------------------------------------------------------------
+2. AS TRÊS ABORDAGENS DE DESIGN PARA OS DESAFIOS
+--------------------------------------------------------------------------------
+
+================================================================================
+OPÇÃO 1: DESAFIOS DE RESTRIÇÃO / REGRAS ESPECIAIS (Estilo Clássico Incremental)
+================================================================================
+Como Funciona:
+- Ao clicar em uma das 6 esferas desbloqueadas, o jogador entra em um "Reino Divino".
+- Durante o desafio, uma restrição severa é ativada (ex: produção passiva zerada,
+  ou custo dos devotos dobrado, ou tempo limite).
+- O objetivo é alcançar uma meta de Fé/Fervor sob essas condições adversas.
+- Ao vencer, a respectiva esfera orbital acende e concede um bônus passivo eterno.
+
+PONTOS POSITIVOS (PRÓS):
+[+] Facilidade de Implementação: Não requer sistemas complexos de combate em tempo
+    real, apenas modificadores matemáticos condicionais nas fórmulas existentes.
+[+] Puro DNA de Incremental Games: Fórmula comprovada e amada por jogadores de 
+    jogos como Antimatter Dimensions e DodecaDragons.
+[+] Estabilidade: Fácil de balancear e sem bugs visuais em mobile.
+
+PONTOS NEGATIVOS (CONTRAS):
+[-] Quebra de Ritmo: Jogadores casuais que gostam de deixar o jogo no automático
+    podem achar frustrante ter recursos congelados ou restritos.
+[-] Menos Apelo Visual: Falta a sensação cinematográfica de estar "lutando" contra
+    um chefe épico.
+
+
+================================================================================
+OPÇÃO 2: BOSS BATTLE INCREMENTAL EM TEMPO REAL (Combate de Culto / HP Divino)
+================================================================================
+Como Funciona:
+- Ao clicar na esfera orbital, abre-se uma tela/arena com o Deus Cósmico e uma barra
+  de vida gigantesca (ex: 1e15 HP Cósmico).
+- Sua Fé/s e cliques se transformam em "Poder de Ataque Espiritual" contra o chefe.
+- O Deus desfere contra-ataques a cada intervalo de tempo (ex: queima fiéis, sela 
+  temporariamente a Esfera, exige cliques rápidos para repelir ataques divinos).
+- Vitória: Derrotar o Deus antes que ele consuma a devoção ou antes do tempo acabar.
+
+PONTOS POSITIVOS (PRÓS):
+[+] Clímax e Emoção: Transforma o final do jogo em um espetáculo empolgante com 
+    sensação real de combate.
+[+] Valoriza Cliques Ativos: Dá grande protagonismo ao jogador presente na tela.
+[+] Recompensas Visuais: Boss morrendo com efeitos de explosão de partículas e som.
+
+PONTOS NEGATIVOS (CONTRAS):
+[-] Maior Complexidade de Código: Exige gerenciar timers, barra de HP, inteligência 
+    artificial/padrões de ataque do chefe e estados de falha/derrota.
+[-] Risco para Jogadores Idle: Exige presença ativa e reação rápida, afastando quem 
+    prefere jogar em segundo plano.
+
+
+================================================================================
+OPÇÃO 3 (RECOMENDADA): PROVAÇÕES DOS 6 DEUSES COM ILUMINAÇÃO ORBITAL HÍBRIDA
+================================================================================
+Como Funciona:
+- Cada uma das 6 esferas orbitais (I a VI) representa um Deus e um pilar do culto.
+- O jogador ativa o desafio com uma meta mística, combinando o melhor dos dois mundos:
+  metas incrementais claras + eventos visuais dinâmicos da divindade na Esfera.
+- A cada vitória:
+  1. O satélite perde o ícone de cadeado e ganha uma aura cintilante na órbita.
+  2. Um raio sagrado liga o satélite à Esfera central.
+  3. Desbloqueia um bônus permanente transformador.
+- Quando os 6 satélites estiverem conquistados, a Esfera central ascende para seu
+  estágio cósmico final (Omni-Sphere), concluindo o ciclo do jogo com prestígio total.
+
+PONTOS POSITIVOS (PRÓS):
+[+] Aproveita 100% o que já está construído: O layout já tem as 6 esferas com 
+    numerais romanos (I a VI), anéis de rotação CSS e sprites.
+[+] Recompensa Visual Gradual: O jogador vê a órbita da Esfera se transformando a 
+    cada Deus conquistado.
+[+] Equilíbrio Perfeito: Estratégico, satisfatório e narrativamente coerente com a lore.
+
+PONTOS NEGATIVOS (CONTRAS):
+[-] Exige definir cuidadosamente os 6 modificadores para que cada desafio seja único.
+
+
+--------------------------------------------------------------------------------
+3. PROPOSTA DE TEMATIZAÇÃO DOS 6 DEUSES (SATÉLITES I A VI)
+--------------------------------------------------------------------------------
+
+1. SATÉLITE I — AETHELGARD, DEUS DO SILÊNCIO
+   - Pilar: Cliques Sagrados
+   - Desafio: Fiéis Devotos produzem 0 Fé/s. Apenas Fé por clique manual conta.
+   - Meta: Acumular 500B de Fé manualmente.
+   - Recompensa ao Vencer: +100% de Fé por Clique permanente e chance de 15% 
+     de cliques dispararem Milagres Divinos automáticos.
+
+2. SATÉLITE II — PYROTH, O FORJADOR DAS CHAMAS
+   - Pilar: Fervor Cósmico
+   - Desafio: O ganho de Fervor drena constantemente a Fé acumulada.
+   - Meta: Manter 10B de Fervor enquanto resiste ao consumo de Fé.
+   - Recompensa ao Vencer: +500% de produção de Fervor/s permanente.
+
+3. SATÉLITE III — CHRONOS, O TECELÃO TEMPORAL
+   - Pilar: Velocidade e Tempo
+   - Desafio: Corrida contra o relógio: atingir 1T de Fé em menos de 3 minutos.
+   - Recompensa ao Vencer: Reduz pela metade todos os tempos de recarga 
+     (cooldown de consagração de Relíquias, buffs de Incarnation, etc.).
+
+4. SATÉLITE IV — MIDAS CÓSMICO, O AVARO DIVINO
+   - Pilar: Economia e Custos
+   - Desafio: Todos os custos de Fiéis e Upgrades escalam 3 vezes mais rápido.
+   - Meta: Conseguir reunir 100 Fiéis sob inflação divina cósmica.
+   - Recompensa ao Vencer: A produção de todos os Fiéis é multiplicada por x10.
+
+5. SATÉLITE V — THANATOS, O CEIFADOR DE ALMAS
+   - Pilar: Sacrifício e Morte
+   - Desafio: A cada 20 segundos, metade dos seus Fiéis é sacrificada.
+   - Meta: Conseguir acumular 5T de Fé com o culto sendo constantemente ceifado.
+   - Recompensa ao Vencer: Cada Fiel no culto agora concede um bônus passivo 
+     multiplicativo ao ganho de Relíquias.
+
+6. SATÉLITE VI — APEP, O VAZIO PRIMORDIAL (DESAFIO FINAL)
+   - Pilar: O Caos Supremo
+   - Desafio: Combinação de todos os 5 desafios anteriores atenuados.
+   - Meta: Atingir 10T de Fé enfrentando a escuridão absoluta.
+   - Recompensa ao Vencer: ASCENSÃO SUPREMA — A Esfera Divina central se torna 
+     a Omni-Sphere com um raio conectando todas as 6 esferas, multiplicando toda 
+     a geração global por x100 e desbloqueando o modo Transcendente.
+
+
+--------------------------------------------------------------------------------
+4. ROTEIRO DE IMPLEMENTAÇÃO TÉCNICA SUGERIDO
+--------------------------------------------------------------------------------
+
+Etapa 1: Desbloqueio
+- Adicionar o item 'unlock_pantheon_challenges' em src/config/unlocks.ts (Custo 1T).
+- Ao ser comprado, altera o estado no GameState para liberar os nós de desafio.
+
+Etapa 2: Configuração dos Deuses
+- Criar src/config/gods.ts com os dados dos 6 deuses (nome, lore, debuff, meta, recompensa).
+
+Etapa 3: Interface e Modal
+- Integrar o clique em cada satélite (SphereController.ts) para abrir um modal 
+  especial de "Desafio Divino" mostrando a arte do Deus, o debuff e o botão de Iniciar.
+
+Etapa 4: Lógica do Desafio (GameState)
+- Adicionar no GameState o estado de desafio ativo (activeGodChallengeId).
+- Aplicar os modificadores no motor de cálculos (calculations.ts).
+- Detectar vitória, salvar progresso e marcar o satélite como 'state-conquered'.
+
+Etapa 5: Efeitos Visuais
+- Atualizar src/styles/sphere.css para animar os satélites conquistados com 
+  auras radiantes e raios de conexão até o núcleo da Esfera.
+================================================================================

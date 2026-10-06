@@ -123,6 +123,7 @@ class AppManager {
       onRelicsTransmuted: () => events.emit(GameEvents.STATE_CHANGED),
       onUpgradePurchased: () => {
         events.emit(GameEvents.STATE_CHANGED);
+        this.fervorTab.renderList();
         this.fervorTab.updateButtonStates();
       }
     });
@@ -317,7 +318,12 @@ class AppManager {
     // Update mobile navigation notification dots
     const devotee = this.gameState.followers[0];
     const canBuyDevotee = devotee ? this.gameState.faithPoints >= this.gameState.getItemCost(devotee) : false;
-    const canBuyFervor = this.gameState.isFervorUpgradesUnlocked() && this.gameState.fervorUpgrades.some(u => this.gameState.fervorPoints >= calculateFervorUpgradeCost(u));
+    const canBuyFervor = this.gameState.isFervorUpgradesUnlocked() && this.gameState.fervorUpgrades.some(u => {
+      if (u.id === 'fu_relics' && !this.gameState.isPhoenixRelicUnlocked()) {
+        return false;
+      }
+      return this.gameState.fervorPoints >= calculateFervorUpgradeCost(u);
+    });
     const nextIncStage = INCARNATION_STAGES.find(s => s.stage === this.gameState.incarnationStage + 1);
     const canEvolveInc = this.gameState.isIncarnationUnlocked() && nextIncStage ? this.gameState.faithPoints >= nextIncStage.cost : false;
     const hasDevoteesAlert = canBuyDevotee || canBuyFervor || canEvolveInc;

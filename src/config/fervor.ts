@@ -52,6 +52,16 @@ export const initialFervorUpgrades: FervorUpgrade[] = [
     baseCost: 500,
     costMultiplier: 2.5,
     level: 0
+  },
+  {
+    id: 'fu_relics',
+    name: 'Aumentar Ganho de Relíquias',
+    desc: 'A chama ardente consagra a devoção do culto, multiplicando a quantidade de Relíquias obtidas.',
+    lore: 'A luz eterna da Fênix funde as preces terrenas com o éter divino, forjando relíquias em profusão.',
+    icon: '',
+    baseCost: 20000000,
+    costMultiplier: 5.0,
+    level: 0
   }
 ];
 
@@ -83,6 +93,10 @@ export function getFervorUpgradeMultiplier(
       // DodecaDragons FU5: ((level ^ 1.5) * log10(gold + 1) / 5) + 1
       return (Math.pow(upg.level, 1.5) * Math.log10(Math.max(0, faithPoints) + 1) / 5) + 1;
 
+    case 'fu_relics':
+      // DodecaDragons FU6: 3 ^ (level ^ 0.6)
+      return Math.pow(3, Math.pow(upg.level, 0.6));
+
     default:
       return 1.0;
   }
@@ -100,6 +114,8 @@ export function getFervorUpgradeFormula(upg: FervorUpgrade): string {
       return '((Nível^1.5 × Fiéis) / 50) + 1';
     case 'fu_synergy':
       return '((Nível^1.5 × log10(Fé + 1)) / 5) + 1';
+    case 'fu_relics':
+      return '3^(Nível^0.6)';
     default:
       return '1.0';
   }

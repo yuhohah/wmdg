@@ -116,6 +116,20 @@ export class GameStateManager {
     return this.unlocks.find((u) => u.id === 'unlock_relics')?.unlocked ?? false;
   }
 
+  public isPhoenixRelicUnlocked(): boolean {
+    return (this.relicUpgrades.find((r) => r.id === 'relic_phoenix')?.level ?? 0) >= 1;
+  }
+
+  public getRelicsBonusMultiplier(): number {
+    const fuRelics = this.fervorUpgrades.find((u) => u.id === 'fu_relics');
+    if (!fuRelics || fuRelics.level <= 0) return 1.0;
+    return getFervorUpgradeMultiplier(fuRelics);
+  }
+
+  public getRelicsToGet(): number {
+    return calculateRelicsToGet(this.faithPoints, this.getRelicsBonusMultiplier());
+  }
+
   public getIncarnationStageMultiplier(): number {
     const st = INCARNATION_STAGES.find((s) => s.stage === this.incarnationStage);
     return st ? st.multiplier : 1;
@@ -189,7 +203,7 @@ export class GameStateManager {
     const extraPerSec = calculateExtraRelicsPerSecond(this.bestRelicsToGet);
     let autoGen = 0;
     if (this.relicUpgrades[4]?.level >= 1) {
-      const toGet = calculateRelicsToGet(this.faithPoints);
+      const toGet = this.getRelicsToGet();
       autoGen = toGet * 0.05;
     }
     return Math.max(1.0, extraPerSec) + autoGen;
@@ -282,6 +296,9 @@ export class GameStateManager {
   }
 
   public buyFervorUpgrade(upg: FervorUpgrade): boolean {
+    if (upg.id === 'fu_relics' && !this.isPhoenixRelicUnlocked()) {
+      return false;
+    }
     const cost = calculateFervorUpgradeCost(upg);
     if (this.fervorPoints >= cost) {
       this.fervorPoints -= cost;
@@ -307,7 +324,7 @@ export class GameStateManager {
   }
 
   public convertFaithToRelics(): { gained: number; success: boolean } {
-    const toGet = calculateRelicsToGet(this.faithPoints);
+    const toGet = this.getRelicsToGet();
     if (this.relicConvertCooldown > 0 || toGet <= 0) {
       return { gained: 0, success: false };
     }
