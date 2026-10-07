@@ -28,7 +28,10 @@
   --ring-2-size: clamp(210px, 56vw, 290px);
   --satellites-orbit-size: clamp(230px, 60vw, 320px);
   --satellite-node-size: clamp(38px, 9.5vw, 46px);
-  --satellite-offset: clamp(-110px, -29vw, -155px);
+  /* Distância entre a borda da Esfera e a borda dos satélites */
+  --satellite-gap: 14px;
+  /* Raio da órbita derivado da Esfera: nunca invade a imagem, em qualquer tela */
+  --satellite-offset: calc(-1 * (var(--sphere-size) / 2 + var(--satellite-node-size) / 2 + var(--satellite-gap)));
 }
 
 * {

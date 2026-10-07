@@ -58,7 +58,7 @@
   width: var(--sphere-size);
   height: var(--sphere-size);
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #d4d4d8 20%, #71717a 50%, #27272a 80%, #09090b 100%);
+  background: url('/assets/sphere_base.png') center / cover no-repeat;
   box-shadow: 0 0 35px rgba(255, 255, 255, 0.25), inset 0 0 25px rgba(255, 255, 255, 0.4);
   border: 3px solid var(--border-light);
   cursor: pointer;

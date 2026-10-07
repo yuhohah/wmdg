@@ -200,6 +200,10 @@ export class GameStateManager {
   }
 
   public getRelicsRatePerSecond(): number {
+    if (!this.isRelicsUnlocked()) {
+      return 0;
+    }
+
     const extraPerSec = calculateExtraRelicsPerSecond(this.bestRelicsToGet);
     let autoGen = 0;
     if (this.relicUpgrades[4]?.level >= 1) {
@@ -325,7 +329,7 @@ export class GameStateManager {
 
   public convertFaithToRelics(): { gained: number; success: boolean } {
     const toGet = this.getRelicsToGet();
-    if (this.relicConvertCooldown > 0 || toGet <= 0) {
+    if (!this.isRelicsUnlocked() || this.relicConvertCooldown > 0 || toGet <= 0) {
       return { gained: 0, success: false };
     }
 
@@ -448,6 +452,12 @@ export class GameStateManager {
       this.unlocks.forEach((u) => {
         u.unlocked = save.unlocks.includes(u.id);
       });
+    }
+
+    // Saves antigos geravam relíquias antes do desbloqueio; descarta esse saldo indevido
+    if (!this.isRelicsUnlocked()) {
+      this.relicPoints = 0;
+      this.bestRelicsToGet = 0;
     }
 
     if (Array.isArray(save.achievements)) {

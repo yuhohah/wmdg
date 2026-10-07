@@ -1,4 +1,4 @@
-import type { BuyableItem, FervorUpgrade, Achievement } from '../types.js';
+import type { BuyableItem, FervorUpgrade, Achievement, BuffType } from '../types.js';
 
 export function calculateItemCost(
   item: BuyableItem,
@@ -17,20 +17,32 @@ export function calculateFervorUpgradeCost(upg: FervorUpgrade): number {
   return Math.floor(upg.baseCost * Math.pow(upg.costMultiplier, upg.level));
 }
 
-export function calculateClickBuffMultiplier(_achievements: Achievement[]): number {
-  return 1.0;
+// Bônus de conquistas somam dentro da mesma categoria (ex: +10% e +20% de clique = +30%),
+// e categorias diferentes se multiplicam entre si (clique × global, passiva × global).
+const MAX_ACHIEVEMENT_COST_DISCOUNT = 0.5;
+
+function sumAchievementBuffs(achievements: Achievement[], type: BuffType): number {
+  return achievements.reduce(
+    (acc, ach) => (ach.unlocked && ach.buffType === type ? acc + ach.buffVal : acc),
+    0
+  );
 }
 
-export function calculatePassiveBuffMultiplier(_achievements: Achievement[]): number {
-  return 1.0;
+export function calculateClickBuffMultiplier(achievements: Achievement[]): number {
+  return 1 + sumAchievementBuffs(achievements, 'fpc_mult');
 }
 
-export function calculateGlobalBuffMultiplier(_achievements: Achievement[]): number {
-  return 1.0;
+export function calculatePassiveBuffMultiplier(achievements: Achievement[]): number {
+  return 1 + sumAchievementBuffs(achievements, 'fps_mult');
 }
 
-export function calculateCostDiscountMultiplier(_achievements: Achievement[]): number {
-  return 1.0;
+export function calculateGlobalBuffMultiplier(achievements: Achievement[]): number {
+  return 1 + sumAchievementBuffs(achievements, 'global_mult');
+}
+
+export function calculateCostDiscountMultiplier(achievements: Achievement[]): number {
+  const discount = Math.min(MAX_ACHIEVEMENT_COST_DISCOUNT, sumAchievementBuffs(achievements, 'cost_discount'));
+  return 1 - discount;
 }
 
 export function calculateIncarnationFollowerMultiplier(fervorPoints: number, stage: number): number {
@@ -62,7 +74,8 @@ export function calculateFaithPerClick(
 ): number {
   const base = 1;
   const fpc = base * clickBuffMult * globalBuffMult * fervorClickMult * fervorFaithBonus;
-  return Math.max(1, Math.floor(fpc));
+  // Sem arredondar para baixo: senão bônus pequenos (+10%, +20%) sumiriam no início do jogo
+  return Math.max(1, fpc);
 }
 
 export function calculateFaithPerSecond(
