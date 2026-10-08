@@ -93,6 +93,21 @@ describe('church scene description', () => {
   });
 });
 
+describe('protagonist', () => {
+  it('is O Escolhido (look 0) before the Selo da Encarnação, even though the Encarnação stage reads 1', () => {
+    expect(describeChurchScene(start).protagonist).toEqual({ look: 0, label: 'O Escolhido' });
+  });
+
+  it('stays O Escolhido before the Selo whatever the Encarnação stage reads', () => {
+    expect(describeChurchScene({ ...start, incarnationStage: 4 }).protagonist).toEqual({ look: 0, label: 'O Escolhido' });
+  });
+
+  it.each([1, 2, 3, 4, 5])('is O Profeta with the matching look at Encarnação stage %i once the Selo is broken', stage => {
+    expect(describeChurchScene({ ...withSelos(true, false, false), incarnationStage: stage }).protagonist)
+      .toEqual({ look: stage, label: 'O Profeta' });
+  });
+});
+
 describe('church scene comparison', () => {
   const scene = (incarnation: boolean, fervor: boolean, relics: boolean) => describeChurchScene(withSelos(incarnation, fervor, relics));
 
@@ -106,8 +121,19 @@ describe('church scene comparison', () => {
     expect(compareChurchScenes(before, after)).toEqual([]);
   });
 
+  it('reports the tier change and O Escolhido becoming O Profeta when the Selo da Encarnação is broken', () => {
+    expect(compareChurchScenes(scene(false, false, false), scene(true, false, false))).toEqual([
+      { kind: 'tier', from: 0, to: 1 },
+      { kind: 'look', from: 0, to: 1 }
+    ]);
+  });
+
+  it.each([1, 2, 3, 4])('reports exactly the look change when the Encarnação advances from stage %i', stage => {
+    const at = (incarnationStage: number) => describeChurchScene({ ...withSelos(true, false, false), incarnationStage });
+    expect(compareChurchScenes(at(stage), at(stage + 1))).toEqual([{ kind: 'look', from: stage, to: stage + 1 }]);
+  });
+
   it.each([
-    [scene(false, false, false), scene(true, false, false), 0, 1],
     [scene(true, false, false), scene(true, true, false), 1, 2],
     [scene(true, true, false), scene(true, true, true), 2, 3]
   ])('reports exactly the tier change when a Selo is broken (%#)', (previous, next, from, to) => {

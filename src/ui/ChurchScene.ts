@@ -1,8 +1,8 @@
 import { GameStateManager } from '../core/GameState.js';
 import { events, GameEvents } from '../core/EventBus.js';
 import { formatNumber } from '../systems/calculations.js';
-import { compareChurchScenes, describeChurchScene, type ChurchSceneDescription, type ChurchSnapshot, type ChurchTier, type RestoredTier } from '../features/church/churchScene.js';
-import { CHURCH_DETAILS, RESTORATION_NOTICES, type ChurchDetail, type ChurchNotice } from '../config/church.js';
+import { compareChurchScenes, describeChurchScene, describeProtagonist, type ChurchSceneDescription, type ChurchSnapshot, type ChurchTier, type ProfetaLook, type ProtagonistLook, type RestoredTier } from '../features/church/churchScene.js';
+import { CHURCH_DETAILS, PROFETA_NOTICES, RESTORATION_NOTICES, type ChurchDetail, type ChurchNotice } from '../config/church.js';
 import { isArtReview } from './artReview.js';
 import { paintPixelSphere } from './pixelSphere.js';
 import { STAGE_SIZE } from '../features/church/churchConfig.js';
@@ -49,6 +49,7 @@ const PROP_SCALE = 0.5;
 const DETAIL_SPARKLES: StagePoint[] = [[-2, -3], [2, -6], [0, -10]];
 
 const TRANSITION_MS = 1400;
+const LOOK_TRANSITION_MS = 1200;
 const SPARKLE_STAGGER_MS = 90;
 /** Sparkles start once the dust cloud has risen over the old background. */
 const SPARKLE_START_MS = 300;
@@ -72,6 +73,7 @@ export class ChurchScene {
   private reviewTier: ChurchTier | null = null;
   private reviewFollowers: number | null = null;
   private props = new Map<ChurchDetail, HTMLImageElement[]>();
+  private reviewLook: ProtagonistLook | null = null;
   private pulseTimer: number | undefined;
   private miracleTimer: number | undefined;
   private pleaCooldown = 5;
@@ -88,6 +90,9 @@ export class ChurchScene {
   private sphere = document.getElementById('church-sphere') as HTMLButtonElement;
   private blessing = document.getElementById('church-blessing') as HTMLButtonElement;
   private blessingLabel = document.getElementById('church-blessing-label')!;
+  private protagonist = document.getElementById('church-protagonist')!;
+  private protagonistStrip = document.getElementById('church-protagonist-strip') as HTMLImageElement;
+  private protagonistLabel = document.getElementById('church-protagonist-label')!;
 
   constructor(
     private gameState: GameStateManager,
@@ -120,6 +125,9 @@ export class ChurchScene {
       this.setReviewFollowers(4);
       document.querySelectorAll<HTMLButtonElement>('[data-art-details]').forEach(button => {
         button.addEventListener('click', () => this.setArtDetails(Number(button.dataset.artDetails)));
+      });
+      document.querySelectorAll<HTMLButtonElement>('[data-art-look]').forEach(button => {
+        button.addEventListener('click', () => this.setArtLook(button.dataset.artLook === 'auto' ? null : Number(button.dataset.artLook) as ProtagonistLook));
       });
       this.setArtScene('tier-0');
     }
@@ -232,6 +240,15 @@ export class ChurchScene {
     this.background.after(...props.sort((a, b) => a.top - b.top).map(({ prop }) => prop));
   }
 
+  /** Steps through the protagonist looks independently of the church tier; `null` follows the reviewed tier again. */
+  private setArtLook(look: ProtagonistLook | null): void {
+    document.querySelectorAll<HTMLButtonElement>('[data-art-look]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.artLook === (look === null ? 'auto' : String(look))));
+    });
+    this.reviewLook = look;
+    this.sync();
+  }
+
   private sync(): void {
     const snapshot = churchSnapshot(this.gameState);
     if (this.reviewTier !== null) {
@@ -239,6 +256,9 @@ export class ChurchScene {
     }
     if (this.reviewFollowers !== null) snapshot.followers = this.reviewFollowers;
     const next = describeChurchScene(snapshot);
+    if (this.reviewLook !== null) {
+      next.protagonist = describeProtagonist(this.reviewLook > 0, this.reviewLook);
+    }
     document.getElementById('church-count')!.textContent = `${formatNumber(snapshot.followers)} fiéis`;
     this.blessing.hidden = !next.blessing.visible;
     this.blessing.style.setProperty('--blessing-fill', String(next.blessing.fill));
@@ -253,8 +273,8 @@ export class ChurchScene {
     }
     // The first build (page load) has nothing to compare against, so it never replays a transition.
     const changes = this.scene ? compareChurchScenes(this.scene, next) : [];
-    // Ticks resync constantly; skip the redraw unless something drawn differs (losing a detail is no reported change).
-    if (this.scene && this.scene.tier === next.tier && this.scene.details.join() === next.details.join()) {
+    // Ticks resync constantly; skip the redraw unless something drawn differs (losing a detail or look is no reported change).
+    if (this.scene && this.scene.tier === next.tier && this.scene.details.join() === next.details.join() && this.scene.protagonist.look === next.protagonist.look) {
       this.scene = next;
       return;
     }
@@ -268,6 +288,10 @@ export class ChurchScene {
         this.props.get(change.detail)!.forEach(prop => prop.classList.add('church-prop-new'));
         this.playSparkles(DETAIL_PROPS[change.detail].spots.flatMap(([left, top]) => DETAIL_SPARKLES.map(([dx, dy]): StagePoint => [left + dx, top + dy])));
         this.announce(CHURCH_DETAILS.find(({ detail }) => detail === change.detail)!.notice, 'OFERENDA DOS FIÉIS');
+      } else if (change.kind === 'look' && change.to > change.from) {
+        // Going up means the target is always an O Profeta look.
+        this.playTransformation();
+        this.announce(PROFETA_NOTICES[change.to as ProfetaLook], 'TRANSFORMAÇÃO');
       }
     }
     this.scene = next;
@@ -278,6 +302,9 @@ export class ChurchScene {
       const unlocked = next.details.includes(detail);
       props.forEach(prop => { prop.hidden = !unlocked; });
     }
+    this.protagonist.dataset.look = String(next.protagonist.look);
+    this.protagonistStrip.src = `/assets/church/protagonist/look-${next.protagonist.look}-idle.png`;
+    this.protagonistLabel.textContent = next.protagonist.label;
     const text = TIER_TEXT[next.tier];
     document.getElementById('church-title')!.textContent = text.title;
     document.getElementById('church-status')!.textContent = text.status;
@@ -316,6 +343,22 @@ export class ChurchScene {
     });
     this.stage.append(...sparkles);
     window.setTimeout(() => sparkles.forEach(node => node.remove()), TRANSITION_MS + sparkles.length * SPARKLE_STAGGER_MS);
+  }
+
+  /** Holds the old look under a burst of light while the new one fades in. */
+  private playTransformation(): void {
+    const outgoing = this.protagonistStrip.cloneNode() as HTMLImageElement;
+    outgoing.removeAttribute('id');
+    outgoing.classList.add('protagonist-strip-outgoing');
+    this.protagonistStrip.after(outgoing);
+    this.protagonist.classList.remove('transforming');
+    // Restart the glow animation when looks change in quick succession (art-review stepping).
+    void this.protagonist.offsetWidth;
+    this.protagonist.classList.add('transforming');
+    window.setTimeout(() => {
+      outgoing.remove();
+      this.protagonist.classList.remove('transforming');
+    }, LOOK_TRANSITION_MS);
   }
 
   private pulse(): void {

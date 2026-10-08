@@ -111,6 +111,17 @@
 .faith-response .church-blessing { filter:brightness(1.35) drop-shadow(0 0 6px #f3d392); }
 .church-blessing:active { transform:translateY(1px); box-shadow:0 1px #1a120c; }
 .church-blessing:focus-visible { outline:2px solid #edc886; outline-offset:3px; }
+/* The protagonist stands right of the altar, mirrored to face the Esfera; feet sit 4px above the 72px canvas bottom. */
+.church-protagonist { position:absolute; left:40%; bottom:28.5%; height:19%; aspect-ratio:64 / 72; transform:translateX(-50%); z-index:2; pointer-events:none; }
+.protagonist-viewport { position:absolute; inset:0; overflow:hidden; transform:scaleX(-1); }
+.protagonist-strip { position:absolute; top:0; left:0; display:block; height:100%; width:1600%; max-width:none; image-rendering:pixelated; animation:walk-frames 2400ms steps(16,end) infinite; }
+.protagonist-label { position:absolute; top:calc(100% - 2px); left:50%; transform:translateX(-50%); color:#e2c084; font:clamp(16px, 4.4cqh, 22px)/1 var(--font-game); letter-spacing:1px; white-space:nowrap; text-shadow:0 1px #11131a, 0 0 4px #11131a; }
+.church-protagonist[data-look='5'] .protagonist-viewport { filter:drop-shadow(0 0 3px #f3d392aa); }
+.protagonist-strip-outgoing { animation:walk-frames 2400ms steps(16,end) infinite, church-fade-out 900ms var(--ease-out) forwards; }
+.church-protagonist.transforming .protagonist-strip:not(.protagonist-strip-outgoing) { animation:walk-frames 2400ms steps(16,end) infinite, protagonist-fade-in 900ms var(--ease-out) both; }
+.church-protagonist.transforming::before { content:''; position:absolute; inset:-30% -60%; z-index:-1; background:radial-gradient(ellipse at 50% 60%, #f6dc9ccc, #e9be7255 40%, transparent 70%); animation:protagonist-glow 1200ms var(--ease-out) forwards; }
+@keyframes protagonist-fade-in { from { opacity:0; } to { opacity:1; } }
+@keyframes protagonist-glow { 0% { opacity:0; transform:scale(.6); } 35% { opacity:1; transform:scale(1); } 100% { opacity:0; transform:scale(1.15); } }
 .church-world .ritual-sigil { left:23%; bottom:16%; }
 .church-followers { position:absolute; inset:0; z-index:3; pointer-events:none; }
 .church-follower { position:absolute; width:8%; aspect-ratio:64 / 72; transform:translate(-50%,-94.4%); }
@@ -214,6 +225,8 @@
   .church-blessing-fill { transition:none; }
   .church-dust,.church-sparkle { display:none; }
   .church-prop-new { animation:none; }
+  .protagonist-strip { animation:none!important; }
+  .protagonist-strip-outgoing { display:none; }
   .church-background-outgoing,.church-backdrop-outgoing { animation-duration:200ms!important; }
   .walk-ready > .walk-viewport { display:none; }
   .walk-ready > img { opacity:1; }

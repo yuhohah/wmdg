@@ -1,0 +1,90 @@
+{
+  "generator": "PixelLab via Executor",
+  "frameWidth": 64,
+  "frameHeight": 72,
+  "frameCount": 16,
+  "layout": "horizontal",
+  "playback": "Ping-pong of the 9 animate_image frames (0–8, then 7–1) so each idle loops seamlessly",
+  "feetLine": "Feet at y=68, matching procession/walk",
+  "chain": "look-0 is the leftmost figure of the PRD reference art; each later still is an edit_image of the previous look; each idle is animate_image (frame_count 8) of its still",
+  "idleAction": "A seamless looping idle prayer in place, facing right: gentle breathing, shoulders rise and fall slightly, praying hands held together at the chest with a subtle bow of the head. Preserve the exact character identity, outfit, colors and pixel art style. Keep centered and on the same ground line, feet planted. No walking, turning, camera movement or scenery. End on the starting pose.",
+  "jobs": [
+    {
+      "name": "reference",
+      "tool": "unzoom_image",
+      "jobId": "db3bfbfc-06a0-4458-aa83-a20f0b0413ae",
+      "source": "Crop of the leftmost figure (O Escolhido) in the PRD #18 reference art",
+      "status": "intermediate"
+    },
+    {
+      "name": "look-0",
+      "tool": "edit_image",
+      "mode": "reference",
+      "source": "procession/prophet.png centered on the 64×72 canvas at (7,4), with the unzoomed reference as reference_image",
+      "jobId": "27906d69-f8f7-42d9-bb1c-307d251e2155",
+      "seed": 22,
+      "prompt": "Replace the hooded red prophet with the character from the reference image: a humble youth with shoulder-length brown hair and a visible face, wearing a plain white linen robe tied with a thin brown cord belt and brown shoes, hands pressed together in prayer at the chest. Facing right, standing still. Slightly shorter than the prophet (a youth). Same chunky pixel art style, dark outline, same canvas and feet on the same ground line. Transparent background.",
+      "status": "intermediate"
+    },
+    {
+      "name": "look-1",
+      "tool": "edit_image",
+      "source": "look-0",
+      "jobId": "9010fb0e-100d-4342-afd6-8d73fb8c47fb",
+      "seed": 23,
+      "prompt": "Add a narrow dark crimson-red cloth stole draped over both shoulders and hanging down the front of the white robe, and a small round bronze medallion on a cord at the chest. Keep the same youth, same brown hair and visible face, same white robe, same praying hands, same pose facing right, same size and feet position, same pixel art style. Transparent background.",
+      "status": "intermediate"
+    },
+    {
+      "name": "look-2",
+      "tool": "edit_image",
+      "source": "look-1",
+      "jobId": "8f1eccb3-b9eb-4846-9d1c-68654c5e5423",
+      "seed": 24,
+      "prompt": "Replace the stole with a dark crimson-red open mantle (cloak) worn over the white robe, with thin gold trim along its edges, and a lowered crimson hood resting on the back of the shoulders. The white robe still shows at the front. Keep the same youth, same brown hair and visible face, same bronze medallion, same praying hands, same pose facing right, same size and feet position, same pixel art style. Transparent background.",
+      "status": "intermediate"
+    },
+    {
+      "name": "look-3",
+      "tool": "edit_image",
+      "source": "look-2",
+      "jobId": "e30acd1b-a484-4956-800a-2652cde66ff2",
+      "seed": 25,
+      "prompt": "Raise the crimson hood up over the head so it covers the brown hair, with gold trim around the hood opening; the face is still visible but partly in shadow under the hood. The white robe is replaced by a full-length dark crimson-red robe with gold trim at the hem and cuffs, tied with a dark belt; the bronze medallion becomes a gold medallion at the chest. Keep the same character, same praying hands, same pose facing right, same size and feet position, same pixel art style. Transparent background.",
+      "status": "intermediate"
+    },
+    {
+      "name": "look-4",
+      "tool": "edit_image",
+      "source": "look-3",
+      "jobId": "3f6d3c08-c677-437f-ab82-087d82dcee7f",
+      "seed": 26,
+      "prompt": "Turn this character into the hooded red prophet: the face inside the hood becomes completely black shadow with only two small glowing yellow eyes, the hood is larger and pointed, the robe is the same deep red with gold trim and a gold sun medallion on the chest, dark gloves. Keep the praying hands, the pose facing right, the same size and feet position and the same pixel art style. Transparent background.",
+      "status": "intermediate"
+    },
+    {
+      "name": "look-5-draft",
+      "tool": "edit_image",
+      "source": "look-4",
+      "jobId": "861c4879-017a-471c-8e84-a1e4b9808376",
+      "seed": 27,
+      "prompt": "Make this hooded prophet radiant and solar: the robe and hood turn luminous ivory-white and gold with bright gold trim, the shadow inside the hood is filled with warm golden light with two bright white glowing eyes, a thin ring of golden light (halo) behind the hood, and a soft golden glow outline around the figure. Keep the same hood shape, the same praying hands, the same pose facing right, the same size and feet position and the same pixel art style. Transparent background.",
+      "status": "intermediate"
+    },
+    {
+      "name": "look-5",
+      "tool": "edit_image",
+      "source": "look-5-draft",
+      "jobId": "296bf0a9-9075-4c29-80df-ca4efda0b4ab",
+      "seed": 28,
+      "prompt": "Change the black gloves on the praying hands to shining gold gloves, and make the brown shoes gold. Keep everything else exactly the same: same ivory-white and gold hooded robe, same glowing golden face with white eyes, same pose facing right, same size and feet position, same pixel art style. Transparent background.",
+      "status": "intermediate"
+    },
+    { "name": "look-0-idle", "tool": "animate_image", "source": "look-0", "jobId": "c94c3e16-c099-48a3-92df-91dd3d850777", "seed": 30, "status": "saved" },
+    { "name": "look-1-idle", "tool": "animate_image", "source": "look-1", "jobId": "77f4f167-6435-43cf-a839-73a6d7b80766", "seed": 31, "status": "saved" },
+    { "name": "look-2-idle", "tool": "animate_image", "source": "look-2", "jobId": "5762f811-53af-4d06-be72-36e985fd9ca4", "seed": 32, "status": "saved" },
+    { "name": "look-3-idle", "tool": "animate_image", "source": "look-3", "jobId": "8d217c16-9288-4c0f-9a7e-8297ea4f5f98", "seed": 33, "status": "saved" },
+    { "name": "look-4-idle", "tool": "animate_image", "source": "look-4", "jobId": "0d8b01f6-6f39-47cc-881e-88cf8ae72a94", "seed": 34, "status": "saved" },
+    { "name": "look-5-idle", "tool": "animate_image", "source": "look-5", "jobId": "5c687906-e3d8-4006-ad6e-80e7aeb0d0fa", "seed": 35, "status": "saved" }
+  ]
+}
