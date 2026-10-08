@@ -62,8 +62,8 @@ export const CROWD_LEVELS = [
 
 /**
  * The crowd stands on the hill top along this line, just behind the yard spots, and
- * clear of the altar so the Esfera and miracle requests stay visible. Feet stay above the
- * wide-screen crop at y 153.
+ * clear of the altar so the Esfera and miracle requests stay visible. Feet stay above y 152,
+ * the line the stage never crops below.
  */
 export const CROWD_AREA = {
   ground: [
