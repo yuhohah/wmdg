@@ -141,7 +141,7 @@
 /* Tier restoration: the old tier fades out through dust while sparkles mark the restored parts. */
 .church-background-outgoing { z-index:1; animation:church-fade-out 1100ms var(--ease-out) forwards; }
 .church-backdrop-outgoing { animation:church-fade-out 1100ms var(--ease-out) forwards; }
-.church-dust { position:absolute; inset:10% 20% 8% 20%; z-index:1; pointer-events:none; background:radial-gradient(ellipse at 50% 60%, #b9a58a99, #8a7a6655 45%, transparent 70%); filter:blur(6px); opacity:0; animation:church-dust 1300ms ease-out forwards; }
+.church-dust { position:absolute; inset:10% 20% 8% 20%; z-index:2; pointer-events:none; background:radial-gradient(ellipse at 50% 60%, #b9a58a99, #8a7a6655 45%, transparent 70%); filter:blur(6px); opacity:0; animation:church-dust 1300ms ease-out forwards; }
 /* Props draw over the yard (z 3) so a crowd of followers never buries them. */
 .church-prop { position:absolute; z-index:4; transform:translate(-50%,-100%); image-rendering:pixelated; pointer-events:none; }
 .church-prop[hidden] { display:none; }

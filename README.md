@@ -139,6 +139,8 @@ Artwork is in `public/assets/procession/`: the supplied Prophet and follower-rol
 
 The church-yard followers' idle and pray loops are in `public/assets/church/followers/`, generated with PixelLab `animate_image` from each follower's standing pose; `manifest.json` there records every job ID and prompt.
 
+The silhouette crowd behind the yard is one PixelLab sheet in `public/assets/church/crowd/`, laid out with a fixed seed so it looks the same on every load; its `manifest.json` records the job. It thickens at the follower counts in `CROWD_LEVELS` (`src/features/church/churchConfig.ts`), and the art-review MULTIDÃO buttons step through them.
+
 Approval checks: distinguish the Prophet, roles and Sphere stages at desktop size; read totals and frequent actions immediately; keep the full entourage legible; match nearby scenery to the character pixel scale; and make the later ritual disturbing without explicit gore. Desktop layouts are checked at 1440×900 and 1280×720.
 
 Add `&all-tabs=1` to either art-review URL to inspect all six tabs and Status in Settings with disposable sample currencies. This mode does not load or write your saved game.

@@ -45,25 +45,31 @@ export const FOLLOWER_SPOTS: readonly FollowerSpot[] = [
  */
 export const ALTAR_STAND: YardPoint = { x: 171, feet: 146 };
 
-/** Everyone in the yard faces this line through the altar: the Esfera's x when it sits on the altar. */
+/** Everyone in the yard, and the crowd, faces this line through the altar: the Esfera's x when it sits on the altar. */
 export const ALTAR_X = 122;
 
 /**
- * Follower counts at which the silhouette crowd behind the yard grows denser; crowd level N is
- * reached at the Nth threshold. Placeholders, to be tuned against the progression balance.
+ * Each crowd level beyond 0: the follower count that reaches it, and how many silhouettes it draws.
+ * The top level is the cap however large the cult grows. Counts are placeholders, to be tuned
+ * against the progression balance.
  */
-export const CROWD_THRESHOLDS = [50, 250, 1_000, 10_000] as const;
-
-/** Silhouettes drawn at each crowd level (index = level); the top level is the cap however large the cult grows. */
-export const CROWD_SIZES = [0, 10, 24, 42, 64] as const;
+export const CROWD_LEVELS = [
+  { followers: 50, silhouettes: 10 },
+  { followers: 250, silhouettes: 24 },
+  { followers: 1_000, silhouettes: 42 },
+  { followers: 10_000, silhouettes: 64 }
+] as const;
 
 /**
- * The crowd stands on the hill top along this line (x, feet), just behind the yard spots, and
+ * The crowd stands on the hill top along this line, just behind the yard spots, and
  * clear of the altar so the Esfera and miracle requests stay visible. Feet stay above the
  * wide-screen crop at y 153.
  */
 export const CROWD_AREA = {
-  ground: [[24, 151], [100, 143], [150, 139], [270, 139], [300, 143], [376, 151]] as Array<[number, number]>,
+  ground: [
+    { x: 24, feet: 151 }, { x: 100, feet: 143 }, { x: 150, feet: 139 },
+    { x: 270, feet: 139 }, { x: 300, feet: 143 }, { x: 376, feet: 151 }
+  ] as YardPoint[],
   clear: { from: 90, to: 154 },
   /** How far up the hill (farther back) a silhouette's feet may land, so the crowd has some depth. */
   depth: 12,

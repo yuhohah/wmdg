@@ -1,16 +1,17 @@
-import { CROWD_AREA, CROWD_SIZES, STAGE_SIZE } from '../features/church/churchConfig.js';
+import { ALTAR_X, CROWD_AREA, CROWD_LEVELS, STAGE_SIZE } from '../features/church/churchConfig.js';
 import type { CrowdLevel } from '../features/church/churchScene.js';
 
 /** The PixelLab silhouette sheet: equal cells side by side, feet on each cell's bottom row, facing left. */
 const SHEET = { src: '/assets/church/crowd/silhouettes.png', cellWidth: 23, cellHeight: 29, cells: 11 };
-/** Canvas pixels per stage pixel; each sheet pixel is drawn as a 2×2 block, two thirds of a follower's height. */
+/** Canvas pixels per stage pixel. */
 const RESOLUTION = 3;
+/** Canvas pixels per sheet pixel: a silhouette stands about two thirds as tall as a follower. */
 const SHEET_SCALE = 2;
 
 interface Silhouette { x: number; feet: number; cell: number; shade: number }
 
 /** Every silhouette the crowd can hold, in the order they join; each level shows a longer prefix. */
-const SILHOUETTES = layOutCrowd(CROWD_SIZES[CROWD_SIZES.length - 1]);
+const SILHOUETTES = layOutCrowd(CROWD_LEVELS[CROWD_LEVELS.length - 1].silhouettes);
 
 /** Silhouettes behind the yard; the layer sits under the followers, so it never covers them. */
 export class ChurchCrowd {
@@ -39,13 +40,13 @@ export class ChurchCrowd {
     const width = SHEET.cellWidth * SHEET_SCALE;
     const height = SHEET.cellHeight * SHEET_SCALE;
     // Farther figures (higher feet) are drawn first so nearer ones overlap them.
-    const visible = SILHOUETTES.slice(0, CROWD_SIZES[this.level]).sort((a, b) => a.feet - b.feet);
+    const visible = SILHOUETTES.slice(0, CROWD_LEVELS[this.level - 1].silhouettes).sort((a, b) => a.feet - b.feet);
     for (const { x, feet, cell, shade } of visible) {
       context.save();
       context.filter = `brightness(${shade})`;
       context.translate(Math.round(x * RESOLUTION), Math.round(feet * RESOLUTION));
       // The art faces left; mirror the figures left of the altar so everyone faces it.
-      if (x < CROWD_AREA.clear.from) context.scale(-1, 1);
+      if (x < ALTAR_X) context.scale(-1, 1);
       context.drawImage(this.sheet, cell * SHEET.cellWidth, 0, SHEET.cellWidth, SHEET.cellHeight, -width / 2, -height, width, height);
       context.restore();
     }
@@ -55,8 +56,8 @@ export class ChurchCrowd {
 function layOutCrowd(count: number): Silhouette[] {
   const random = mulberry32(CROWD_AREA.seed);
   const { ground, clear, depth } = CROWD_AREA;
-  const left = ground[0][0];
-  const span = ground[ground.length - 1][0] - left - (clear.to - clear.from);
+  const left = ground[0].x;
+  const span = ground[ground.length - 1].x - left - (clear.to - clear.from);
   const silhouettes: Silhouette[] = [];
   for (let index = 0; index < count; index++) {
     // Pick along the ground with the altar gap cut out, so no draw is wasted on rejection.
@@ -75,11 +76,11 @@ function layOutCrowd(count: number): Silhouette[] {
 function groundAt(x: number): number {
   const { ground } = CROWD_AREA;
   for (let index = 1; index < ground.length; index++) {
-    const [x1, feet1] = ground[index];
-    const [x0, feet0] = ground[index - 1];
-    if (x <= x1) return feet0 + ((x - x0) / (x1 - x0)) * (feet1 - feet0);
+    const to = ground[index];
+    const from = ground[index - 1];
+    if (x <= to.x) return from.feet + ((x - from.x) / (to.x - from.x)) * (to.feet - from.feet);
   }
-  return ground[ground.length - 1][1];
+  return ground[ground.length - 1].feet;
 }
 
 /** Small seeded PRNG: the same seed always yields the same crowd. */
