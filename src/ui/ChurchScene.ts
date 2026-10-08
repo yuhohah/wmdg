@@ -28,17 +28,18 @@ const RESTORED_PARTS: Record<RestoredTier, StagePoint[]> = {
 };
 
 /**
- * Where each detail prop stands on the stage: the bottom centre of the sprite.
- * The stage crops differently per viewport; only x 22–78% (and feet up to about 76%) stay visible everywhere.
- * Props line the front of the yard and draw over it: the low pews and garden hide the legs of the followers
- * behind them rather than the other way round, so every unlocked prop shows with all 12 followers present.
+ * Where each detail prop stands on the stage: the bottom centre of the sprite, as % of the stage.
+ * Every prop sits inside `ALWAYS_VISIBLE_X` (x 100–300 of 400, the slice a 412-px phone shows) and at feet y 147,
+ * above the y 152 line the stage is never cropped below. Props line the front of the yard and draw over it:
+ * the low pews and garden hide the legs of the followers behind them rather than the other way round, so every
+ * unlocked prop shows with all 12 followers present. The banner stands clear of the protagonist's box.
  */
 const DETAIL_PROPS: Record<ChurchDetail, { sprite: string; spriteWidth: number; spots: StagePoint[] }> = {
-  torches: { sprite: 'torch', spriteWidth: 24, spots: [[55.5, 76.5], [62.5, 76.5]] },
-  pews: { sprite: 'pews', spriteWidth: 64, spots: [[53, 76.5]] },
-  garden: { sprite: 'garden', spriteWidth: 64, spots: [[67, 76.5]] },
-  banner: { sprite: 'banner', spriteWidth: 32, spots: [[50.5, 76.5]] },
-  statue: { sprite: 'statue', spriteWidth: 32, spots: [[76, 76.5]] }
+  torches: { sprite: 'torch', spriteWidth: 24, spots: [[56.5, 76.5], [64.5, 76.5]] },
+  pews: { sprite: 'pews', spriteWidth: 64, spots: [[59.5, 76.5]] },
+  garden: { sprite: 'garden', spriteWidth: 64, spots: [[68, 76.5]] },
+  banner: { sprite: 'banner', spriteWidth: 32, spots: [[54, 76.5]] },
+  statue: { sprite: 'statue', spriteWidth: 32, spots: [[73, 76.5]] }
 };
 
 /** Prop sprite pixels per background pixel: PixelLab fills the whole canvas, so 1:1 props dwarf the church door. */

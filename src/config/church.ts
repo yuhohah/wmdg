@@ -17,7 +17,7 @@ export const RESTORATION_NOTICES: Record<RestoredTier, ChurchNotice> = {
 export type ChurchDetail = 'torches' | 'pews' | 'garden' | 'banner' | 'statue';
 
 /**
- * Small props that appear between Selo tiers as the follower count grows, in threshold order.
+ * Small props that appear between Church tiers as the follower count grows, in threshold order.
  * Placeholder thresholds, to be tuned against the progression balance doc.
  */
 export interface ChurchDetailUnlock {
