@@ -70,11 +70,20 @@
 .miracle-active .ritual-sigil { opacity:.85; transform:scale(1); }
 .faith-response .world-sphere { opacity:.65; }
 .ascended-monastery { position:absolute; right:15%; top:16%; height:45%; width:auto; image-rendering:pixelated; filter:brightness(.65); z-index:1; }
-/* Church scene: the stage keeps the background's 400×192 grid and covers the frame, so overlays stay pinned to the art. */
-.church-world { container-type:size; background:#1b2a3d; }
-/* The stage covers the world and is anchored on the ground line: when it is cropped, sky goes first and art
-   down to y 152 of 192 (the front of the yard) always stays visible. Narrow worlds are not cropped at all. */
-.church-stage { --stage-top:min(0px, calc(100cqh - 152 / 192 * max(48cqw, 100cqh))); position:absolute; left:50%; top:var(--stage-top); width:max(100cqw, 100cqh * 400 / 192); aspect-ratio:400 / 192; transform:translateX(-50%); }
+/* Church scene: the stage keeps the background's 400×192 grid, so overlays stay pinned to the art.
+   Its scale is the cover scale, capped so the 140 art rows from y 12 (the tier-3 bell tower's top) to y 152 (the front
+   of the yard) always fit the world's height. Tall phones keep the cover scale and are cropped sideways; short, wide
+   windows get a smaller stage and the backdrop fills the side gutters with the art's own edge colours. With gutters,
+   the stage also shifts right until the bell tower clears the currency box that the HUD centres over the world. */
+.church-world { container-type:size; background:#1b2a3d; --art-scale:min(max(100cqw / 400, 100cqh / 192), 100cqh / 140); --stage-top:min(0px, calc(100cqh - 152 * var(--art-scale))); --stage-shift:min(max(0px, calc((100cqw - 400 * var(--art-scale)) / 2)), max(0px, calc(80px - 6 * var(--art-scale)))); }
+/* Sky is cropped first when the stage is taller than the world: `--stage-top` keeps art down to y 152 visible.
+   The outer art columns (x 0 and 399) are near-white generation artifacts, so the stage is clipped by two art pixels (a fractional scale would otherwise show a sliver of them). */
+.church-stage { position:absolute; left:calc(50% + var(--stage-shift)); top:var(--stage-top); width:calc(400 * var(--art-scale)); aspect-ratio:400 / 192; transform:translateX(-50%); clip-path:inset(0 calc(2 * var(--art-scale))); }
+/* Gutters beside a narrower stage: hard-stop gradients sampled from the art's columns x 1 and x 398 of each tier
+   (sky, hills, grass bands), so they read as the scene continuing. Regenerate them if the tier backgrounds change. */
+.church-backdrop { position:absolute; left:0; right:0; top:var(--stage-top); height:calc(192 * var(--art-scale)); background:var(--edge-left) left / 50% 100% no-repeat, var(--edge-right) right / 50% 100% no-repeat; pointer-events:none; }
+.church-world[data-church-tier='0'] { --edge-left:linear-gradient(#050912 5.73%, #11365e 5.73% 38.02%, #1e4770 38.02% 48.44%, #0c2d4d 48.44% 83.33%, #0f3055 83.33% 84.38%, #0c2d4d 84.38% 86.46%, #041c26 86.46% 93.23%, #09212f 93.23% 94.79%, #050912 94.79%); --edge-right:linear-gradient(#050912 5.21%, #194068 5.21% 7.29%, #1e4770 7.29% 9.9%, #11365e 9.9% 33.33%, #1e4770 33.33% 55.21%, #11365e 55.21% 64.58%, #0f3055 64.58% 66.15%, #0d2746 66.15% 91.15%, #1a3642 91.15% 92.71%, #092a32 92.71% 93.75%, #09212f 93.75% 94.79%, #050912 94.79%); }
+.church-world[data-church-tier='1'] { --edge-left:linear-gradient(#060c19 0.52%, #071420 0.52% 5.73%, #16375d 5.73% 14.58%, #153255 14.58% 24.48%, #16375d 24.48% 25.52%, #153255 25.52% 33.33%, #16375d 33.33% 38.54%, #1d3f65 38.54% 41.67%, #1c3d63 41.67% 45.31%, #1d3f65 45.31% 46.35%, #1f4168 46.35% 49.48%, #133153 49.48% 51.56%, #153255 51.56% 53.65%, #133153 53.65% 57.29%, #143051 57.29% 65.1%, #122f4e 65.1% 69.27%, #143051 69.27% 73.96%, #122f4e 73.96% 82.81%, #143051 82.81% 84.9%, #193252 84.9% 86.46%, #0e262f 86.46% 87.5%, #0f2a31 87.5% 88.54%, #0f2c34 88.54% 95.31%, #091b27 95.31%); --edge-right:linear-gradient(#080b16 6.25%, #1a3a60 6.25% 7.81%, #1d3f65 7.81% 8.85%, #1c3d63 8.85% 9.9%, #16375d 9.9% 12.5%, #153255 12.5% 13.54%, #133153 13.54% 29.17%, #153255 29.17% 30.73%, #16375d 30.73% 32.29%, #1a3a60 32.29% 33.33%, #1c3d63 33.33% 34.38%, #1a3a60 34.38% 35.42%, #16375d 35.42% 44.79%, #1a3a60 44.79% 53.13%, #1c3d63 53.13% 54.17%, #1d3f65 54.17% 55.21%, #16375d 55.21% 57.81%, #15355c 57.81% 60.94%, #153255 60.94% 65.1%, #143051 65.1% 66.15%, #122f4e 66.15% 67.71%, #122e4a 67.71% 69.79%, #132946 69.79% 89.06%, #0f2a39 89.06% 90.1%, #0f2c34 90.1% 91.15%, #0f2d37 91.15% 92.19%, #0f2c34 92.19% 94.79%, #080b16 94.79%); }
 .church-background { position:absolute; inset:0; width:100%; height:100%; image-rendering:pixelated; pointer-events:none; }
 .church-sphere { position:absolute; aspect-ratio:1; padding:0; border:0; background:transparent; cursor:pointer; transform:translate(-50%,-50%); z-index:2; transition:filter 120ms var(--ease-out); }
 .church-sphere canvas { display:block; width:100%; height:100%; image-rendering:pixelated; pointer-events:none; }
