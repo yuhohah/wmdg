@@ -19,6 +19,8 @@ export type SphereLocation = 'ruins' | 'altar';
 export type ProtagonistLook = 0 | 1 | 2 | 3 | 4 | 5;
 export type ProfetaLook = Exclude<ProtagonistLook, 0>;
 export type ProtagonistLabel = 'O Escolhido' | 'O Profeta';
+/** One drawn look per Encarnação stage; a later stage keeps the last look until it gets art of its own. */
+const LAST_PROFETA_LOOK: ProfetaLook = 5;
 
 export interface ChurchSceneDescription {
   tier: ChurchTier;
@@ -57,7 +59,7 @@ export function describeChurchScene(snapshot: ChurchSnapshot): ChurchSceneDescri
 /** The stage reads 1 before the Selo too, so the Selo alone decides when O Escolhido becomes O Profeta. */
 export function describeProtagonist(incarnationUnlocked: boolean, incarnationStage: number): ChurchSceneDescription['protagonist'] {
   if (!incarnationUnlocked) return { look: 0, label: 'O Escolhido' };
-  return { look: Math.min(5, Math.max(1, Math.floor(incarnationStage))) as ProfetaLook, label: 'O Profeta' };
+  return { look: Math.min(LAST_PROFETA_LOOK, Math.max(1, Math.floor(incarnationStage))) as ProfetaLook, label: 'O Profeta' };
 }
 
 /** What changed between two descriptions; the renderer turns each change into a transition and notification. */

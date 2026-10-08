@@ -75,6 +75,7 @@ export class ChurchScene {
   private props = new Map<ChurchDetail, HTMLImageElement[]>();
   private reviewLook: ProtagonistLook | null = null;
   private pulseTimer: number | undefined;
+  private transformTimer: number | undefined;
   private miracleTimer: number | undefined;
   private pleaCooldown = 5;
   /** From the moment a follower sets off for the altar until the request is granted, expires or they leave. */
@@ -240,7 +241,7 @@ export class ChurchScene {
     this.background.after(...props.sort((a, b) => a.top - b.top).map(({ prop }) => prop));
   }
 
-  /** Steps through the protagonist looks independently of the church tier; `null` follows the reviewed tier again. */
+  /** Steps through the protagonist looks independently of the church tier; `null` derives the look from the scene again. */
   private setArtLook(look: ProtagonistLook | null): void {
     document.querySelectorAll<HTMLButtonElement>('[data-art-look]').forEach(button => {
       button.setAttribute('aria-pressed', String(button.dataset.artLook === (look === null ? 'auto' : String(look))));
@@ -350,12 +351,14 @@ export class ChurchScene {
     const outgoing = this.protagonistStrip.cloneNode() as HTMLImageElement;
     outgoing.removeAttribute('id');
     outgoing.classList.add('protagonist-strip-outgoing');
+    // Stepping looks quickly (art-review) restarts the transition instead of letting the old timer cut it short.
+    window.clearTimeout(this.transformTimer);
+    this.protagonist.querySelectorAll('.protagonist-strip-outgoing').forEach(node => node.remove());
     this.protagonistStrip.after(outgoing);
     this.protagonist.classList.remove('transforming');
-    // Restart the glow animation when looks change in quick succession (art-review stepping).
     void this.protagonist.offsetWidth;
     this.protagonist.classList.add('transforming');
-    window.setTimeout(() => {
+    this.transformTimer = window.setTimeout(() => {
       outgoing.remove();
       this.protagonist.classList.remove('transforming');
     }, LOOK_TRANSITION_MS);

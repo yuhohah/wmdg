@@ -6,7 +6,9 @@
   "layout": "horizontal",
   "playback": "Ping-pong of the 9 animate_image frames (0–8, then 7–1) so each idle loops seamlessly",
   "feetLine": "Feet at y=68, matching procession/walk",
-  "chain": "look-0 is the leftmost figure of the PRD reference art; each later still is an edit_image of the previous look; each idle is animate_image (frame_count 8) of its still",
+  "chain": "look-0 is the leftmost figure of the PRD reference art; each later still is an edit_image of the previous look; each idle is animate_image (frame_count 8, so 9 frames including the still) of its still",
+  "stageIV": "look-4 is edited from look-3 to match procession/prophet.png (hood, shadowed face, yellow eyes, red and gold) rather than reusing it, so it keeps the praying pose and proportions of the chain",
+  "stageVGlow": "look-5 gets an extra CSS drop-shadow glow in the church scene",
   "idleAction": "A seamless looping idle prayer in place, facing right: gentle breathing, shoulders rise and fall slightly, praying hands held together at the chest with a subtle bow of the head. Preserve the exact character identity, outfit, colors and pixel art style. Keep centered and on the same ground line, feet planted. No walking, turning, camera movement or scenery. End on the starting pose.",
   "jobs": [
     {

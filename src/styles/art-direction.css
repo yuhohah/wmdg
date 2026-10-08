@@ -226,7 +226,7 @@
   .church-dust,.church-sparkle { display:none; }
   .church-prop-new { animation:none; }
   .protagonist-strip { animation:none!important; }
-  .protagonist-strip-outgoing { display:none; }
+  .protagonist-strip-outgoing,.church-protagonist.transforming::before { display:none; }
   .church-background-outgoing,.church-backdrop-outgoing { animation-duration:200ms!important; }
   .walk-ready > .walk-viewport { display:none; }
   .walk-ready > img { opacity:1; }
