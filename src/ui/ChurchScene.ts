@@ -29,15 +29,16 @@ const RESTORED_PARTS: Record<RestoredTier, StagePoint[]> = {
 
 /**
  * Where each detail prop stands on the stage: the bottom centre of the sprite.
- * The stage crops differently per viewport; x 22–78% and y up to 73% stay visible everywhere, so props
- * line the church's base inside that box, clear of the altar, the Bênção button and the tier 3 wall banners.
+ * The stage crops differently per viewport; only x 22–78% (and feet up to about 76%) stay visible everywhere.
+ * Props line the front of the yard and draw over it: the low pews and garden hide the legs of the followers
+ * behind them rather than the other way round, so every unlocked prop shows with all 12 followers present.
  */
 const DETAIL_PROPS: Record<ChurchDetail, { sprite: string; spriteWidth: number; spots: StagePoint[] }> = {
-  torches: { sprite: 'torch', spriteWidth: 24, spots: [[50.5, 73], [66.5, 73]] },
-  pews: { sprite: 'pews', spriteWidth: 64, spots: [[43, 73.5]] },
-  garden: { sprite: 'garden', spriteWidth: 64, spots: [[72.5, 74]] },
-  banner: { sprite: 'banner', spriteWidth: 32, spots: [[23.5, 73]] },
-  statue: { sprite: 'statue', spriteWidth: 32, spots: [[75, 72.5]] }
+  torches: { sprite: 'torch', spriteWidth: 24, spots: [[55.5, 76.5], [62.5, 76.5]] },
+  pews: { sprite: 'pews', spriteWidth: 64, spots: [[53, 76.5]] },
+  garden: { sprite: 'garden', spriteWidth: 64, spots: [[67, 76.5]] },
+  banner: { sprite: 'banner', spriteWidth: 32, spots: [[50.5, 76.5]] },
+  statue: { sprite: 'statue', spriteWidth: 32, spots: [[76, 76.5]] }
 };
 
 /** Prop sprite pixels per background pixel: PixelLab fills the whole canvas, so 1:1 props dwarf the church door. */
