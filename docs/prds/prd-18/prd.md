@@ -14,7 +14,7 @@ The main screen becomes a side view, at dusk, of a ruined church / cult center. 
 - The protagonist starts as **O Escolhido**: a white-robed, brown-haired youth with praying hands. This is the leftmost figure in the reference art attached to this issue's originating conversation, the same style as the existing procession sprites.
 - From Encarnação stage I onward they are **O Profeta**. Their look changes at each stage, reaching the hooded red prophet at stage IV (Eclipse) and a radiant version at stage V (Solar).
 - The church moves through 4 major tiers, one per Selo. Follower-count thresholds add small details, such as torches and pews.
-- The Esfera starts as a faint glow among the ruins, then sits on the altar from tier 2 onward.
+- The Esfera starts as a faint glow among the ruins, then sits on the altar from tier 1 onward.
 - Followers fill 12 fixed spots around the church. Beyond that, a crowd of silhouettes grows denser.
 - The Bênção boost moves to a small button under the Esfera. The Encarnação tab keeps only the stage list and upgrades.
 - The procession leaves the main screen. It stays available through `?art-review` until it comes back later as a boss-battle mechanic.
