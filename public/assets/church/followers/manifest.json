@@ -1,0 +1,138 @@
+{
+  "generator": "PixelLab via Executor",
+  "frameWidth": 64,
+  "frameHeight": 72,
+  "frameCount": 9,
+  "layout": "horizontal",
+  "feetLine": "y=68, matching procession/walk",
+  "placeholders": "Until a loop is generated, follower-N-idle.png is the follower's stand frame repeated 9 times and follower-N-pray.png repeats its idle strip. Generation stopped when the PixelLab trial ran out of generations.",
+  "jobs": [
+    {
+      "name": "stand",
+      "tool": "edit_image",
+      "source": "frame 0 of each procession/walk/follower-N-walk job",
+      "jobId": "20811ce3-9eac-4c53-9501-281c79e3fca9",
+      "seed": 24,
+      "prompt": "Each robed cultist now stands still in place facing right, both feet planted together on the same ground line, body upright and calm, head slightly bowed in quiet prayer. The free hand is raised to the chest in a praying gesture. Keep every held prop (torch, scroll, staff, walking stick, lantern, reliquary, banner, bag) in the same hand. Keep identity, robe colors, hood, glowing eyes, size, position and pixel art style exactly the same.",
+      "status": "saved",
+      "note": "One 9-frame edit; frame N is follower N's standing pose and the first frame of both of its loops. Frames 0, 1, 2, 6 and 7 came back with feet at y=64 and are shifted down 4px when strips are assembled."
+    },
+    {
+      "name": "follower-0-idle",
+      "tool": "animate_image",
+      "source": "stand frame 0",
+      "jobId": "bb996f4e-b9b1-40d3-accb-04adef39fea9",
+      "seed": 24,
+      "frameCount": 8,
+      "action": "A seamless looping idle prayer in place, facing right: the cultist stands still and breathes slowly, shoulders rising and falling gently, head bowed in quiet prayer, robe swaying slightly. Preserve the exact character identity, outfit, colors, held props and pixel art style. Props stay in the same hand. Feet stay planted on the same ground line. No walking, turning, camera movement or scenery. End on the starting pose.",
+      "status": "saved"
+    },
+    {
+      "name": "follower-0-pray",
+      "tool": "animate_image",
+      "source": "stand frame 0",
+      "jobId": "cea3084c-5a7c-40d4-aa7e-e0b700d387ad",
+      "seed": 24,
+      "frameCount": 8,
+      "action": "A seamless looping devout bow at an altar, facing right: the cultist slowly bows forward from the waist with head lowered in prayer, holds the bow, then rises back upright. ...",
+      "status": "rejected",
+      "note": "PixelLab drew an archery bow and the loop does not return to the start pose. Regenerate without the word 'bow', e.g. 'leans forward from the waist in reverent prayer'."
+    },
+    {
+      "name": "follower-1-idle",
+      "tool": "animate_image",
+      "source": "stand frame 1",
+      "status": "pending"
+    },
+    {
+      "name": "follower-1-pray",
+      "tool": "animate_image",
+      "source": "stand frame 1",
+      "status": "pending"
+    },
+    {
+      "name": "follower-2-idle",
+      "tool": "animate_image",
+      "source": "stand frame 2",
+      "status": "pending"
+    },
+    {
+      "name": "follower-2-pray",
+      "tool": "animate_image",
+      "source": "stand frame 2",
+      "status": "pending"
+    },
+    {
+      "name": "follower-3-idle",
+      "tool": "animate_image",
+      "source": "stand frame 3",
+      "status": "pending"
+    },
+    {
+      "name": "follower-3-pray",
+      "tool": "animate_image",
+      "source": "stand frame 3",
+      "status": "pending"
+    },
+    {
+      "name": "follower-4-idle",
+      "tool": "animate_image",
+      "source": "stand frame 4",
+      "status": "pending"
+    },
+    {
+      "name": "follower-4-pray",
+      "tool": "animate_image",
+      "source": "stand frame 4",
+      "status": "pending"
+    },
+    {
+      "name": "follower-5-idle",
+      "tool": "animate_image",
+      "source": "stand frame 5",
+      "status": "pending"
+    },
+    {
+      "name": "follower-5-pray",
+      "tool": "animate_image",
+      "source": "stand frame 5",
+      "status": "pending"
+    },
+    {
+      "name": "follower-6-idle",
+      "tool": "animate_image",
+      "source": "stand frame 6",
+      "status": "pending"
+    },
+    {
+      "name": "follower-6-pray",
+      "tool": "animate_image",
+      "source": "stand frame 6",
+      "status": "pending"
+    },
+    {
+      "name": "follower-7-idle",
+      "tool": "animate_image",
+      "source": "stand frame 7",
+      "status": "pending"
+    },
+    {
+      "name": "follower-7-pray",
+      "tool": "animate_image",
+      "source": "stand frame 7",
+      "status": "pending"
+    },
+    {
+      "name": "follower-8-idle",
+      "tool": "animate_image",
+      "source": "stand frame 8",
+      "status": "pending"
+    },
+    {
+      "name": "follower-8-pray",
+      "tool": "animate_image",
+      "source": "stand frame 8",
+      "status": "pending"
+    }
+  ]
+}

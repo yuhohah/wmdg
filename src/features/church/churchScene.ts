@@ -1,4 +1,5 @@
 import { BLESSING_MAX_SECONDS } from '../../config/incarnation.js';
+import { FOLLOWER_SPOTS } from './churchConfig.js';
 
 /** The slice of game state the church screen is derived from. Nothing here is saved separately. */
 export interface ChurchSnapshot {
@@ -19,6 +20,8 @@ export interface ChurchSceneDescription {
   sphereLocation: SphereLocation;
   /** The Bênção button under the Esfera; `fill` is the stored 2× time as a 0–1 fraction of the cap. */
   blessing: { visible: boolean; fill: number };
+  /** How many of the church-yard spots hold a follower, filled in `FOLLOWER_SPOTS` order. */
+  filledSpots: number;
 }
 
 export type ChurchSceneChange = { kind: 'tier'; from: ChurchTier; to: ChurchTier };
@@ -33,7 +36,8 @@ export function describeChurchScene(snapshot: ChurchSnapshot): ChurchSceneDescri
     blessing: {
       visible: incarnation,
       fill: Math.min(1, Math.max(0, snapshot.blessingSeconds / BLESSING_MAX_SECONDS))
-    }
+    },
+    filledSpots: Math.min(Math.floor(snapshot.followers), FOLLOWER_SPOTS.length)
   };
 }
 

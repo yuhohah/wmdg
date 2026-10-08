@@ -57,6 +57,20 @@ describe('church scene description', () => {
     const scene = describeChurchScene({ ...start, selos: { ...start.selos, incarnation: true }, blessingSeconds });
     expect(scene.blessing.fill).toBeCloseTo(fill);
   });
+  it.each([
+    [0, 0],
+    [1, 1],
+    [11, 11],
+    [12, 12],
+    [13, 12],
+    [10_000, 12]
+  ])('fills min(followers, 12) church-yard spots: %i followers fill %i', (followers, filledSpots) => {
+    expect(describeChurchScene({ ...start, followers }).filledSpots).toBe(filledSpots);
+  });
+
+  it('fills only whole spots for a fractional follower count', () => {
+    expect(describeChurchScene({ ...start, followers: 2.7 }).filledSpots).toBe(2);
+  });
 });
 
 describe('church scene comparison', () => {

@@ -112,7 +112,14 @@
 .church-blessing:active { transform:translateY(1px); box-shadow:0 1px #1a120c; }
 .church-blessing:focus-visible { outline:2px solid #edc886; outline-offset:3px; }
 .church-world .ritual-sigil { left:23%; bottom:16%; }
-.church-stage .church-plea { left:50%; bottom:20%; transform:translateX(-50%); }
+.church-followers { position:absolute; inset:0; z-index:3; pointer-events:none; }
+.church-follower { position:absolute; width:8%; aspect-ratio:64 / 72; transform:translate(-50%,-94.4%); }
+.church-follower::before { content:''; position:absolute; bottom:3%; left:25%; width:50%; height:6%; border-radius:50%; background:#0c101866; }
+.church-follower-sprite { position:absolute; inset:0; overflow:hidden; }
+.church-follower[data-facing='left'] .church-follower-sprite { scale:-1 1; }
+.church-follower-sprite img { display:block; height:100%; width:900%; max-width:none; image-rendering:pixelated; animation:walk-frames 2400ms steps(9) infinite; }
+.church-follower .church-plea { left:50%; bottom:100%; transform:translateX(-50%); pointer-events:auto; animation:plea-appear 220ms var(--ease-out); }
+@keyframes plea-appear { from { opacity:0; transform:translate(-50%,4px); } }
 @keyframes ruin-glow { 0%,100% { opacity:.45; } 50% { opacity:.8; } }
 /* Tier restoration: the old tier fades out through dust while sparkles mark the restored parts. */
 .church-background-outgoing { z-index:1; animation:church-fade-out 1100ms var(--ease-out) forwards; }
@@ -173,7 +180,7 @@
 .btn-convert-primary { background:linear-gradient(100deg,#542d2b,#342321); border-color:#966647; }
 .btn-action-title { font-family:inherit; font-size:12px; }
 .art-review-controls[hidden] { display:none; }
-.art-review-controls { display:flex; align-items:center; gap:12px; flex-shrink:0; color:#ad9d84; font-size:9px; letter-spacing:1px; }
+.art-review-controls { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:12px; flex-shrink:0; color:#ad9d84; font-size:9px; letter-spacing:1px; }
 .art-review-controls button,.art-review-controls a { padding:7px 12px; background:#1f1c1c; border:1px solid #574735; color:#ddcba8; cursor:pointer; font:inherit; letter-spacing:0; text-decoration:none; border-radius:3px; }
 .art-review-controls button[aria-pressed='true'] { border-color:#c5a366; background:#3a2c24; }
 .art-review #spotlight-tour-overlay { display:none!important; }
@@ -198,7 +205,7 @@
 @keyframes recruit-arrival { from { opacity:0; transform:translateX(-24px); } to { opacity:1; transform:translateX(0); } }
 @media (hover:hover) and (pointer:fine) { .divine-sphere-btn:hover { filter:brightness(1.15) drop-shadow(0 0 16px #b8874540); } .church-sphere:hover { filter:brightness(1.2) drop-shadow(0 0 12px #f3d392); } .church-blessing:hover { filter:brightness(1.2); } }
 @media (prefers-reduced-motion:reduce) {
-  .world-parallax-track,.prophet-sprite,.procession-member,.procession-member img,.walk-strip,.new-recruit,.church-sphere { animation:none!important; }
+  .world-parallax-track,.prophet-sprite,.procession-member,.procession-member img,.walk-strip,.new-recruit,.church-sphere,.church-follower-sprite img,.church-plea { animation:none!important; }
   .church-blessing-fill { transition:none; }
   .church-dust,.church-sparkle { display:none; }
   .church-background-outgoing,.church-backdrop-outgoing { animation-duration:200ms!important; }

@@ -5,8 +5,10 @@ import { compareChurchScenes, describeChurchScene, type ChurchSceneDescription, 
 import { RESTORATION_NOTICES, type RestorationNotice } from '../config/church.js';
 import { isArtReview } from './artReview.js';
 import { paintPixelSphere } from './pixelSphere.js';
+import { ChurchYard } from './ChurchYard.js';
 
 type ArtScene = `tier-${ChurchTier}` | 'procession';
+const PLEA_SECONDS = 15;
 
 const TIER_TEXT: Record<ChurchTier, { title: string; status: string; caption: string }> = {
   0: { title: 'A Igreja em Ruínas', status: 'Uma luz fraca entre os escombros', caption: 'Algo ainda brilha onde ninguém reza.' },
@@ -44,17 +46,20 @@ export function churchSnapshot(gameState: GameStateManager): ChurchSnapshot {
 export class ChurchScene {
   private scene: ChurchSceneDescription | null = null;
   private reviewTier: ChurchTier | null = null;
+  private reviewFollowers: number | null = null;
   private pulseTimer: number | undefined;
   private miracleTimer: number | undefined;
   private pleaCooldown = 5;
+  /** Counts down only once the follower is praying at the altar, so the walk never shortens the window. */
   private pleaRemaining = 0;
-  private pleaButton: HTMLButtonElement | null = null;
+  /** Art-review has no game loop, so a previewed request expires on a plain timer. */
+  private reviewPleaTimer: number | undefined;
+  private yard = new ChurchYard(document.getElementById('church-followers')!);
   private world = document.getElementById('church-world')!;
   private background = document.getElementById('church-background') as HTMLImageElement;
   private sphere = document.getElementById('church-sphere') as HTMLButtonElement;
   private blessing = document.getElementById('church-blessing') as HTMLButtonElement;
   private blessingLabel = document.getElementById('church-blessing-label')!;
-  private stage = document.getElementById('church-stage')!;
 
   constructor(
     private gameState: GameStateManager,
@@ -79,6 +84,11 @@ export class ChurchScene {
       document.querySelectorAll<HTMLButtonElement>('[data-art-scene]').forEach(button => {
         button.addEventListener('click', () => this.setArtScene(button.dataset.artScene as ArtScene));
       });
+      document.querySelectorAll<HTMLButtonElement>('[data-art-followers]').forEach(button => {
+        button.addEventListener('click', () => this.setReviewFollowers(Number(button.dataset.artFollowers)));
+      });
+      document.getElementById('art-review-plea')!.addEventListener('click', () => this.offerMiracle());
+      this.setReviewFollowers(4);
       this.setArtScene('tier-0');
     }
     events.on(GameEvents.STATE_CHANGED, () => this.sync());
@@ -88,7 +98,8 @@ export class ChurchScene {
     events.on<number>(GameEvents.GAME_TICK, delta => {
       this.sync();
       if (isArtReview || document.hidden || !document.getElementById('gameplay-screen')!.classList.contains('active')) return;
-      if (this.pleaRemaining > 0) {
+      if (this.yard.hasRequest) {
+        if (this.pleaRemaining <= 0) return;
         this.pleaRemaining -= delta;
         if (this.pleaRemaining <= 0) this.clearPlea();
       } else if (this.gameState.getTotalFollowersCount() > 0) {
@@ -130,10 +141,19 @@ export class ChurchScene {
     this.world.hidden = procession;
     document.getElementById('procession-world')!.hidden = !procession;
     document.querySelectorAll<HTMLElement>('.procession-review-only').forEach(control => { control.hidden = !procession; });
+    document.querySelectorAll<HTMLElement>('.church-review-only').forEach(control => { control.hidden = procession; });
     if (!procession) {
       this.reviewTier = Number(artScene.slice('tier-'.length)) as ChurchTier;
       this.sync();
     }
+  }
+
+  private setReviewFollowers(followers: number): void {
+    document.querySelectorAll<HTMLButtonElement>('[data-art-followers]').forEach(button => {
+      button.setAttribute('aria-pressed', String(Number(button.dataset.artFollowers) === followers));
+    });
+    this.reviewFollowers = followers;
+    this.sync();
   }
 
   private sync(): void {
@@ -141,15 +161,23 @@ export class ChurchScene {
     if (this.reviewTier !== null) {
       snapshot.selos = { incarnation: this.reviewTier >= 1, fervor: this.reviewTier >= 2, relics: this.reviewTier >= 3 };
     }
+    if (this.reviewFollowers !== null) snapshot.followers = this.reviewFollowers;
     const next = describeChurchScene(snapshot);
-    document.getElementById('church-count')!.textContent = `${formatNumber(this.gameState.getTotalFollowersCount())} fiéis`;
+    document.getElementById('church-count')!.textContent = `${formatNumber(snapshot.followers)} fiéis`;
     this.blessing.hidden = !next.blessing.visible;
     this.blessing.style.setProperty('--blessing-fill', String(next.blessing.fill));
     this.blessing.classList.toggle('active', snapshot.blessingSeconds > 0);
     this.blessingLabel.textContent = `✦ 2× · ${Math.ceil(snapshot.blessingSeconds)}s`;
+    if (next.filledSpots !== this.scene?.filledSpots) {
+      this.yard.fill(next.filledSpots);
+      if (!this.yard.hasRequest) this.endPlea();
+    }
     // The first build (page load) has nothing to compare against, so it never replays a transition.
     const changes = this.scene ? compareChurchScenes(this.scene, next) : [];
-    if (this.scene && changes.length === 0) return;
+    if (this.scene && changes.length === 0) {
+      this.scene = next;
+      return;
+    }
     for (const change of changes) {
       if (change.kind === 'tier' && change.to > change.from) {
         // Going up means the target is never the starting ruin.
@@ -209,25 +237,29 @@ export class ChurchScene {
   }
 
   private offerMiracle(): void {
-    if (this.pleaButton || this.world.hidden || this.gameState.getTotalFollowersCount() < 1) return;
-    const button = document.createElement('button');
-    button.className = 'miracle-plea church-plea';
-    button.type = 'button';
-    button.textContent = '✦ ATENDER PRECE';
-    button.setAttribute('aria-label', 'Atender prece do fiel e conceder um milagre');
-    button.addEventListener('click', event => {
-      this.clearPlea();
-      this.grantMiracle(event.clientX, event.clientY);
-    });
-    this.stage.append(button);
-    this.pleaButton = button;
-    this.pleaRemaining = 15;
-    this.world.classList.add('miracle-request');
+    if (this.yard.hasRequest || this.world.hidden) return;
+    const asked = this.yard.request(
+      () => {
+        this.pleaRemaining = PLEA_SECONDS;
+        if (isArtReview) this.reviewPleaTimer = window.setTimeout(() => this.clearPlea(), PLEA_SECONDS * 1000);
+      },
+      (x, y) => {
+        this.clearPlea();
+        this.grantMiracle(x, y);
+      }
+    );
+    if (asked) this.world.classList.add('miracle-request');
   }
 
+  /** The request ends, granted or expired: the follower walks back to their spot. */
   private clearPlea(): void {
-    this.pleaButton?.remove();
-    this.pleaButton = null;
+    this.yard.release();
+    this.endPlea();
+  }
+
+  private endPlea(): void {
+    if (this.pleaRemaining === 0 && !this.world.classList.contains('miracle-request')) return;
+    window.clearTimeout(this.reviewPleaTimer);
     this.pleaRemaining = 0;
     this.pleaCooldown = 35 + Math.random() * 30;
     this.world.classList.remove('miracle-request');
