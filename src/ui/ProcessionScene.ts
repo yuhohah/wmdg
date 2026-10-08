@@ -18,6 +18,9 @@ export class ProcessionScene {
   private entourage = document.getElementById('procession-entourage')!;
 
   constructor(private gameState: GameStateManager, private grantMiracle: (x: number, y: number) => number) {
+    this.buildLandscape();
+    this.addWalkCycle(this.world.querySelector<HTMLImageElement>('.prophet-sprite')!, 'prophet', 920, 0);
+    this.world.classList.toggle('scene-paused', document.hidden);
     if (isArtReview) {
       document.body.classList.add('art-review');
       document.getElementById('art-review-controls')!.hidden = false;
@@ -44,6 +47,40 @@ export class ProcessionScene {
       this.world.classList.toggle('scene-paused', document.hidden);
     });
     this.setEra(isArtReview && new URLSearchParams(location.search).get('art-review') === 'late' ? 'late' : 'early');
+  }
+
+  private addWalkCycle(sprite: HTMLImageElement, name: string, duration: number, delay: number): void {
+    const viewport = document.createElement('span');
+    viewport.className = 'walk-viewport';
+    viewport.setAttribute('aria-hidden', 'true');
+    const strip = document.createElement('img');
+    strip.className = 'walk-strip';
+    strip.alt = '';
+    strip.style.animationDuration = `${duration}ms`;
+    strip.style.animationDelay = `${delay}ms`;
+    strip.addEventListener('load', () => sprite.parentElement?.classList.add('walk-ready'), { once: true });
+    strip.src = `/assets/procession/walk/${name}-walk.png`;
+    viewport.append(strip);
+    sprite.after(viewport);
+  }
+
+  private buildLandscape(): void {
+    const landscape = this.world.querySelector('.world-landscape')!;
+    // Mirrored pairs meet at identical edges; repeat a full pair to loop without a jump.
+    for (const depth of ['sky', 'hills', 'road', 'foreground']) {
+      const layer = document.createElement('div');
+      layer.className = `world-parallax world-parallax-${depth}`;
+      const track = document.createElement('div');
+      track.className = 'world-parallax-track';
+      for (let tile = 0; tile < 4; tile++) {
+        const panel = document.createElement('div');
+        panel.className = 'world-parallax-tile';
+        track.append(panel);
+      }
+      layer.append(track);
+      landscape.append(layer);
+    }
+    landscape.setAttribute('aria-hidden', 'true');
   }
 
   private setEra(era: ArtEra): void {
@@ -81,8 +118,12 @@ export class ProcessionScene {
       const sprite = document.createElement('img');
       sprite.src = `/assets/procession/follower-${i % 9}.png`;
       sprite.alt = '';
-      sprite.style.animationDelay = `${(i % 4) * -0.2}s`;
+      const stride = 760 + (i % 4) * 70;
+      sprite.style.setProperty('--stride-duration', `${stride}ms`);
+      sprite.style.animationDelay = `${-(i * 173 % stride)}ms`;
+      member.style.setProperty('--march-delay', `${-i * 0.47}s`);
       member.append(sprite);
+      this.addWalkCycle(sprite, `follower-${i % 9}`, stride, -(i * 173 % stride));
       this.entourage.append(member);
     }
   }
