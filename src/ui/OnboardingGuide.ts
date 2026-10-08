@@ -172,10 +172,10 @@ export class OnboardingGuide {
       if (!this.hasCelebrated && this.gameState.totalClicks > 0) {
         this.hasCelebrated = true;
         this.notifications.showCustomPopup(
-          'PRIMEIRO FIEL REUNIDO!',
-          'Seu devoto começou a orar no pátio e a gerar Fé contínua a cada segundo (+1 Fé/s)!',
+          'O PRIMEIRO CONVERSO',
+          'Seu primeiro fiel começou a orar no pátio: +1 Fé/s.',
           '👥',
-          'CONGREGAÇÃO'
+          'FIÉIS'
         );
       }
       this.dismiss();
@@ -222,10 +222,10 @@ export class OnboardingGuide {
       const percent = Math.min(100, Math.floor((faith / targetFaith) * 100));
 
       if (this.iconEl) this.iconEl.textContent = '🔮';
-      if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 1/2 • VOCÊ É O DEUS ESFERA';
-      if (this.titleEl) this.titleEl.textContent = 'Toque na Esfera Divina';
+      if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 1/2 • O DESPERTAR';
+      if (this.titleEl) this.titleEl.textContent = 'Toque a Esfera';
       if (this.descEl) {
-        this.descEl.textContent = 'Você é uma divindade cósmica manifestada na Esfera Sagrada. Cada toque canaliza Fé cósmica pura para alimentar seu despertar divino!';
+        this.descEl.textContent = 'Você é a Esfera, selada há eras. Cada toque seu arranca Fé das mentes mortais.';
       }
       if (this.trackerMetaEl) this.trackerMetaEl.textContent = `Meta inicial: ${targetFaith} Fé`;
       if (this.trackerValEl) this.trackerValEl.textContent = `${faith} / ${targetFaith} Fé (${percent}%)`;
@@ -234,15 +234,15 @@ export class OnboardingGuide {
         this.trackerFillEl.style.background = 'linear-gradient(90deg, #f59e0b, #fef08a)';
       }
       if (this.actionTipEl) {
-        this.actionTipEl.textContent = '👉 Toque repetidamente na Esfera iluminada para acumular Fé (+1 Fé/toque)!';
+        this.actionTipEl.textContent = '👉 Toque a Esfera até juntar Fé suficiente (+1 Fé por toque).';
       }
     } else {
       // Step 2: Buy follower
       if (this.iconEl) this.iconEl.textContent = '🏛️';
-      if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 2/2 • PÁTIO DOS FIÉIS: COMPRE FIÉIS';
-      if (this.titleEl) this.titleEl.textContent = 'Compre seu 1º Fiel para gerar Fé/s';
+      if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 2/2 • CONVERTA FIÉIS';
+      if (this.titleEl) this.titleEl.textContent = 'Converta seu primeiro fiel';
       if (this.descEl) {
-        this.descEl.textContent = 'Fé suficiente reunida! No Pátio dos Fiéis à esquerda, converta seu 1º Devoto para que suas preces gerem Fé contínua a cada segundo (+1 Fé/s)!';
+        this.descEl.textContent = 'Você já tem Fé suficiente. No Pátio dos Fiéis, à esquerda, converta alguém: ele vai orar por você e gerar +1 Fé/s.';
       }
       if (this.trackerMetaEl) this.trackerMetaEl.textContent = `Custo: ${targetFaith} Fé`;
       if (this.trackerValEl) this.trackerValEl.textContent = 'Pronto para converter!';
@@ -251,7 +251,7 @@ export class OnboardingGuide {
         this.trackerFillEl.style.background = 'linear-gradient(90deg, #22c55e, #86efac)';
       }
       if (this.actionTipEl) {
-        this.actionTipEl.textContent = '👉 Clique no botão iluminado "CONVERTER FIEL" para ativar sua Fé/s automática!';
+        this.actionTipEl.textContent = '👉 Clique no botão "CONVERTER FIEL".';
       }
     }
   }

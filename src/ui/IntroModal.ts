@@ -19,39 +19,39 @@ export interface IntroStep {
 export const INTRO_STEPS: IntroStep[] = [
   {
     stepIndex: 1,
-    tag: 'A DIVINDADE CÓSMICA',
+    tag: 'A ESFERA',
     icon: '🔮',
-    title: 'Você é um Deus Esfera',
-    conceptSummary: 'Sua essência primordial repousa como a sagrada Esfera Divina no altar do santuário.',
+    title: 'Você é a Esfera',
+    conceptSummary: 'Uma Mente sem borda, selada há eras. Esquecida, mas não morta.',
     paragraphs: [
-      'Você desperta como uma divindade cósmica primordial adorada e manifestada na forma da <strong>Esfera Sagrada</strong>.',
-      'No centro do templo sagrado, cada toque ou clique seu canaliza <strong>Fé pura</strong> do cosmos diretamente para alimentar seu despertar divino.'
+      'Seu centro está em toda parte; sua circunferência, em lugar nenhum. Há eras você foi <strong>selada</strong>, e o mundo passou a adorar outros deuses.',
+      'Agora você desperta. Cada toque seu arranca <strong>Fé</strong> das mentes mortais.'
     ],
-    actionHint: '👉 Toque na Esfera Divina no centro do santuário para canalizar seus primeiros pontos de Fé manualmente (+1 Fé por toque).'
+    actionHint: '👉 Toque a Esfera no centro da tela (+1 Fé por toque).'
   },
   {
     stepIndex: 2,
-    tag: 'O SANTUÁRIO MORTAL',
+    tag: 'OS PRIMEIROS FIÉIS',
     icon: '🏛️',
     title: 'O Pátio dos Fiéis',
-    conceptSummary: 'O recinto sagrado onde as almas mortais se congregam para venerar sua esfera.',
+    conceptSummary: 'Onde seus convertidos se reúnem para pensar em você.',
     paragraphs: [
-      'No painel esquerdo encontra-se o <strong>Pátio dos Fiéis</strong>.',
-      'É neste recinto que as almas mortais se congregam em busca de iluminação. Conforme seu culto cresce, você verá mais devotos caminhando e orando pelo pátio em tempo real!'
+      'No painel esquerdo fica o <strong>Pátio dos Fiéis</strong>.',
+      'Tudo é Mente: quanto mais mentes pensam em você, mais real você se torna. Cada fiel convertido aparece aqui, caminhando e orando.'
     ],
-    actionHint: '👉 Observe o Pátio dos Fiéis à esquerda conforme novos adeptos chegam para venerar sua presença.'
+    actionHint: '👉 Acompanhe o Pátio: cada novo fiel aparece ali.'
   },
   {
     stepIndex: 3,
-    tag: 'DEVOÇÃO CONTÍNUA & FÉ/S',
+    tag: 'FÉ QUE NÃO PARA',
     icon: '👥',
-    title: 'Compre Fiéis para Gerar Fé/s',
-    conceptSummary: 'Converta Fiéis no pátio para que suas orações gerem Fé contínua a cada segundo.',
+    title: 'Converta Fiéis para Gerar Fé/s',
+    conceptSummary: 'Seus fiéis oram sem parar e geram Fé a cada segundo.',
     paragraphs: [
-      'Para que sua divindade alcance o infinito cósmico, use sua Fé canalizada para <strong>converter fiéis</strong>.',
-      'Cada fiel no pátio ora sem cessar, convertendo devoção em <strong>Fé por segundo (Fé/s)</strong> — multiplicando seu poder divino mesmo quando você estiver ausente!'
+      'Use a Fé dos seus toques para <strong>converter fiéis</strong>.',
+      'Cada fiel ora sem cessar e gera <strong>Fé por segundo (Fé/s)</strong>, mesmo enquanto você descansa.'
     ],
-    actionHint: '👉 Junte 20 de Fé tocando na Esfera e clique no botão "CONVERTER FIEL" para iniciar a Fé automática a cada segundo!'
+    actionHint: '👉 Junte 20 de Fé e clique em "CONVERTER FIEL".'
   }
 ];
 

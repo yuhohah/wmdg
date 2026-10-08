@@ -64,8 +64,8 @@ export class UnlocksTab {
       completedBanner.className = 'unlocks-completed-banner';
       completedBanner.innerHTML = `
         <div class="completed-icon">✨</div>
-        <div class="completed-title">EXPANSÃO CÓSMICA CONCLUÍDA</div>
-        <p class="completed-desc">Todas as novas ordens e mecânicas cósmicas foram adquiridas e despertadas.</p>
+        <div class="completed-title">TODOS OS SELOS ROMPIDOS</div>
+        <p class="completed-desc">Seu poder foi libertado. Por enquanto.</p>
       `;
       this.unlocksListEl.appendChild(completedBanner);
       return;
@@ -105,22 +105,22 @@ export class UnlocksTab {
 
     if (unlock.id === 'unlock_incarnation') {
       this.notifications.showCustomPopup(
-        'ENCARNAÇÃO SAGRADA',
-        'A Encarnação da Divindade despertou no altar! Geração de Fervor iniciada a +1/s.',
+        'A ESFERA GANHOU CORPO',
+        'A Encarnação desceu ao altar e acendeu o Fervor (+1/s).',
         '🔥',
-        'DESBLOQUEIO'
+        'NOVA MECÂNICA'
       );
     } else if (unlock.id === 'unlock_fervor_upgrades') {
       this.notifications.showCustomPopup(
         'RITOS DE FERVOR',
-        'Os Ritos e Upgrades de Fervor foram revelados! Acesse a aba Fervor para expandir seu poder.',
+        'As melhorias de Fervor estão liberadas na aba Fervor.',
         '🕯️',
         'NOVA MECÂNICA'
       );
     } else if (unlock.id === 'unlock_relics') {
       this.notifications.showCustomPopup(
-        'RELÍQUIAS CÓSMICAS',
-        'O altar de transmutação de Relíquias sagradas foi despertado no santuário!',
+        'O RELICÁRIO SE ABRIU',
+        'Transmute sua Fé em Fragmentos e restaure relíquias na aba Relíquias.',
         '⚱️',
         'NOVA MECÂNICA'
       );

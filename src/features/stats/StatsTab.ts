@@ -52,7 +52,7 @@ export class StatsTab {
       this.statClickFaithEl.textContent = `+${formatNumber(fpc)}`;
     }
     if (this.statPassiveFaithEl) {
-      this.statPassiveFaithEl.textContent = `+${formatNumber(fps)} / seg${isBoosted ? ' (2x Bênção)' : ''}`;
+      this.statPassiveFaithEl.textContent = `+${formatNumber(fps)} Fé/s${isBoosted ? ' (2x Bênção)' : ''}`;
     }
     if (this.statTotalFollowersEl) {
       this.statTotalFollowersEl.textContent = formatNumber(followers);
@@ -64,7 +64,7 @@ export class StatsTab {
       this.statFervorAccumEl.textContent = formatNumber(Math.floor(fervor));
     }
     if (this.statFervorRateEl) {
-      this.statFervorRateEl.textContent = `+${formatNumber(fervorRate)} / seg`;
+      this.statFervorRateEl.textContent = `+${formatNumber(fervorRate)} Fervor/s`;
     }
 
     if (this.statAchievementsCountEl) {
@@ -78,10 +78,11 @@ export class StatsTab {
   }
 
   private getCultTier(totalFaith: number): string {
-    if (totalFaith >= 1000000) return 'Apoteose Universal';
-    if (totalFaith >= 100000) return 'Ordem do Eclipse';
-    if (totalFaith >= 10000) return 'Santuário Cósmico';
-    if (totalFaith >= 1000) return 'Irmandade Mística';
-    return 'Círculo Inicial';
+    if (totalFaith >= 1e50) return 'Mente Única';
+    if (totalFaith >= 1e25) return 'Credo Mundial';
+    if (totalFaith >= 1e12) return 'Igreja';
+    if (totalFaith >= 1e6) return 'Culto';
+    if (totalFaith >= 1e3) return 'Seita';
+    return 'Boato';
   }
 }

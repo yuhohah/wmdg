@@ -3,21 +3,21 @@ import type { MechanicUnlock } from '../types.js';
 export const initialUnlocks: MechanicUnlock[] = [
   {
     id: 'unlock_incarnation',
-    name: 'Despertar Incarnation',
-    desc: 'Convoque a Encarnação Sagrada da Esfera Cósmica para habitar o altar sagrado. Desperta o Fervor (+1.0/s) e revela a nova aba Incarnation.',
-    lore: 'Através da união espiritual dos primeiros fiéis, a divindade ganha forma corporal tangível. Sua presença desperta a chama viva do culto.',
+    name: 'Selo da Encarnação',
+    desc: 'Rompe o selo que impede você de ter um corpo. Acende o Fervor (+1/s) e abre a aba Encarnação.',
+    lore: 'Uma Mente não arde sem um corpo. Rompido o primeiro selo, você desce ao altar e acende a chama do culto.',
     symbol: '',
     cost: 200,
     costCurrency: 'faith',
     unlocked: false,
     tabId: 'tab-incarnation',
-    tabName: 'Incarnation'
+    tabName: 'Encarnação'
   },
   {
     id: 'unlock_fervor_upgrades',
-    name: 'Ritos de Fervor',
-    desc: 'Desbloqueie a aba e a árvore de Upgrades de Fervor para canalizar a chama sagrada em bênçãos permanentes de cliques, devotos e multiplicadores.',
-    lore: 'Com a presença viva da Encarnação, os sacerdotes consagram os manuscritos sagrados de aprimoramento de fervor.',
+    name: 'Selo do Fervor',
+    desc: 'Libera os Ritos de Fervor: gaste Fervor em melhorias permanentes para cliques, fiéis e para o próprio Fervor.',
+    lore: 'Atrás deste selo está o fogo que seus fiéis alimentam. Quanto mais ele arde, mais você se lembra do que já foi.',
     symbol: '',
     cost: 5000,
     costCurrency: 'faith',
@@ -28,9 +28,9 @@ export const initialUnlocks: MechanicUnlock[] = [
   },
   {
     id: 'unlock_relics',
-    name: 'Desbloquear Relíquias',
-    desc: 'Desperte o relicário ancestral e revele a aba de Relíquias mitológicas para consagrar Fé em artefatos de poder imensurável.',
-    lore: 'Antigos mestres guardavam relicários imbuídos com a matéria primordial da Esfera, permitindo converter a devoção terrena em essência pura.',
+    name: 'Selo das Relíquias',
+    desc: 'Libera a Transmutação: troque toda a sua Fé por Fragmentos e use-os para restaurar relíquias de deuses caídos. Abre a aba Relíquias.',
+    lore: 'Enquanto você dormia, deuses nasceram e morreram esquecidos. Este selo guarda o que restou deles.',
     symbol: '',
     cost: 20000000,
     costCurrency: 'faith',

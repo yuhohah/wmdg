@@ -52,7 +52,7 @@ export class SphereController {
           this.audio.playTone(220, 'sine', 0.08);
           const clientX = e.clientX || window.innerWidth / 2;
           const clientY = e.clientY || window.innerHeight / 2;
-          this.spawnFloatingText(clientX, clientY, 'NÓ DORMENTE');
+          this.spawnFloatingText(clientX, clientY, 'ADORMECIDO');
         }
       });
     });
@@ -114,7 +114,7 @@ export class SphereController {
 
     this.notifications.showCustomPopup(
       'Milagre Concedido!',
-      `A prece fervorosa foi atendida: +${formatNumber(finalReward)} Fé cósmica!`,
+      `Um fiel pediu um sinal, e você respondeu: +${formatNumber(finalReward)} Fé.`,
       '',
       'GRAÇA DIVINA'
     );
@@ -157,11 +157,11 @@ export class SphereController {
       if (isUnlocked) {
         node.classList.remove('state-locked');
         node.classList.add('state-unlocked');
-        node.setAttribute('title', `Santuário Satélite ${this.getRomanNumeral(idx + 1)} (Desbloqueado)`);
+        node.setAttribute('title', `Deus Rival ${this.getRomanNumeral(idx + 1)} (Desperto)`);
       } else {
         node.classList.remove('state-unlocked');
         node.classList.add('state-locked');
-        node.setAttribute('title', `Santuário Satélite ${this.getRomanNumeral(idx + 1)} (Oculto / Bloqueado)`);
+        node.setAttribute('title', `Deus Rival ${this.getRomanNumeral(idx + 1)} (Adormecido)`);
       }
     });
   }

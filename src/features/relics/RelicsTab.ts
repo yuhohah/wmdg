@@ -25,6 +25,7 @@ export class RelicsTab {
   private btnConvertRelicsEl: HTMLButtonElement | null = null;
   private relicsToGetEl: HTMLElement | null = null;
   private relicsConvertCooldownEl: HTMLElement | null = null;
+  private relicsCooldownLineEl: HTMLElement | null = null;
   private relicsBalanceValEl: HTMLElement | null = null;
   private relicsExtraValEl: HTMLElement | null = null;
   private relicUpgradesListEl: HTMLElement | null = null;
@@ -42,6 +43,7 @@ export class RelicsTab {
     this.btnConvertRelicsEl = document.getElementById('btn-convert-relics') as HTMLButtonElement | null;
     this.relicsToGetEl = document.getElementById('relics-to-get');
     this.relicsConvertCooldownEl = document.getElementById('relics-convert-cooldown');
+    this.relicsCooldownLineEl = document.getElementById('relics-cooldown-line');
     this.relicsBalanceValEl = document.getElementById('relics-balance-val');
     this.relicsExtraValEl = document.getElementById('relics-extra-val');
     this.relicUpgradesListEl = document.getElementById('relic-upgrades-list');
@@ -60,13 +62,13 @@ export class RelicsTab {
       this.options.spawnFloatingText(
         window.innerWidth / 2,
         window.innerHeight / 2,
-        `+${result.gained} RELÍQUIAS!`
+        `+${result.gained} FRAGMENTOS!`
       );
       this.options.notifications.showCustomPopup(
-        'FÉ TRANSMUTADA',
-        `Você consagrou +${formatNumber(result.gained)} Relíquias sagradas para o culto!`,
+        'TRANSMUTAÇÃO',
+        `Sua Fé virou +${formatNumber(result.gained)} Fragmentos de deuses caídos.`,
         '✨',
-        'ALQUIMIA CÓSMICA'
+        'TRANSMUTAÇÃO'
       );
       this.updateUI();
       this.renderList();
@@ -111,7 +113,7 @@ export class RelicsTab {
              <span class="card-status-badge maxed-badge">NÍVEL MÁXIMO</span>
            </div>`
         : `<div class="card-click-prompt">
-             <span class="card-click-hint relic-hint">CLIQUE PARA CONSAGRAR</span>
+             <span class="card-click-hint relic-hint">CLIQUE PARA RESTAURAR</span>
            </div>`;
 
       card.innerHTML = `
@@ -128,7 +130,7 @@ export class RelicsTab {
         <div class="card-footer-row">
           <div class="relic-cost-tag">
             <span>CUSTO:</span>
-            <span>${isMax ? 'CONCLUÍDO' : `${formatNumber(relic.cost)} Relíquias`}</span>
+            <span>${isMax ? 'CONCLUÍDO' : `${formatNumber(relic.cost)} Fragmentos`}</span>
           </div>
           ${promptHtml}
         </div>
@@ -157,8 +159,12 @@ export class RelicsTab {
     if (this.relicsToGetEl) {
       this.relicsToGetEl.textContent = formatNumber(toGet);
     }
+    const cooldown = this.options.gameState.relicConvertCooldown;
     if (this.relicsConvertCooldownEl) {
-      this.relicsConvertCooldownEl.textContent = `${Math.ceil(this.options.gameState.relicConvertCooldown)}`;
+      this.relicsConvertCooldownEl.textContent = `${Math.ceil(cooldown)}`;
+    }
+    if (this.relicsCooldownLineEl) {
+      this.relicsCooldownLineEl.style.display = cooldown > 0 ? 'block' : 'none';
     }
     if (this.relicsBalanceValEl) {
       this.relicsBalanceValEl.textContent = formatNumber(this.options.gameState.relicPoints);
