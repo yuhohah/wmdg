@@ -127,6 +127,7 @@
 @keyframes protagonist-fade-in { from { opacity:0; } to { opacity:1; } }
 @keyframes protagonist-glow { 0% { opacity:0; transform:scale(.6); } 35% { opacity:1; transform:scale(1); } 100% { opacity:0; transform:scale(1.15); } }
 .church-world .ritual-sigil { left:23%; bottom:16%; }
+/* Stacking over the background: crowd 1, dust 2, yard 3, detail props 4. The crowd stays behind everything the player reads. */
 .church-crowd { position:absolute; inset:0; width:100%; height:100%; z-index:1; image-rendering:pixelated; pointer-events:none; }
 .church-crowd[hidden] { display:none; }
 .church-followers { position:absolute; inset:0; z-index:3; pointer-events:none; }
