@@ -37,7 +37,7 @@ export const INTRO_STEPS: IntroStep[] = [
     conceptSummary: 'O recinto sagrado onde as almas mortais se congregam para venerar sua esfera.',
     paragraphs: [
       'No painel esquerdo encontra-se o <strong>Pátio dos Fiéis</strong>.',
-      'É neste recinto que as almas mortais se congregam em busca de iluminação. Conforme seu culto cresce, você verá mais devotos caminhando e orando pelo pátio em tempo real!'
+      'É neste caminho que as almas mortais se congregam em busca de iluminação. Conforme seu culto cresce, novos devotos se juntam à procissão atrás do Profeta!'
     ],
     actionHint: '👉 Observe o Pátio dos Fiéis à esquerda conforme novos adeptos chegam para venerar sua presença.'
   },
@@ -46,10 +46,10 @@ export const INTRO_STEPS: IntroStep[] = [
     tag: 'DEVOÇÃO CONTÍNUA & FÉ/S',
     icon: '👥',
     title: 'Compre Fiéis para Gerar Fé/s',
-    conceptSummary: 'Converta Fiéis no pátio para que suas orações gerem Fé contínua a cada segundo.',
+    conceptSummary: 'Converta Fiéis para que suas orações gerem Fé contínua a cada segundo.',
     paragraphs: [
       'Para que sua divindade alcance o infinito cósmico, use sua Fé canalizada para <strong>converter fiéis</strong>.',
-      'Cada fiel no pátio ora sem cessar, convertendo devoção em <strong>Fé por segundo (Fé/s)</strong> — multiplicando seu poder divino mesmo quando você estiver ausente!'
+      'Cada fiel da procissão ora sem cessar, convertendo devoção em <strong>Fé por segundo (Fé/s)</strong> — multiplicando seu poder divino mesmo quando você estiver ausente!'
     ],
     actionHint: '👉 Junte 20 de Fé tocando na Esfera e clique no botão "CONVERTER FIEL" para iniciar a Fé automática a cada segundo!'
   }

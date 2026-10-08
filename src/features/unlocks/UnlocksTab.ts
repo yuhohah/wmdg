@@ -78,7 +78,7 @@ export class UnlocksTab {
 
     card.innerHTML = `
       <div class="card-header-row" style="margin-bottom: 0; width: 100%; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-        <span class="card-name" style="font-size: 13px; font-weight: 700; color: #ffffff;">${currentUnlock.name}</span>
+        <span class="card-name" style="font-size: 13px; font-weight: 700; ">${currentUnlock.name}</span>
         <div class="card-click-prompt">
           <span class="card-click-hint" style="font-size: 11px; padding: 5px 12px; font-weight: 800;">Desbloquear (${formatNumber(currentUnlock.cost)} Fé)</span>
         </div>
