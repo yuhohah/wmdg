@@ -95,6 +95,15 @@
 .church-sphere[data-location='altar'] { left:30.5%; top:63%; width:5%; filter:drop-shadow(0 0 10px #e9be72); }
 .faith-response .church-sphere { filter:brightness(1.35) drop-shadow(0 0 14px #f3d392); }
 .church-sphere:focus-visible { outline:2px solid #edc886; outline-offset:4px; }
+/* Centred under the altar, but never past the cropped left edge of the stage on narrow screens. */
+.church-blessing { position:absolute; left:max(calc(30.5% - 3.5em), calc(50% - 50cqw + 6px)); top:70%; z-index:2; overflow:hidden; box-sizing:border-box; width:7em; padding:2px 6px; border:2px solid #8d6c40; border-radius:0; background:#30241b; box-shadow:0 2px #1a120c; color:#c9a874; font:clamp(16px, 4.4cqh, 22px)/1 var(--font-game); white-space:nowrap; cursor:pointer; transition:filter 120ms var(--ease-out); }
+.church-blessing[hidden] { display:none; }
+.church-blessing-fill { position:absolute; inset:0; background:#8c6a36; transform:scaleX(var(--blessing-fill, 0)); transform-origin:left; transition:transform 120ms linear; }
+.church-blessing-label { position:relative; }
+.church-blessing.active { border-color:#c39a58; color:#ffdea0; }
+.faith-response .church-blessing { filter:brightness(1.35) drop-shadow(0 0 6px #f3d392); }
+.church-blessing:active { transform:translateY(1px); box-shadow:0 1px #1a120c; }
+.church-blessing:focus-visible { outline:2px solid #edc886; outline-offset:3px; }
 .church-world .ritual-sigil { left:23%; bottom:16%; }
 .church-stage .church-plea { left:50%; bottom:20%; transform:translateX(-50%); }
 @keyframes ruin-glow { 0%,100% { opacity:.45; } 50% { opacity:.8; } }
@@ -172,9 +181,10 @@
 @keyframes pilgrim-sway { 0%,100% { transform:translateX(-3px); } 50% { transform:translateX(3px); } }
 @keyframes ritual-bow { 0%,100% { transform:rotate(0); } 50% { transform:rotate(5deg); } }
 @keyframes recruit-arrival { from { opacity:0; transform:translateX(-24px); } to { opacity:1; transform:translateX(0); } }
-@media (hover:hover) and (pointer:fine) { .divine-sphere-btn:hover { filter:brightness(1.15) drop-shadow(0 0 16px #b8874540); } .church-sphere:hover { filter:brightness(1.2) drop-shadow(0 0 12px #f3d392); } }
+@media (hover:hover) and (pointer:fine) { .divine-sphere-btn:hover { filter:brightness(1.15) drop-shadow(0 0 16px #b8874540); } .church-sphere:hover { filter:brightness(1.2) drop-shadow(0 0 12px #f3d392); } .church-blessing:hover { filter:brightness(1.2); } }
 @media (prefers-reduced-motion:reduce) {
   .world-parallax-track,.prophet-sprite,.procession-member,.procession-member img,.walk-strip,.new-recruit,.church-sphere { animation:none!important; }
+  .church-blessing-fill { transition:none; }
   .walk-ready > .walk-viewport { display:none; }
   .walk-ready > img { opacity:1; }
   .ritual-sigil { transform:none!important; transition:opacity 120ms; }

@@ -8,6 +8,10 @@ export interface IncarnationStage {
   multiplier: number;
 }
 
+/** Each Bênção press adds this many seconds of 2× Fé, stored up to the cap. */
+export const BLESSING_SECONDS_PER_PRESS = 2;
+export const BLESSING_MAX_SECONDS = 60;
+
 /**
  * Progressão da Encarnação alinhada com o Dragão de DodecaDragons:
  * - Desbloqueio: 200 Fé (unlock_incarnation) -> Estágio I: Avatar Neófito (Baby Dragon), 1x Fervor

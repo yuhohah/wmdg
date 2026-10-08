@@ -37,10 +37,23 @@ export class ChurchScene {
   private world = document.getElementById('church-world')!;
   private background = document.getElementById('church-background') as HTMLImageElement;
   private sphere = document.getElementById('church-sphere') as HTMLButtonElement;
+  private blessing = document.getElementById('church-blessing') as HTMLButtonElement;
+  private blessingLabel = document.getElementById('church-blessing-label')!;
 
-  constructor(private gameState: GameStateManager, onSphereClick: (event: MouseEvent) => void, private grantMiracle: (x: number, y: number) => number) {
+  constructor(
+    private gameState: GameStateManager,
+    onSphereClick: (event: MouseEvent) => void,
+    private grantMiracle: (x: number, y: number) => number,
+    invokeBlessing: (x: number, y: number) => void
+  ) {
     paintPixelSphere(this.sphere.querySelector('canvas')!);
     this.sphere.addEventListener('click', onSphereClick);
+    // Native button: Enter and Space arrive here as clicks, so feedback is anchored to the button, not the pointer.
+    this.blessing.addEventListener('click', () => {
+      const rect = this.blessing.getBoundingClientRect();
+      invokeBlessing(rect.x + rect.width / 2, rect.y);
+      this.pulse();
+    });
     this.world.classList.toggle('scene-paused', document.hidden);
     this.trackHud();
     if (isArtReview) {
@@ -56,6 +69,7 @@ export class ChurchScene {
     events.on(GameEvents.MIRACLE_GRANTED, () => this.miracle());
     events.on(GameEvents.MIRACLE_PLEA, () => this.offerMiracle());
     events.on<number>(GameEvents.GAME_TICK, delta => {
+      this.sync();
       if (isArtReview || document.hidden || !document.getElementById('gameplay-screen')!.classList.contains('active')) return;
       if (this.pleaRemaining > 0) {
         this.pleaRemaining -= delta;
@@ -110,6 +124,10 @@ export class ChurchScene {
     if (this.reviewTier !== null) snapshot.selos.incarnation = this.reviewTier === 1;
     const next = describeChurchScene(snapshot);
     document.getElementById('church-count')!.textContent = `${formatNumber(this.gameState.getTotalFollowersCount())} fiéis`;
+    this.blessing.hidden = !next.blessing.visible;
+    this.blessing.style.setProperty('--blessing-fill', String(next.blessing.fill));
+    this.blessing.classList.toggle('active', snapshot.blessingSeconds > 0);
+    this.blessingLabel.textContent = `✦ 2× · ${Math.ceil(snapshot.blessingSeconds)}s`;
     if (this.scene?.tier === next.tier && this.scene.sphereLocation === next.sphereLocation) return;
     this.scene = next;
     this.world.dataset.churchTier = String(next.tier);

@@ -110,6 +110,7 @@
           <div class="church-stage" id="church-stage">
             <img class="church-background" id="church-background" alt="">
             <button type="button" class="church-sphere" id="church-sphere" data-location="ruins" aria-label="Tocar a Esfera e gerar Fé"><canvas width="64" height="64"></canvas></button>
+            <button type="button" class="church-blessing" id="church-blessing" aria-label="Invocar a Bênção: +2 segundos de Fé em dobro" hidden><span class="church-blessing-fill"></span><span class="church-blessing-label" id="church-blessing-label">✦ 2× · 0s</span></button>
           </div>
           <div class="world-veil"></div>
           <div class="world-heading"><span class="world-eyebrow">ERA I · O CHAMADO</span><h1 id="church-title">A Igreja em Ruínas</h1></div>
@@ -224,31 +225,6 @@
                   <div class="incarnation-mult-wrapper" style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
                     <span class="incarnation-mult-sublabel" style="font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #a1a1aa; text-transform: uppercase;">MULTIPLICADOR DOS FIÉIS</span>
                     <div class="incarnation-rate-badge" id="incarnation-rate-badge" title="Multiplicador: 1 + log10(1 + Fervor / 150) × 1,5 × Estágio">x1.00</div>
-                  </div>
-                </div>
-
-                <!-- Arena: The Grand Incarnation Canvas -->
-                <div class="incarnation-arena-wrapper">
-                  <canvas id="incarnation-canvas" class="incarnation-canvas"></canvas>
-                </div>
-
-                <!-- Incarnation Blessing / Boost Bar (2x Fé/s) -->
-                <div class="incarnation-boost-card" id="incarnation-boost-card">
-                  <div class="incarnation-boost-header">
-                    <div class="boost-header-left">
-                      <div class="boost-title-col">
-                        <span class="boost-card-title">BÊNÇÃO DA ENCARNAÇÃO</span>
-                        <span class="boost-card-sub" id="incarnation-boost-status">Clique na Encarnação (+2s) para
-                          dobrar Fé/s</span>
-                      </div>
-                    </div>
-                    <div class="boost-header-right">
-                      <span class="boost-active-tag inactive" id="incarnation-boost-badge">2x FÉ INATIVO</span>
-                      <span class="boost-timer-display" id="incarnation-boost-timer-text">0.0s / 60s</span>
-                    </div>
-                  </div>
-                  <div class="incarnation-boost-track">
-                    <div class="incarnation-boost-fill" id="incarnation-boost-fill" style="width: 0%;"></div>
                   </div>
                 </div>
 

@@ -10,6 +10,7 @@ import { initialFollowers } from '../config/followers.js';
 import { initialFervorUpgrades, BASE_FERVOR_RATE, getFervorUpgradeMultiplier } from '../config/fervor.js';
 import { initialAchievements } from '../config/achievements.js';
 import { initialUnlocks } from '../config/unlocks.js';
+import { BLESSING_MAX_SECONDS } from '../config/incarnation.js';
 import { initialRelicUpgrades } from '../config/relics.js';
 import { INCARNATION_STAGES } from '../config/incarnation.js';
 import {
@@ -48,7 +49,7 @@ export class GameStateManager {
   // Incarnation State
   public incarnationStage: number = 1;
   public incarnationBoostTimer: number = 0;
-  public readonly MAX_INCARNATION_BOOST: number = 60;
+  public readonly MAX_INCARNATION_BOOST: number = BLESSING_MAX_SECONDS;
 
   // Relics (Prestige) State
   public relicPoints: number = 0;

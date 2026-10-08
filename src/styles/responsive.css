@@ -219,8 +219,7 @@
   }
 
   /* Arenas no layout tablet e mobile fluido: ocupam o espaço vertical de forma expansiva e natural */
-  .followers-arena-wrapper,
-  .incarnation-arena-wrapper {
+  .followers-arena-wrapper {
     position: relative;
     width: 100%;
     flex: 1 1 0 !important;
@@ -229,8 +228,7 @@
     height: auto !important;
   }
 
-  .followers-walk-canvas,
-  .incarnation-canvas {
+  .followers-walk-canvas {
     touch-action: manipulation;
   }
 
@@ -262,8 +260,7 @@
     min-height: 100%;
   }
 
-  .followers-arena-wrapper,
-  .incarnation-arena-wrapper {
+  .followers-arena-wrapper {
     min-height: 170px !important;
     max-height: 220px !important;
     height: clamp(170px, 26vh, 220px) !important;

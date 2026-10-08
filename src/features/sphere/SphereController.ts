@@ -2,6 +2,7 @@ import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { NotificationManager } from '../../systems/notifications.js';
 import { formatNumber } from '../../systems/calculations.js';
+import { BLESSING_SECONDS_PER_PRESS } from '../../config/incarnation.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 
 export interface SphereControllerOptions {
@@ -85,6 +86,15 @@ export class SphereController {
     this.triggerHaptic(12);
     this.onSphereClicked(e);
     this.audio.playTone(740 + idx * 45, 'triangle', 0.12);
+  }
+
+  public invokeBlessing(clientX: number, clientY: number): void {
+    this.audio.init();
+    this.triggerHaptic(12);
+    this.audio.playTone(660, 'sine', 0.12);
+    this.gameState.addIncarnationBoost(BLESSING_SECONDS_PER_PRESS);
+    this.spawnFloatingText(clientX, clientY, `+${BLESSING_SECONDS_PER_PRESS}s BÊNÇÃO 2X!`);
+    events.emit(GameEvents.STATE_CHANGED);
   }
 
   public grantMiracle(clientX: number, clientY: number): number {

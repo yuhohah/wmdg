@@ -23,7 +23,7 @@ Jogo idle/clicker monocromático em **TypeScript** + **Vite**, com estética *da
 ### 3. Encarnação
 - 5 estágios que multiplicam o Fervor/s: **1× → 100× → 10⁴× → 10⁸× → 10¹⁵×** (custos: 2,5M · 1e12 · 1e25 · 1e150 Fé).
 - O estágio e o Fervor acumulado também multiplicam os fiéis: `1 + log10(1 + Fervor/150) × 1.5 × estágio`.
-- Clicar no avatar adiciona **+2 s de Bênção 2×** na Fé/s (máx. 60 s).
+- O botão de Bênção sob a Esfera adiciona **+2 s de Bênção 2×** na Fé/s (máx. 60 s).
 
 ### 4. Fervor
 - O Fervor acumulado multiplica toda a Fé: `(log10(Fervor/10 + 1) × 2 + 1) × efeito`.
