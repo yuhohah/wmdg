@@ -72,7 +72,9 @@
 .ascended-monastery { position:absolute; right:15%; top:16%; height:45%; width:auto; image-rendering:pixelated; filter:brightness(.65); z-index:1; }
 /* Church scene: the stage keeps the background's 400×192 grid and covers the frame, so overlays stay pinned to the art. */
 .church-world { container-type:size; background:#1b2a3d; }
-.church-stage { position:absolute; left:50%; top:50%; width:max(100cqw, 100cqh * 400 / 192); aspect-ratio:400 / 192; transform:translate(-50%,-50%); }
+/* The stage covers the world and is anchored on the ground line: when it is cropped, sky goes first and art
+   down to y 152 of 192 (the front of the yard) always stays visible. Narrow worlds are not cropped at all. */
+.church-stage { --stage-top:min(0px, calc(100cqh - 152 / 192 * max(48cqw, 100cqh))); position:absolute; left:50%; top:var(--stage-top); width:max(100cqw, 100cqh * 400 / 192); aspect-ratio:400 / 192; transform:translateX(-50%); }
 .church-background { position:absolute; inset:0; width:100%; height:100%; image-rendering:pixelated; pointer-events:none; }
 .church-sphere { position:absolute; aspect-ratio:1; padding:0; border:0; background:transparent; cursor:pointer; transform:translate(-50%,-50%); z-index:2; transition:filter 120ms var(--ease-out); }
 .church-sphere canvas { display:block; width:100%; height:100%; image-rendering:pixelated; pointer-events:none; }
