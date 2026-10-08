@@ -30,8 +30,8 @@ html,body { background:#211a18; }
 #music-quick-btn:has(#music-icon-off[style*='block'])::before { opacity:.4; }
 #music-quick-btn.muted::before { opacity:.4; }
 .top-right-group { gap:10px; }
-.procession-world { border:8px solid transparent; border-image:var(--wood-frame) 8 / 8px / 0 stretch; height:49%; min-height:270px; }
-.art-review .procession-world { height:47%; }
+.procession-world,.church-world { border:8px solid transparent; border-image:var(--wood-frame) 8 / 8px / 0 stretch; height:49%; min-height:270px; }
+.art-review .procession-world,.art-review .church-world { height:47%; }
 .world-heading { top:88px; left:18px; padding:8px 13px 10px; background:#231e1bba; border-left:3px solid #b48b4e; }
 .world-heading .world-eyebrow { font:16px/1 var(--font-game); letter-spacing:1px; color:#d4b57d; }
 .world-heading h1 { font:26px/1 var(--font-game); margin-top:4px; color:#f6dfb2; }
@@ -111,8 +111,8 @@ html,body { background:#211a18; }
   .cult-action-card:hover:not(.unaffordable) { transform:none; background:#e1c998; border-color:#96744b; box-shadow:none; }
 }
 @media (max-height:760px) and (min-width:861px) {
-  .procession-world { min-height:245px; height:45%; }
-  .art-review .procession-world { height:43%; }
+  .procession-world,.church-world { min-height:245px; height:45%; }
+  .art-review .procession-world,.art-review .church-world { height:43%; }
   .world-heading { top:76px; }
   .world-status { top:80px; }
   .center-frame { padding:8px; }
@@ -139,5 +139,5 @@ html,body { background:#211a18; }
   .res-num { font-size:26px; }
   .resources-hud-row { gap:5px; }
   .world-heading { top:12px; }
-  .procession-world { min-height:230px; }
+  .procession-world,.church-world { min-height:230px; }
 }

@@ -1,0 +1,25 @@
+{
+  "generator": "PixelLab via Executor",
+  "frameWidth": 400,
+  "frameHeight": 192,
+  "palette": "Dusk/night: slate-blue cloudy sky, dark teal grass, warm grey stone; matches procession/landscape.png",
+  "composition": "Side view, church centred on a grassy hill; each tier is an edit of the previous tier so the composition lines up",
+  "jobs": [
+    {
+      "name": "tier-0",
+      "tool": "create_image_pixflux",
+      "jobId": "c6fa0a28-a0bc-4e99-9f8b-f9e90af0880c",
+      "seed": 11,
+      "prompt": "side view pixel art game background at dusk: a partially destroyed small stone church standing in the center on a grassy hill, collapsed roof with broken wooden beams, crumbling walls with empty dark arched windows, piles of rubble and fallen stones inside and in front of the nave, broken bell gable, overgrown weeds. Dark blue-grey cloudy night sky with faint last light of dusk on the horizon, distant dark hills. Muted desaturated palette of slate blue, dark teal green grass and warm grey stone. No people.",
+      "status": "saved"
+    },
+    {
+      "name": "tier-1",
+      "tool": "edit_image",
+      "source": "tier-0",
+      "jobId": "c260560d-26f1-4cb3-9d67-fa8334893b62",
+      "prompt": "Remove both piles of rubble and fallen stones in front of the church so the grass is clear and tidy. Add a small makeshift altar on the grass in front of the church, left of the doorway: a rough stone slab resting on two stacked stone blocks, with a worn cloth draped over it. Keep the broken roof, walls, windows, sky, hills, lighting, palette and composition exactly the same.",
+      "status": "saved"
+    }
+  ]
+}

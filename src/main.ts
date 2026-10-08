@@ -23,7 +23,9 @@ import { AchievementsTab } from './features/achievements/AchievementsTab.js';
 import { StatsTab } from './features/stats/StatsTab.js';
 import { SphereController } from './features/sphere/SphereController.js';
 import { OnboardingGuide } from './ui/OnboardingGuide.js';
-import { ProcessionScene, isArtReview } from './ui/ProcessionScene.js';
+import { ProcessionScene } from './ui/ProcessionScene.js';
+import { ChurchScene } from './ui/ChurchScene.js';
+import { isArtReview } from './ui/artReview.js';
 import { cultDialog } from './ui/CultDialog.js';
 
 class AppManager {
@@ -41,7 +43,8 @@ class AppManager {
   public settingsModal: SettingsModal;
   public saveDataModal: SaveDataModal;
   public onboardingGuide: OnboardingGuide;
-  public procession: ProcessionScene;
+  public church: ChurchScene;
+  public procession: ProcessionScene | null = null;
 
   // Feature Tabs
   public followersTab: FollowersTab;
@@ -221,7 +224,8 @@ class AppManager {
     this.hud.update();
     this.statsTab.updateUI();
     this.onboardingGuide.update();
-    this.procession = new ProcessionScene(this.gameState, (x, y) => this.sphere.grantMiracle(x, y));
+    if (isArtReview) this.procession = new ProcessionScene(this.gameState, (x, y) => this.sphere.grantMiracle(x, y));
+    this.church = new ChurchScene(this.gameState, (e) => this.sphere.onSphereClicked(e), (x, y) => this.sphere.grantMiracle(x, y));
     if (isArtReview) this.nav.switchScreen('gameplay');
 
     // 7. Global Window Helpers
