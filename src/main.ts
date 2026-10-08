@@ -23,6 +23,8 @@ import { AchievementsTab } from './features/achievements/AchievementsTab.js';
 import { StatsTab } from './features/stats/StatsTab.js';
 import { SphereController } from './features/sphere/SphereController.js';
 import { OnboardingGuide } from './ui/OnboardingGuide.js';
+import { ProcessionScene, isArtReview } from './ui/ProcessionScene.js';
+import { cultDialog } from './ui/CultDialog.js';
 
 class AppManager {
   // Core Subsystems
@@ -39,6 +41,7 @@ class AppManager {
   public settingsModal: SettingsModal;
   public saveDataModal: SaveDataModal;
   public onboardingGuide: OnboardingGuide;
+  public procession: ProcessionScene;
 
   // Feature Tabs
   public followersTab: FollowersTab;
@@ -161,11 +164,12 @@ class AppManager {
     // 4. Instantiate Modals
     this.saveDataModal = new SaveDataModal({
       onExport: () => SaveSystem.exportSave(this.gameState.buildSaveData()),
-      onImport: (raw) => {
+      onImport: async (raw) => {
+        if (isArtReview) return null;
         const imported = SaveSystem.importSave(raw);
         if (!imported) return false;
 
-        const ok = window.confirm('Deseja substituir o progresso atual pelos dados importados?');
+        const ok = await cultDialog('Restaurar o culto', 'Deseja substituir o progresso atual pelos dados importados?', 'Restaurar', 'Cancelar');
         if (ok) {
           SaveSystem.save(imported);
           this.applySaveData(imported);
@@ -176,7 +180,7 @@ class AppManager {
           events.emit(GameEvents.STATE_CHANGED);
           return true;
         }
-        return false;
+        return null;
       },
       notifications: this.notifications
     });
@@ -215,7 +219,10 @@ class AppManager {
     this.startPassiveFaithLoop();
     this.startAutoSaveLoop();
     this.hud.update();
+    this.statsTab.updateUI();
     this.onboardingGuide.update();
+    this.procession = new ProcessionScene(this.gameState, (x, y) => this.sphere.grantMiracle(x, y));
+    if (isArtReview) this.nav.switchScreen('gameplay');
 
     // 7. Global Window Helpers
     this.registerGlobalHelpers();
@@ -336,6 +343,7 @@ class AppManager {
   }
 
   private startPassiveFaithLoop(): void {
+    if (isArtReview) return;
     this.gameLoop.onTick((deltaSec) => {
       this.gameState.tick(deltaSec);
       events.emit(GameEvents.GAME_TICK, deltaSec);
@@ -362,6 +370,7 @@ class AppManager {
   }
 
   private saveProgress(): boolean {
+    if (isArtReview) return false;
     if (this.isResetting) return false;
     const data = this.gameState.buildSaveData();
     const success = SaveSystem.save(data);
@@ -373,6 +382,19 @@ class AppManager {
   }
 
   private loadProgress(): boolean {
+    if (isArtReview) {
+      this.gameState.faithPoints = 12480;
+      this.gameState.followers[0].count = 36;
+      this.gameState.hasSeenIntro = true;
+      if (new URLSearchParams(window.location.search).has('all-tabs')) {
+        this.gameState.unlocks.forEach(unlock => { unlock.unlocked = true; });
+        this.gameState.fervorPoints = 1250;
+        this.gameState.relicPoints = 150;
+      }
+      const snapshot = this.gameState.getSnapshot();
+      this.gameState.achievements.forEach(achievement => { achievement.unlocked = achievement.check(snapshot); });
+      return false;
+    }
     const data = SaveSystem.load();
     if (data) {
       this.applySaveData(data);
@@ -394,8 +416,9 @@ class AppManager {
     }
   }
 
-  private confirmHardReset(): void {
-    const ok = window.confirm('ATENÇÃO: Deseja realmente reiniciar o culto do zero? Todo o progresso sagrado, fiéis e relíquias serão perdidos permanentemente.');
+  private async confirmHardReset(): Promise<void> {
+    if (isArtReview) return;
+    const ok = await cultDialog('Reiniciar o culto', 'Deseja realmente reiniciar o culto do zero? Todo o progresso sagrado, fiéis e relíquias serão perdidos permanentemente.', 'Reiniciar', 'Cancelar');
     if (ok) {
       this.isResetting = true;
       SaveSystem.resetSave();

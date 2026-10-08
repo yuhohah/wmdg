@@ -213,7 +213,7 @@ export class RelicsTab {
       this.hudDividerEl.style.display = unlocked ? 'block' : 'none';
     }
     if (this.hudItemEl) {
-      this.hudItemEl.style.display = unlocked ? 'flex' : 'none';
+      this.hudItemEl.style.display = unlocked ? '' : 'none';
     }
   }
 }

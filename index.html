@@ -27,6 +27,7 @@
 
       <!-- Top HUD Bar -->
       <header class="top-hud-bar">
+        <a class="cult-wordmark" href="/" aria-label="Cult of the Sphere"><span class="cult-mark">◉</span><span>CULT OF<br>THE SPHERE</span></a>
         <!-- Left: Integrated Resources Box (Fé & Fervor) -->
         <div class="resources-hud-card">
           <div class="resources-hud-header">RECURSOS</div>
@@ -104,6 +105,20 @@
 
       <!-- GAMEPLAY SCREEN WITH 3-FRAME LAYOUT -->
       <main id="gameplay-screen" class="main-content screen">
+        <section class="procession-world" id="procession-world" aria-label="A procissão do culto">
+          <div class="world-landscape"></div>
+          <div class="world-veil"></div>
+          <img class="ascended-monastery" src="/assets/procession/monastery.png" alt="" hidden>
+          <div class="world-heading"><span class="world-eyebrow" id="world-era">ERA I · O CHAMADO</span><h1 id="world-title">Uma pequena fé. Um longo caminho.</h1></div>
+          <div class="world-status"><span class="status-light"></span><span id="world-status">A procissão avança</span></div>
+          <div id="procession-entourage" class="procession-entourage"></div>
+          <div class="prophet-position"><img class="prophet-sprite" src="/assets/procession/prophet.png" alt="O Profeta lidera o culto"><div class="world-sphere" id="world-sphere"><canvas class="sphere-pixel-art" width="64" height="64"></canvas></div><span class="prophet-label">O PROFETA</span></div>
+          <div class="ritual-sigil" aria-hidden="true">◉</div>
+          <div class="world-footer"><span id="world-caption">O caminho começa com uma promessa.</span><span id="entourage-count">0 fiéis · uma só promessa</span></div>
+        </section>
+        <div class="art-review-controls" id="art-review-controls" hidden aria-label="Revisão da direção de arte">
+          <span>REVISÃO DE ARTE</span><button type="button" data-art-era="early" aria-pressed="true">Devoção inicial</button><button type="button" data-art-era="late" aria-pressed="false">Ascensão</button><button type="button" id="preview-miracle">Ver milagre</button><a href="/">Voltar ao jogo</a>
+        </div>
         <div class="gameplay-3frame-container">
 
           <!-- LEFT FRAME: SIDE PANEL (COLLAPSIBLE) -->
@@ -111,8 +126,8 @@
             <!-- Panel Header with Title and Toggle Button -->
             <div class="panel-header">
               <div class="panel-title-group">
-                <span class="panel-tag">PAINEL ESQUERDO</span>
-                <h3 class="panel-title">FIÉIS & FERVOR</h3>
+                <span class="panel-tag">REGISTRO DOS FIÉIS</span>
+                <h3 class="panel-title">Congregação</h3>
               </div>
               <button id="toggle-left-btn" class="panel-toggle-btn" title="Recolher Painel Esquerdo"
                 aria-label="Recolher Painel Esquerdo">
@@ -155,12 +170,6 @@
                 </div>
 
                 <!-- Arena: Animated walking sprites -->
-                <div class="followers-arena-wrapper">
-                  <canvas id="followers-walk-canvas" class="followers-walk-canvas"></canvas>
-                  <div class="followers-arena-overlay">
-                    <span class="followers-arena-hint">PÁTIO DOS FIÉIS</span>
-                  </div>
-                </div>
 
                 <!-- Action Controls -->
                 <div class="followers-controls">
@@ -278,6 +287,7 @@
 
           <!-- CENTER FRAME: DIVINE SPHERE (FIXED & PROMINENT) -->
           <section id="panel-center" class="center-frame">
+            <div class="sacred-window-heading"><span class="world-eyebrow">RELICÁRIO DO PROFETA</span><h2>A Esfera</h2><p>Que o chamado seja ouvido.</p></div>
             <div class="center-frame-content">
               <div class="sphere-presentation-area">
                 <!-- CLICKABLE DIVINE SPHERE IN THE MIDDLE OF THE SCREEN -->
@@ -369,6 +379,7 @@
                 </div>
               </div>
             </div>
+            <div class="sacred-window-footer"><span>CANALIZAR FÉ</span><p>Clique na Esfera</p></div>
           </section>
 
           <!-- Expander Bar when Right Panel is Collapsed -->
@@ -679,7 +690,7 @@
 
           <div class="setting-item setting-danger">
             <div>
-              <div class="setting-name" style="color: #f87171;">Reiniciar Culto</div>
+              <div class="setting-name">Reiniciar Culto</div>
               <div class="setting-desc">Apaga todo o progresso e recomeça do zero</div>
             </div>
             <button id="btn-reset-save" class="btn-setting-danger">Reiniciar</button>

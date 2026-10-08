@@ -127,3 +127,16 @@ wmdg/
 ├── index.html               # Estrutura da página e fontes
 └── shell.nix                # Ambiente Nix
 ```
+# Desktop art pass
+
+The gameplay screen now uses a Prophet-led procession above the existing management controls, with a bottom-centre sacred window for Sphere clicks. New recruits join the bounded entourage; the exact population remains in the HUD. Miracle requests appear above a follower in the procession and keep the existing reward calculation.
+
+Run `npm ci` and `npm run dev`. Open `/?art-review=early` or `/?art-review=late` for the two approval states. The review controls switch the visual era and preview a miracle. Review mode uses disposable sample progress, skips loading/saving game progress, and blocks importing or resetting a save.
+
+The later Ascension is a visual study, not an implemented progression system. Normal play uses the early scene. Persistent Ascension milestones, intermediate Sphere stages, actual 4–6-frame walking sheets, separate parallax layers and milestone destinations remain subsequent production work. Current supplied characters use restrained stepped pose movement rather than new animation sheets. Reduced-motion settings disable that movement.
+
+Artwork is in `public/assets/procession/`: the supplied Prophet and follower-role sheet were cropped, cleaned of disconnected fragments and normalized with nearest-neighbour sampling; the landscape comes from the supplied empty scene. The circular monastery was generated using PixelLab Pixen through Executor (job `2b3bd5de-34ac-4c92-997b-dc4fe19db9dc`). The world Sphere and sacred window share the same pixel drawing.
+
+Approval checks: distinguish the Prophet, roles and Sphere stages at desktop size; read totals and frequent actions immediately; keep the full entourage legible; match nearby scenery to the character pixel scale; and make the later ritual disturbing without explicit gore. Desktop layouts are checked at 1440×900 and 1280×720.
+
+Add `&all-tabs=1` to either art-review URL to inspect all six tabs and Status in Settings with disposable sample currencies. This mode does not load or write your saved game.
