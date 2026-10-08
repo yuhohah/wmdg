@@ -10,12 +10,12 @@ export interface ChurchSnapshot {
 export type ChurchTier = 0 | 1;
 export type SphereLocation = 'ruins' | 'altar';
 
-export interface ChurchScene {
+export interface ChurchSceneDescription {
   tier: ChurchTier;
   sphereLocation: SphereLocation;
 }
 
-export function describeChurchScene(snapshot: ChurchSnapshot): ChurchScene {
+export function describeChurchScene(snapshot: ChurchSnapshot): ChurchSceneDescription {
   const tier: ChurchTier = snapshot.selos.incarnation ? 1 : 0;
   return { tier, sphereLocation: tier === 0 ? 'ruins' : 'altar' };
 }

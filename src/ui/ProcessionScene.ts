@@ -23,8 +23,6 @@ export class ProcessionScene {
     this.addWalkCycle(this.world.querySelector<HTMLImageElement>('.prophet-sprite')!, 'prophet', 920, 0);
     this.world.classList.toggle('scene-paused', document.hidden);
     if (isArtReview) {
-      document.body.classList.add('art-review');
-      document.getElementById('art-review-controls')!.hidden = false;
       document.querySelectorAll<HTMLButtonElement>('[data-art-era]').forEach(button => {
         button.addEventListener('click', () => this.setEra(button.dataset.artEra as ArtEra));
       });

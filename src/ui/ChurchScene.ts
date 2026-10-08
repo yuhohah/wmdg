@@ -1,7 +1,7 @@
 import { GameStateManager } from '../core/GameState.js';
 import { events, GameEvents } from '../core/EventBus.js';
 import { formatNumber } from '../systems/calculations.js';
-import { describeChurchScene, type ChurchScene as ChurchSceneDescription, type ChurchSnapshot, type ChurchTier } from '../features/church/churchScene.js';
+import { describeChurchScene, type ChurchSceneDescription, type ChurchSnapshot, type ChurchTier } from '../features/church/churchScene.js';
 import { isArtReview } from './artReview.js';
 import { paintPixelSphere } from './pixelSphere.js';
 
@@ -43,6 +43,8 @@ export class ChurchScene {
     this.sphere.addEventListener('click', onSphereClick);
     this.world.classList.toggle('scene-paused', document.hidden);
     if (isArtReview) {
+      document.body.classList.add('art-review');
+      document.getElementById('art-review-controls')!.hidden = false;
       document.querySelectorAll<HTMLButtonElement>('[data-art-scene]').forEach(button => {
         button.addEventListener('click', () => this.setArtScene(button.dataset.artScene as ArtScene));
       });
@@ -53,7 +55,7 @@ export class ChurchScene {
     events.on(GameEvents.MIRACLE_GRANTED, () => this.miracle());
     events.on(GameEvents.MIRACLE_PLEA, () => this.offerMiracle());
     events.on<number>(GameEvents.GAME_TICK, delta => {
-      if (document.hidden || !document.getElementById('gameplay-screen')!.classList.contains('active')) return;
+      if (isArtReview || document.hidden || !document.getElementById('gameplay-screen')!.classList.contains('active')) return;
       if (this.pleaRemaining > 0) {
         this.pleaRemaining -= delta;
         if (this.pleaRemaining <= 0) this.clearPlea();
