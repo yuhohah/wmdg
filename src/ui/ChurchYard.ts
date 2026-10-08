@@ -1,9 +1,8 @@
-import { ALTAR_STANDS, FOLLOWER_SPOTS, FOLLOWER_WALK_SPEED, STAGE_SIZE, type FollowerSpot, type YardPoint } from '../features/church/churchConfig.js';
+import { ALTAR_STAND, ALTAR_X, FOLLOWER_SPOTS, FOLLOWER_WALK_SPEED, STAGE_SIZE, type FollowerSpot, type YardPoint } from '../features/church/churchConfig.js';
 
 type Pose = 'idle' | 'walk' | 'pray';
 interface Walk { animation: Animation; from: YardPoint; duration: number }
 
-const ALTAR_X = (ALTAR_STANDS.left.x + ALTAR_STANDS.right.x) / 2;
 const POSE_STRIP: Record<Pose, (follower: number) => string> = {
   idle: follower => `/assets/church/followers/follower-${follower}-idle.png`,
   walk: follower => `/assets/procession/walk/follower-${follower}-walk.png`,
@@ -35,10 +34,9 @@ class YardFollower {
     this.pose('idle');
   }
 
-  /** Walks to the stand beside the altar on this follower's side; `arrived` fires once they are praying there. */
+  /** Walks to the altar stand; `arrived` fires once they are praying there. */
   goToAltar(arrived: () => void): void {
-    const stand = this.spot.x < ALTAR_X ? ALTAR_STANDS.left : ALTAR_STANDS.right;
-    this.walkTo(stand, () => {
+    this.walkTo(ALTAR_STAND, () => {
       this.face(ALTAR_X);
       this.pose('pray');
       arrived();
@@ -150,7 +148,7 @@ export class ChurchYard {
    * Sends a random follower to the altar. Once they kneel, a request appears that grants
    * the miracle when clicked. Returns false when nobody is in the yard to ask.
    */
-  request(grant: (x: number, y: number) => void): boolean {
+  request(arrived: () => void, grant: (x: number, y: number) => void): boolean {
     if (this.supplicant || this.followers.length === 0) return false;
     const supplicant = this.followers[Math.floor(Math.random() * this.followers.length)];
     this.supplicant = supplicant;
@@ -164,6 +162,7 @@ export class ChurchYard {
       button.addEventListener('click', event => grant(event.clientX, event.clientY));
       supplicant.element.append(button);
       this.pleaButton = button;
+      arrived();
     });
     return true;
   }

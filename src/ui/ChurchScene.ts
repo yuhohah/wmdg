@@ -52,7 +52,7 @@ export class ChurchScene {
   private pleaCooldown = 5;
   /** From the moment a follower sets off for the altar until the request is granted, expires or they leave. */
   private pleaOpen = false;
-  /** The request window starts with the request, like the old plea; the walk to the altar happens inside it. */
+  /** Counts down only once the follower is praying at the altar, so the walk never shortens the window. */
   private pleaRemaining = 0;
   /** Art-review has no game loop, so a previewed request expires on a plain timer. */
   private reviewPleaTimer: number | undefined;
@@ -101,6 +101,7 @@ export class ChurchScene {
       this.sync();
       if (isArtReview || document.hidden || !document.getElementById('gameplay-screen')!.classList.contains('active')) return;
       if (this.pleaOpen) {
+        if (this.pleaRemaining <= 0) return;
         this.pleaRemaining -= delta;
         if (this.pleaRemaining <= 0) this.endRequest();
       } else if (this.gameState.getTotalFollowersCount() > 0) {
@@ -242,17 +243,18 @@ export class ChurchScene {
 
   private offerMiracle(): void {
     if (this.pleaOpen || this.world.hidden) return;
-    this.pleaOpen = this.yard.request((x, y) => {
-      this.endRequest();
-      this.grantMiracle(x, y);
-    });
-    if (!this.pleaOpen) {
-      this.resetPleaTimers();
-      return;
-    }
-    this.pleaRemaining = PLEA_SECONDS;
-    if (isArtReview) this.reviewPleaTimer = window.setTimeout(() => this.endRequest(), PLEA_SECONDS * 1000);
-    this.world.classList.add('miracle-request');
+    this.pleaOpen = this.yard.request(
+      () => {
+        this.pleaRemaining = PLEA_SECONDS;
+        if (isArtReview) this.reviewPleaTimer = window.setTimeout(() => this.endRequest(), PLEA_SECONDS * 1000);
+      },
+      (x, y) => {
+        this.endRequest();
+        this.grantMiracle(x, y);
+      }
+    );
+    if (this.pleaOpen) this.world.classList.add('miracle-request');
+    else this.resetPleaTimers();
   }
 
   /** The request ends, granted or expired: the follower walks back to their spot. */
