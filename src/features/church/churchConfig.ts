@@ -16,7 +16,7 @@ export interface FollowerSpot extends YardPoint {
  * The slice of the stage that is on screen on the narrowest supported phone, in tier-art pixels.
  * Measured on the church world at 412×915, where the stage is cropped to x 94–306; 6 px less on each side
  * keeps clear of the wood frame. Wider phones and desktops show more. Vertically the stage is cropped from
- * the top first, so art down to y 152 is always visible (see `.church-stage`); spots and stands stay above it.
+ * the top first, so art down to y 152 is always visible (see `.church-stage`); spots and the stand stay above it.
  */
 export const ALWAYS_VISIBLE_X = { from: 100, to: 300 } as const;
 
