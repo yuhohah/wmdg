@@ -173,6 +173,8 @@ class AppManager {
         if (ok) {
           SaveSystem.save(imported);
           this.applySaveData(imported);
+          // An imported save is a load, not progress: redraw the church without replaying its transitions.
+          this.church.rebuild();
           this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
           this.incarnationTab.updateUI();
           this.renderAllLists();
@@ -227,7 +229,7 @@ class AppManager {
       (e) => this.sphere.onSphereClicked(e),
       (x, y) => this.sphere.grantMiracle(x, y),
       (x, y) => this.sphere.invokeBlessing(x, y),
-      (notice) => this.notifications.showCustomPopup(notice.title, notice.desc, notice.icon, 'RESTAURAÇÃO')
+      (notice, tag) => this.notifications.showCustomPopup(notice.title, notice.desc, notice.icon, tag)
     );
     if (isArtReview) this.nav.switchScreen('gameplay');
 

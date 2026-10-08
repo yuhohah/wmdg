@@ -2,13 +2,16 @@ import { GameStateManager } from '../core/GameState.js';
 import { events, GameEvents } from '../core/EventBus.js';
 import { formatNumber } from '../systems/calculations.js';
 import { compareChurchScenes, describeChurchScene, type ChurchSceneDescription, type ChurchSnapshot, type ChurchTier, type RestoredTier } from '../features/church/churchScene.js';
-import { RESTORATION_NOTICES, type RestorationNotice } from '../config/church.js';
+import { CHURCH_DETAILS, RESTORATION_NOTICES, type ChurchDetail, type ChurchNotice } from '../config/church.js';
 import { isArtReview } from './artReview.js';
 import { paintPixelSphere } from './pixelSphere.js';
+import { STAGE_SIZE } from '../features/church/churchConfig.js';
 import { ChurchYard } from './ChurchYard.js';
 
 type ArtScene = `tier-${ChurchTier}` | 'procession';
 const PLEA_SECONDS = 15;
+/** A point on the 400×192 stage, as % of its width and height. */
+type StagePoint = [left: number, top: number];
 
 const TIER_TEXT: Record<ChurchTier, { title: string; status: string; caption: string }> = {
   0: { title: 'A Igreja em Ruínas', status: 'Uma luz fraca entre os escombros', caption: 'Algo ainda brilha onde ninguém reza.' },
@@ -18,11 +21,30 @@ const TIER_TEXT: Record<ChurchTier, { title: string; status: string; caption: st
 };
 
 /** Where the restoration sparkles land on the 400×192 stage, as % of its width and height. */
-const RESTORED_PARTS: Record<RestoredTier, Array<[number, number]>> = {
+const RESTORED_PARTS: Record<RestoredTier, StagePoint[]> = {
   1: [[27, 66], [33, 63], [58, 78], [64, 76]],
   2: [[37, 45], [47, 37], [59, 42], [33, 60], [40, 59], [46, 58], [59, 63]],
   3: [[58, 23], [59, 43], [33, 60], [40, 59], [46, 58], [54, 59], [64, 59]]
 };
+
+/**
+ * Where each detail prop stands on the stage: the bottom centre of the sprite.
+ * The stage crops differently per viewport; x 22–78% and y up to 73% stay visible everywhere, so props
+ * line the church's base inside that box, clear of the altar, the Bênção button and the tier 3 wall banners.
+ */
+const DETAIL_PROPS: Record<ChurchDetail, { sprite: string; spriteWidth: number; spots: StagePoint[] }> = {
+  torches: { sprite: 'torch', spriteWidth: 24, spots: [[50.5, 73], [66.5, 73]] },
+  pews: { sprite: 'pews', spriteWidth: 64, spots: [[43, 73.5]] },
+  garden: { sprite: 'garden', spriteWidth: 64, spots: [[72.5, 74]] },
+  banner: { sprite: 'banner', spriteWidth: 32, spots: [[23.5, 73]] },
+  statue: { sprite: 'statue', spriteWidth: 32, spots: [[75, 72.5]] }
+};
+
+/** Prop sprite pixels per background pixel: PixelLab fills the whole canvas, so 1:1 props dwarf the church door. */
+const PROP_SCALE = 0.5;
+
+/** Sparkle offsets around a newly unlocked prop's bottom centre. */
+const DETAIL_SPARKLES: StagePoint[] = [[-2, -3], [2, -6], [0, -10]];
 
 const TRANSITION_MS = 1400;
 const SPARKLE_STAGGER_MS = 90;
@@ -47,6 +69,7 @@ export class ChurchScene {
   private scene: ChurchSceneDescription | null = null;
   private reviewTier: ChurchTier | null = null;
   private reviewFollowers: number | null = null;
+  private props = new Map<ChurchDetail, HTMLImageElement[]>();
   private pulseTimer: number | undefined;
   private miracleTimer: number | undefined;
   private pleaCooldown = 5;
@@ -58,6 +81,7 @@ export class ChurchScene {
   private reviewPleaTimer: number | undefined;
   private yard = new ChurchYard(document.getElementById('church-followers')!);
   private world = document.getElementById('church-world')!;
+  private stage = document.getElementById('church-stage')!;
   private background = document.getElementById('church-background') as HTMLImageElement;
   private sphere = document.getElementById('church-sphere') as HTMLButtonElement;
   private blessing = document.getElementById('church-blessing') as HTMLButtonElement;
@@ -68,9 +92,10 @@ export class ChurchScene {
     onSphereClick: (event: MouseEvent) => void,
     private grantMiracle: (x: number, y: number) => number,
     invokeBlessing: (x: number, y: number) => void,
-    private announce: (notice: RestorationNotice) => void
+    private announce: (notice: ChurchNotice, tag: string) => void
   ) {
     paintPixelSphere(this.sphere.querySelector('canvas')!);
+    this.buildDetailProps();
     this.sphere.addEventListener('click', onSphereClick);
     // Native button: Enter and Space arrive here as clicks, so feedback is anchored to the button, not the pointer.
     this.blessing.addEventListener('click', () => {
@@ -91,6 +116,9 @@ export class ChurchScene {
       });
       document.getElementById('art-review-plea')!.addEventListener('click', () => this.offerMiracle());
       this.setReviewFollowers(4);
+      document.querySelectorAll<HTMLButtonElement>('[data-art-details]').forEach(button => {
+        button.addEventListener('click', () => this.setArtDetails(Number(button.dataset.artDetails)));
+      });
       this.setArtScene('tier-0');
     }
     events.on(GameEvents.STATE_CHANGED, () => this.sync());
@@ -151,11 +179,55 @@ export class ChurchScene {
   }
 
   private setReviewFollowers(followers: number): void {
+    this.reviewFollowers = followers;
+    this.markReviewControls(followers);
+    this.sync();
+  }
+
+  /** The follower and detail controls both set the review follower count, so each reflects it. */
+  private markReviewControls(followers: number): void {
+    const details = CHURCH_DETAILS.filter(unlock => followers >= unlock.followers).length;
     document.querySelectorAll<HTMLButtonElement>('[data-art-followers]').forEach(button => {
       button.setAttribute('aria-pressed', String(Number(button.dataset.artFollowers) === followers));
     });
-    this.reviewFollowers = followers;
+    document.querySelectorAll<HTMLButtonElement>('[data-art-details]').forEach(button => {
+      button.setAttribute('aria-pressed', String(Number(button.dataset.artDetails) === details));
+    });
+  }
+
+  /** Redraws from current state as a fresh load would, so an imported save replays nothing. */
+  rebuild(): void {
+    this.scene = null;
     this.sync();
+  }
+
+  /** Steps art-review through the details: 0 shows none, n shows the first n by follower threshold. */
+  private setArtDetails(count: number): void {
+    this.setReviewFollowers(count === 0 ? 0 : CHURCH_DETAILS[count - 1].followers);
+  }
+
+  private buildDetailProps(): void {
+    const props = (Object.entries(DETAIL_PROPS) as Array<[ChurchDetail, (typeof DETAIL_PROPS)[ChurchDetail]]>).flatMap(([detail, { sprite, spriteWidth, spots }]) => {
+      const images = spots.map(([left, top]) => {
+        const prop = document.createElement('img');
+        prop.className = 'church-prop';
+        prop.dataset.detail = detail;
+        prop.src = `/assets/church/props/${sprite}.png`;
+        prop.alt = '';
+        prop.hidden = true;
+        prop.style.left = `${left}%`;
+        // `top` is where the prop's feet rest: the CSS lifts the sprite by its full height.
+        prop.style.top = `${top}%`;
+        prop.style.width = `${(spriteWidth * PROP_SCALE * 100) / STAGE_SIZE.width}%`;
+        // A detail lost and regained (art-review stepping back) should rise again only through a new unlock.
+        prop.addEventListener('animationend', () => prop.classList.remove('church-prop-new'));
+        return { prop, top };
+      });
+      this.props.set(detail, images.map(({ prop }) => prop));
+      return images;
+    });
+    // Props standing lower on the hill are nearer the viewer, so they draw on top.
+    this.background.after(...props.sort((a, b) => a.top - b.top).map(({ prop }) => prop));
   }
 
   private sync(): void {
@@ -179,7 +251,8 @@ export class ChurchScene {
     }
     // The first build (page load) has nothing to compare against, so it never replays a transition.
     const changes = this.scene ? compareChurchScenes(this.scene, next) : [];
-    if (this.scene && changes.length === 0) {
+    // Ticks resync constantly; skip the redraw unless something drawn differs (losing a detail is no reported change).
+    if (this.scene && this.scene.tier === next.tier && this.scene.details.join() === next.details.join()) {
       this.scene = next;
       return;
     }
@@ -188,13 +261,21 @@ export class ChurchScene {
         // Going up means the target is never the starting ruin.
         const restored = change.to as RestoredTier;
         this.playRestoration(restored);
-        this.announce(RESTORATION_NOTICES[restored]);
+        this.announce(RESTORATION_NOTICES[restored], 'RESTAURAÇÃO');
+      } else if (change.kind === 'detail') {
+        this.props.get(change.detail)!.forEach(prop => prop.classList.add('church-prop-new'));
+        this.playSparkles(DETAIL_PROPS[change.detail].spots.flatMap(([left, top]) => DETAIL_SPARKLES.map(([dx, dy]): StagePoint => [left + dx, top + dy])));
+        this.announce(CHURCH_DETAILS.find(({ detail }) => detail === change.detail)!.notice, 'OFERENDA DOS FIÉIS');
       }
     }
     this.scene = next;
     this.world.dataset.churchTier = String(next.tier);
     this.sphere.dataset.location = next.sphereLocation;
     this.background.src = `/assets/church/tier-${next.tier}.png`;
+    for (const [detail, props] of this.props) {
+      const unlocked = next.details.includes(detail);
+      props.forEach(prop => { prop.hidden = !unlocked; });
+    }
     const text = TIER_TEXT[next.tier];
     document.getElementById('church-title')!.textContent = text.title;
     document.getElementById('church-status')!.textContent = text.status;
@@ -208,16 +289,7 @@ export class ChurchScene {
     outgoing.classList.add('church-background-outgoing');
     const dust = document.createElement('div');
     dust.className = 'church-dust';
-    const sparkles = RESTORED_PARTS[tier].map(([left, top], index) => {
-      const sparkle = document.createElement('span');
-      sparkle.className = 'church-sparkle';
-      sparkle.textContent = '✦';
-      sparkle.style.left = `${left}%`;
-      sparkle.style.top = `${top}%`;
-      sparkle.style.animationDelay = `${SPARKLE_START_MS + index * SPARKLE_STAGGER_MS}ms`;
-      return sparkle;
-    });
-    this.background.after(outgoing, dust, ...sparkles);
+    this.background.after(outgoing, dust);
     // The gutter colours belong to the old tier too: fade a copy of the backdrop out with the old background.
     const backdrop = this.world.querySelector<HTMLElement>('.church-backdrop')!;
     const outgoingBackdrop = backdrop.cloneNode() as HTMLElement;
@@ -225,7 +297,23 @@ export class ChurchScene {
     for (const edge of ['--edge-left', '--edge-right']) outgoingBackdrop.style.setProperty(edge, colours.getPropertyValue(edge));
     outgoingBackdrop.classList.add('church-backdrop-outgoing');
     backdrop.after(outgoingBackdrop);
-    window.setTimeout(() => [outgoing, outgoingBackdrop, dust, ...sparkles].forEach(node => node.remove()), TRANSITION_MS + sparkles.length * SPARKLE_STAGGER_MS);
+    window.setTimeout(() => { outgoing.remove(); outgoingBackdrop.remove(); dust.remove(); }, TRANSITION_MS);
+    this.playSparkles(RESTORED_PARTS[tier], SPARKLE_START_MS);
+  }
+
+  /** Staggered sparkles over the given stage points. */
+  private playSparkles(points: StagePoint[], startMs = 0): void {
+    const sparkles = points.map(([left, top], index) => {
+      const sparkle = document.createElement('span');
+      sparkle.className = 'church-sparkle';
+      sparkle.textContent = '✦';
+      sparkle.style.left = `${left}%`;
+      sparkle.style.top = `${top}%`;
+      sparkle.style.animationDelay = `${startMs + index * SPARKLE_STAGGER_MS}ms`;
+      return sparkle;
+    });
+    this.stage.append(...sparkles);
+    window.setTimeout(() => sparkles.forEach(node => node.remove()), TRANSITION_MS + sparkles.length * SPARKLE_STAGGER_MS);
   }
 
   private pulse(): void {

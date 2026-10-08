@@ -46,6 +46,26 @@ describe('church scene description', () => {
     expect(describeChurchScene({ ...start, selos: { ...start.selos, incarnation: true } }).blessing.visible).toBe(true);
   });
 
+  it('has no details with no followers', () => {
+    expect(describeChurchScene(start).details).toEqual([]);
+  });
+
+  it.each([
+    [10, 'torches'],
+    [25, 'pews'],
+    [50, 'garden'],
+    [100, 'banner'],
+    [250, 'statue']
+  ] as const)('unlocks the detail at %s followers (%s), not one below', (followers, detail) => {
+    expect(describeChurchScene({ ...start, followers }).details).toContain(detail);
+    expect(describeChurchScene({ ...start, followers: followers - 1 }).details).not.toContain(detail);
+  });
+
+  it('keeps every earlier detail as followers grow', () => {
+    expect(describeChurchScene({ ...start, followers: 100 }).details).toEqual(['torches', 'pews', 'garden', 'banner']);
+    expect(describeChurchScene({ ...start, followers: 1e6 }).details).toEqual(['torches', 'pews', 'garden', 'banner', 'statue']);
+  });
+
   it.each([
     [0, 0],
     [15, 0.25],
@@ -81,8 +101,8 @@ describe('church scene comparison', () => {
   });
 
   it('reports nothing when only state outside the scene changed', () => {
-    const before = describeChurchScene({ ...withSelos(true, false, false), followers: 3 });
-    const after = describeChurchScene({ ...withSelos(true, false, false), followers: 4, blessingSeconds: 12 });
+    const before = describeChurchScene({ ...withSelos(true, false, false), followers: 11 });
+    const after = describeChurchScene({ ...withSelos(true, false, false), followers: 24, blessingSeconds: 12 });
     expect(compareChurchScenes(before, after)).toEqual([]);
   });
 
@@ -92,5 +112,36 @@ describe('church scene comparison', () => {
     [scene(true, true, false), scene(true, true, true), 2, 3]
   ])('reports exactly the tier change when a Selo is broken (%#)', (previous, next, from, to) => {
     expect(compareChurchScenes(previous, next)).toEqual([{ kind: 'tier', from, to }]);
+  });
+
+  it('reports the detail unlocked when followers cross its threshold', () => {
+    const before = describeChurchScene({ ...start, followers: 9 });
+    const after = describeChurchScene({ ...start, followers: 10 });
+    expect(compareChurchScenes(before, after)).toEqual([{ kind: 'detail', detail: 'torches' }]);
+  });
+
+  it('reports every detail unlocked at once, in threshold order', () => {
+    const before = describeChurchScene({ ...start, followers: 20 });
+    const after = describeChurchScene({ ...start, followers: 120 });
+    expect(compareChurchScenes(before, after)).toEqual([
+      { kind: 'detail', detail: 'pews' },
+      { kind: 'detail', detail: 'garden' },
+      { kind: 'detail', detail: 'banner' }
+    ]);
+  });
+
+  it('reports nothing when followers drop below a threshold', () => {
+    const before = describeChurchScene({ ...start, followers: 30 });
+    const after = describeChurchScene({ ...start, followers: 5 });
+    expect(compareChurchScenes(before, after)).toEqual([]);
+  });
+
+  it('reports a tier change and a new detail together', () => {
+    const before = describeChurchScene({ ...withSelos(true, false, false), followers: 49 });
+    const after = describeChurchScene({ ...withSelos(true, true, false), followers: 50 });
+    expect(compareChurchScenes(before, after)).toEqual([
+      { kind: 'tier', from: 1, to: 2 },
+      { kind: 'detail', detail: 'garden' }
+    ]);
   });
 });
