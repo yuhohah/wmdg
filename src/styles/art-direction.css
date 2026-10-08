@@ -112,11 +112,12 @@
 .church-blessing:active { transform:translateY(1px); box-shadow:0 1px #1a120c; }
 .church-blessing:focus-visible { outline:2px solid #edc886; outline-offset:3px; }
 /* The protagonist stands in the clear gap between the altar and the yard, mirrored to face the Esfera; feet sit 4px above the 72px canvas bottom.
-   The name sits above the head so neither the yard nor the Bênção button can cover it. */
+   The name is its own element under the feet. */
 .church-protagonist { position:absolute; left:46.5%; bottom:28.5%; height:19%; aspect-ratio:64 / 72; transform:translateX(-50%); z-index:2; pointer-events:none; }
 .protagonist-viewport { position:absolute; inset:0; overflow:hidden; transform:scaleX(-1); }
 .protagonist-strip { position:absolute; top:0; left:0; display:block; height:100%; width:1600%; max-width:none; image-rendering:pixelated; animation:walk-frames 2400ms steps(16,end) infinite; }
-.protagonist-label { position:absolute; bottom:calc(100% + 2px); left:50%; transform:translateX(-50%); color:#e2c084; font:clamp(16px, 4.4cqh, 22px)/1 var(--font-game); letter-spacing:1px; white-space:nowrap; text-shadow:0 1px #11131a, 0 0 4px #11131a; }
+/* The name sits under the feet, above the yard and props (z 4), so a follower praying beside it never covers it. */
+.protagonist-label { position:absolute; left:46.5%; top:calc(71.5% - 2px); transform:translateX(-50%); z-index:4; pointer-events:none; color:#e2c084; font:clamp(16px, 4.4cqh, 22px)/1 var(--font-game); letter-spacing:1px; white-space:nowrap; text-shadow:0 1px #11131a, 0 0 4px #11131a; }
 .church-protagonist[data-look='5'] .protagonist-viewport { filter:drop-shadow(0 0 3px #f3d392aa); }
 .protagonist-strip-outgoing { animation:walk-frames 2400ms steps(16,end) infinite, church-fade-out 900ms var(--ease-out) forwards; }
 .church-protagonist.transforming .protagonist-strip:not(.protagonist-strip-outgoing) { animation:walk-frames 2400ms steps(16,end) infinite, protagonist-fade-in 900ms var(--ease-out) both; }
