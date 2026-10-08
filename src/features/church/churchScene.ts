@@ -1,5 +1,5 @@
 import { BLESSING_MAX_SECONDS } from '../../config/incarnation.js';
-import { FOLLOWER_SPOTS } from './churchConfig.js';
+import { CROWD_THRESHOLDS, FOLLOWER_SPOTS } from './churchConfig.js';
 import { CHURCH_DETAILS, type ChurchDetail } from '../../config/church.js';
 
 /** The slice of game state the church screen is derived from. Nothing here is saved separately. */
@@ -21,6 +21,8 @@ export type ProfetaLook = Exclude<ProtagonistLook, 0>;
 export type ProtagonistLabel = 'O Escolhido' | 'O Profeta';
 /** One drawn look per Encarnação stage; a later stage keeps the last look until it gets art of its own. */
 const LAST_PROFETA_LOOK: ProfetaLook = 5;
+/** 0 is no crowd; each level is one more `CROWD_THRESHOLDS` entry reached. */
+export type CrowdLevel = 0 | 1 | 2 | 3 | 4;
 
 export interface ChurchSceneDescription {
   tier: ChurchTier;
@@ -32,6 +34,8 @@ export interface ChurchSceneDescription {
   blessing: { visible: boolean; fill: number };
   /** How many of the church-yard spots hold a follower, filled in `FOLLOWER_SPOTS` order. */
   filledSpots: number;
+  /** How dense the silhouette crowd behind the yard is. */
+  crowdLevel: CrowdLevel;
 }
 
 export type ChurchSceneChange =
@@ -52,7 +56,8 @@ export function describeChurchScene(snapshot: ChurchSnapshot): ChurchSceneDescri
       visible: incarnation,
       fill: Math.min(1, Math.max(0, snapshot.blessingSeconds / BLESSING_MAX_SECONDS))
     },
-    filledSpots: Math.min(Math.floor(snapshot.followers), FOLLOWER_SPOTS.length)
+    filledSpots: Math.min(Math.floor(snapshot.followers), FOLLOWER_SPOTS.length),
+    crowdLevel: CROWD_THRESHOLDS.filter(threshold => snapshot.followers >= threshold).length as CrowdLevel
   };
 }
 

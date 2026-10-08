@@ -91,6 +91,30 @@ describe('church scene description', () => {
   it('fills only whole spots for a fractional follower count', () => {
     expect(describeChurchScene({ ...start, followers: 2.7 }).filledSpots).toBe(2);
   });
+
+  it.each([
+    [0, 0],
+    [12, 0],
+    [49, 0],
+    [50, 1],
+    [249, 1],
+    [250, 2],
+    [999, 2],
+    [1_000, 3],
+    [9_999, 3],
+    [10_000, 4]
+  ])('gathers a crowd behind the yard: %i followers draw crowd level %i', (followers, crowdLevel) => {
+    expect(describeChurchScene({ ...start, followers }).crowdLevel).toBe(crowdLevel);
+  });
+
+  it('caps the crowd at the top level however many followers there are', () => {
+    expect(describeChurchScene({ ...start, followers: 1e300 }).crowdLevel).toBe(4);
+    expect(describeChurchScene({ ...start, followers: Infinity }).crowdLevel).toBe(4);
+  });
+
+  it('gathers the crowd regardless of the church tier', () => {
+    expect(describeChurchScene({ ...withSelos(true, true, true), followers: 250 }).crowdLevel).toBe(2);
+  });
 });
 
 describe('protagonist', () => {

@@ -7,6 +7,7 @@ import { isArtReview } from './artReview.js';
 import { paintPixelSphere } from './pixelSphere.js';
 import { STAGE_SIZE } from '../features/church/churchConfig.js';
 import { ChurchYard } from './ChurchYard.js';
+import { ChurchCrowd } from './ChurchCrowd.js';
 
 type ArtScene = `tier-${ChurchTier}` | 'procession';
 const PLEA_SECONDS = 15;
@@ -85,6 +86,7 @@ export class ChurchScene {
   /** Art-review has no game loop, so a previewed request expires on a plain timer. */
   private reviewPleaTimer: number | undefined;
   private yard = new ChurchYard(document.getElementById('church-followers')!);
+  private crowd = new ChurchCrowd(document.getElementById('church-crowd') as HTMLCanvasElement);
   private world = document.getElementById('church-world')!;
   private stage = document.getElementById('church-stage')!;
   private background = document.getElementById('church-background') as HTMLImageElement;
@@ -272,6 +274,7 @@ export class ChurchScene {
         this.resetPleaTimers();
       }
     }
+    this.crowd.show(next.crowdLevel);
     // The first build (page load) has nothing to compare against, so it never replays a transition.
     const changes = this.scene ? compareChurchScenes(this.scene, next) : [];
     // Ticks resync constantly; skip the redraw unless something drawn differs (losing a detail or look is no reported change).
