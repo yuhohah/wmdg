@@ -57,7 +57,7 @@ export const INCARNATION_STAGES: IncarnationStage[] = [
     stage: 5,
     name: 'Avatar Solar',
     title: 'A Entidade da Luz Eterna',
-    desc: 'Transcrescência solar absoluta. Multiplica a geração de Fervor por 10^15 (1 Quadrilhão de vezes).',
+    desc: 'Ascensão solar absoluta. Multiplica a geração de Fervor por 10^15 (1 Quadrilhão de vezes).',
     lore: 'A personificação viva da Esfera Cósmica em seu esplendor máximo, brilhando como um trilhão de supernovas.',
     cost: 1e150,
     multiplier: 1e15

@@ -1,0 +1,286 @@
+MUDANÇAS DE TEXTOS E LORE (APLICADAS)
+=====================================
+
+Legenda:
+  SAI    = texto antigo
+  ENTRA  = texto novo, já aplicado no jogo
+  (...)  = motivo
+
+
+-------------------------------------------------
+1. LORE BÁSICA
+-------------------------------------------------
+
+Você é a Esfera, um deus cujo centro está em toda parte e cuja
+circunferência não está em lugar nenhum. Há eras você foi selada,
+fechada hermeticamente, e os homens passaram a adorar outros deuses.
+Mas tudo é Mente: um deus só existe enquanto alguém pensa nele.
+Agora você desperta. Cada fiel que pensa em você te torna mais real,
+e cada selo rompido devolve parte do seu poder. Os deuses que
+morreram esquecidos deixaram relíquias. Os que ainda vivem serão
+seus rivais.
+
+Como cada conceito se liga ao jogo:
+
+  - Centro em toda parte
+      Cada fiel carrega o seu centro, por isso gera Fé sozinho.
+
+  - Circunferência em lugar nenhum
+      Você não tem limite, por isso os números crescem sem fim.
+
+  - Tudo é Mente
+      Fé é pensamento. Deuses nascem e morrem pela crença das
+      pessoas, e isso é o motivo das batalhas futuras.
+
+  - Hermético = selado
+      Os desbloqueios são Selos.
+
+  - Alquimia
+      O prestígio é a Transmutação (Fé -> Fragmentos).
+
+
+-------------------------------------------------
+2. REGRA DE NOMES
+-------------------------------------------------
+
+  - Fragmentos = a moeda de prestígio.
+  - Relíquias  = só os itens (Cornucópia, Tocha...) e a aba onde
+                 eles ficam. Nunca a moeda.
+  - Upgrades   = o nome diz o efeito, de forma clara. O nome
+                 temático do rito fica na descrição (tooltip).
+  - Clareza vem antes do tema: botões e rótulos de sistema
+    (Status, Desbloquear, Nova Mecânica, 2x Fé) continuam diretos.
+
+
+-------------------------------------------------
+3. IDENTIDADE E INTRO
+-------------------------------------------------
+
+SAI:   Você é um Deus Esfera
+ENTRA: Você é a Esfera
+
+SAI:   Sua essência primordial repousa como a sagrada Esfera Divina
+       no altar do santuário.
+ENTRA: Uma Mente sem borda, selada há eras. Esquecida, mas não morta.
+
+SAI:   Você desperta como uma divindade cósmica primordial... /
+       ...canaliza Fé pura do cosmos para alimentar seu despertar divino.
+ENTRA: Seu centro está em toda parte; sua circunferência, em lugar
+       nenhum. Há eras você foi selada, e o mundo passou a adorar
+       outros deuses. / Agora você desperta. Cada toque seu arranca
+       Fé das mentes mortais.
+
+SAI:   ...multiplicando seu poder divino mesmo quando você estiver ausente!
+ENTRA: ...mesmo enquanto você descansa.
+       (o progresso offline ainda não existe)
+
+SAI:   Compre Fiéis para Gerar Fé/s
+ENTRA: Converta Fiéis para Gerar Fé/s
+
+SAI:   ETAPA 1/2 • VOCÊ É O DEUS ESFERA
+ENTRA: ETAPA 1/2 • O DESPERTAR
+
+SAI:   ETAPA 2/2 • PÁTIO DOS FIÉIS: COMPRE FIÉIS
+ENTRA: ETAPA 2/2 • CONVERTA FIÉIS
+
+SAI:   Lores com "Sumo Sacerdote", "líder", "mãos" e "dedos"
+ENTRA: Falam em "você" (a Esfera) e nos seus "pulsos"
+
+
+-------------------------------------------------
+4. MOEDAS E UNIDADES
+-------------------------------------------------
+
+SAI:   PF, FPS, FPC, Fé/seg, "/ seg"
+ENTRA: Fé, Fé/s, Fervor/s
+
+SAI:   Relíquias (como moeda), PR
+ENTRA: Fragmentos
+
+SAI:   Consagrar toda a Fé em X Relíquias (3)
+ENTRA: Transmutar toda a Fé -> +X Fragmentos
+       (a espera aparece numa linha separada: "O vaso esfria: 3s")
+
+SAI:   + Ganho de 1 Relíquias extras por segundo
+ENTRA: Geração passiva: +X Fragmentos/s
+
+SAI:   CLIQUE PARA CONSAGRAR  /  CUSTO DE CONSAGRAÇÃO  /  X Relíquias
+ENTRA: CLIQUE PARA RESTAURAR  /  CUSTO  /  X Fragmentos
+
+SAI:   FÉ TRANSMUTADA / "Você consagrou +X Relíquias sagradas..."
+ENTRA: TRANSMUTAÇÃO / "Sua Fé virou +X Fragmentos de deuses caídos."
+
+
+-------------------------------------------------
+5. ABAS E NAVEGAÇÃO
+-------------------------------------------------
+
+SAI:   Incarnation
+ENTRA: Encarnação
+
+MANTIDO: Status
+       (clareza antes do tema)
+
+SAI:   Desbloqueios  /  DESBLOQUEIOS & CONQUISTAS
+ENTRA: Selos  /  SELOS & CONQUISTAS
+
+SAI:   Celular: Devotos · Ritos · Opções
+ENTRA: Celular: Fiéis · Selos · Opções
+
+SAI:   DEVOTOS & FERVOR
+ENTRA: FIÉIS & FERVOR
+
+SAI:   Detalhes do Rito
+ENTRA: Detalhes
+
+
+-------------------------------------------------
+6. SELOS (aba antes chamada Desbloqueios)
+-------------------------------------------------
+
+SAI:   EXPANSÃO DO CULTO / Novas Mecânicas /
+       "Consagre os recursos do culto para desbloquear novas ordens cósmicas."
+ENTRA: OS SELOS / Seu poder, selado /
+       "Gaste Fé para romper os selos que te prendem."
+
+SAI:   Despertar Incarnation
+ENTRA: Selo da Encarnação
+
+SAI:   Ritos de Fervor
+ENTRA: Selo do Fervor
+
+SAI:   Desbloquear Relíquias
+ENTRA: Selo das Relíquias
+       ("Relíquias" aqui são os itens, igual ao nome da aba;
+       a moeda agora é Fragmentos)
+
+MANTIDO: Botão "Desbloquear (200 Fé)"
+
+MANTIDO: Tags NOVA MECÂNICA / MECÂNICA SAGRADA
+       (deixam claro que é uma nova habilidade)
+
+SAI:   EXPANSÃO CÓSMICA CONCLUÍDA
+ENTRA: TODOS OS SELOS ROMPIDOS / "Seu poder foi libertado. Por enquanto."
+
+
+-------------------------------------------------
+7. UPGRADES DE FERVOR
+-------------------------------------------------
+
+MANTIDOS: todos os nomes (o nome diz o efeito)
+
+ÚNICA TROCA DE NOME:
+SAI:   Aumentar Ganho de Relíquias
+ENTRA: Aumentar Ganho de Fragmentos
+       (ele aumenta a moeda, que agora se chama Fragmentos)
+
+O rito temático foi para a descrição (tooltip):
+
+  Aumentar Produção de Fervor    -> Rito: Alimentar a Chama
+  Aumentar Efeito do Fervor      -> Rito: Brasa Reveladora
+  Aumentar Fé por Clique         -> Rito: Pulso em Brasa
+  Fiéis Aumentam Fé por Segundo  -> Rito: Coro das Tochas
+  Fé Aumenta Fervor por Segundo  -> Rito: Óleo da Devoção
+  Aumentar Ganho de Fragmentos   -> Rito: Cinzas da Fênix
+
+MANTIDO: CLIQUE PARA AUMENTAR
+
+
+-------------------------------------------------
+8. RELÍQUIAS
+-------------------------------------------------
+
+SAI:   Báculo de Hermes
+ENTRA: Cajado de Hermes
+
+MANTIDO: Arca da Aliança Cósmica
+
+SAI:   Fênix: "Rito de Relíquias Desbloqueado no Fervor"
+ENTRA: "Fervor/s x1,5 • Upgrade de Fragmentos revelado no Fervor"
+       (antes o texto escondia o x1,5)
+
+SAI:   Draupnir: "Geração Automática de Relíquias Ativa"
+ENTRA: "+5% da Transmutação por segundo, sem gastar Fé"
+       (o texto antigo era vago)
+
+Lores das relíquias reescritas: são restos de deuses que morreram
+quando os homens pararam de pensar neles.
+
+
+-------------------------------------------------
+9. ENCARNAÇÃO
+-------------------------------------------------
+
+MANTIDO: 2x FÉ INATIVO / 2x FÉ ATIVO
+
+SAI:   "Transcrescência solar absoluta"
+ENTRA: "Ascensão solar absoluta"
+       (transcrescência é termo médico)
+
+SAI:   EVOLUÇÃO SAGRADA / "A Encarnação atingiu o Avatar Consagrado!"
+ENTRA: A ENCARNAÇÃO RENASCE / "A Encarnação renasceu como Avatar Consagrado!"
+
+SAI:   Tooltip "Fórmula DodecaDragons: ..."
+ENTRA: Tooltip "Multiplicador: ..."
+       (não citar outro jogo)
+
+
+-------------------------------------------------
+10. FIÉIS
+-------------------------------------------------
+
+SAI:   Tag CONGREGAÇÃO  /  REUNIDOS / ATIVOS
+ENTRA: FIEL  /  FIÉIS
+
+SAI:   PARCELA DO CULTO
+ENTRA: (removido: sempre mostrava 100%)
+
+SAI:   Lore: "Reunidos em círculos sagrados... ressonância de fé cósmica."
+ENTRA: "Encapuzados, reunidos à luz de velas, seus fiéis não pedem nada:
+       apenas pensam em você. E, para uma Mente, ser pensada é existir."
+
+
+-------------------------------------------------
+11. CONQUISTAS
+-------------------------------------------------
+
+SAI:   Fervor Rítmico
+ENTRA: Cadência Devota
+
+SAI:   Toque da Apoteose
+ENTRA: Coração do Mundo
+
+SAI:   Massa Transcendente
+ENTRA: O Centro em Toda Parte
+
+MANTIDO: Singularidade da Esfera
+
+SAI:   Oceano Cósmico
+ENTRA: Mar de Preces
+
+SAI:   "+X% de Produção Passiva"  /  "+X% de Produção Global"
+ENTRA: "+X% Fé/s dos fiéis"  /  "+X% em toda a Fé"
+
+SAI:   Progresso "X / 100 FPS"
+ENTRA: "X / 100 Fé/s"
+
+
+-------------------------------------------------
+12. STATUS E OUTROS
+-------------------------------------------------
+
+SAI:   FÉ POR CLIQUE (FPC)  /  FÉ POR SEGUNDO (FPS)
+ENTRA: FÉ POR CLIQUE  /  FÉ POR SEGUNDO
+
+SAI:   Estágios do culto: Círculo Inicial -> ... -> Apoteose Universal
+       (paravam em 1M de Fé)
+ENTRA: Boato (início) -> Seita (1 mil) -> Culto (1M) -> Igreja (1e12)
+       -> Credo Mundial (1e25) -> Mente Única (1e50)
+
+SAI:   Milagre: "A prece fervorosa foi atendida: +X Fé cósmica!"
+ENTRA: "Um fiel pediu um sinal, e você respondeu: +X Fé."
+
+SAI:   Satélites: "Santuário Satélite I"  /  NÓ DORMENTE
+ENTRA: "Deus Rival I (Adormecido)"  /  ADORMECIDO
+
+MANTIDO: Título "Cult of the Sphere"

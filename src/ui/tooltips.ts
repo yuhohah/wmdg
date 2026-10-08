@@ -57,17 +57,12 @@ export class TooltipManager {
 
   public showItemTooltip(
     item: BuyableItem,
-    totalFps: number,
+    _totalFps: number,
     cost: number,
     currentTotalOutput: number,
     e: MouseEvent
   ): void {
     this.currentAch = null;
-
-    let percentShare = '0%';
-    if (totalFps > 0 && currentTotalOutput > 0) {
-      percentShare = `${Math.min(100, Math.round((currentTotalOutput / totalFps) * 100))}%`;
-    }
 
     let artHtml = '';
     if (DISPLAY_CONFIG.showTooltipArts && item.artUrl) {
@@ -90,23 +85,19 @@ export class TooltipManager {
           ${symbolHtml}
           <span>${item.name}</span>
         </div>
-        <span class="cult-tooltip-tag">${item.id === 'f_devotee' ? 'CONGREGAÇÃO' : 'RELÍQUIA'}</span>
+        <span class="cult-tooltip-tag">${item.id === 'f_devotee' ? 'FIEL' : 'RELÍQUIA'}</span>
       </div>
 
       ${DISPLAY_CONFIG.showItemDescriptions && item.lore ? `<div class="cult-tooltip-lore">${item.lore}</div>` : ''}
 
       <div class="cult-tooltip-stats">
         <div class="tooltip-stat-item">
-          <span class="tooltip-stat-label">REUNIDOS / ATIVOS</span>
+          <span class="tooltip-stat-label">FIÉIS</span>
           <span class="tooltip-stat-val">${formatNumber(item.count)}</span>
         </div>
         <div class="tooltip-stat-item">
           <span class="tooltip-stat-label">PRODUÇÃO TOTAL</span>
-          <span class="tooltip-stat-val">+${formatNumber(currentTotalOutput)} / seg</span>
-        </div>
-        <div class="tooltip-stat-item">
-          <span class="tooltip-stat-label">PARCELA DO CULTO</span>
-          <span class="tooltip-stat-val">${percentShare}</span>
+          <span class="tooltip-stat-val">+${formatNumber(currentTotalOutput)} Fé/s</span>
         </div>
         <div class="tooltip-stat-item">
           <span class="tooltip-stat-label">PRÓXIMO CUSTO</span>
@@ -258,8 +249,8 @@ export class TooltipManager {
           <span class="tooltip-stat-val">${relic.level} / ${relic.maxLevel}</span>
         </div>
         <div class="tooltip-stat-item">
-          <span class="tooltip-stat-label">CUSTO DE CONSAGRAÇÃO</span>
-          <span class="tooltip-stat-val" >${isMax ? 'MÁXIMO' : `${formatNumber(relic.cost)} Relíquias`}</span>
+          <span class="tooltip-stat-label">CUSTO</span>
+          <span class="tooltip-stat-val" style="color: #c5d3e2; font-weight: 800; text-shadow: 0 0 8px rgba(186, 210, 235, 0.7);">${isMax ? 'MÁXIMO' : `${formatNumber(relic.cost)} Fragmentos`}</span>
         </div>
       </div>
     `;

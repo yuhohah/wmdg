@@ -77,7 +77,7 @@ export class HUDController {
       this.fervorCounterEl.textContent = formatNumber(fervor);
     }
     if (this.fervorRateCounterEl) {
-      this.fervorRateCounterEl.textContent = `+${formatNumber(fervorRate)} / seg`;
+      this.fervorRateCounterEl.textContent = `+${formatNumber(fervorRate)} Fervor/s`;
     }
     if (this.fervorCounterHudEl) {
       this.fervorCounterHudEl.textContent = formatNumber(fervor);

@@ -100,10 +100,10 @@ export class IncarnationTab {
       this.options.triggerHaptic([20, 30, 40]);
       this.options.audio.playChime();
       this.options.notifications.showCustomPopup(
-        'EVOLUÇÃO SAGRADA',
-        `A Encarnação atingiu o ${nextStage.name}! Produção de Fervor multiplicada por ${formatNumber(nextStage.multiplier)}x.`,
+        'A ENCARNAÇÃO RENASCE',
+        `A Encarnação renasceu como ${nextStage.name}! Fervor/s multiplicado por ${formatNumber(nextStage.multiplier)}x.`,
         '👑',
-        'ASCENSÃO'
+        'EVOLUÇÃO'
       );
       this.updateUI();
       this.options.onIncarnationEvolved?.(this.options.gameState.incarnationStage);
@@ -203,7 +203,7 @@ export class IncarnationTab {
     }
     if (this.boostStatusEl) {
       if (timer > 0) {
-        this.boostStatusEl.textContent = 'Bênção ativa! Dobrando produção de Fé/seg';
+        this.boostStatusEl.textContent = 'Bênção ativa! Fé/s em dobro';
       } else {
         this.boostStatusEl.textContent = 'Clique na Encarnação (+2s) para dobrar Fé/s';
       }

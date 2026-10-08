@@ -135,7 +135,7 @@ export class FollowersTab {
       this.totalCountEl.textContent = formatNumber(totalCount);
     }
     if (this.rateBadgeEl) {
-      this.rateBadgeEl.textContent = `+${formatNumber(followerOutput)} PF/s`;
+      this.rateBadgeEl.textContent = `+${formatNumber(followerOutput)} Fé/s`;
     }
     if (this.convertOneBenefitEl) {
       const ratePerFollower = devotee.baseEffect * fervorFollowersMult * incFollowerMult;
@@ -211,7 +211,7 @@ export class FollowersTab {
     const followerOutput = devotee.count * devotee.baseEffect * fervorFollowersMult * incFollowerMult;
 
     if (this.rateBadgeEl) {
-      this.rateBadgeEl.textContent = `+${formatNumber(followerOutput)} PF/s`;
+      this.rateBadgeEl.textContent = `+${formatNumber(followerOutput)} Fé/s`;
     }
     if (this.convertOneBenefitEl) {
       const ratePerFollower = devotee.baseEffect * fervorFollowersMult * incFollowerMult;
