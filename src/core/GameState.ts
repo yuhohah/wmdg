@@ -10,9 +10,8 @@ import { initialFollowers } from '../config/followers.js';
 import { initialFervorUpgrades, BASE_FERVOR_RATE, getFervorUpgradeMultiplier } from '../config/fervor.js';
 import { initialAchievements } from '../config/achievements.js';
 import { initialUnlocks } from '../config/unlocks.js';
-import { BLESSING_MAX_SECONDS } from '../config/incarnation.js';
 import { initialRelicUpgrades } from '../config/relics.js';
-import { INCARNATION_STAGES } from '../config/incarnation.js';
+import { INCARNATION_STAGES, BLESSING_MAX_SECONDS } from '../config/incarnation.js';
 import {
   calculateItemCost,
   calculateFervorUpgradeCost,
@@ -255,7 +254,7 @@ export class GameStateManager {
     return fpc;
   }
 
-  public addIncarnationBoost(seconds: number = 2): void {
+  public addIncarnationBoost(seconds: number): void {
     this.incarnationBoostTimer = Math.min(this.MAX_INCARNATION_BOOST, this.incarnationBoostTimer + seconds);
   }
 
