@@ -68,7 +68,7 @@ Bônus da mesma categoria **somam**; categorias diferentes **multiplicam** entre
 ---
 
 ## ✨ Outras funcionalidades
-- 🎮 **Cena da igreja e arena em Canvas 2D**: a tela principal mostra a igreja ao pôr do sol, com a Esfera e o botão **Bênção**; a aba Fiéis tem a arena animada dos fiéis (com sprites e milagres). A Encarnação não tem mais arena, só o estágio e o upgrade.
+- 🎮 **Cena da igreja e arena dos fiéis**: a tela principal mostra a igreja ao pôr do sol, com a Esfera e o botão **Bênção**; a aba Fiéis tem a arena animada em Canvas 2D (com sprites e milagres). A Encarnação não tem mais arena, só o estágio e o upgrade.
 - 💾 **Salvamento automático** no `localStorage` a cada 20 s, ao trocar de aba e ao fechar a página, com cópia de backup.
 - 📤 **Exportar/Importar save** em Base64 e reset completo nas Configurações.
 - 🔊 Áudio sintetizado (Web Audio) + trilha sonora, e vibração em dispositivos móveis.

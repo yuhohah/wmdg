@@ -96,9 +96,10 @@
 .faith-response .church-sphere { filter:brightness(1.35) drop-shadow(0 0 14px #f3d392); }
 .church-sphere:focus-visible { outline:2px solid #edc886; outline-offset:4px; }
 /* Centred under the altar, but never past the cropped left edge of the stage on narrow screens, and never lower
-   than just above the footer, so a cropped stage cannot push it out of view. It draws above the footer, which
-   lets clicks through. */
-.church-blessing { position:absolute; left:max(calc(30.5% - 3.5em), calc(50% - 50cqw + 6px)); top:min(68.8%, calc(100cqh - var(--stage-top) - 1em - 52px)); z-index:5; overflow:hidden; box-sizing:border-box; width:7em; padding:2px 6px; border:2px solid #8d6c40; border-radius:0; background:#30241b; box-shadow:0 2px #1a120c; color:#c9a874; font:clamp(16px, 4.4cqh, 22px)/1 var(--font-game); white-space:nowrap; cursor:pointer; transition:filter 120ms var(--ease-out); }
+   than just above the footer, so a cropped stage cannot push it out of view. The footer draws above the whole stage,
+   so this button's z-index only orders it inside the stage: the fix relies on the button and the footer never
+   overlapping, and the footer lets clicks through as a safety net. */
+.church-blessing { position:absolute; left:max(calc(30.5% - 3.5em), calc(50% - 50cqw + 6px)); top:min(68.8%, calc(100cqh - var(--stage-top) - 1em - 52px)); z-index:2; overflow:hidden; box-sizing:border-box; width:7em; padding:2px 6px; border:2px solid #8d6c40; border-radius:0; background:#30241b; box-shadow:0 2px #1a120c; color:#c9a874; font:clamp(16px, 4.4cqh, 22px)/1 var(--font-game); white-space:nowrap; cursor:pointer; transition:filter 120ms var(--ease-out); }
 .church-blessing[hidden] { display:none; }
 .church-blessing-fill { position:absolute; inset:0; background:#8c6a36; transform:scaleX(var(--blessing-fill, 0)); transform-origin:left; transition:transform 120ms linear; }
 .church-blessing-label { position:relative; }
