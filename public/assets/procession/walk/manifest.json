@@ -1,0 +1,61 @@
+{
+  "generator": "PixelLab animate_image via Executor",
+  "frameWidth": 64,
+  "frameHeight": 72,
+  "frameCount": 9,
+  "layout": "horizontal",
+  "inputPadding": "Original sprites centered at native resolution; feet at y=68",
+  "action": "A seamless looping walk cycle in place, facing right (east), walking at a calm procession pace. Clear alternating foot steps, natural arm swing, robe sways. Preserve the exact character identity, outfit, colors, held props and pixel art style. Props stay in the same hand. Keep centered and on the same ground line. No turning, camera movement, scenery or travel across canvas. End near the starting pose.",
+  "jobs": [
+    {
+      "name": "prophet",
+      "jobId": "d6600ee3-39d3-42ff-8c98-9ceeac12a4ab",
+      "status": "saved"
+    },
+    {
+      "name": "follower-0",
+      "jobId": "743726e1-f5ba-47c9-8102-ed5ed0cee46c",
+      "status": "saved"
+    },
+    {
+      "name": "follower-1",
+      "jobId": "3a10acf3-83b9-4acc-8ccc-3a5bf8ae259c",
+      "status": "saved"
+    },
+    {
+      "name": "follower-2",
+      "jobId": "6cea8d6b-1731-4ee5-b1c6-41821188a8bc",
+      "status": "saved"
+    },
+    {
+      "name": "follower-3",
+      "jobId": "8051c22f-631d-4937-964d-42aa170018a5",
+      "status": "saved"
+    },
+    {
+      "name": "follower-4",
+      "jobId": "1c796c0a-57bf-48ab-9e2f-a8e23bb7ba1c",
+      "status": "saved"
+    },
+    {
+      "name": "follower-5",
+      "jobId": "854e3e83-7262-4bda-a764-93f039592936",
+      "status": "saved"
+    },
+    {
+      "name": "follower-6",
+      "jobId": "2229be06-9f4b-40fb-b818-d41ceb95d8c0",
+      "status": "saved"
+    },
+    {
+      "name": "follower-7",
+      "jobId": "3505105d-ec2d-4c35-9304-234f5a7ae4c0",
+      "status": "saved"
+    },
+    {
+      "name": "follower-8",
+      "jobId": "5cd3b12f-4c5d-4a7b-8667-8c7039890c65",
+      "status": "saved"
+    }
+  ]
+}
