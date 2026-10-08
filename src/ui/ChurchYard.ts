@@ -150,7 +150,7 @@ export class ChurchYard {
    * Sends a random follower to the altar. Once they kneel, a request appears that grants
    * the miracle when clicked. Returns false when nobody is in the yard to ask.
    */
-  request(arrived: () => void, grant: (x: number, y: number) => void): boolean {
+  request(grant: (x: number, y: number) => void): boolean {
     if (this.supplicant || this.followers.length === 0) return false;
     const supplicant = this.followers[Math.floor(Math.random() * this.followers.length)];
     this.supplicant = supplicant;
@@ -164,7 +164,6 @@ export class ChurchYard {
       button.addEventListener('click', event => grant(event.clientX, event.clientY));
       supplicant.element.append(button);
       this.pleaButton = button;
-      arrived();
     });
     return true;
   }
