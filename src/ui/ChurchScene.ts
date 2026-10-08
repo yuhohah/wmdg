@@ -50,6 +50,8 @@ export class ChurchScene {
   private pulseTimer: number | undefined;
   private miracleTimer: number | undefined;
   private pleaCooldown = 5;
+  /** From the moment a follower sets off for the altar until the request is granted, expires or they leave. */
+  private pleaOpen = false;
   /** Counts down only once the follower is praying at the altar, so the walk never shortens the window. */
   private pleaRemaining = 0;
   /** Art-review has no game loop, so a previewed request expires on a plain timer. */
@@ -98,10 +100,10 @@ export class ChurchScene {
     events.on<number>(GameEvents.GAME_TICK, delta => {
       this.sync();
       if (isArtReview || document.hidden || !document.getElementById('gameplay-screen')!.classList.contains('active')) return;
-      if (this.yard.hasRequest) {
+      if (this.pleaOpen) {
         if (this.pleaRemaining <= 0) return;
         this.pleaRemaining -= delta;
-        if (this.pleaRemaining <= 0) this.clearPlea();
+        if (this.pleaRemaining <= 0) this.endRequest();
       } else if (this.gameState.getTotalFollowersCount() > 0) {
         this.pleaCooldown -= delta;
         if (this.pleaCooldown <= 0) this.offerMiracle();
@@ -170,7 +172,10 @@ export class ChurchScene {
     this.blessingLabel.textContent = `✦ 2× · ${Math.ceil(snapshot.blessingSeconds)}s`;
     if (next.filledSpots !== this.scene?.filledSpots) {
       this.yard.fill(next.filledSpots);
-      if (!this.yard.hasRequest) this.endPlea();
+      if (this.pleaOpen && !this.yard.hasRequest) {
+        this.pleaOpen = false;
+        this.resetPleaTimers();
+      }
     }
     // The first build (page load) has nothing to compare against, so it never replays a transition.
     const changes = this.scene ? compareChurchScenes(this.scene, next) : [];
@@ -237,28 +242,29 @@ export class ChurchScene {
   }
 
   private offerMiracle(): void {
-    if (this.yard.hasRequest || this.world.hidden) return;
-    const asked = this.yard.request(
+    if (this.pleaOpen || this.world.hidden) return;
+    this.pleaOpen = this.yard.request(
       () => {
         this.pleaRemaining = PLEA_SECONDS;
-        if (isArtReview) this.reviewPleaTimer = window.setTimeout(() => this.clearPlea(), PLEA_SECONDS * 1000);
+        if (isArtReview) this.reviewPleaTimer = window.setTimeout(() => this.endRequest(), PLEA_SECONDS * 1000);
       },
       (x, y) => {
-        this.clearPlea();
+        this.endRequest();
         this.grantMiracle(x, y);
       }
     );
-    if (asked) this.world.classList.add('miracle-request');
+    if (this.pleaOpen) this.world.classList.add('miracle-request');
+    else this.resetPleaTimers();
   }
 
   /** The request ends, granted or expired: the follower walks back to their spot. */
-  private clearPlea(): void {
+  private endRequest(): void {
     this.yard.release();
-    this.endPlea();
+    this.pleaOpen = false;
+    this.resetPleaTimers();
   }
 
-  private endPlea(): void {
-    if (this.pleaRemaining === 0 && !this.world.classList.contains('miracle-request')) return;
+  private resetPleaTimers(): void {
     window.clearTimeout(this.reviewPleaTimer);
     this.pleaRemaining = 0;
     this.pleaCooldown = 35 + Math.random() * 30;

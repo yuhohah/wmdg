@@ -1,11 +1,14 @@
-/**
- * Church-yard tuning, kept apart from scene code. Positions are in background
- * pixels (the tier art is 400×192); `feet` is the ground line under the sprite.
- */
-export interface FollowerSpot {
+/** Church-yard tuning, kept apart from scene code. Positions are in tier-art pixels. */
+export const STAGE_SIZE = { width: 400, height: 192 } as const;
+
+/** A place in the yard; `feet` is the ground line under the sprite. */
+export interface YardPoint {
   x: number;
   feet: number;
-  /** Which of the 9 follower identities stands here. */
+}
+
+export interface FollowerSpot extends YardPoint {
+  /** Which of the 9 follower identities (0–8) stands here. */
   follower: number;
 }
 
@@ -29,10 +32,10 @@ export const FOLLOWER_SPOTS: readonly FollowerSpot[] = [
 ];
 
 /** Where a praying follower stands on each side of the altar; they always face it. */
-export const ALTAR_STANDS = {
+export const ALTAR_STANDS: { left: YardPoint; right: YardPoint } = {
   left: { x: 92, feet: 150 },
   right: { x: 150, feet: 149 }
-} as const;
+};
 
 /** Walking pace in background pixels per second. */
 export const FOLLOWER_WALK_SPEED = 36;

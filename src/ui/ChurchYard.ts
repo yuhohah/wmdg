@@ -1,31 +1,30 @@
-import { ALTAR_STANDS, FOLLOWER_SPOTS, FOLLOWER_WALK_SPEED, type FollowerSpot } from '../features/church/churchConfig.js';
+import { ALTAR_STANDS, FOLLOWER_SPOTS, FOLLOWER_WALK_SPEED, STAGE_SIZE, type FollowerSpot, type YardPoint } from '../features/church/churchConfig.js';
 
 type Pose = 'idle' | 'walk' | 'pray';
-interface Point { x: number; feet: number }
+interface Walk { animation: Animation; from: YardPoint; duration: number }
 
-const STAGE_WIDTH = 400;
-const STAGE_HEIGHT = 192;
 const ALTAR_X = (ALTAR_STANDS.left.x + ALTAR_STANDS.right.x) / 2;
 const POSE_STRIP: Record<Pose, (follower: number) => string> = {
   idle: follower => `/assets/church/followers/follower-${follower}-idle.png`,
   walk: follower => `/assets/procession/walk/follower-${follower}-walk.png`,
   pray: follower => `/assets/church/followers/follower-${follower}-pray.png`
 };
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const POSE_DURATION: Record<Pose, number> = { idle: 2400, walk: 900, pray: 3000 };
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 class YardFollower {
   readonly element = document.createElement('div');
   private strip = document.createElement('img');
-  private walk: Animation | null = null;
-  private position: Point;
+  private walk: Walk | null = null;
+  /** Where the follower stands, or where they are heading while walking. */
+  private position: YardPoint;
 
   constructor(readonly spot: FollowerSpot, index: number) {
     this.position = spot;
     this.element.className = 'church-follower';
-    this.element.setAttribute('aria-hidden', 'true');
     const viewport = document.createElement('span');
     viewport.className = 'church-follower-sprite';
+    viewport.setAttribute('aria-hidden', 'true');
     this.strip.alt = '';
     // Offset each loop so neighbours never breathe in unison.
     this.strip.style.animationDelay = `${-(index * 617) % POSE_DURATION.idle}ms`;
@@ -54,26 +53,28 @@ class YardFollower {
   }
 
   remove(): void {
-    this.walk?.cancel();
+    this.walk?.animation.cancel();
     this.element.remove();
   }
 
-  private walkTo(target: Point, done: () => void): void {
+  private walkTo(target: YardPoint, done: () => void): void {
     const from = this.currentPosition();
-    this.walk?.cancel();
+    this.walk?.animation.cancel();
     this.walk = null;
     this.position = from;
     this.place(from);
     this.face(target.x);
     this.pose('walk');
     const distance = Math.hypot(target.x - from.x, target.feet - from.feet);
-    const walk = this.element.animate(
+    const duration = reducedMotion.matches ? 0 : (distance / FOLLOWER_WALK_SPEED) * 1000;
+    const animation = this.element.animate(
       [{ left: percentX(from.x), top: percentY(from.feet) }, { left: percentX(target.x), top: percentY(target.feet) }],
-      { duration: reducedMotion.matches ? 0 : (distance / FOLLOWER_WALK_SPEED) * 1000, easing: 'linear' }
+      { duration, easing: 'linear' }
     );
+    const walk = { animation, from, duration };
     this.walk = walk;
     this.position = target;
-    walk.addEventListener('finish', () => {
+    animation.addEventListener('finish', () => {
       if (this.walk !== walk) return;
       this.walk = null;
       this.place(target);
@@ -81,18 +82,18 @@ class YardFollower {
     });
   }
 
-  /** Where the follower stands right now, even halfway through a walk. */
-  private currentPosition(): Point {
-    if (!this.walk) return this.position;
-    const style = getComputedStyle(this.element);
-    const stage = this.element.offsetParent as HTMLElement;
+  /** Where the follower stands right now, even halfway through a walk (and while the scene is hidden). */
+  private currentPosition(): YardPoint {
+    if (!this.walk || this.walk.duration === 0) return this.position;
+    const { animation, from, duration } = this.walk;
+    const progress = Math.min(1, Number(animation.currentTime ?? 0) / duration);
     return {
-      x: (parseFloat(style.left) / stage.clientWidth) * STAGE_WIDTH,
-      feet: (parseFloat(style.top) / stage.clientHeight) * STAGE_HEIGHT
+      x: from.x + (this.position.x - from.x) * progress,
+      feet: from.feet + (this.position.feet - from.feet) * progress
     };
   }
 
-  private place(point: Point): void {
+  private place(point: YardPoint): void {
     this.element.style.left = percentX(point.x);
     this.element.style.top = percentY(point.feet);
     this.element.style.zIndex = String(Math.round(point.feet));
@@ -111,11 +112,11 @@ class YardFollower {
 }
 
 function percentX(x: number): string {
-  return `${(x / STAGE_WIDTH) * 100}%`;
+  return `${(x / STAGE_SIZE.width) * 100}%`;
 }
 
 function percentY(feet: number): string {
-  return `${(feet / STAGE_HEIGHT) * 100}%`;
+  return `${(feet / STAGE_SIZE.height) * 100}%`;
 }
 
 /** Followers standing in the church-yard spots, and the one bringing a miracle request to the altar. */
