@@ -68,7 +68,7 @@ Bônus da mesma categoria **somam**; categorias diferentes **multiplicam** entre
 ---
 
 ## ✨ Outras funcionalidades
-- 🎮 **Arenas animadas em Canvas 2D**: pátio dos fiéis (com sprites e milagres) e altar da Encarnação.
+- 🎮 **Cena da igreja e arena em Canvas 2D**: a tela principal mostra a igreja ao pôr do sol, com a Esfera e o botão **Bênção**; a aba Fiéis tem a arena animada dos fiéis (com sprites e milagres). A Encarnação não tem mais arena, só o estágio e o upgrade.
 - 💾 **Salvamento automático** no `localStorage` a cada 20 s, ao trocar de aba e ao fechar a página, com cópia de backup.
 - 📤 **Exportar/Importar save** em Base64 e reset completo nas Configurações.
 - 🔊 Áudio sintetizado (Web Audio) + trilha sonora, e vibração em dispositivos móveis.
@@ -120,7 +120,7 @@ wmdg/
 │   │   └── notifications.ts     # Popups de notificação
 │   ├── features/            # Uma pasta por aba: followers, incarnation, fervor, relics,
 │   │                        #   unlocks, achievements, stats e a esfera (sphere)
-│   ├── ui/                  # HUD, navegação, modais, onboarding, tooltips e arenas em canvas
+│   ├── ui/                  # HUD, navegação, modais, onboarding, tooltips, a cena da igreja e a arena dos fiéis em canvas
 │   ├── styles/              # CSS por área (base, hud, cards, panels, modals, sphere, responsive)
 │   ├── types.ts             # Tipagens compartilhadas
 │   └── main.ts              # AppManager: instancia e conecta todos os módulos
