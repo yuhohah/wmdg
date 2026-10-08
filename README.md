@@ -137,6 +137,8 @@ The later Ascension is a visual study, not an implemented progression system. No
 
 Artwork is in `public/assets/procession/`: the supplied Prophet and follower-role sheet were cropped, cleaned of disconnected fragments and normalized with nearest-neighbour sampling; the landscape comes from the supplied empty scene. The circular monastery was generated using PixelLab Pixen through Executor (job `2b3bd5de-34ac-4c92-997b-dc4fe19db9dc`). The world Sphere and sacred window share the same pixel drawing.
 
+The church-yard followers' idle and pray loops are in `public/assets/church/followers/`, generated with PixelLab `animate_image` from each follower's standing pose; `manifest.json` there records every job ID and prompt.
+
 Approval checks: distinguish the Prophet, roles and Sphere stages at desktop size; read totals and frequent actions immediately; keep the full entourage legible; match nearby scenery to the character pixel scale; and make the later ritual disturbing without explicit gore. Desktop layouts are checked at 1440×900 and 1280×720.
 
 Add `&all-tabs=1` to either art-review URL to inspect all six tabs and Status in Settings with disposable sample currencies. This mode does not load or write your saved game.
