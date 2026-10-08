@@ -1,16 +1,31 @@
 import { GameStateManager } from '../core/GameState.js';
 import { events, GameEvents } from '../core/EventBus.js';
 import { formatNumber } from '../systems/calculations.js';
-import { describeChurchScene, type ChurchSceneDescription, type ChurchSnapshot, type ChurchTier } from '../features/church/churchScene.js';
+import { compareChurchScenes, describeChurchScene, type ChurchSceneDescription, type ChurchSnapshot, type ChurchTier, type RestoredTier } from '../features/church/churchScene.js';
+import { RESTORATION_NOTICES, type RestorationNotice } from '../config/church.js';
 import { isArtReview } from './artReview.js';
 import { paintPixelSphere } from './pixelSphere.js';
 
-type ArtScene = 'tier-0' | 'tier-1' | 'procession';
+type ArtScene = `tier-${ChurchTier}` | 'procession';
 
 const TIER_TEXT: Record<ChurchTier, { title: string; status: string; caption: string }> = {
   0: { title: 'A Igreja em Ruínas', status: 'Uma luz fraca entre os escombros', caption: 'Algo ainda brilha onde ninguém reza.' },
-  1: { title: 'O Altar Improvisado', status: 'A Esfera repousa no altar', caption: 'Os escombros foram retirados. O culto tem um lugar.' }
+  1: { title: 'O Altar Improvisado', status: 'A Esfera repousa no altar', caption: 'Os escombros foram retirados. O culto tem um lugar.' },
+  2: { title: 'A Capela das Velas', status: 'Velas ardem atrás das janelas', caption: 'O telhado voltou. A chama do Fervor aquece as paredes.' },
+  3: { title: 'O Santuário Restaurado', status: 'Os vitrais brilham na noite', caption: 'O sino chama. Ninguém mais esquece este lugar.' }
 };
+
+/** Where the restoration sparkles land on the 400×192 stage, as % of its width and height. */
+const RESTORED_PARTS: Record<RestoredTier, Array<[number, number]>> = {
+  1: [[27, 66], [33, 63], [58, 78], [64, 76]],
+  2: [[37, 45], [47, 37], [59, 42], [33, 60], [40, 59], [46, 58], [59, 63]],
+  3: [[58, 23], [59, 43], [33, 60], [40, 59], [46, 58], [54, 59], [64, 59]]
+};
+
+const TRANSITION_MS = 1400;
+const SPARKLE_STAGGER_MS = 90;
+/** Sparkles start once the dust cloud has risen over the old background. */
+const SPARKLE_START_MS = 300;
 
 export function churchSnapshot(gameState: GameStateManager): ChurchSnapshot {
   return {
@@ -39,12 +54,14 @@ export class ChurchScene {
   private sphere = document.getElementById('church-sphere') as HTMLButtonElement;
   private blessing = document.getElementById('church-blessing') as HTMLButtonElement;
   private blessingLabel = document.getElementById('church-blessing-label')!;
+  private stage = document.getElementById('church-stage')!;
 
   constructor(
     private gameState: GameStateManager,
     onSphereClick: (event: MouseEvent) => void,
     private grantMiracle: (x: number, y: number) => number,
-    invokeBlessing: (x: number, y: number) => void
+    invokeBlessing: (x: number, y: number) => void,
+    private announce: (notice: RestorationNotice) => void
   ) {
     paintPixelSphere(this.sphere.querySelector('canvas')!);
     this.sphere.addEventListener('click', onSphereClick);
@@ -114,21 +131,33 @@ export class ChurchScene {
     document.getElementById('procession-world')!.hidden = !procession;
     document.querySelectorAll<HTMLElement>('.procession-review-only').forEach(control => { control.hidden = !procession; });
     if (!procession) {
-      this.reviewTier = artScene === 'tier-1' ? 1 : 0;
+      this.reviewTier = Number(artScene.slice('tier-'.length)) as ChurchTier;
       this.sync();
     }
   }
 
   private sync(): void {
     const snapshot = churchSnapshot(this.gameState);
-    if (this.reviewTier !== null) snapshot.selos.incarnation = this.reviewTier === 1;
+    if (this.reviewTier !== null) {
+      snapshot.selos = { incarnation: this.reviewTier >= 1, fervor: this.reviewTier >= 2, relics: this.reviewTier >= 3 };
+    }
     const next = describeChurchScene(snapshot);
     document.getElementById('church-count')!.textContent = `${formatNumber(this.gameState.getTotalFollowersCount())} fiéis`;
     this.blessing.hidden = !next.blessing.visible;
     this.blessing.style.setProperty('--blessing-fill', String(next.blessing.fill));
     this.blessing.classList.toggle('active', snapshot.blessingSeconds > 0);
     this.blessingLabel.textContent = `✦ 2× · ${Math.ceil(snapshot.blessingSeconds)}s`;
-    if (this.scene?.tier === next.tier && this.scene.sphereLocation === next.sphereLocation) return;
+    // The first build (page load) has nothing to compare against, so it never replays a transition.
+    const changes = this.scene ? compareChurchScenes(this.scene, next) : [];
+    if (this.scene && changes.length === 0) return;
+    for (const change of changes) {
+      if (change.kind === 'tier' && change.to > change.from) {
+        // Going up means the target is never the starting ruin.
+        const restored = change.to as RestoredTier;
+        this.playRestoration(restored);
+        this.announce(RESTORATION_NOTICES[restored]);
+      }
+    }
     this.scene = next;
     this.world.dataset.churchTier = String(next.tier);
     this.sphere.dataset.location = next.sphereLocation;
@@ -137,6 +166,26 @@ export class ChurchScene {
     document.getElementById('church-title')!.textContent = text.title;
     document.getElementById('church-status')!.textContent = text.status;
     document.getElementById('church-caption')!.textContent = text.caption;
+  }
+
+  /** Fades the old background out through a dust cloud and sparkles over the parts that were restored. */
+  private playRestoration(tier: RestoredTier): void {
+    const outgoing = this.background.cloneNode() as HTMLImageElement;
+    outgoing.removeAttribute('id');
+    outgoing.classList.add('church-background-outgoing');
+    const dust = document.createElement('div');
+    dust.className = 'church-dust';
+    const sparkles = RESTORED_PARTS[tier].map(([left, top], index) => {
+      const sparkle = document.createElement('span');
+      sparkle.className = 'church-sparkle';
+      sparkle.textContent = '✦';
+      sparkle.style.left = `${left}%`;
+      sparkle.style.top = `${top}%`;
+      sparkle.style.animationDelay = `${SPARKLE_START_MS + index * SPARKLE_STAGGER_MS}ms`;
+      return sparkle;
+    });
+    this.background.after(outgoing, dust, ...sparkles);
+    window.setTimeout(() => [outgoing, dust, ...sparkles].forEach(node => node.remove()), TRANSITION_MS + sparkles.length * SPARKLE_STAGGER_MS);
   }
 
   private pulse(): void {
@@ -163,7 +212,7 @@ export class ChurchScene {
       this.clearPlea();
       this.grantMiracle(event.clientX, event.clientY);
     });
-    document.getElementById('church-stage')!.append(button);
+    this.stage.append(button);
     this.pleaButton = button;
     this.pleaRemaining = 15;
     this.world.classList.add('miracle-request');

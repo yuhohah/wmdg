@@ -88,6 +88,8 @@
 .church-backdrop { position:absolute; inset:0; background:var(--edge-left) left var(--stage-top) / 50% calc(192 * var(--art-scale)) no-repeat, var(--edge-right) right var(--stage-top) / 50% calc(192 * var(--art-scale)) no-repeat, #0b0e1d; pointer-events:none; }
 .church-world[data-church-tier='0'] { --edge-left:linear-gradient(#050912 5.73%, #11365e 5.73% 38.02%, #1e4770 38.02% 48.44%, #0c2d4d 48.44% 83.33%, #0f3055 83.33% 84.38%, #0c2d4d 84.38% 86.46%, #041c26 86.46% 93.23%, #09212f 93.23% 94.79%, #050912 94.79%); --edge-right:linear-gradient(#050912 5.21%, #194068 5.21% 7.29%, #1e4770 7.29% 9.9%, #11365e 9.9% 33.33%, #1e4770 33.33% 55.21%, #11365e 55.21% 64.58%, #0f3055 64.58% 66.15%, #0d2746 66.15% 91.15%, #1a3642 91.15% 92.71%, #092a32 92.71% 93.75%, #09212f 93.75% 94.79%, #050912 94.79%); }
 .church-world[data-church-tier='1'] { --edge-left:linear-gradient(#060c19 0.52%, #071420 0.52% 5.73%, #16375d 5.73% 14.58%, #153255 14.58% 24.48%, #16375d 24.48% 25.52%, #153255 25.52% 33.33%, #16375d 33.33% 38.54%, #1d3f65 38.54% 41.67%, #1c3d63 41.67% 45.31%, #1d3f65 45.31% 46.35%, #1f4168 46.35% 49.48%, #133153 49.48% 51.56%, #153255 51.56% 53.65%, #133153 53.65% 57.29%, #143051 57.29% 65.1%, #122f4e 65.1% 69.27%, #143051 69.27% 73.96%, #122f4e 73.96% 82.81%, #143051 82.81% 84.9%, #193252 84.9% 86.46%, #0e262f 86.46% 87.5%, #0f2a31 87.5% 88.54%, #0f2c34 88.54% 95.31%, #091b27 95.31%); --edge-right:linear-gradient(#080b16 6.25%, #1a3a60 6.25% 7.81%, #1d3f65 7.81% 8.85%, #1c3d63 8.85% 9.9%, #16375d 9.9% 12.5%, #153255 12.5% 13.54%, #133153 13.54% 29.17%, #153255 29.17% 30.73%, #16375d 30.73% 32.29%, #1a3a60 32.29% 33.33%, #1c3d63 33.33% 34.38%, #1a3a60 34.38% 35.42%, #16375d 35.42% 44.79%, #1a3a60 44.79% 53.13%, #1c3d63 53.13% 54.17%, #1d3f65 54.17% 55.21%, #16375d 55.21% 57.81%, #15355c 57.81% 60.94%, #153255 60.94% 65.1%, #143051 65.1% 66.15%, #122f4e 66.15% 67.71%, #122e4a 67.71% 69.79%, #132946 69.79% 89.06%, #0f2a39 89.06% 90.1%, #0f2c34 90.1% 91.15%, #0f2d37 91.15% 92.19%, #0f2c34 92.19% 94.79%, #080b16 94.79%); }
+.church-world[data-church-tier='2'] { --edge-left:linear-gradient(#090c1a 0.52%, #0d0e1e 0.52% 1.56%, #0c1523 1.56% 2.6%, #0d0e1e 2.6% 4.17%, #0c1523 4.17% 5.21%, #183254 5.21% 6.25%, #19365d 6.25% 7.29%, #183254 7.29% 34.38%, #19365d 34.38% 36.98%, #1e3c61 36.98% 47.92%, #183254 47.92% 71.35%, #18314f 71.35% 86.46%, #1b2f3b 86.46% 95.83%, #132c34 95.83%); --edge-right:linear-gradient(#090c1a 5.21%, #183254 5.21% 6.77%, #19365d 6.77% 10.42%, #183254 10.42% 14.06%, #18314f 14.06% 19.27%, #183254 19.27% 31.25%, #19365d 31.25% 32.81%, #1e3c61 32.81% 34.9%, #19365d 34.9% 36.98%, #183254 36.98% 44.27%, #19365d 44.27% 52.6%, #1e3c61 52.6% 55.21%, #19365d 55.21% 58.33%, #183254 58.33% 65.63%, #18314f 65.63% 73.44%, #1b2941 73.44% 89.06%, #1b2f3b 89.06% 92.71%, #132c34 92.71% 94.79%, #090c1a 94.79%); }
+.church-world[data-church-tier='3'] { --edge-left:linear-gradient(#0b0e1d 0.52%, #0f1d2b 0.52% 5.21%, #1c3252 5.21% 34.38%, #1d375c 34.38% 35.42%, #223d62 35.42% 42.71%, #1d375c 42.71% 45.31%, #223d62 45.31% 48.96%, #1d375c 48.96% 50%, #1c3252 50% 85.94%, #202b43 85.94%); --edge-right:linear-gradient(#0b0e1d 5.21%, #1c3252 5.21% 31.25%, #1d375c 31.25% 38.02%, #1c3252 38.02% 47.92%, #1d375c 47.92% 51.04%, #223d62 51.04% 54.69%, #1d375c 54.69% 59.38%, #1c3252 59.38% 73.44%, #202b43 73.44% 91.15%, #182c37 91.15% 94.79%, #0b0e1d 94.79%); }
 .church-background { position:absolute; inset:0; width:100%; height:100%; image-rendering:pixelated; pointer-events:none; }
 .church-sphere { position:absolute; aspect-ratio:1; padding:0; border:0; background:transparent; cursor:pointer; transform:translate(-50%,-50%); z-index:2; transition:filter 120ms var(--ease-out); }
 .church-sphere canvas { display:block; width:100%; height:100%; image-rendering:pixelated; pointer-events:none; }
@@ -112,6 +114,13 @@
 .church-world .ritual-sigil { left:23%; bottom:16%; }
 .church-stage .church-plea { left:50%; bottom:20%; transform:translateX(-50%); }
 @keyframes ruin-glow { 0%,100% { opacity:.45; } 50% { opacity:.8; } }
+/* Tier restoration: the old tier fades out through dust while sparkles mark the restored parts. */
+.church-background-outgoing { z-index:1; animation:church-fade-out 1100ms var(--ease-out) forwards; }
+.church-dust { position:absolute; inset:10% 20% 8% 20%; z-index:1; pointer-events:none; background:radial-gradient(ellipse at 50% 60%, #b9a58a99, #8a7a6655 45%, transparent 70%); filter:blur(6px); opacity:0; animation:church-dust 1300ms ease-out forwards; }
+.church-sparkle { position:absolute; z-index:3; pointer-events:none; transform:translate(-50%,-50%) scale(0); color:#f6dc9c; font-size:clamp(10px, 2.4cqw, 22px); text-shadow:0 0 6px #f3d392, 0 0 12px #e9be72; animation:church-sparkle 900ms var(--ease-out) both; }
+@keyframes church-fade-out { from { opacity:1; } to { opacity:0; } }
+@keyframes church-dust { 0% { opacity:0; transform:scale(.9); } 30% { opacity:1; } 100% { opacity:0; transform:scale(1.1) translateY(-4%); } }
+@keyframes church-sparkle { 0% { opacity:0; transform:translate(-50%,-50%) scale(0) rotate(0); } 40% { opacity:1; transform:translate(-50%,-50%) scale(1.2) rotate(20deg); } 100% { opacity:0; transform:translate(-50%,-50%) scale(.6) rotate(45deg); } }
 [data-art-era='late'] .world-landscape { filter:brightness(.7) saturate(.7); }
 [data-art-era='late'] .world-parallax-track { animation-play-state:paused; }
 [data-art-era='late'] .procession-member { animation:none; }
@@ -190,6 +199,8 @@
 @media (prefers-reduced-motion:reduce) {
   .world-parallax-track,.prophet-sprite,.procession-member,.procession-member img,.walk-strip,.new-recruit,.church-sphere { animation:none!important; }
   .church-blessing-fill { transition:none; }
+  .church-dust,.church-sparkle { display:none; }
+  .church-background-outgoing { animation-duration:200ms!important; }
   .walk-ready > .walk-viewport { display:none; }
   .walk-ready > img { opacity:1; }
   .ritual-sigil { transform:none!important; transition:opacity 120ms; }

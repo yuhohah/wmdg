@@ -226,7 +226,8 @@ class AppManager {
       this.gameState,
       (e) => this.sphere.onSphereClicked(e),
       (x, y) => this.sphere.grantMiracle(x, y),
-      (x, y) => this.sphere.invokeBlessing(x, y)
+      (x, y) => this.sphere.invokeBlessing(x, y),
+      (notice) => this.notifications.showCustomPopup(notice.title, notice.desc, notice.icon, 'RESTAURAÇÃO')
     );
     if (isArtReview) this.nav.switchScreen('gameplay');
 

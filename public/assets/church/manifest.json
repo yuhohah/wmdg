@@ -20,6 +20,22 @@
       "jobId": "c260560d-26f1-4cb3-9d67-fa8334893b62",
       "prompt": "Remove both piles of rubble and fallen stones in front of the church so the grass is clear and tidy. Add a small makeshift altar on the grass in front of the church, left of the doorway: a rough stone slab resting on two stacked stone blocks, with a worn cloth draped over it. Keep the broken roof, walls, windows, sky, hills, lighting, palette and composition exactly the same.",
       "status": "saved"
+    },
+    {
+      "name": "tier-2",
+      "tool": "edit_image",
+      "source": "tier-1",
+      "jobId": "ac57d25d-8291-419a-9598-e769f585eb78",
+      "prompt": "Edit this pixel art image. Repair the church: replace the collapsed, broken roof with a complete, intact dark slate-tiled pitched roof, and patch the cracked stone walls so they look solid and repaired. Light candles inside: the three arched side windows, the round rose window and the open doorway now glow with warm flickering orange-yellow candlelight, casting a soft warm glow onto the nearby grass. Keep everything else exactly identical: same canvas size and aspect ratio, same camera, church in exactly the same position and size, same cross, same stone altar with cloth on the left, same steps, same hill, same dark blue cloudy night sky, same hills, same chunky pixel art style and palette. Do not add people or text.",
+      "status": "saved"
+    },
+    {
+      "name": "tier-3",
+      "tool": "edit_image",
+      "source": "tier-2",
+      "jobId": "3da19931-a750-4038-8465-157d9a4d5afa",
+      "prompt": "Edit this pixel art image. Make the church fully restored and grand: on top of the front gable, replace the small cross with a short square stone bell tower with an open arched belfry holding a bronze bell, capped by a small pointed roof with the cross on top. Turn the three side windows and the round rose window into richly coloured glowing stained glass (ruby red, cobalt blue, emerald and gold), shining brightly from within. Hang two long vertical crimson-and-gold cloth banners on the front wall, one on each side of the doorway. The doorway glows warm gold. The light spilling onto the grass in front becomes brighter and warmer. Keep everything else exactly identical: same canvas size and aspect ratio, same camera, church body in exactly the same position and size, same roof, same stone altar with cloth on the left, same steps, same hill, same dark blue cloudy night sky, same hills, same chunky pixel art style. Do not add people or text.",
+      "status": "saved"
     }
   ]
 }
