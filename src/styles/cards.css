@@ -417,7 +417,7 @@
 }
 
 .btn-convert-max.locked #convert-max-cost-label {
-  color: #ef4444 !important;
+  color: var(--fervor-ink) !important;
   font-weight: 800;
   letter-spacing: 0.5px;
 }
@@ -814,9 +814,9 @@
 
 .fervor-upgrade-card .cost-tag,
 .fervor-upgrade-card .cost-tag * {
-  color: #ef4444 !important;
+  color: var(--fervor-ink) !important;
   font-weight: 800;
-  text-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+  text-shadow: none;
 }
 
 .fervor-upgrade-card .card-click-hint {
@@ -921,7 +921,7 @@
   font-family: var(--font-mono);
   font-size: 16px;
   font-weight: 800;
-  color: #dbe6f0 !important;
+  color: var(--relic-ink) !important;
   text-shadow: none !important;
 }
 
@@ -1017,8 +1017,8 @@
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 800;
-  color: #c5d3e2 !important;
-  text-shadow: 0 0 10px rgba(186, 210, 235, 0.8), 0 0 2px #ffffff !important;
+  color: var(--relic-ink) !important;
+  text-shadow: none !important;
 }
 
 .relic-hint {

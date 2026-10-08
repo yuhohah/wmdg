@@ -10,6 +10,7 @@ export const GameEvents = {
   TAB_CHANGED: 'tab:changed',
   SAVE_LOADED: 'save:loaded',
   MIRACLE_GRANTED: 'miracle:granted',
+  MIRACLE_PLEA: 'miracle:plea',
 } as const;
 
 export type GameEventName = typeof GameEvents[keyof typeof GameEvents] | string;

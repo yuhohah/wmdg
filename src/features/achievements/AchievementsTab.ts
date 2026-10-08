@@ -59,7 +59,7 @@ export class AchievementsTab {
             ${symbolHtml}
             <span class="card-name">${ach.name}</span>
           </div>
-          <span class="card-count-badge" id="ach-badge-${ach.id}" style="${ach.unlocked ? 'color: #ffffff; border-color: #ffffff;' : ''}">
+          <span class="card-count-badge" id="ach-badge-${ach.id}">
             ${ach.unlocked ? 'DESBLOQUEADO' : 'BLOQUEADO'}
           </span>
         </div>

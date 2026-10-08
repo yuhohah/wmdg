@@ -1,8 +1,9 @@
 import { NotificationManager } from '../systems/notifications.js';
+import { cultDialog } from './CultDialog.js';
 
 export interface SaveDataModalOptions {
   onExport: () => string;
-  onImport: (saveString: string) => boolean;
+  onImport: (saveString: string) => boolean | null | Promise<boolean | null>;
   notifications: NotificationManager;
 }
 
@@ -14,6 +15,7 @@ export class SaveDataModal {
   private actionBtn: HTMLButtonElement | null = null;
   private closeBtn: HTMLButtonElement | null = null;
 
+  private isHandling = false;
   private mode: 'export' | 'import' = 'export';
   private options: SaveDataModalOptions;
 
@@ -35,7 +37,15 @@ export class SaveDataModal {
   private bindEvents(): void {
     this.closeBtn?.addEventListener('click', () => this.close());
 
-    this.actionBtn?.addEventListener('click', () => this.handleAction());
+    this.actionBtn?.addEventListener('click', async () => {
+      if (this.isHandling) return;
+      this.isHandling = true;
+      if (this.actionBtn) this.actionBtn.disabled = true;
+      try { await this.handleAction(); } finally {
+        this.isHandling = false;
+        if (this.actionBtn) this.actionBtn.disabled = false;
+      }
+    });
 
     this.modalEl?.addEventListener('click', (e) => {
       if (e.target === this.modalEl) {
@@ -44,7 +54,7 @@ export class SaveDataModal {
     });
 
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.isOpen()) {
+      if (e.key === 'Escape' && this.isOpen() && !document.querySelector('dialog[open]')) {
         this.close();
       }
     });
@@ -99,7 +109,7 @@ export class SaveDataModal {
     this.modalEl?.classList.remove('open');
   }
 
-  private handleAction(): void {
+  private async handleAction(): Promise<void> {
     if (this.mode === 'export') {
       const text = this.textareaEl?.value || '';
       if (!text) return;
@@ -128,11 +138,11 @@ export class SaveDataModal {
     } else {
       const raw = this.textareaEl?.value || '';
       if (!raw.trim()) {
-        alert('Por favor, cole um código de save válido.');
+        await cultDialog('Registro vazio', 'Por favor, cole um código de save válido.');
         return;
       }
 
-      const success = this.options.onImport(raw.trim());
+      const success = await this.options.onImport(raw.trim());
       if (success) {
         this.options.notifications.showCustomPopup(
           'Progresso Restaurado',
@@ -141,8 +151,8 @@ export class SaveDataModal {
           'IMPORTAÇÃO'
         );
         this.close();
-      } else {
-        alert('Código de save inválido ou incompatível.');
+      } else if (success === false) {
+        await cultDialog('Registro inválido', 'Código de save inválido ou incompatível.');
       }
     }
   }

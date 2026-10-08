@@ -9,6 +9,7 @@ import {
   calculateIncarnationFollowerMultiplier
 } from '../../systems/calculations.js';
 import { getFervorUpgradeMultiplier } from '../../config/fervor.js';
+import { events, GameEvents } from '../../core/EventBus.js';
 
 export interface FollowersTabOptions {
   gameState: GameStateManager;
@@ -179,13 +180,13 @@ export class FollowersTab {
 
         if (maxCount > 0) {
           this.btnConvertMaxEl.disabled = false;
-          this.convertMaxTitleEl.textContent = `CONVERTER MÁXIMO (+${formatNumber(maxCount)})`;
+          this.convertMaxTitleEl.textContent = 'CONVERTER MÁXIMO';
           this.convertMaxSubEl.textContent = `+${formatNumber(extraRate)} Fé/s`;
           this.convertMaxCostLabelEl.textContent = 'CUSTO:';
           this.convertMaxCostValEl.textContent = `${formatNumber(totalCost)} Fé`;
         } else {
           this.btnConvertMaxEl.disabled = true;
-          this.convertMaxTitleEl.textContent = 'CONVERTER MÁXIMO (+0)';
+          this.convertMaxTitleEl.textContent = 'CONVERTER MÁXIMO';
           this.convertMaxSubEl.textContent = '+0 Fé/s';
           this.convertMaxCostLabelEl.textContent = 'CUSTO:';
           this.convertMaxCostValEl.textContent = `${formatNumber(costOne)} Fé`;
@@ -240,6 +241,6 @@ export class FollowersTab {
   }
 
   public triggerMiraclePlea(): void {
-    this.arena?.triggerMiraclePlea();
+    events.emit(GameEvents.MIRACLE_PLEA);
   }
 }

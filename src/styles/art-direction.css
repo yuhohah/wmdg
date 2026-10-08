@@ -1,0 +1,144 @@
+/* Cult of the Sphere — desktop art pass. Imported last to keep existing controls intact. */
+:root {
+  --bg-dark: #101114;
+  --bg-panel: #171719;
+  --gold-accent: #d4ad68;
+  --gold-light: #f0dfb6;
+  --gold-border: #584730;
+  --border-dark: #302a24;
+  --border-muted: #3c3329;
+  --border-mid: #584730;
+  --text-main: #eee4d2;
+  --text-muted: #a69c8d;
+  --text-gold: #dfba79;
+  --font-heading: Georgia, 'Times New Roman', serif;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --sphere-size: 124px;
+}
+.bg-overlay-gradient { background: radial-gradient(ellipse at 50% 0, #282328, #101114 70%); }
+.cult-wordmark { display:flex; gap:10px; align-items:center; color:var(--gold-light); text-decoration:none; font-family:var(--font-heading); font-size:13px; letter-spacing:2px; line-height:1.2; }
+.cult-mark { font-size:32px; color:var(--gold-accent); }
+.top-hud-bar { flex-shrink:0; height:76px; padding:12px 28px; justify-content:space-between; border-bottom:1px solid #51422d; background:#131315; }
+.resources-hud-card { top:16px; border:0; box-shadow:none; background:transparent; padding:0; }
+.resources-hud-header { border:0; font-size:8px; padding:0; letter-spacing:3px; }
+.resources-hud-row { flex-direction:row; gap:20px; }
+.resource-item { width:auto; }
+.resource-divider { width:1px; height:20px; background:var(--border-mid); }
+.icon-btn-gold { border-radius:4px; width:36px; height:36px; }
+#gameplay-screen { flex-direction:column; justify-content:flex-start; gap:16px; padding:16px 28px 20px; min-height:0; }
+.procession-world { width:100%; height:46%; min-height:260px; flex-shrink:0; position:relative; overflow:hidden; border:1px solid #605039; background:#26344d; isolation:isolate; }
+.world-landscape { position:absolute; inset:0 -24px; background:url('/assets/procession/landscape.png') center 64% / 100% 100%; image-rendering:pixelated; animation:landscape-drift 70s linear infinite alternate; }
+.world-veil { position:absolute; inset:0; background:linear-gradient(180deg,#1016247a,transparent 40%,#11131818 78%,#101114aa); pointer-events:none; }
+.world-heading { position:absolute; top:22px; left:26px; z-index:3; }
+.world-eyebrow { display:block; color:#d9ba7a; font-size:9px; font-weight:700; letter-spacing:3px; }
+.world-heading h1 { font-family:var(--font-heading); font-size:clamp(18px,1.7vw,27px); font-weight:400; color:#f2e4ca; margin-top:8px; text-shadow:0 2px 6px #10131c; }
+.world-status { position:absolute; top:26px; right:26px; display:flex; align-items:center; gap:8px; font-size:10px; color:#ddd0b7; }
+.status-light { width:5px; height:5px; background:#ddbb6e; box-shadow:0 0 8px #ddbb6e; }
+.world-footer { position:absolute; left:26px; right:26px; bottom:12px; display:flex; justify-content:space-between; gap:12px; font-size:10px; color:#c4b79d; z-index:4; }
+.prophet-position { position:absolute; left:72%; bottom:18%; height:128px; width:120px; z-index:3; }
+.prophet-sprite { height:128px; width:auto; image-rendering:pixelated; animation:pilgrim-step 850ms steps(2,end) infinite; }
+.prophet-label { position:absolute; bottom:-18px; left:8px; font-size:8px; letter-spacing:2px; color:#e2c084; white-space:nowrap; }
+.world-sphere { position:absolute; left:78px; top:26px; width:38px; height:38px; filter:drop-shadow(0 0 9px #e9be72); transition:opacity 120ms var(--ease-out); }
+.sphere-pixel-art { display:block; width:100%; height:100%; image-rendering:pixelated; pointer-events:none; }
+.procession-entourage { position:absolute; left:12%; right:31%; bottom:18%; height:120px; display:flex; align-items:flex-end; justify-content:flex-end; gap:clamp(6px,1.5vw,22px); z-index:2; }
+.procession-member { flex:0 1 76px; min-width:24px; display:flex; justify-content:center; position:relative; }
+.procession-member img { height:112px; width:auto; max-width:130px; image-rendering:pixelated; animation:pilgrim-step 850ms steps(2,end) infinite; }
+.new-recruit { animation:recruit-arrival 250ms var(--ease-out) both; }
+.ritual-sigil { position:absolute; left:72%; bottom:12%; font-size:110px; color:#f3d392; line-height:1; opacity:0; pointer-events:none; transform:scale(.95); transition:opacity 200ms var(--ease-out),transform 200ms var(--ease-out); z-index:1; }
+.miracle-active .ritual-sigil { opacity:.85; transform:scale(1); }
+.faith-response .world-sphere { opacity:.65; }
+.ascended-monastery { position:absolute; right:15%; top:16%; height:45%; width:auto; image-rendering:pixelated; filter:brightness(.65); z-index:1; }
+[data-art-era='late'] .world-landscape { filter:brightness(.7) saturate(.7); animation-play-state:paused; }
+[data-art-era='late'] .world-veil { background:linear-gradient(180deg,#27152b88,transparent 55%,#13101c55); }
+[data-art-era='late'] .prophet-sprite,[data-art-era='late'] .procession-member img { animation:ritual-bow 3s steps(3,end) infinite; }
+[data-art-era='late'] .world-sphere { width:112px; height:112px; left:12px; top:-128px; filter:drop-shadow(0 0 14px #a889ce); }
+[data-art-era='late'] .ritual-sigil { color:#a58ac2; }
+[data-art-era='late'] .world-status .status-light { background:#ab85cc; box-shadow:0 0 8px #ab85cc; }
+.gameplay-3frame-container { flex:1; min-height:0; height:auto; gap:18px; }
+.side-panel { flex:1; min-width:280px; width:auto; max-width:none; height:100%; align-self:stretch; border-radius:4px; border-width:1px; box-shadow:none; backdrop-filter:none; }
+.panel-header { padding:12px 16px; background:#1e1c1b; }
+.panel-title { font-size:15px; font-weight:400; letter-spacing:.4px; color:#f0dfb6; }
+.panel-tag { font-family:var(--font-mono); font-size:8px; letter-spacing:2px; color:#ac9877; }
+.panel-body { min-height:0; padding:12px 16px; }
+.panel-tabs-bar { background:#151516; }
+.panel-tab-btn { border-radius:3px; font-family:inherit; font-size:11px; letter-spacing:0; }
+.panel-tab-btn.active { background:#302821; color:#efcf91; border-color:#705b3a; box-shadow:none; }
+.center-frame { flex:0 0 30%; min-width:260px; max-width:420px; border:1px solid #655034; border-radius:4px; background:radial-gradient(ellipse at center,#30261f40,#151416 70%); margin:0; justify-content:space-between; padding:18px 12px 16px; overflow:hidden; }
+.center-frame-content { flex:1; display:flex; align-items:center; justify-content:center; width:100%; min-height:0; }
+.sacred-window-heading { text-align:center; }
+.sacred-window-heading h2 { font-family:var(--font-heading); font-size:27px; font-weight:400; color:#f0dfb6; margin:4px 0; }
+.sacred-window-heading p,.sacred-window-footer p { color:var(--text-muted); font-size:10px; }
+.sacred-window-footer { text-align:center; }
+.sacred-window-footer span { font-size:9px; letter-spacing:2px; color:#d5b67a; }
+.sacred-window-footer p { margin-top:7px; }
+.sphere-wrapper { width:180px; height:180px; margin:0; }
+.divine-sphere-btn { border:0; border-radius:0; background:transparent; box-shadow:none; padding:0; width:150px; height:150px; filter:drop-shadow(0 0 16px #b8874540); transition:filter 120ms var(--ease-out); }
+.sphere-wrapper:hover .divine-sphere-btn,.sphere-wrapper:active .divine-sphere-btn { transform:none; border:0; box-shadow:none; }
+.sphere-wrapper:active .divine-sphere-btn { filter:brightness(1.3); }
+.sphere-orbit-ring { border-color:#705a354d; width:176px; height:176px; animation:none; }
+.sphere-orbit-ring.ring-2 { width:200px; height:200px; border-style:dashed; }
+.sphere-aura { width:190px; height:190px; background:radial-gradient(circle,#bd8e3620,transparent 70%); animation:none; }
+.sphere-satellites-orbit { display:none; }
+.sphere-satellites-orbit:has(.state-unlocked) { display:block; --satellites-orbit-size:220px; --satellite-offset:-110px; --satellite-node-size:30px; }
+.sphere-satellite-node.state-locked { display:none; }
+.sphere-satellite-node.state-unlocked:hover,.sphere-satellite-node.state-unlocked:active { transform:rotate(var(--node-angle)) translateY(-110px); }
+.satellite-sprite-view { width:24px; height:24px; background-size:144px 48px; }
+.satellite-sprite-view.frame-0 { background-position:0 -24px; }
+.satellite-sprite-view.frame-1 { background-position:-24px -24px; }
+.satellite-sprite-view.frame-2 { background-position:-48px -24px; }
+.satellite-sprite-view.frame-3 { background-position:-72px -24px; }
+.satellite-sprite-view.frame-4 { background-position:-96px -24px; }
+.satellite-sprite-view.frame-5 { background-position:-120px -24px; }
+.miracle-plea { position:absolute; bottom:calc(100% + 8px); white-space:nowrap; color:#ffdea0; background:#30241b; border:1px solid #c39a58; border-radius:3px; padding:8px; font-size:9px; cursor:pointer; box-shadow:0 0 14px #d8a64b33; z-index:5; }
+.miracle-request .world-landscape,.miracle-request .procession-member img,.miracle-request .prophet-sprite { animation-play-state:paused; }
+.followers-arena-wrapper { display:none; }
+.followers-controls { margin-top:12px; }
+.cult-action-card,.btn-follower-action { border-radius:3px; box-shadow:none; }
+.btn-convert-primary { background:linear-gradient(100deg,#542d2b,#342321); border-color:#966647; }
+.btn-action-title { font-family:inherit; font-size:12px; }
+.art-review-controls[hidden] { display:none; }
+.art-review-controls { display:flex; align-items:center; gap:12px; flex-shrink:0; color:#ad9d84; font-size:9px; letter-spacing:1px; }
+.art-review-controls button,.art-review-controls a { padding:7px 12px; background:#1f1c1c; border:1px solid #574735; color:#ddcba8; cursor:pointer; font:inherit; letter-spacing:0; text-decoration:none; border-radius:3px; }
+.art-review-controls button[aria-pressed='true'] { border-color:#c5a366; background:#3a2c24; }
+.art-review #spotlight-tour-overlay { display:none!important; }
+.art-review .procession-world { height:44%; }
+.art-review .panel-toggle-btn,.art-review .panel-expand-strip { display:none; }
+.scene-paused * { animation-play-state:paused!important; }
+.divine-sphere-btn:focus-visible,.art-review-controls button:focus-visible { outline:2px solid #edc886; outline-offset:5px; }
+@keyframes landscape-drift { from { transform:translateX(0); } to { transform:translateX(-20px); } }
+@keyframes pilgrim-step { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-2px); } }
+@keyframes ritual-bow { 0%,100% { transform:rotate(0); } 50% { transform:rotate(5deg); } }
+@keyframes recruit-arrival { from { opacity:0; transform:translateX(-24px); } to { opacity:1; transform:translateX(0); } }
+@media (hover:hover) and (pointer:fine) { .divine-sphere-btn:hover { filter:brightness(1.15) drop-shadow(0 0 16px #b8874540); } }
+@media (prefers-reduced-motion:reduce) {
+  .world-landscape,.prophet-sprite,.procession-member img,.new-recruit { animation:none!important; }
+  .ritual-sigil { transform:none!important; transition:opacity 120ms; }
+  .sphere-wrapper * { animation:none!important; }
+}
+@media (max-height:760px) and (min-width:861px) {
+  .procession-world { min-height:225px; height:42%; }
+  .art-review .procession-world { height:40%; }
+  .prophet-sprite { height:104px; }
+  .prophet-position { height:104px; }
+  [data-art-era='late'] .world-sphere { width:80px; height:80px; top:-70px; }
+  .procession-member img { height:88px; }
+  .sacred-window-heading h2 { font-size:22px; }
+  .center-frame { padding:12px; }
+}
+/* Preserve existing narrow-screen navigation; desktop is the approval target. */
+@media (max-width:860px) {
+  .cult-wordmark { font-size:9px; }
+  .resources-hud-card { position:static; transform:none; }
+  .resources-hud-row { gap:8px; }
+  .procession-world { min-height:220px; height:32%; }
+  .world-heading { left:12px; top:12px; }
+  .world-status { display:none; }
+  .world-footer { left:12px; right:12px; font-size:8px; }
+  .prophet-sprite { height:80px; }
+  .prophet-position { height:80px; left:70%; }
+  .procession-member img { height:64px; }
+  .world-sphere { left:49px; top:14px; width:28px; height:28px; }
+  [data-art-era='late'] .world-sphere { width:65px; height:65px; top:-68px; left:0; }
+  .sacred-window-heading p { display:none; }
+  .center-frame { flex:1; }
+}

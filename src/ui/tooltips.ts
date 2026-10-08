@@ -131,12 +131,12 @@ export class TooltipManager {
           ${symbolHtml}
           <span>${upg.name}</span>
         </div>
-        <span class="cult-tooltip-tag" style="color: #f4f4f5; border-color: #71717a;">FERVOR</span>
+        <span class="cult-tooltip-tag" style=" ">FERVOR</span>
       </div>
 
       <div class="cult-tooltip-lore">${upg.lore}</div>
 
-      <div class="tooltip-buff-highlight" style="background: rgba(255, 255, 255, 0.05); border-color: #71717a; color: #ffffff;">
+      <div class="tooltip-buff-highlight" style="  ">
         <span>FÓRMULA DE PROGRESSÃO:</span>
         <span>${getFervorUpgradeFormula(upg)}</span>
       </div>
@@ -152,7 +152,7 @@ export class TooltipManager {
         </div>
         <div class="tooltip-stat-item">
           <span class="tooltip-stat-label">PRÓXIMO CUSTO</span>
-          <span class="tooltip-stat-val" style="color: #ef4444; font-weight: 700;">${formatNumber(cost)} Fervor</span>
+          <span class="tooltip-stat-val" style=" font-weight: 700;">${formatNumber(cost)} Fervor</span>
         </div>
       </div>
     `;
@@ -175,7 +175,7 @@ export class TooltipManager {
           ${symbolHtml}
           <span>${ach.name}</span>
         </div>
-        <span class="cult-tooltip-tag" style="${ach.unlocked ? 'color: #ffffff; border-color: #ffffff;' : 'border-color: #52525b;'}">
+        <span class="cult-tooltip-tag">
           ${ach.unlocked ? 'ALCANÇADO' : 'EM PROGRESSO'}
         </span>
       </div>
@@ -214,7 +214,7 @@ export class TooltipManager {
       <div class="cult-tooltip-stats">
         <div class="tooltip-stat-item">
           <span class="tooltip-stat-label">STATUS</span>
-          <span class="tooltip-stat-val" style="color: ${unlock.unlocked ? '#34d399' : (canAfford ? '#fbbf24' : '#94a3b8')}">
+          <span class="tooltip-stat-val ${unlock.unlocked ? 'ritual-complete' : (canAfford ? 'ritual-ready' : 'ritual-pending')}">
             ${unlock.unlocked ? 'DESBLOQUEADO' : 'AGUARDANDO FÉ'}
           </span>
         </div>
@@ -244,10 +244,10 @@ export class TooltipManager {
           ${symbolHtml}
           <span>${relic.name}</span>
         </div>
-        <span class="cult-tooltip-tag" style="color: #dbe6f0; border-color: rgba(186, 210, 235, 0.5);">RELÍQUIA MITOLÓGICA</span>
+        <span class="cult-tooltip-tag" style=" ">RELÍQUIA MITOLÓGICA</span>
       </div>
 
-      <div class="tooltip-buff-highlight" style="background: rgba(186, 210, 235, 0.08); border-color: rgba(186, 210, 235, 0.35); color: #dbe6f0;">
+      <div class="tooltip-buff-highlight" style="  ">
         <span>EFEITO ATUAL:</span>
         <span>${effectText}</span>
       </div>
@@ -259,7 +259,7 @@ export class TooltipManager {
         </div>
         <div class="tooltip-stat-item">
           <span class="tooltip-stat-label">CUSTO DE CONSAGRAÇÃO</span>
-          <span class="tooltip-stat-val" style="color: #c5d3e2; font-weight: 800; text-shadow: 0 0 8px rgba(186, 210, 235, 0.7);">${isMax ? 'MÁXIMO' : `${formatNumber(relic.cost)} Relíquias`}</span>
+          <span class="tooltip-stat-val" >${isMax ? 'MÁXIMO' : `${formatNumber(relic.cost)} Relíquias`}</span>
         </div>
       </div>
     `;
@@ -284,7 +284,7 @@ export class TooltipManager {
   }
 
   public position(e: MouseEvent): void {
-    const tooltipWidth = 340;
+    const tooltipWidth = this.tooltipEl.offsetWidth || 350;
     const tooltipHeight = this.tooltipEl.offsetHeight || 280;
     const pad = 16;
 

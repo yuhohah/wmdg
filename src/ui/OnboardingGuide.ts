@@ -173,7 +173,7 @@ export class OnboardingGuide {
         this.hasCelebrated = true;
         this.notifications.showCustomPopup(
           'PRIMEIRO FIEL REUNIDO!',
-          'Seu devoto começou a orar no pátio e a gerar Fé contínua a cada segundo (+1 Fé/s)!',
+          'Seu devoto se juntou à procissão e começou a gerar Fé contínua a cada segundo (+1 Fé/s)!',
           '👥',
           'CONGREGAÇÃO'
         );

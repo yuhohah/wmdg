@@ -81,10 +81,10 @@ export class FervorTab {
           <span class="fervor-mult-tag">x${mult.toFixed(2)}</span>
         </div>
         <div class="card-desc">
-          <div class="card-benefit" style="color: #94a3b8;">Nível ${upg.level} • Atualmente x${mult.toFixed(2)}</div>
+          <div class="card-benefit">Nível ${upg.level} • Atualmente x${mult.toFixed(2)}</div>
         </div>
         <div class="card-footer-row">
-          <div class="cost-tag" style="color: #ef4444; font-weight: 800;">
+          <div class="cost-tag" style=" font-weight: 800;">
             <span>CUSTO:</span>
             <span>${formatNumber(cost)} Fervor</span>
           </div>
@@ -138,7 +138,7 @@ export class FervorTab {
       this.hudDividerEl.style.display = unlocked ? 'block' : 'none';
     }
     if (this.hudItemEl) {
-      this.hudItemEl.style.display = unlocked ? 'flex' : 'none';
+      this.hudItemEl.style.display = unlocked ? '' : 'none';
     }
   }
 }

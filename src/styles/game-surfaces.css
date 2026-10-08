@@ -1,0 +1,153 @@
+/* Shared material rules for all game screens and transient surfaces. */
+:root { --font-heading:var(--font-game); --font-mono:var(--font-game); --faith-ink:#755224; --fervor-ink:#884432; --relic-ink:#67476e; }
+body,button,input,textarea { font-family:var(--font-game); }
+.panel-body,.cult-tooltip,.modal-slide-card,.mobile-inspect-sheet,.spotlight-balloon,.slide-card,.intro-modal-card,.cult-dialog {
+  --text-main:var(--ink); --text-muted:var(--ink-muted); --gold-light:var(--ink); --gold-accent:#795832; --text-gold:#795832;
+  --border-dark:#a78a59; --border-mid:#9c794b; --border-muted:#b39564;
+  background-color:var(--paper); background-image:var(--paper-surface); background-size:auto,1024px 1024px; background-position:center; background-repeat:no-repeat; color:var(--ink); font:18px/1.15 var(--font-game);
+}
+.cult-tooltip,.modal-slide-card,.mobile-inspect-sheet,.spotlight-balloon,.slide-card,.intro-modal-card,.cult-dialog {
+  border:10px solid transparent; border-image:var(--wood-frame) 8 / 10px / 0 stretch; border-radius:0; box-shadow:4px 6px #160f0ddd; backdrop-filter:none; -webkit-backdrop-filter:none;
+}
+.panel-body :is(.cult-action-card,.cult-action-card:hover,.cult-action-card.unaffordable,.relic-action-card.maxed,.ach-card.unlocked) { background:#d5bc8860; border:0; border-top:2px solid #a18454; border-bottom:2px solid #a18454; border-radius:0; box-shadow:none; transform:none; opacity:1; }
+.cult-action-card::before { display:none; }
+.card-title-group { min-width:0; }
+.card-name { overflow-wrap:anywhere; }
+.card-header-row,.card-footer-row { gap:8px; flex-wrap:wrap; }
+.card-count-badge,.card-status-badge,.relic-level-badge,.fervor-mult-tag,.unlock-type-badge,.ach-buff-chip { font:17px var(--font-game); color:var(--ink)!important; background:#c3a46c; border:1px solid #997849; border-radius:0; box-shadow:none; }
+.panel-body :is(.cost-tag,.cost-tag *,.relic-cost-tag,.relic-cost-tag *,.relic-benefit-text,.card-benefit) { font:18px var(--font-game); color:var(--ink); }
+#tab-fervor .cost-tag,#tab-fervor .cost-tag * { color:var(--fervor-ink); }
+#tab-relics .relic-cost-tag,#tab-relics .relic-cost-tag * { color:var(--relic-ink); }
+.card-symbol,.cult-tooltip-symbol { width:24px; height:24px; font-size:0; flex-shrink:0; background:url('/assets/hud/book.svg') center/contain no-repeat; image-rendering:pixelated; }
+.fervor-upgrade-card .card-symbol { background-image:url('/assets/hud/fervor.svg'); }
+.relic-action-card .card-symbol { background-image:url('/assets/hud/relic.svg'); }
+.fervor-header-card,.incarnation-tab-header,.relics-convert-section,.stat-box,.incarnation-boost-card,.tooltip-buff-highlight,.cult-tooltip-stats,.setting-item,.spotlight-balloon-tracker,.intro-action-hint-card,.unlocks-completed-banner {
+  background:#c4a87340; border:1px solid #a18454; border-radius:0; box-shadow:none; color:var(--ink); padding:10px; transition:none;
+}
+.fervor-header-card { border:0; border-bottom:2px dashed #a18454; padding:0 0 10px; }
+.fervor-badge-group::before { content:''; width:36px; height:36px; background:url('/assets/hud/fervor.svg') center/contain; image-rendering:pixelated; }
+.fervor-label,.fervor-unit,.incarnation-mult-sublabel { font:16px var(--font-game)!important; color:var(--ink-muted)!important; letter-spacing:0!important; }
+.fervor-val { font:32px var(--font-game); color:var(--fervor-ink); text-shadow:none; }
+.fervor-rate-tag,.incarnation-rate-badge,.incarnation-stage-tag { background:#c8ad79; border:1px solid #9c794b; border-radius:0; color:var(--ink); font:20px var(--font-game); box-shadow:none; }
+.incarnation-tab-header { padding:0 0 8px; background:none; border:0; border-bottom:2px dashed #a18454; }
+.incarnation-arena-wrapper { flex:0 0 auto; height:148px; min-height:148px; max-height:148px; border:6px solid transparent; border-image:var(--wood-frame) 8 / 6px / 0 stretch; background:#33291f; border-radius:0; box-shadow:none; }
+.incarnation-canvas { image-rendering:pixelated; }
+.incarnation-boost-card { padding:8px; }
+.boost-card-title,.boost-timer-display { font:18px var(--font-game); color:var(--ink); }
+.boost-card-sub { font:16px var(--font-game); color:var(--ink-muted); }
+.boost-active-tag,.boost-active-tag.inactive { border:1px solid #a18454; border-radius:0; background:#bba073; color:#5c4934; box-shadow:none; font:15px var(--font-game); }
+.incarnation-boost-card.active .boost-active-tag { background:#6d7043; color:#f2deb0; }
+.incarnation-boost-track,.spotlight-tracker-bar-bg { height:8px; background:#a98b5c; border:1px solid #8d6c40; border-radius:0; }
+.incarnation-boost-fill,.incarnation-boost-card.active .incarnation-boost-fill,.spotlight-tracker-bar-fill { background:#8c6a36; border-radius:0; box-shadow:none; }
+.btn-incarnation-upgrade { border:7px solid transparent; border-image:var(--wood-frame) 8 / 7px / 0 stretch; border-radius:0; background:#775132; box-shadow:0 3px #3b281d; }
+.btn-incarnation-upgrade:hover:not(:disabled) { transform:none; border-color:transparent; box-shadow:0 3px #3b281d; background:#88563c; }
+.btn-incarnation-upgrade:disabled { opacity:1; background:#8b7d64; }
+.btn-incarnation-upgrade::before { background-image:url('/assets/hud/fervor.svg'); }
+.relics-status-info,.relics-balance-text,.relics-extra-rate-text { font:18px var(--font-game); color:var(--ink-muted); }
+.relics-balance-text span,.relics-extra-rate-text span { font:22px var(--font-game); color:var(--relic-ink); }
+.stats-panel-content { gap:8px; }
+.stat-box { padding:8px 10px; }
+.stat-label { font:16px var(--font-game); color:var(--ink-muted); letter-spacing:0; }
+.stat-val { font:24px var(--font-game); color:var(--ink); text-shadow:none; overflow-wrap:anywhere; }
+.unlocks-completed-banner .completed-title { color:var(--ink); font:25px var(--font-game); }
+.unlocks-completed-banner .completed-desc { color:var(--ink-muted); font:18px var(--font-game); }
+.modal-overlay { background:#17110dd9; backdrop-filter:none; transition:opacity 160ms var(--ease-out); }
+.modal-slide-card { padding:20px; max-width:600px; transition:transform 160ms var(--ease-out); transform:translateY(8px); }
+.modal-header,.cult-tooltip-header,.mobile-sheet-header,.intro-modal-header { border-bottom:2px solid #9c794b; padding-bottom:10px; margin-bottom:12px; }
+.modal-title,.mobile-sheet-title { color:var(--ink); font:30px var(--font-game); letter-spacing:0; }
+.settings-group { gap:9px; margin-bottom:14px; }
+.setting-item { gap:12px; padding:9px 10px; }
+.setting-item>div { min-width:0; }
+.setting-name { color:var(--ink); font:21px var(--font-game); }
+.setting-desc { color:var(--ink-muted); font:17px/1.15 var(--font-game)!important; }
+.settings-section-subtitle { color:#70512f; font:20px var(--font-game); letter-spacing:0; }
+.setting-item.setting-danger { background:#a4613d25; border-color:#98624a; }
+.btn-setting-action,.btn-setting-danger,.btn-slide-play,.btn-convert-relics,.btn-buy-relic,.btn-unlock-action,.intro-btn-next,.intro-btn-prev,.intro-btn-skip,.spotlight-balloon-skip,.cult-dialog button {
+  border:6px solid transparent; border-image:var(--wood-frame) 8 / 6px / 0 stretch; border-radius:0; background:#775132; color:#ffe0a3; font:20px/1 var(--font-game)!important; font-weight:400; letter-spacing:0; box-shadow:0 2px #3b281d; padding:7px 10px; transition:none;
+}
+.btn-setting-danger { background:#814a39; }
+.btn-convert-relics { width:100%; font-size:20px!important; }
+.btn-convert-relics #relics-to-get { font:24px var(--font-game); color:#eed3f2; }
+.btn-setting-action:hover,.btn-setting-danger:hover,.btn-convert-relics:hover:not(:disabled),.intro-btn-next:hover,.intro-btn-prev:hover,.intro-btn-skip:hover,.btn-slide-play:hover { border-color:transparent; color:#ffe0a3; background:#895b3b; box-shadow:0 2px #3b281d; transform:none; }
+.btn-convert-relics:disabled,.btn-buy-relic:disabled,.btn-unlock-action:disabled,.intro-btn-prev:disabled { background:#8b7d64; color:#e4d7bb; opacity:1; }
+.close-btn-gold,.close-mobile-sheet-btn,.ach-popup-close { background:#775132; border:4px solid transparent; border-image:var(--wood-frame) 8 / 4px / 0 stretch; color:#ffe0a3; border-radius:0; font:24px var(--font-game); }
+.save-data-textarea { background:#ede0be; border:2px solid #a18454; border-radius:0; color:var(--ink); font:17px/1.2 var(--font-game); }
+.save-data-textarea:focus { outline:2px solid #775132; outline-offset:2px; box-shadow:none; }
+input[type=checkbox] { appearance:none; width:24px; height:24px; flex-shrink:0; border:3px solid #6f4c30; box-shadow:inset 2px 2px #8c734c; background:#bba073; cursor:pointer; }
+input[type=checkbox]:checked { background:#6f4c30 url('/assets/hud/faith.svg') center/20px no-repeat; }
+input[type=range] { appearance:none; width:120px; height:8px; border:2px solid #775132; background:#b99a64; flex-shrink:0; }
+input[type=range]::-webkit-slider-thumb { appearance:none; width:14px; height:22px; border:2px solid #493021; background:#be955b; box-shadow:inset 2px 2px #e3c790; }
+input[type=range]::-moz-range-thumb { width:12px; height:18px; border:2px solid #493021; border-radius:0; background:#be955b; }
+.cult-tooltip { padding:12px; width:350px; max-height:calc(100vh - 32px); overflow-y:auto; animation:none; }
+.cult-tooltip-header { gap:10px; margin-bottom:0; flex-wrap:wrap; }
+.cult-tooltip-title { font:25px var(--font-game); color:var(--ink); }
+.cult-tooltip-tag { font:16px var(--font-game); color:#644528; background:#c6aa75; border:1px solid #a18454; border-radius:0; letter-spacing:0; }
+.cult-tooltip-lore { font:18px/1.2 var(--font-game); color:var(--ink-muted); }
+.cult-tooltip-stats { gap:10px; padding:10px; }
+.tooltip-stat-label { font:15px var(--font-game); color:var(--ink-muted); letter-spacing:0; }
+.tooltip-stat-val { font:22px var(--font-game); color:var(--ink)!important; text-shadow:none!important; overflow-wrap:anywhere; }
+.tooltip-buff-highlight { font:18px var(--font-game); flex-wrap:wrap; }
+.cult-tooltip-art-wrap { border-radius:0; border:4px solid #6f4c30; box-shadow:none; }
+.cult-tooltip-art { image-rendering:pixelated; }
+.cult-tooltip-art-overlay { background:linear-gradient(transparent,#33291f66); }
+.ach-popup-toast,.ach-popup-square { background:#ead3a2; border:8px solid transparent; border-image:var(--wood-frame) 8 / 8px / 0 stretch; border-radius:0; box-shadow:4px 6px #160f0d99; backdrop-filter:none; -webkit-backdrop-filter:none; font:18px var(--font-game); padding:10px; transition:opacity 160ms var(--ease-out); }
+.ach-popup-toast:hover,.ach-popup-square:hover { transform:none; box-shadow:4px 6px #160f0d99; }
+.ach-popup-badge { background:#c9ac73; border:1px solid #a18454; border-radius:0; color:#694a29!important; font:16px var(--font-game); letter-spacing:0; }
+.ach-popup-title { color:var(--ink); font:26px var(--font-game); }
+.ach-popup-desc { color:var(--ink-muted); font:18px var(--font-game); }
+.ach-popup-buff { background:#b8b08055; border:1px solid #a18454; border-radius:0; color:#4d5a32; font:18px var(--font-game); }
+.ach-popup-buff-icon { font-size:0; width:18px; height:18px; background:url('/assets/hud/faith.svg') center/contain; }
+.ach-popup-timer-bar { background:#8a6938!important; box-shadow:none; height:3px; }
+.ach-popup-icon-box { background:#c6a976!important; border-color:#9c794b!important; border-radius:0; box-shadow:none; }
+.ach-popup-icon { font-size:0; display:block; width:32px; height:32px; background:url('/assets/hud/book.svg') center/contain no-repeat; image-rendering:pixelated; }
+.ach-popup-toast-crimson .ach-popup-icon { background-image:url('/assets/hud/fervor.svg'); }
+.ach-popup-toast-silver .ach-popup-icon { background-image:url('/assets/hud/relic.svg'); }
+.mobile-sheet-backdrop { background:#17110dd9; backdrop-filter:none; }
+.mobile-inspect-sheet { padding:16px; }
+.spotlight-balloon { padding:0; overflow:visible; }
+.spotlight-balloon-header { border-bottom:2px solid #9c794b; background:#c6aa75; padding:10px; }
+.spotlight-balloon-title { color:var(--ink); font:25px var(--font-game); }
+.spotlight-balloon-desc,.spotlight-balloon-action-tip { color:var(--ink-muted); font:18px/1.15 var(--font-game); }
+.spotlight-balloon-badge,.spotlight-tracker-meta,.spotlight-tracker-val { color:var(--ink); font:16px var(--font-game); letter-spacing:0; }
+.spotlight-balloon-icon { font-size:0; width:24px; height:24px; background:url('/assets/hud/faith.svg') center/contain; image-rendering:pixelated; }
+.spotlight-balloon-arrow { display:none; }
+.spotlight-focus-ring { border:3px solid #d6ad60; border-radius:0; box-shadow:0 0 0 3px #503721; }
+.spotlight-panel { backdrop-filter:none; background:#17110d99; }
+.slide-card { max-width:600px; padding:32px; text-align:center; }
+.slide-title { font:52px var(--font-game); color:var(--ink); text-shadow:none; letter-spacing:1px; }
+.slide-card-header { border-bottom:2px solid #a18454; }
+.intro-title { font:32px var(--font-game); color:var(--ink); }
+.intro-step-tag,.intro-step-indicator,.intro-paragraph,.intro-action-hint-card { color:var(--ink); font:19px/1.15 var(--font-game); }
+.intro-paragraph strong { color:#795832; }
+.intro-hero-box { background:#c6aa75; border:1px solid #a18454; border-radius:0; }
+.intro-hero-icon { font-size:0; width:64px; height:64px; background:url('/assets/hud/faith.svg') center/contain; image-rendering:pixelated; }
+.intro-hero-glow { display:none; }
+.intro-dot { border-radius:0; background:#a18454; }
+.intro-dot.active,.intro-dot.completed { background:#6e4b2d; box-shadow:none; }
+.panel-expand-strip { background:#4e3427; border:6px solid transparent; border-image:var(--wood-frame) 8 / 6px / 0 stretch; border-radius:0; color:#f2d297; }
+.panel-toggle-btn:hover { transform:none; background:#775132; border-color:transparent; }
+.cult-dialog { margin:auto; padding:20px; width:min(500px,90vw); }
+.cult-dialog::backdrop { background:#17110dd9; }
+.cult-dialog h2 { font:30px var(--font-game); margin-bottom:12px; }
+.cult-dialog p { margin-bottom:20px; }
+.cult-dialog-actions { display:flex; gap:12px; justify-content:flex-end; }
+button:focus-visible,input:focus-visible,textarea:focus-visible { outline:2px solid #ad793a; outline-offset:3px; }
+@media (max-height:760px) and (min-width:861px) {
+  .incarnation-arena-wrapper { height:100px; min-height:100px; max-height:100px; }
+  .incarnation-boost-header { gap:6px; flex-wrap:wrap; }
+  .incarnation-boost-card { padding:5px; }
+  .modal-slide-card { padding:14px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .modal-slide-card,.modal-overlay { transition:none; transform:none; }
+  .ach-popup-toast,.ach-popup-square,.ach-popup-toast.closing,.ach-popup-square.closing { animation:none; }
+  .ach-popup-toast.closing,.ach-popup-square.closing { opacity:0; }
+  .spotlight-focus-beacon,.pulse-guide,.spotlight-balloon,.intro-step-animated { animation:none!important; }
+}
+
+.unlocks-completed-banner .completed-icon { font-size:0; width:32px; height:32px; display:inline-block; background:url('/assets/hud/relic.svg') center/contain no-repeat; image-rendering:pixelated; }
+.setting-danger .setting-name { color:var(--fervor-ink); }
+
+.cult-tooltip .ritual-complete { color:var(--faith-ink)!important; }
+.cult-tooltip .ritual-ready { color:#80542b!important; }
+.cult-tooltip .ritual-pending { color:var(--ink-muted)!important; }
