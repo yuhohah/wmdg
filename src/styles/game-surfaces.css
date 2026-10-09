@@ -21,7 +21,7 @@ body,button,input,textarea { font-family:var(--font-game); }
 .card-symbol,.cult-tooltip-symbol { width:24px; height:24px; font-size:0; flex-shrink:0; background:url('/assets/hud/book.svg') center/contain no-repeat; image-rendering:pixelated; }
 .fervor-upgrade-card .card-symbol { background-image:url('/assets/hud/fervor.svg'); }
 .relic-action-card .card-symbol { background-image:url('/assets/hud/relic.svg'); }
-.fervor-header-card,.incarnation-tab-header,.relics-convert-section,.stat-box,.incarnation-boost-card,.tooltip-buff-highlight,.cult-tooltip-stats,.setting-item,.spotlight-balloon-tracker,.intro-action-hint-card,.unlocks-completed-banner {
+.fervor-header-card,.incarnation-tab-header,.relics-convert-section,.stat-box,.tooltip-buff-highlight,.cult-tooltip-stats,.setting-item,.spotlight-balloon-tracker,.intro-action-hint-card,.unlocks-completed-banner {
   background:#c4a87340; border:1px solid #a18454; border-radius:0; box-shadow:none; color:var(--ink); padding:10px; transition:none;
 }
 .fervor-header-card { border:0; border-bottom:2px dashed #a18454; padding:0 0 10px; }
@@ -30,15 +30,8 @@ body,button,input,textarea { font-family:var(--font-game); }
 .fervor-val { font:32px var(--font-game); color:var(--fervor-ink); text-shadow:none; }
 .fervor-rate-tag,.incarnation-rate-badge,.incarnation-stage-tag { background:#c8ad79; border:1px solid #9c794b; border-radius:0; color:var(--ink); font:20px var(--font-game); box-shadow:none; }
 .incarnation-tab-header { padding:0 0 8px; background:none; border:0; border-bottom:2px dashed #a18454; }
-.incarnation-arena-wrapper { flex:0 0 auto; height:148px; min-height:148px; max-height:148px; border:6px solid transparent; border-image:var(--wood-frame) 8 / 6px / 0 stretch; background:#33291f; border-radius:0; box-shadow:none; }
-.incarnation-canvas { image-rendering:pixelated; }
-.incarnation-boost-card { padding:8px; }
-.boost-card-title,.boost-timer-display { font:18px var(--font-game); color:var(--ink); }
-.boost-card-sub { font:16px var(--font-game); color:var(--ink-muted); }
-.boost-active-tag,.boost-active-tag.inactive { border:1px solid #a18454; border-radius:0; background:#bba073; color:#5c4934; box-shadow:none; font:15px var(--font-game); }
-.incarnation-boost-card.active .boost-active-tag { background:#6d7043; color:#f2deb0; }
-.incarnation-boost-track,.spotlight-tracker-bar-bg { height:8px; background:#a98b5c; border:1px solid #8d6c40; border-radius:0; }
-.incarnation-boost-fill,.incarnation-boost-card.active .incarnation-boost-fill,.spotlight-tracker-bar-fill { background:#8c6a36; border-radius:0; box-shadow:none; }
+.spotlight-tracker-bar-bg { height:8px; background:#a98b5c; border:1px solid #8d6c40; border-radius:0; }
+.spotlight-tracker-bar-fill { background:#8c6a36; border-radius:0; box-shadow:none; }
 .btn-incarnation-upgrade { border:7px solid transparent; border-image:var(--wood-frame) 8 / 7px / 0 stretch; border-radius:0; background:#775132; box-shadow:0 3px #3b281d; }
 .btn-incarnation-upgrade:hover:not(:disabled) { transform:none; border-color:transparent; box-shadow:0 3px #3b281d; background:#88563c; }
 .btn-incarnation-upgrade:disabled { opacity:1; background:#8b7d64; }
@@ -133,9 +126,6 @@ input[type=range]::-moz-range-thumb { width:12px; height:18px; border:2px solid 
 .cult-dialog-actions { display:flex; gap:12px; justify-content:flex-end; }
 button:focus-visible,input:focus-visible,textarea:focus-visible { outline:2px solid #ad793a; outline-offset:3px; }
 @media (max-height:760px) and (min-width:861px) {
-  .incarnation-arena-wrapper { height:100px; min-height:100px; max-height:100px; }
-  .incarnation-boost-header { gap:6px; flex-wrap:wrap; }
-  .incarnation-boost-card { padding:5px; }
   .modal-slide-card { padding:14px; }
 }
 @media (prefers-reduced-motion:reduce) {

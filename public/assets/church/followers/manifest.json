@@ -1,0 +1,133 @@
+{
+  "generator": "PixelLab via Executor",
+  "frameWidth": 64,
+  "frameHeight": 72,
+  "frameCount": 9,
+  "layout": "horizontal",
+  "feetLine": "y=68, matching procession/walk",
+  "loops": {
+    "tool": "animate_image",
+    "source": "Frame N of the stand job is follower N's first frame.",
+    "frameCount": 8,
+    "seed": 24,
+    "assembly": "A strip is get_image's 9 frames in order: the stand frame, then the 8 generated frames. Jobs with lastFrame pinned last_frame_url to the same stand frame so the loop closes; a job's own seed or action overrides the defaults here.",
+    "idleAction": "A seamless looping idle prayer in place, facing right: the cultist stands still and breathes slowly, shoulders rising and falling gently, head bowed in quiet prayer, robe swaying slightly. Preserve the exact character identity, outfit, colors, held props and pixel art style. Props stay in the same hand. Feet stay planted on the same ground line. No walking, turning, camera movement or scenery. End on the starting pose.",
+    "prayAction": "A seamless looping reverent prayer at an altar, facing right: the cultist slowly leans forward from the waist in reverent prayer with head lowered and the free hand at the chest, pauses, then rises back upright to the starting pose. Preserve the exact character identity, outfit, colors, held props and pixel art style. Props stay in the same hand. Feet stay planted on the same ground line. No walking, turning, weapons, camera movement or scenery. End on the starting pose."
+  },
+  "jobs": [
+    {
+      "name": "stand",
+      "tool": "edit_image",
+      "source": "frame 0 of each procession/walk/follower-N-walk job",
+      "jobId": "20811ce3-9eac-4c53-9501-281c79e3fca9",
+      "seed": 24,
+      "prompt": "Each robed cultist now stands still in place facing right, both feet planted together on the same ground line, body upright and calm, head slightly bowed in quiet prayer. The free hand is raised to the chest in a praying gesture. Keep every held prop (torch, scroll, staff, walking stick, lantern, reliquary, banner, bag) in the same hand. Keep identity, robe colors, hood, glowing eyes, size, position and pixel art style exactly the same.",
+      "status": "saved",
+      "note": "One 9-frame edit; frame N is follower N's standing pose and the first frame of both of its loops. Frames 0, 1, 2, 6 and 7 came back with feet at y=64 and are shifted down 4px when strips are assembled."
+    },
+    {
+      "name": "follower-0-idle",
+      "jobId": "bb996f4e-b9b1-40d3-accb-04adef39fea9",
+      "status": "saved"
+    },
+    {
+      "name": "follower-0-pray",
+      "jobId": "8706ece8-628c-432d-bdbb-0d78c83dccef",
+      "status": "saved",
+      "note": "Replaces rejected job cea3084c-5a7c-40d4-aa7e-e0b700d387ad, where the word \"bow\" drew an archery bow and the loop did not return to the start pose."
+    },
+    {
+      "name": "follower-1-idle",
+      "jobId": "d1613422-8a71-4d80-ba15-6356bca1b79b",
+      "status": "saved"
+    },
+    {
+      "name": "follower-1-pray",
+      "jobId": "57233a65-69e9-498c-a4b7-3b4bf678efd3",
+      "status": "saved"
+    },
+    {
+      "name": "follower-2-idle",
+      "jobId": "bafb31bb-e5c6-4e3b-906c-3773d67a62a1",
+      "status": "saved"
+    },
+    {
+      "name": "follower-2-pray",
+      "jobId": "67b10119-b386-46d8-b8be-df4e44dbf627",
+      "status": "saved"
+    },
+    {
+      "name": "follower-3-idle",
+      "jobId": "2b18bda6-9fcf-40d4-b6dd-e7aefebd855f",
+      "status": "saved"
+    },
+    {
+      "name": "follower-3-pray",
+      "jobId": "037af2ab-72cc-41c0-99cd-6fcfe8568042",
+      "status": "saved"
+    },
+    {
+      "name": "follower-4-idle",
+      "jobId": "e0fd2a0d-57d5-4ef5-a644-d81ca77b2a21",
+      "status": "saved"
+    },
+    {
+      "name": "follower-4-pray",
+      "jobId": "d6e37a8f-7113-45f0-b242-d5a0680c562f",
+      "seed": 25,
+      "lastFrame": true,
+      "status": "saved",
+      "note": "Replaces rejected job b886cfe6-3664-4140-ad83-bf996d17ddbd, which ended 7px taller than it started. Three staff-tip pixels below the feet line in frames 4–5 were cleared."
+    },
+    {
+      "name": "follower-5-idle",
+      "jobId": "00d54ac2-c813-4a02-96f7-671915de34a2",
+      "status": "saved"
+    },
+    {
+      "name": "follower-5-pray",
+      "jobId": "c8ab025d-130d-4573-9d3f-ade582a7cbd4",
+      "seed": 25,
+      "lastFrame": true,
+      "status": "saved",
+      "note": "Replaces rejected job d15303e8-df76-48a6-add0-3540f39f998f, which ended taller and shifted left."
+    },
+    {
+      "name": "follower-6-idle",
+      "jobId": "b03ce552-a5fc-4a98-949b-be86c62b58a0",
+      "status": "saved"
+    },
+    {
+      "name": "follower-6-pray",
+      "jobId": "6f6c85df-a672-4ec5-817c-6c42744ff6ad",
+      "status": "saved"
+    },
+    {
+      "name": "follower-7-idle",
+      "jobId": "37cf347b-9f94-4ace-bee9-3fa51df9fd3d",
+      "status": "saved"
+    },
+    {
+      "name": "follower-7-pray",
+      "jobId": "bc381ac0-27c3-461b-8178-bdcb4e34b155",
+      "seed": 25,
+      "lastFrame": true,
+      "status": "saved",
+      "note": "Replaces rejected job fe422764-3cf7-4cc9-8caf-2432b93e1345, whose satchel and lantern drifted by the last frames."
+    },
+    {
+      "name": "follower-8-idle",
+      "jobId": "8e115aa2-83c8-4960-b589-03e7c7a47df6",
+      "status": "saved"
+    },
+    {
+      "name": "follower-8-pray",
+      "jobId": "0109a14b-cac8-47fc-a1e5-6922bc8c9b18",
+      "seed": 26,
+      "lastFrame": true,
+      "action": "A seamless looping deep reverent prayer at an altar, facing right: the cultist leans the whole upper body well forward from the waist, hood and head lowered clearly toward the ground in reverent prayer, the banner pole held steady in the same hand, pauses, then straightens back upright to the starting pose. Preserve the exact character identity, outfit, colors, held props and pixel art style. Feet stay planted on the same ground line. No walking, turning, weapons, camera movement or scenery. End on the starting pose.",
+      "status": "saved",
+      "note": "Replaces rejected jobs 40dceadf-6b82-43a7-a826-c2770d57deb4 (rose instead of leaning and did not return) and e01fd28a-7bda-4d0b-a739-66849a410f80 (barely leaned)."
+    }
+  ]
+}

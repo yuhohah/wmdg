@@ -11,7 +11,7 @@ Jogo idle/clicker monocromático em **TypeScript** + **Vite**, com estética *da
 ### 1. Fé — o recurso base
 - **Clique na Esfera** para gerar **Fé** (base 1 por clique, multiplicada por Fervor, upgrades e conquistas).
 - **Fiel Devoto**: único gerador. Custa 20 Fé, escala ×1.10 por compra e produz +1 Fé/s (antes dos multiplicadores). O botão **Converter Máximo** libera com 25 fiéis.
-- **Milagres**: de tempos em tempos (~35–65 s) um fiel na arena pede um milagre. Clicar nele concede `30 × Fé/s + 10% da Fé atual`.
+- **Milagres**: de tempos em tempos (~35–65 s) um fiel pede um milagre na igreja. Clicar na prece concede `30 × Fé/s + 10% da Fé atual`.
 
 ### 2. Selos (desbloqueios)
 | Selo | Custo | Efeito |
@@ -23,7 +23,7 @@ Jogo idle/clicker monocromático em **TypeScript** + **Vite**, com estética *da
 ### 3. Encarnação
 - 5 estágios que multiplicam o Fervor/s: **1× → 100× → 10⁴× → 10⁸× → 10¹⁵×** (custos: 2,5M · 1e12 · 1e25 · 1e150 Fé).
 - O estágio e o Fervor acumulado também multiplicam os fiéis: `1 + log10(1 + Fervor/150) × 1.5 × estágio`.
-- Clicar no avatar adiciona **+2 s de Bênção 2×** na Fé/s (máx. 60 s).
+- O botão de Bênção sob a Esfera adiciona **+2 s de Bênção 2×** na Fé/s (máx. 60 s).
 
 ### 4. Fervor
 - O Fervor acumulado multiplica toda a Fé: `(log10(Fervor/10 + 1) × 2 + 1) × efeito`.
@@ -68,7 +68,7 @@ Bônus da mesma categoria **somam**; categorias diferentes **multiplicam** entre
 ---
 
 ## ✨ Outras funcionalidades
-- 🎮 **Arenas animadas em Canvas 2D**: pátio dos fiéis (com sprites e milagres) e altar da Encarnação.
+- 🎮 **Cena da igreja**: a tela principal mostra a igreja ao pôr do sol, em ruínas e depois restaurada, com a Esfera e o botão **Bênção**. A Encarnação não tem mais arena, só o estágio e o upgrade.
 - 💾 **Salvamento automático** no `localStorage` a cada 20 s, ao trocar de aba e ao fechar a página, com cópia de backup.
 - 📤 **Exportar/Importar save** em Base64 e reset completo nas Configurações.
 - 🔊 Áudio sintetizado (Web Audio) + trilha sonora, e vibração em dispositivos móveis.
@@ -120,7 +120,7 @@ wmdg/
 │   │   └── notifications.ts     # Popups de notificação
 │   ├── features/            # Uma pasta por aba: followers, incarnation, fervor, relics,
 │   │                        #   unlocks, achievements, stats e a esfera (sphere)
-│   ├── ui/                  # HUD, navegação, modais, onboarding, tooltips e arenas em canvas
+│   ├── ui/                  # HUD, navegação, modais, onboarding, tooltips e a cena da igreja
 │   ├── styles/              # CSS por área (base, hud, cards, panels, modals, sphere, responsive)
 │   ├── types.ts             # Tipagens compartilhadas
 │   └── main.ts              # AppManager: instancia e conecta todos os módulos
@@ -136,6 +136,10 @@ Run `npm ci` and `npm run dev`. Open `/?art-review=early` or `/?art-review=late`
 The later Ascension is a visual study, not an implemented progression system. Normal play uses the early scene. Persistent Ascension milestones, intermediate Sphere stages, actual 4–6-frame walking sheets, separate parallax layers and milestone destinations remain subsequent production work. Current supplied characters use restrained stepped pose movement rather than new animation sheets. Reduced-motion settings disable that movement.
 
 Artwork is in `public/assets/procession/`: the supplied Prophet and follower-role sheet were cropped, cleaned of disconnected fragments and normalized with nearest-neighbour sampling; the landscape comes from the supplied empty scene. The circular monastery was generated using PixelLab Pixen through Executor (job `2b3bd5de-34ac-4c92-997b-dc4fe19db9dc`). The world Sphere and sacred window share the same pixel drawing.
+
+The church-yard followers' idle and pray loops are in `public/assets/church/followers/`, generated with PixelLab `animate_image` from each follower's standing pose; `manifest.json` there records every job ID and prompt.
+
+The silhouette crowd behind the yard is one PixelLab sheet in `public/assets/church/crowd/`, laid out with a fixed seed so it looks the same on every load; its `manifest.json` records the job. It thickens at the follower counts in `CROWD_LEVELS` (`src/features/church/churchConfig.ts`), and the art-review MULTIDÃO buttons step through them.
 
 Approval checks: distinguish the Prophet, roles and Sphere stages at desktop size; read totals and frequent actions immediately; keep the full entourage legible; match nearby scenery to the character pixel scale; and make the later ritual disturbing without explicit gore. Desktop layouts are checked at 1440×900 and 1280×720.
 

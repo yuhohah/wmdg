@@ -105,7 +105,24 @@
 
       <!-- GAMEPLAY SCREEN WITH 3-FRAME LAYOUT -->
       <main id="gameplay-screen" class="main-content screen">
-        <section class="procession-world" id="procession-world" aria-label="A procissão do culto">
+        <section class="church-world" id="church-world" aria-label="A igreja do culto">
+          <div class="church-backdrop" aria-hidden="true"></div>
+          <div class="church-stage" id="church-stage">
+            <img class="church-background" id="church-background" alt="">
+            <canvas class="church-crowd" id="church-crowd" aria-hidden="true" hidden></canvas>
+            <div class="church-followers" id="church-followers"></div>
+            <button type="button" class="church-sphere" id="church-sphere" data-location="ruins" aria-label="Tocar a Esfera e gerar Fé"><canvas width="64" height="64"></canvas></button>
+            <div class="church-protagonist" id="church-protagonist" data-look="0"><div class="protagonist-viewport"><img class="protagonist-strip" id="church-protagonist-strip" src="/assets/church/protagonist/look-0-idle.png" alt=""></div></div><span class="protagonist-label" id="church-protagonist-label">O Escolhido</span>
+            <button type="button" class="church-blessing" id="church-blessing" aria-label="Invocar a Bênção: +2 segundos de Fé em dobro" hidden><span class="church-blessing-fill"></span><span class="church-blessing-label" id="church-blessing-label">✦ 2× · 0s</span></button>
+          </div>
+          <div class="world-veil"></div>
+          <div class="world-heading"><span class="world-eyebrow">ERA I · O CHAMADO</span><h1 id="church-title">A Igreja em Ruínas</h1></div>
+          <div class="world-status"><span class="status-light"></span><span id="church-status">Uma luz fraca entre os escombros</span></div>
+          <div class="ritual-sigil" aria-hidden="true">◉</div>
+          <div class="world-footer"><span id="church-caption">Algo ainda brilha onde ninguém reza.</span><span id="church-count">0 fiéis</span></div>
+        </section>
+        <!-- Kept for the future boss battle; mounted only under ?art-review. -->
+        <section class="procession-world" id="procession-world" aria-label="A procissão do culto" hidden>
           <div class="world-landscape"></div>
           <div class="world-veil"></div>
           <img class="ascended-monastery" src="/assets/procession/monastery.png" alt="" hidden>
@@ -117,7 +134,7 @@
           <div class="world-footer"><span id="world-caption">O caminho começa com uma promessa.</span><span id="entourage-count">0 fiéis · uma só promessa</span></div>
         </section>
         <div class="art-review-controls" id="art-review-controls" hidden aria-label="Revisão da direção de arte">
-          <span>REVISÃO DE ARTE</span><button type="button" data-art-era="early" aria-pressed="true">Devoção inicial</button><button type="button" data-art-era="late" aria-pressed="false">Ascensão</button><button type="button" id="preview-miracle">Ver milagre</button><a href="/">Voltar ao jogo</a>
+          <span>REVISÃO DE ARTE</span><button type="button" data-art-scene="tier-0" aria-pressed="true">Igreja · Ruína</button><button type="button" data-art-scene="tier-1" aria-pressed="false">Igreja · Altar</button><button type="button" data-art-scene="tier-2" aria-pressed="false">Igreja · Velas</button><button type="button" data-art-scene="tier-3" aria-pressed="false">Igreja · Restaurada</button><button type="button" data-art-scene="procession" aria-pressed="false">Procissão</button><span class="church-review-only">FIÉIS</span><button type="button" class="church-review-only" data-art-followers="0" aria-pressed="false">0</button><button type="button" class="church-review-only" data-art-followers="1" aria-pressed="false">1</button><button type="button" class="church-review-only" data-art-followers="4" aria-pressed="true">4</button><button type="button" class="church-review-only" data-art-followers="8" aria-pressed="false">8</button><button type="button" class="church-review-only" data-art-followers="12" aria-pressed="false">12</button><span class="church-review-only">MULTIDÃO</span><button type="button" class="church-review-only" data-art-followers="50" aria-pressed="false">50</button><button type="button" class="church-review-only" data-art-followers="250" aria-pressed="false">250</button><button type="button" class="church-review-only" data-art-followers="1000" aria-pressed="false">1k</button><button type="button" class="church-review-only" data-art-followers="10000" aria-pressed="false">10k</button><button type="button" class="church-review-only" id="art-review-plea">Pedir milagre</button><span class="church-review-only">DETALHES</span><button type="button" class="church-review-only" data-art-details="0" aria-pressed="false">Nenhum</button><button type="button" class="church-review-only" data-art-details="1" aria-pressed="false">+Tochas</button><button type="button" class="church-review-only" data-art-details="2" aria-pressed="false">+Bancos</button><button type="button" class="church-review-only" data-art-details="3" aria-pressed="false">+Jardim</button><button type="button" class="church-review-only" data-art-details="4" aria-pressed="false">+Estandarte</button><button type="button" class="church-review-only" data-art-details="5" aria-pressed="false">+Estátua</button><span class="church-review-only">PROTAGONISTA</span><button type="button" class="church-review-only" data-art-look="auto" aria-pressed="true">Automático</button><button type="button" class="church-review-only" data-art-look="0" aria-pressed="false">Escolhido</button><button type="button" class="church-review-only" data-art-look="1" aria-pressed="false">Profeta I</button><button type="button" class="church-review-only" data-art-look="2" aria-pressed="false">Profeta II</button><button type="button" class="church-review-only" data-art-look="3" aria-pressed="false">Profeta III</button><button type="button" class="church-review-only" data-art-look="4" aria-pressed="false">Profeta IV</button><button type="button" class="church-review-only" data-art-look="5" aria-pressed="false">Profeta V</button><button type="button" class="procession-review-only" data-art-era="early" aria-pressed="true" hidden>Devoção inicial</button><button type="button" class="procession-review-only" data-art-era="late" aria-pressed="false" hidden>Ascensão</button><button type="button" class="procession-review-only" id="preview-miracle" hidden>Ver milagre</button><a href="/">Voltar ao jogo</a>
         </div>
         <div class="gameplay-3frame-container">
 
@@ -211,31 +228,6 @@
                   <div class="incarnation-mult-wrapper" style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
                     <span class="incarnation-mult-sublabel" style="font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #a1a1aa; text-transform: uppercase;">MULTIPLICADOR DOS FIÉIS</span>
                     <div class="incarnation-rate-badge" id="incarnation-rate-badge" title="Multiplicador: 1 + log10(1 + Fervor / 150) × 1,5 × Estágio">x1.00</div>
-                  </div>
-                </div>
-
-                <!-- Arena: The Grand Incarnation Canvas -->
-                <div class="incarnation-arena-wrapper">
-                  <canvas id="incarnation-canvas" class="incarnation-canvas"></canvas>
-                </div>
-
-                <!-- Incarnation Blessing / Boost Bar (2x Fé/s) -->
-                <div class="incarnation-boost-card" id="incarnation-boost-card">
-                  <div class="incarnation-boost-header">
-                    <div class="boost-header-left">
-                      <div class="boost-title-col">
-                        <span class="boost-card-title">BÊNÇÃO DA ENCARNAÇÃO</span>
-                        <span class="boost-card-sub" id="incarnation-boost-status">Clique na Encarnação (+2s) para
-                          dobrar Fé/s</span>
-                      </div>
-                    </div>
-                    <div class="boost-header-right">
-                      <span class="boost-active-tag inactive" id="incarnation-boost-badge">2x FÉ INATIVO</span>
-                      <span class="boost-timer-display" id="incarnation-boost-timer-text">0.0s / 60s</span>
-                    </div>
-                  </div>
-                  <div class="incarnation-boost-track">
-                    <div class="incarnation-boost-fill" id="incarnation-boost-fill" style="width: 0%;"></div>
                   </div>
                 </div>
 

@@ -1,0 +1,122 @@
+{
+  "generator": "PixelLab via Executor",
+  "frameWidth": 400,
+  "frameHeight": 192,
+  "palette": "Dusk/night: slate-blue cloudy sky, dark teal grass, warm grey stone; matches procession/landscape.png",
+  "composition": "Side view, church centred on a grassy hill; each tier is an edit of the previous tier so the composition lines up",
+  "jobs": [
+    {
+      "name": "tier-0",
+      "tool": "create_image_pixflux",
+      "jobId": "c6fa0a28-a0bc-4e99-9f8b-f9e90af0880c",
+      "seed": 11,
+      "prompt": "side view pixel art game background at dusk: a partially destroyed small stone church standing in the center on a grassy hill, collapsed roof with broken wooden beams, crumbling walls with empty dark arched windows, piles of rubble and fallen stones inside and in front of the nave, broken bell gable, overgrown weeds. Dark blue-grey cloudy night sky with faint last light of dusk on the horizon, distant dark hills. Muted desaturated palette of slate blue, dark teal green grass and warm grey stone. No people.",
+      "status": "saved"
+    },
+    {
+      "name": "tier-1",
+      "tool": "edit_image",
+      "source": "tier-0",
+      "jobId": "c260560d-26f1-4cb3-9d67-fa8334893b62",
+      "prompt": "Remove both piles of rubble and fallen stones in front of the church so the grass is clear and tidy. Add a small makeshift altar on the grass in front of the church, left of the doorway: a rough stone slab resting on two stacked stone blocks, with a worn cloth draped over it. Keep the broken roof, walls, windows, sky, hills, lighting, palette and composition exactly the same.",
+      "status": "saved"
+    },
+    {
+      "name": "tier-2",
+      "tool": "edit_image",
+      "source": "tier-1",
+      "jobId": "ac57d25d-8291-419a-9598-e769f585eb78",
+      "prompt": "Edit this pixel art image. Repair the church: replace the collapsed, broken roof with a complete, intact dark slate-tiled pitched roof, and patch the cracked stone walls so they look solid and repaired. Light candles inside: the three arched side windows, the round rose window and the open doorway now glow with warm flickering orange-yellow candlelight, casting a soft warm glow onto the nearby grass. Keep everything else exactly identical: same canvas size and aspect ratio, same camera, church in exactly the same position and size, same cross, same stone altar with cloth on the left, same steps, same hill, same dark blue cloudy night sky, same hills, same chunky pixel art style and palette. Do not add people or text.",
+      "status": "saved"
+    },
+    {
+      "name": "tier-3",
+      "tool": "edit_image",
+      "source": "tier-2",
+      "jobId": "3da19931-a750-4038-8465-157d9a4d5afa",
+      "prompt": "Edit this pixel art image. Make the church fully restored and grand: on top of the front gable, replace the small cross with a short square stone bell tower with an open arched belfry holding a bronze bell, capped by a small pointed roof with the cross on top. Turn the three side windows and the round rose window into richly coloured glowing stained glass (ruby red, cobalt blue, emerald and gold), shining brightly from within. Hang two long vertical crimson-and-gold cloth banners on the front wall, one on each side of the doorway. The doorway glows warm gold. The light spilling onto the grass in front becomes brighter and warmer. Keep everything else exactly identical: same canvas size and aspect ratio, same camera, church body in exactly the same position and size, same roof, same stone altar with cloth on the left, same steps, same hill, same dark blue cloudy night sky, same hills, same chunky pixel art style. Do not add people or text.",
+      "status": "saved"
+    }
+  ],
+  "props": {
+    "directory": "props",
+    "scale": "Drawn at half the background's pixel scale, bottom-centred on open ground in front of the church (see DETAIL_PROPS in src/ui/ChurchScene.ts)",
+    "jobs": [
+      {
+        "name": "torch",
+        "tool": "create_image_pixflux",
+        "jobId": "4efb69a6-4cda-4295-8527-db7184e0c4cb",
+        "width": 24,
+        "height": 48,
+        "view": "side",
+        "outline": "single color black outline",
+        "shading": "basic shading",
+        "detail": "medium detail",
+        "noBackground": true,
+        "seed": 26,
+        "prompt": "single standing medieval wooden torch on a tall post, burning warm orange flame, iron bracket, pixel art prop, dusk night scene, muted palette",
+        "status": "saved"
+      },
+      {
+        "name": "pews",
+        "tool": "create_image_pixflux",
+        "jobId": "0cade6f9-41e9-4709-8b38-ed0f78ee7760",
+        "width": 64,
+        "height": 32,
+        "view": "side",
+        "outline": "single color black outline",
+        "shading": "basic shading",
+        "detail": "medium detail",
+        "noBackground": true,
+        "seed": 26,
+        "prompt": "two rows of simple rustic wooden church pews, long low benches with backrests, side view, dark weathered brown wood, pixel art prop for a dusk night scene, muted desaturated palette",
+        "status": "saved"
+      },
+      {
+        "name": "garden",
+        "tool": "create_image_pixflux",
+        "jobId": "844e3e78-861b-4ec8-9f37-afafdcee967b",
+        "width": 64,
+        "height": 32,
+        "view": "side",
+        "outline": "single color black outline",
+        "shading": "basic shading",
+        "detail": "medium detail",
+        "noBackground": true,
+        "seed": 26,
+        "prompt": "small low garden flowerbed on grass, a few shrubs and clusters of muted red, white and violet flowers bordered by small stones, side view, pixel art prop for a dusk night scene, muted desaturated palette, dark teal green leaves",
+        "status": "saved"
+      },
+      {
+        "name": "banner",
+        "tool": "create_image_pixflux",
+        "jobId": "c6672eae-f3c3-47be-8aa4-5e33d6e7fdbc",
+        "width": 32,
+        "height": 64,
+        "view": "side",
+        "outline": "single color black outline",
+        "shading": "basic shading",
+        "detail": "medium detail",
+        "noBackground": true,
+        "seed": 26,
+        "prompt": "tall free-standing cult banner on a wooden pole with crossbar, long hanging crimson cloth with a gold circle sphere emblem and gold fringe, side view, pixel art prop for a dusk night scene, muted desaturated palette",
+        "status": "saved"
+      },
+      {
+        "name": "statue",
+        "tool": "create_image_pixflux",
+        "jobId": "bdb72154-f6d0-46f1-8082-090f675c8972",
+        "width": 32,
+        "height": 64,
+        "view": "side",
+        "outline": "single color black outline",
+        "shading": "basic shading",
+        "detail": "medium detail",
+        "noBackground": true,
+        "seed": 26,
+        "prompt": "small stone statue of a glowing golden sphere orb held up by two carved praying stone hands on a square grey stone pedestal, side view, pixel art prop for a dusk night scene, muted desaturated palette, warm grey stone",
+        "status": "saved"
+      }
+    ]
+  }
+}

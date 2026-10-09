@@ -23,7 +23,9 @@ import { AchievementsTab } from './features/achievements/AchievementsTab.js';
 import { StatsTab } from './features/stats/StatsTab.js';
 import { SphereController } from './features/sphere/SphereController.js';
 import { OnboardingGuide } from './ui/OnboardingGuide.js';
-import { ProcessionScene, isArtReview } from './ui/ProcessionScene.js';
+import { ProcessionScene } from './ui/ProcessionScene.js';
+import { ChurchScene } from './ui/ChurchScene.js';
+import { isArtReview } from './ui/artReview.js';
 import { cultDialog } from './ui/CultDialog.js';
 
 class AppManager {
@@ -41,7 +43,8 @@ class AppManager {
   public settingsModal: SettingsModal;
   public saveDataModal: SaveDataModal;
   public onboardingGuide: OnboardingGuide;
-  public procession: ProcessionScene;
+  public church: ChurchScene;
+  public procession: ProcessionScene | null = null;
 
   // Feature Tabs
   public followersTab: FollowersTab;
@@ -82,7 +85,6 @@ class AppManager {
       onScreenSwitched: (screen) => {
         if (screen === 'gameplay') {
           this.followersTab.resize();
-          this.incarnationTab.resize();
           this.onboardingGuide.update();
         }
       }
@@ -103,10 +105,8 @@ class AppManager {
       gameState: this.gameState,
       audio: this.audio,
       triggerHaptic: (p) => this.triggerHaptic(p),
-      spawnFloatingText: (x, y, t) => this.sphere.spawnFloatingText(x, y, t),
       notifications: this.notifications,
-      onIncarnationEvolved: () => events.emit(GameEvents.STATE_CHANGED),
-      onBoostAdded: () => this.hud.update()
+      onIncarnationEvolved: () => events.emit(GameEvents.STATE_CHANGED)
     });
 
     this.fervorTab = new FervorTab({
@@ -173,8 +173,10 @@ class AppManager {
         if (ok) {
           SaveSystem.save(imported);
           this.applySaveData(imported);
+          // An imported save is a load, not progress: redraw the church without replaying its transitions.
+          this.church.rebuild();
           this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
-          this.incarnationTab.setStage(this.gameState.incarnationStage);
+          this.incarnationTab.updateUI();
           this.renderAllLists();
           this.updateUnlockedTabsVisibility();
           events.emit(GameEvents.STATE_CHANGED);
@@ -209,7 +211,7 @@ class AppManager {
     // 5. Load Progress & Sync Views
     this.loadProgress();
     this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
-    this.incarnationTab.setStage(this.gameState.incarnationStage);
+    this.incarnationTab.updateUI();
 
     // 6. Setup Listeners, Initial Renders & Loops
     this.setupReactiveListeners();
@@ -221,7 +223,14 @@ class AppManager {
     this.hud.update();
     this.statsTab.updateUI();
     this.onboardingGuide.update();
-    this.procession = new ProcessionScene(this.gameState, (x, y) => this.sphere.grantMiracle(x, y));
+    if (isArtReview) this.procession = new ProcessionScene(this.gameState, (x, y) => this.sphere.grantMiracle(x, y));
+    this.church = new ChurchScene(
+      this.gameState,
+      (e) => this.sphere.onSphereClicked(e),
+      (x, y) => this.sphere.grantMiracle(x, y),
+      (x, y) => this.sphere.invokeBlessing(x, y),
+      (notice, tag) => this.notifications.showCustomPopup(notice.title, notice.desc, notice.icon, tag)
+    );
     if (isArtReview) this.nav.switchScreen('gameplay');
 
     // 7. Global Window Helpers
@@ -239,9 +248,6 @@ class AppManager {
     });
 
     events.on(GameEvents.GAME_TICK, () => {
-      if (this.gameState.incarnationBoostTimer > 0) {
-        this.incarnationTab.updateBoostUI();
-      }
       this.statsTab.updateUI();
       this.achievementsTab.checkAchievements();
       this.updateItemButtonsState();
@@ -267,12 +273,10 @@ class AppManager {
         }
         this.gameLoop.pause();
         this.followersTab.pause();
-        this.incarnationTab.pause();
       } else {
         this.gameLoop.resume();
         if (window.innerWidth > 860 || this.nav.getMobileView() === 'left') {
           this.followersTab.resume();
-          this.incarnationTab.resume();
         }
       }
     });
@@ -282,16 +286,12 @@ class AppManager {
     if (tabId === 'tab-followers') {
       this.followersTab.updateUI();
       this.followersTab.resume();
-      this.incarnationTab.pause();
       requestAnimationFrame(() => this.followersTab.resize());
     } else if (tabId === 'tab-incarnation') {
       this.incarnationTab.updateUI();
-      this.incarnationTab.resume();
       this.followersTab.pause();
-      requestAnimationFrame(() => this.incarnationTab.resize());
     } else {
       this.followersTab.pause();
-      this.incarnationTab.pause();
     }
 
     if (tabId === 'tab-relics') {
@@ -365,7 +365,6 @@ class AppManager {
 
   private applySaveData(save: SaveData): void {
     this.gameState.applySaveData(save);
-    this.incarnationTab.updateBoostUI();
     this.sphere.renderSatellites();
   }
 

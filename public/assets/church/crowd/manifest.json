@@ -1,0 +1,22 @@
+{
+  "generator": "PixelLab via Executor",
+  "frameWidth": 23,
+  "frameHeight": 29,
+  "frameCount": 11,
+  "layout": "horizontal",
+  "feetLine": "bottom row of each cell; every figure faces left",
+  "jobs": [
+    {
+      "name": "silhouettes",
+      "tool": "create_image_pixflux",
+      "jobId": "78f48fad-2475-4901-8aba-20d845725a2f",
+      "assetId": "5e0646e0-553f-5980-ba70-70d8e298bb84",
+      "seed": 25,
+      "size": "256x48",
+      "options": { "no_background": true, "view": "side", "outline": "lineless", "shading": "flat shading", "detail": "low detail" },
+      "prompt": "side view pixel art sprite sheet: a single row of eight separate small standing figures, evenly spaced with clear empty gaps between them, not overlapping. Each is a dark silhouette of a hooded robed cult worshipper at night, varied heights and builds: some with heads bowed praying, one with raised arms, one holding a tiny candle, one with a staff, one child. Almost solid dark navy-black bodies with a faint cool blue rim light on the hood and shoulders, no faces, no details. Transparent background.",
+      "status": "saved",
+      "note": "The job returned 11 figures, all with feet on y=40 and tops at y=11. The sheet is each figure's column run cropped to rows 11–39 and centred in a 23px cell, in left-to-right order."
+    }
+  ]
+}
