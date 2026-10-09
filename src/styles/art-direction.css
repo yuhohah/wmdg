@@ -95,11 +95,13 @@
 .church-sphere[data-location='altar'] { left:30.5%; top:63%; width:5%; filter:drop-shadow(0 0 10px #e9be72); }
 .faith-response .church-sphere { filter:brightness(1.35) drop-shadow(0 0 14px #f3d392); }
 .church-sphere:focus-visible { outline:2px solid #edc886; outline-offset:4px; }
-/* Centred under the altar, never past the cropped left edge of the stage on narrow screens. It sits at y 133 of 192, 2 art
-   px under the Esfera's bottom edge (y 131), so the two never overlap. The footer draws above the whole stage, so this
-   button's z-index only orders it inside the stage: the stage's scale (`--art-scale`) reserves room for it above the
-   footer, and the footer lets clicks through as a safety net. */
-.church-blessing { position:absolute; left:max(calc(30.5% - 3.5em), calc(50% - 50cqw + 6px)); top:69.5%; z-index:2; overflow:hidden; box-sizing:border-box; width:7em; padding:2px 6px; border:2px solid #8d6c40; border-radius:0; background:#30241b; box-shadow:0 2px #1a120c; color:#c9a874; font:clamp(10px, 4.4cqh, 22px)/1 var(--font-game); white-space:nowrap; cursor:pointer; transition:filter 120ms var(--ease-out); }
+/* The button's left edge: centred under the altar, never past the cropped left edge of the stage on narrow screens.
+   Its right edge is this + 7em; the protagonist's name starts after that (em is the shared `--btn-font`). */
+.church-world { --blessing-left:max(calc(30.5% - 3.5em), calc(50% - 50cqw + 6px)); }
+/* The Bênção button sits at y 133 of 192, 2 art px under the Esfera's bottom edge (y 131), so the two never overlap.
+   The footer draws above the whole stage, so this button's z-index only orders it inside the stage: the stage's scale
+   (`--art-scale`) reserves room for it above the footer, and the footer lets clicks through as a safety net. */
+.church-blessing { position:absolute; left:var(--blessing-left); top:69.5%; z-index:2; overflow:hidden; box-sizing:border-box; width:7em; padding:2px 6px; border:2px solid #8d6c40; border-radius:0; background:#30241b; box-shadow:0 2px #1a120c; color:#c9a874; font:var(--btn-font)/1 var(--font-game); white-space:nowrap; cursor:pointer; transition:filter 120ms var(--ease-out); }
 .church-blessing[hidden] { display:none; }
 .church-blessing-fill { position:absolute; inset:0; background:#8c6a36; transform:scaleX(var(--blessing-fill, 0)); transform-origin:left; transition:transform 120ms linear; }
 .church-blessing-label { position:relative; }
