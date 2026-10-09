@@ -42,6 +42,7 @@ export class ChurchScene {
     paintPixelSphere(this.sphere.querySelector('canvas')!);
     this.sphere.addEventListener('click', onSphereClick);
     this.world.classList.toggle('scene-paused', document.hidden);
+    this.trackHud();
     if (isArtReview) {
       document.body.classList.add('art-review');
       document.getElementById('art-review-controls')!.hidden = false;
@@ -68,6 +69,26 @@ export class ChurchScene {
       this.world.classList.toggle('scene-paused', document.hidden);
     });
     this.sync();
+  }
+
+  /** Keeps `--hud-bottom` at how far the HUD's boxes reach into the world, so the stage can sit below them. */
+  private trackHud(): void {
+    const hud = document.querySelector('.top-hud-bar');
+    if (!hud) return;
+    const update = () => {
+      const top = this.world.getBoundingClientRect().top + this.world.clientTop;
+      let bottom = top;
+      for (const box of hud.children) {
+        const rect = box.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) bottom = Math.max(bottom, rect.bottom);
+      }
+      this.world.style.setProperty('--hud-bottom', `${Math.round(bottom - top)}px`);
+    };
+    const observer = new ResizeObserver(update);
+    observer.observe(this.world);
+    observer.observe(hud);
+    for (const box of hud.children) observer.observe(box);
+    update();
   }
 
   private setArtScene(artScene: ArtScene): void {
