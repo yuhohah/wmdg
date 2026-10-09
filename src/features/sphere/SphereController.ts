@@ -4,6 +4,7 @@ import { NotificationManager } from '../../systems/notifications.js';
 import { formatNumber } from '../../systems/calculations.js';
 import { BLESSING_SECONDS_PER_PRESS } from '../../config/incarnation.js';
 import { events, GameEvents } from '../../core/EventBus.js';
+import { paintPixelSphere } from '../../ui/pixelSphere.js';
 
 export interface SphereControllerOptions {
   gameState: GameStateManager;
@@ -34,6 +35,8 @@ export class SphereController {
 
   private initElements(): void {
     this.divineSphereBtn = document.getElementById('divine-sphere-btn');
+    const sphereArt = this.divineSphereBtn?.querySelector<HTMLCanvasElement>('canvas');
+    if (sphereArt) paintPixelSphere(sphereArt);
     this.satelliteNodes = document.querySelectorAll<HTMLElement>('.sphere-satellite-node');
   }
 

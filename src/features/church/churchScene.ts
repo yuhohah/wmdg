@@ -18,7 +18,6 @@ export type SphereLocation = 'ruins' | 'altar';
 /** 0 is O Escolhido; 1–5 are O Profeta at each Encarnação stage. */
 export type ProtagonistLook = 0 | 1 | 2 | 3 | 4 | 5;
 export type ProfetaLook = Exclude<ProtagonistLook, 0>;
-export type ProtagonistLabel = 'O Escolhido' | 'O Profeta';
 /** One drawn look per Encarnação stage; a later stage keeps the last look until it gets art of its own. */
 const LAST_PROFETA_LOOK: ProfetaLook = 5;
 /** 0 is no crowd; each level is one more `CROWD_LEVELS` entry reached. */
@@ -29,8 +28,8 @@ export interface ChurchSceneDescription {
   sphereLocation: SphereLocation;
   /** Props unlocked by the follower count, in threshold order. */
   details: ChurchDetail[];
-  protagonist: { look: ProtagonistLook; label: ProtagonistLabel };
-  /** The Bênção button under the Esfera; `fill` is the stored 2× time as a 0–1 fraction of the cap. */
+  protagonist: { look: ProtagonistLook };
+  /** The Bênção button under the Relicário's Esfera; `fill` is the stored 2× time as a 0–1 fraction of the cap. */
   blessing: { visible: boolean; fill: number };
   /** How many of the church-yard spots hold a follower, filled in `FOLLOWER_SPOTS` order. */
   filledSpots: number;
@@ -63,8 +62,8 @@ export function describeChurchScene(snapshot: ChurchSnapshot): ChurchSceneDescri
 
 /** The stage reads 1 before the Selo too, so the Selo alone decides when O Escolhido becomes O Profeta. */
 export function describeProtagonist(incarnationUnlocked: boolean, incarnationStage: number): ChurchSceneDescription['protagonist'] {
-  if (!incarnationUnlocked) return { look: 0, label: 'O Escolhido' };
-  return { look: Math.min(LAST_PROFETA_LOOK, Math.max(1, Math.floor(incarnationStage))) as ProfetaLook, label: 'O Profeta' };
+  if (!incarnationUnlocked) return { look: 0 };
+  return { look: Math.min(LAST_PROFETA_LOOK, Math.max(1, Math.floor(incarnationStage))) as ProfetaLook };
 }
 
 /** What changed between two descriptions; the renderer turns each change into a transition and notification. */

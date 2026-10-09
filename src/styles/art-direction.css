@@ -73,12 +73,11 @@
 .ascended-monastery { position:absolute; right:15%; top:16%; height:45%; width:auto; image-rendering:pixelated; filter:brightness(.65); z-index:1; }
 /* Church scene: the stage keeps the background's 400×192 grid, so overlays stay pinned to the art.
    Tall phones use the cover scale and are cropped sideways. On short or large windows the stage is smaller than the
-   cover: its scale is capped so that, below the HUD's bottom edge (`--hud-bottom`, measured by the church scene), both
-   (1) the art from y 12 (the tier-3 bell tower's top) down to the Bênção button under the altar (y 133 plus the button's
-   height `--btn-font` + 10px of border and padding, then a 44px footer margin) fits, and (2) the whole band down to
-   y 152 (the front of the yard, plus an 8px margin) fits. The scale never drops below 0.4px per art pixel, a safety net
-   for a world whose container height has not resolved. The backdrop fills the world around the stage. */
-.church-world { container-type:size; background:#1b2a3d; height:max(var(--world-h), var(--world-min)); min-height:0; --hud-bottom:0px; --btn-font:clamp(10px, 4.4cqh, 22px); --art-scale:max(0.4px, min(max(100cqw / 400, 100cqh / 192), calc((100cqh - var(--hud-bottom) - var(--btn-font) - 54px) / 121.4), calc((100cqh - var(--hud-bottom) - 8px) / 140))); --stage-top:max(calc(var(--hud-bottom) - 12 * var(--art-scale)), min(0px, calc(100cqh - 152 * var(--art-scale)))); }
+   cover: its scale is capped so that, below the HUD's bottom edge (`--hud-bottom`, measured by the church scene), the
+   art from y 12 (the tier-3 bell tower's top) down to y 152 (the front of the yard, plus an 8px margin) fits. The scale
+   never drops below 0.4px per art pixel, a safety net for a world whose container height has not resolved.
+   The backdrop fills the world around the stage. */
+.church-world { container-type:size; background:#1b2a3d; height:max(var(--world-h), var(--world-min)); min-height:0; --hud-bottom:0px; --art-scale:max(0.4px, min(max(100cqw / 400, 100cqh / 192), calc((100cqh - var(--hud-bottom) - 8px) / 140))); --stage-top:max(calc(var(--hud-bottom) - 12 * var(--art-scale)), min(0px, calc(100cqh - 152 * var(--art-scale)))); }
 /* Capped stages sit with y 12 at the HUD's bottom edge; uncapped ones (phones) are cropped sky first, so art down to y 152 stays visible. */
 /* The outer art columns (x 0 and 399) are near-white generation artifacts, so the stage is clipped by two art pixels (a fractional scale would otherwise show a sliver of them). */
 .church-stage { position:absolute; left:50%; top:var(--stage-top); width:calc(400 * var(--art-scale)); aspect-ratio:400 / 192; transform:translateX(-50%); clip-path:inset(0 calc(2 * var(--art-scale))); }
@@ -91,35 +90,36 @@
 .church-world[data-church-tier='2'] { --edge-left:linear-gradient(#090c1a 0.52%, #0d0e1e 0.52% 1.56%, #0c1523 1.56% 2.6%, #0d0e1e 2.6% 4.17%, #0c1523 4.17% 5.21%, #183254 5.21% 6.25%, #19365d 6.25% 7.29%, #183254 7.29% 34.38%, #19365d 34.38% 36.98%, #1e3c61 36.98% 47.92%, #183254 47.92% 71.35%, #18314f 71.35% 86.46%, #1b2f3b 86.46% 95.83%, #132c34 95.83%); --edge-right:linear-gradient(#090c1a 5.21%, #183254 5.21% 6.77%, #19365d 6.77% 10.42%, #183254 10.42% 14.06%, #18314f 14.06% 19.27%, #183254 19.27% 31.25%, #19365d 31.25% 32.81%, #1e3c61 32.81% 34.9%, #19365d 34.9% 36.98%, #183254 36.98% 44.27%, #19365d 44.27% 52.6%, #1e3c61 52.6% 55.21%, #19365d 55.21% 58.33%, #183254 58.33% 65.63%, #18314f 65.63% 73.44%, #1b2941 73.44% 89.06%, #1b2f3b 89.06% 92.71%, #132c34 92.71% 94.79%, #090c1a 94.79%); }
 .church-world[data-church-tier='3'] { --edge-left:linear-gradient(#0b0e1d 0.52%, #0f1d2b 0.52% 5.21%, #1c3252 5.21% 34.38%, #1d375c 34.38% 35.42%, #223d62 35.42% 42.71%, #1d375c 42.71% 45.31%, #223d62 45.31% 48.96%, #1d375c 48.96% 50%, #1c3252 50% 85.94%, #202b43 85.94%); --edge-right:linear-gradient(#0b0e1d 5.21%, #1c3252 5.21% 31.25%, #1d375c 31.25% 38.02%, #1c3252 38.02% 47.92%, #1d375c 47.92% 51.04%, #223d62 51.04% 54.69%, #1d375c 54.69% 59.38%, #1c3252 59.38% 73.44%, #202b43 73.44% 91.15%, #182c37 91.15% 94.79%, #0b0e1d 94.79%); }
 .church-background { position:absolute; inset:0; width:100%; height:100%; image-rendering:pixelated; pointer-events:none; }
-.church-sphere { position:absolute; aspect-ratio:1; padding:0; border:0; background:transparent; cursor:pointer; transform:translate(-50%,-50%); z-index:2; transition:filter 120ms var(--ease-out); }
+/* The altar's Esfera is the god's likeness, not a control: Fé is channelled through the Relicário's Esfera, and this one only glows back. */
+/* Each tier's background has its own altar on the sanctuary dais, so the Esfera's centre is set per tier to rest in that altar's
+   cradle: the drawn orb's bottom edge sits 10/32 of the box width below the centre (y 116 on the ruined pillar, y 121 in the
+   tier-1 cradle, y 113.5 in the carved altar that tiers 2 and 3 share). */
+.church-sphere { position:absolute; left:var(--sphere-x); top:var(--sphere-y); aspect-ratio:1; transform:translate(-50%,-50%); z-index:2; pointer-events:none; transition:filter 120ms var(--ease-out); }
 .church-sphere canvas { display:block; width:100%; height:100%; image-rendering:pixelated; pointer-events:none; }
-.church-sphere[data-location='ruins'] { left:29.5%; top:64%; width:4%; filter:brightness(.75) drop-shadow(0 0 6px #e9be72); animation:ruin-glow 3.2s ease-in-out infinite; }
-.church-sphere[data-location='altar'] { left:30.5%; top:63%; width:5%; filter:drop-shadow(0 0 10px #e9be72); }
+.church-sphere[data-location='ruins'] { width:4%; filter:brightness(.75) drop-shadow(0 0 6px #e9be72); animation:ruin-glow 3.2s ease-in-out infinite; }
+.church-sphere[data-location='altar'] { width:5%; filter:drop-shadow(0 0 10px #e9be72); }
+.church-world[data-church-tier='0'] { --sphere-x:26%; --sphere-y:57.81%; }
+.church-world[data-church-tier='1'] { --sphere-x:28.13%; --sphere-y:59.77%; }
+.church-world[data-church-tier='2'] { --sphere-x:28.88%; --sphere-y:55.86%; }
+.church-world[data-church-tier='3'] { --sphere-x:28.88%; --sphere-y:55.86%; }
 .faith-response .church-sphere { filter:brightness(1.35) drop-shadow(0 0 14px #f3d392); }
-.church-sphere:focus-visible { outline:2px solid #edc886; outline-offset:4px; }
-/* The button's left edge: centred under the altar, never past the cropped left edge of the stage on narrow screens.
-   Its right edge is this + 7em; the protagonist's name starts after that (em is the shared `--btn-font`). */
-.church-world { --blessing-left:max(calc(30.5% - 3.5em), calc(50% - 50cqw + 6px)); }
-/* The Bênção button sits at y 133 of 192, 2 art px under the Esfera's bottom edge (y 131), so the two never overlap.
-   The footer draws above the whole stage, so this button's z-index only orders it inside the stage: the stage's scale
-   (`--art-scale`) reserves room for it above the footer, and the footer lets clicks through as a safety net. */
-.church-blessing { position:absolute; left:var(--blessing-left); top:69.5%; z-index:2; overflow:hidden; box-sizing:border-box; width:7em; padding:2px 6px; border:2px solid #8d6c40; border-radius:0; background:#30241b; box-shadow:0 2px #1a120c; color:#c9a874; font:var(--btn-font)/1 var(--font-game); white-space:nowrap; cursor:pointer; transition:filter 120ms var(--ease-out); }
+/* The Bênção button sits in the Relicário under the clickable Esfera, so the boost is triggered where Fé is channelled. */
+/* It hangs like a plaque over the bottom of the Esfera's ring, so it needs no extra height in a short Relicário. */
+.sphere-presentation-area { position:relative; }
+.church-blessing { position:absolute; left:50%; bottom:-8px; z-index:3; transform:translateX(-50%); overflow:hidden; box-sizing:border-box; width:7em; padding:2px 6px; border:2px solid #8d6c40; border-radius:0; background:#30241b; box-shadow:0 2px #1a120c; color:#c9a874; font:18px/1 var(--font-game); white-space:nowrap; cursor:pointer; transition:filter 120ms var(--ease-out); }
 .church-blessing[hidden] { display:none; }
 .church-blessing-fill { position:absolute; inset:0; background:#8c6a36; transform:scaleX(var(--blessing-fill, 0)); transform-origin:left; transition:transform 120ms linear; }
 .church-blessing-label { position:relative; }
 .church-blessing.active { border-color:#c39a58; color:#ffdea0; }
-.faith-response .church-blessing { filter:brightness(1.35) drop-shadow(0 0 6px #f3d392); }
-.church-blessing:active { transform:translateY(1px); box-shadow:0 1px #1a120c; }
+.church-blessing.faith-response { filter:brightness(1.35) drop-shadow(0 0 6px #f3d392); }
+.church-blessing:active { transform:translateX(-50%) translateY(1px); box-shadow:0 1px #1a120c; }
 .church-blessing:focus-visible { outline:2px solid #edc886; outline-offset:3px; }
-/* The protagonist stands in the clear gap between the altar and the yard, mirrored to face the Esfera; feet sit 4px above the 72px canvas bottom.
-   The name is its own element under the feet. */
-.church-protagonist { position:absolute; left:46.5%; bottom:28.5%; height:19%; aspect-ratio:64 / 72; transform:translateX(-50%); z-index:2; pointer-events:none; }
+/* The protagonist stands on the sanctuary dais beside the altar (x 150), mirrored to face the Esfera. Feet sit 4px above the 72px
+   canvas bottom (2 art px at this height), on the dais top at y 137, or y 134 on the lower, ruined dais of tier 0. */
+.church-protagonist { position:absolute; left:37.5%; bottom:27.6%; height:19%; aspect-ratio:64 / 72; transform:translateX(-50%); z-index:2; pointer-events:none; }
+.church-world[data-church-tier='0'] .church-protagonist { bottom:29.17%; }
 .protagonist-viewport { position:absolute; inset:0; overflow:hidden; transform:scaleX(-1); }
 .protagonist-strip { position:absolute; top:0; left:0; display:block; height:100%; width:1600%; max-width:none; image-rendering:pixelated; animation:walk-frames 2400ms steps(16,end) infinite; }
-/* The name sits under the feet, above the yard and props (z 4), so a follower praying beside it never covers it.
-   About centred on the protagonist, but never left of the Bênção button's right edge (`--blessing-left` + 7em) plus a gap;
-   it uses the button's font so the two em units match. */
-.protagonist-label { position:absolute; left:max(calc(46.5% - 3em), calc(var(--blessing-left) + 7.5em)); top:calc(71.5% - 2px); z-index:4; pointer-events:none; color:#e2c084; font:var(--btn-font)/1 var(--font-game); letter-spacing:1px; white-space:nowrap; text-shadow:0 1px #11131a, 0 0 4px #11131a; }
 .church-protagonist[data-look='5'] .protagonist-viewport { filter:drop-shadow(0 0 3px #f3d392aa); }
 .protagonist-strip-outgoing { animation:walk-frames 2400ms steps(16,end) infinite, church-fade-out 900ms var(--ease-out) forwards; }
 .church-protagonist.transforming .protagonist-strip:not(.protagonist-strip-outgoing) { animation:walk-frames 2400ms steps(16,end) infinite, protagonist-fade-in 900ms var(--ease-out) both; }
@@ -226,7 +226,7 @@
 @keyframes pilgrim-sway { 0%,100% { transform:translateX(-3px); } 50% { transform:translateX(3px); } }
 @keyframes ritual-bow { 0%,100% { transform:rotate(0); } 50% { transform:rotate(5deg); } }
 @keyframes recruit-arrival { from { opacity:0; transform:translateX(-24px); } to { opacity:1; transform:translateX(0); } }
-@media (hover:hover) and (pointer:fine) { .divine-sphere-btn:hover { filter:brightness(1.15) drop-shadow(0 0 16px #b8874540); } .church-sphere:hover { filter:brightness(1.2) drop-shadow(0 0 12px #f3d392); } .church-blessing:hover { filter:brightness(1.2); } }
+@media (hover:hover) and (pointer:fine) { .divine-sphere-btn:hover { filter:brightness(1.15) drop-shadow(0 0 16px #b8874540); } .church-blessing:hover { filter:brightness(1.2); } }
 @media (prefers-reduced-motion:reduce) {
   .world-parallax-track,.prophet-sprite,.procession-member,.procession-member img,.walk-strip,.new-recruit,.church-sphere,.church-follower-sprite img,.church-plea { animation:none!important; }
   .church-blessing-fill { transition:none; }

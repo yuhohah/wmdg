@@ -1,6 +1,5 @@
 import { GameStateManager } from '../core/GameState.js';
 import { events, GameEvents } from '../core/EventBus.js';
-import { formatNumber } from '../systems/calculations.js';
 import { compareChurchScenes, describeChurchScene, describeProtagonist, type ChurchSceneDescription, type ChurchSnapshot, type ChurchTier, type ProfetaLook, type ProtagonistLook, type RestoredTier } from '../features/church/churchScene.js';
 import { CHURCH_DETAILS, PROFETA_NOTICES, RESTORATION_NOTICES, type ChurchDetail, type ChurchNotice } from '../config/church.js';
 import { isArtReview } from './artReview.js';
@@ -13,13 +12,6 @@ type ArtScene = `tier-${ChurchTier}` | 'procession';
 const PLEA_SECONDS = 15;
 /** A point on the 400×192 stage, as % of its width and height. */
 type StagePoint = [left: number, top: number];
-
-const TIER_TEXT: Record<ChurchTier, { title: string; status: string; caption: string }> = {
-  0: { title: 'A Igreja em Ruínas', status: 'Uma luz fraca entre os escombros', caption: 'Algo ainda brilha onde ninguém reza.' },
-  1: { title: 'O Altar Improvisado', status: 'A Esfera repousa no altar', caption: 'Os escombros foram retirados. O culto tem um lugar.' },
-  2: { title: 'A Capela das Velas', status: 'Velas ardem atrás das janelas', caption: 'O telhado voltou. A chama do Fervor aquece as paredes.' },
-  3: { title: 'O Santuário Restaurado', status: 'Os vitrais brilham na noite', caption: 'O sino chama. Ninguém mais esquece este lugar.' }
-};
 
 /** Where the restoration sparkles land on the 400×192 stage, as % of its width and height. */
 const RESTORED_PARTS: Record<RestoredTier, StagePoint[]> = {
@@ -90,23 +82,21 @@ export class ChurchScene {
   private world = document.getElementById('church-world')!;
   private stage = document.getElementById('church-stage')!;
   private background = document.getElementById('church-background') as HTMLImageElement;
-  private sphere = document.getElementById('church-sphere') as HTMLButtonElement;
+  /** The Esfera on the altar is only the god's likeness; Fé is channelled through the Relicário's Esfera. */
+  private sphere = document.getElementById('church-sphere')!;
   private blessing = document.getElementById('church-blessing') as HTMLButtonElement;
   private blessingLabel = document.getElementById('church-blessing-label')!;
   private protagonist = document.getElementById('church-protagonist')!;
   private protagonistStrip = document.getElementById('church-protagonist-strip') as HTMLImageElement;
-  private protagonistLabel = document.getElementById('church-protagonist-label')!;
 
   constructor(
     private gameState: GameStateManager,
-    onSphereClick: (event: MouseEvent) => void,
     private grantMiracle: (x: number, y: number) => number,
     invokeBlessing: (x: number, y: number) => void,
     private announce: (notice: ChurchNotice, tag: string) => void
   ) {
     paintPixelSphere(this.sphere.querySelector('canvas')!);
     this.buildDetailProps();
-    this.sphere.addEventListener('click', onSphereClick);
     // Native button: Enter and Space arrive here as clicks, so feedback is anchored to the button, not the pointer.
     this.blessing.addEventListener('click', () => {
       const rect = this.blessing.getBoundingClientRect();
@@ -262,7 +252,6 @@ export class ChurchScene {
     if (this.reviewLook !== null) {
       next.protagonist = describeProtagonist(this.reviewLook > 0, this.reviewLook);
     }
-    document.getElementById('church-count')!.textContent = `${formatNumber(snapshot.followers)} fiéis`;
     this.blessing.hidden = !next.blessing.visible;
     this.blessing.style.setProperty('--blessing-fill', String(next.blessing.fill));
     this.blessing.classList.toggle('active', snapshot.blessingSeconds > 0);
@@ -308,11 +297,6 @@ export class ChurchScene {
     }
     this.protagonist.dataset.look = String(next.protagonist.look);
     this.protagonistStrip.src = `/assets/church/protagonist/look-${next.protagonist.look}-idle.png`;
-    this.protagonistLabel.textContent = next.protagonist.label;
-    const text = TIER_TEXT[next.tier];
-    document.getElementById('church-title')!.textContent = text.title;
-    document.getElementById('church-status')!.textContent = text.status;
-    document.getElementById('church-caption')!.textContent = text.caption;
   }
 
   /** Fades the old background out through a dust cloud and sparkles over the parts that were restored. */
@@ -370,8 +354,10 @@ export class ChurchScene {
   private pulse(): void {
     // Frequent clicks retarget one brief response instead of accumulating particles.
     window.clearTimeout(this.pulseTimer);
-    this.world.classList.add('faith-response');
-    this.pulseTimer = window.setTimeout(() => this.world.classList.remove('faith-response'), 120);
+    // The Bênção button lives in the Relicário, outside the world, so it answers on its own.
+    const targets = [this.world, this.blessing];
+    targets.forEach(target => target.classList.add('faith-response'));
+    this.pulseTimer = window.setTimeout(() => targets.forEach(target => target.classList.remove('faith-response')), 120);
   }
 
   private miracle(): void {
