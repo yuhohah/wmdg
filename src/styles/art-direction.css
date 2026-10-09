@@ -117,8 +117,9 @@
 .protagonist-viewport { position:absolute; inset:0; overflow:hidden; transform:scaleX(-1); }
 .protagonist-strip { position:absolute; top:0; left:0; display:block; height:100%; width:1600%; max-width:none; image-rendering:pixelated; animation:walk-frames 2400ms steps(16,end) infinite; }
 /* The name sits under the feet, above the yard and props (z 4), so a follower praying beside it never covers it.
-   About centred on the protagonist, but never left of the Bênção button's right edge (its left, see below, + 7em) plus a gap. */
-.protagonist-label { position:absolute; left:max(calc(46.5% - 3em), calc(max(30.5% - 3.5em, 50% - 50cqw + 6px) + 7.5em)); top:calc(71.5% - 2px); z-index:4; pointer-events:none; color:#e2c084; font:clamp(10px, 4.4cqh, 22px)/1 var(--font-game); letter-spacing:1px; white-space:nowrap; text-shadow:0 1px #11131a, 0 0 4px #11131a; }
+   About centred on the protagonist, but never left of the Bênção button's right edge (`--blessing-left` + 7em) plus a gap;
+   it uses the button's font so the two em units match. */
+.protagonist-label { position:absolute; left:max(calc(46.5% - 3em), calc(var(--blessing-left) + 7.5em)); top:calc(71.5% - 2px); z-index:4; pointer-events:none; color:#e2c084; font:var(--btn-font)/1 var(--font-game); letter-spacing:1px; white-space:nowrap; text-shadow:0 1px #11131a, 0 0 4px #11131a; }
 .church-protagonist[data-look='5'] .protagonist-viewport { filter:drop-shadow(0 0 3px #f3d392aa); }
 .protagonist-strip-outgoing { animation:walk-frames 2400ms steps(16,end) infinite, church-fade-out 900ms var(--ease-out) forwards; }
 .church-protagonist.transforming .protagonist-strip:not(.protagonist-strip-outgoing) { animation:walk-frames 2400ms steps(16,end) infinite, protagonist-fade-in 900ms var(--ease-out) both; }
