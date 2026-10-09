@@ -185,7 +185,14 @@ export class ChurchScene {
       return sparkle;
     });
     this.background.after(outgoing, dust, ...sparkles);
-    window.setTimeout(() => [outgoing, dust, ...sparkles].forEach(node => node.remove()), TRANSITION_MS + sparkles.length * SPARKLE_STAGGER_MS);
+    // The gutter colours belong to the old tier too: fade a copy of the backdrop out with the old background.
+    const backdrop = this.world.querySelector<HTMLElement>('.church-backdrop')!;
+    const outgoingBackdrop = backdrop.cloneNode() as HTMLElement;
+    const colours = getComputedStyle(this.world);
+    for (const edge of ['--edge-left', '--edge-right']) outgoingBackdrop.style.setProperty(edge, colours.getPropertyValue(edge));
+    outgoingBackdrop.classList.add('church-backdrop-outgoing');
+    backdrop.after(outgoingBackdrop);
+    window.setTimeout(() => [outgoing, outgoingBackdrop, dust, ...sparkles].forEach(node => node.remove()), TRANSITION_MS + sparkles.length * SPARKLE_STAGGER_MS);
   }
 
   private pulse(): void {

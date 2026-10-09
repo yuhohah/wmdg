@@ -116,6 +116,7 @@
 @keyframes ruin-glow { 0%,100% { opacity:.45; } 50% { opacity:.8; } }
 /* Tier restoration: the old tier fades out through dust while sparkles mark the restored parts. */
 .church-background-outgoing { z-index:1; animation:church-fade-out 1100ms var(--ease-out) forwards; }
+.church-backdrop-outgoing { animation:church-fade-out 1100ms var(--ease-out) forwards; }
 .church-dust { position:absolute; inset:10% 20% 8% 20%; z-index:1; pointer-events:none; background:radial-gradient(ellipse at 50% 60%, #b9a58a99, #8a7a6655 45%, transparent 70%); filter:blur(6px); opacity:0; animation:church-dust 1300ms ease-out forwards; }
 .church-sparkle { position:absolute; z-index:3; pointer-events:none; transform:translate(-50%,-50%) scale(0); color:#f6dc9c; font-size:clamp(10px, 2.4cqw, 22px); text-shadow:0 0 6px #f3d392, 0 0 12px #e9be72; animation:church-sparkle 900ms var(--ease-out) both; }
 @keyframes church-fade-out { from { opacity:1; } to { opacity:0; } }
@@ -200,7 +201,7 @@
   .world-parallax-track,.prophet-sprite,.procession-member,.procession-member img,.walk-strip,.new-recruit,.church-sphere { animation:none!important; }
   .church-blessing-fill { transition:none; }
   .church-dust,.church-sparkle { display:none; }
-  .church-background-outgoing { animation-duration:200ms!important; }
+  .church-background-outgoing,.church-backdrop-outgoing { animation-duration:200ms!important; }
   .walk-ready > .walk-viewport { display:none; }
   .walk-ready > img { opacity:1; }
   .ritual-sigil { transform:none!important; transition:opacity 120ms; }
