@@ -16,6 +16,7 @@ html,body { background:#211a18; }
 .res-name::before { content:''; display:block; width:34px; height:34px; background:url('/assets/hud/faith.svg') center / contain no-repeat; image-rendering:pixelated; }
 .resource-item-fervor .res-name::before { background-image:url('/assets/hud/fervor.svg'); }
 .resource-item-relic .res-name::before { background-image:url('/assets/hud/relic.svg'); }
+.resource-item-followers .res-name::before { background-image:url('/assets/procession/follower-0.png'); }
 .res-num { font:32px/.9 var(--font-game); color:#ffe2a2; text-shadow:2px 2px #120d0c; font-variant-numeric:tabular-nums; }
 .res-rate { grid-column:2; font:18px/1 var(--font-game); color:#bba780; }
 .resource-item-fervor .res-num { color:#f2a16c; }

@@ -13,7 +13,7 @@ How restored the church is on the main screen, from 0 to 3: 0 is the ruin, 1 fol
 A small prop that appears at the church between Church tiers as the follower count grows: torches, pews, a garden, a cult banner and a statue of the Esfera. Each unlocks at its own follower threshold and stays once unlocked; unlocking one plays a short transition and a notification. Derived from game state; never saved.
 
 **Bênção**
-The button under the Esfera, shown once the Selo da Encarnação is broken. Each press (click, Enter or Space) adds 2 s of doubled Fé, up to 60 s stored; the stored time drains in real time and the button fills to show how much is left.
+The button hanging under the clickable Esfera in the Relicário, shown once the Selo da Encarnação is broken. Each press (click, Enter or Space) adds 2 s of doubled Fé, up to 60 s stored; the stored time drains in real time and the button fills to show how much is left.
 
 **Church yard**
 The ground in front of the church door where converted followers stand. The Crowd gathers behind it and the Details line its front.

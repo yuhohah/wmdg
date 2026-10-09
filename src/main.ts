@@ -226,7 +226,6 @@ class AppManager {
     if (isArtReview) this.procession = new ProcessionScene(this.gameState, (x, y) => this.sphere.grantMiracle(x, y));
     this.church = new ChurchScene(
       this.gameState,
-      (e) => this.sphere.onSphereClicked(e),
       (x, y) => this.sphere.grantMiracle(x, y),
       (x, y) => this.sphere.invokeBlessing(x, y),
       (notice, tag) => this.notifications.showCustomPopup(notice.title, notice.desc, notice.icon, tag)

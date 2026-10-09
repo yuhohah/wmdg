@@ -119,16 +119,16 @@ describe('church scene description', () => {
 
 describe('protagonist', () => {
   it('is O Escolhido (look 0) before the Selo da Encarnação, even though the Encarnação stage reads 1', () => {
-    expect(describeChurchScene(start).protagonist).toEqual({ look: 0, label: 'O Escolhido' });
+    expect(describeChurchScene(start).protagonist).toEqual({ look: 0 });
   });
 
   it('stays O Escolhido before the Selo whatever the Encarnação stage reads', () => {
-    expect(describeChurchScene({ ...start, incarnationStage: 4 }).protagonist).toEqual({ look: 0, label: 'O Escolhido' });
+    expect(describeChurchScene({ ...start, incarnationStage: 4 }).protagonist).toEqual({ look: 0 });
   });
 
   it.each([1, 2, 3, 4, 5])('is O Profeta with the matching look at Encarnação stage %i once the Selo is broken', stage => {
     expect(describeChurchScene({ ...withSelos(true, false, false), incarnationStage: stage }).protagonist)
-      .toEqual({ look: stage, label: 'O Profeta' });
+      .toEqual({ look: stage });
   });
 });
 

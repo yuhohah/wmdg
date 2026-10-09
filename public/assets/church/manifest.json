@@ -118,5 +118,46 @@
         "status": "saved"
       }
     ]
+  },
+  "sanctuary": {
+    "note": "Each tier then had a raised stone sanctuary dais and a per-tier altar inpainted in with Pro Flash. The model is capped at 256 px, so a 160x96 window at (72,80) was cut out, inpainted under a shaped mask that leaves the open sky alone, and pasted back; everything outside the window is unchanged. Tiers 2-3 reuse the tier-1 dais rows (y>=126) so the protagonist and sphere anchors match, and only the altar is regenerated.",
+    "tool": "inpaint_image_pro_flash",
+    "window": {
+      "x": 72,
+      "y": 80,
+      "width": 160,
+      "height": 96
+    },
+    "jobs": [
+      {
+        "name": "tier-1",
+        "jobId": "ab0b5413-483f-4bbc-ba74-cc90113db345",
+        "seed": 21,
+        "mask": "x 88-211, y 112-155 plus y 104-111 in front of the wall",
+        "prompt": "A low raised stone sanctuary platform on the grass in front of the church: a wide dais of rough grey stone blocks about 12 pixels tall with a flat top, and two small stone steps at its right end leading down to the grass. At the LEFT end of the platform stands ONE solid makeshift altar: a single wide rough stone slab laid on a squat block of stacked stones, a worn pale cloth draped over the front of the slab, and in the middle of the slab top a small round stone cradle to hold an orb. The rest of the platform top, to the right of the altar, is flat and empty, a stage for a priest to stand on. Night scene, muted slate blue and warm grey stone palette, chunky pixel art matching the surroundings. No people, no orb."
+      },
+      {
+        "name": "tier-0",
+        "jobId": "08e527f4-85b3-4865-b139-b94c77d376e6",
+        "seed": 21,
+        "mask": "same as tier-1",
+        "prompt": "The ruins of a low stone sanctuary platform on the grass in front of the ruined church: a wide dais of cracked, broken grey stone blocks with a flat top, its edges crumbled, partly covered by piles of fallen rubble and weeds, two broken stone steps at its right end. At the LEFT end of the platform stands the stump of a broken stone pillar, about waist high with a jagged cracked top shaped like a rough bowl where an orb could rest, surrounded by fallen stones. The middle and right of the platform top is flat and mostly clear, a place where a lone figure could stand. Night scene, muted slate blue and cold grey stone palette, desolate and abandoned, chunky pixel art matching the surroundings. No people, no orb."
+      },
+      {
+        "name": "tier-2",
+        "jobId": "84f4719e-2fac-4986-a070-0ee34de897c9",
+        "seed": 5,
+        "mask": "altar only: x 80-126, y 112-134 plus y 104-111 in front of the wall",
+        "prompt": "A carved stone altar, about 30 pixels wide, standing centered in this area on top of the stone platform: a rectangular altar block of smooth cut grey stone with a carved band along its top edge, a long pale linen cloth with a simple stitched cross hanging down its front, a small round stone cradle bowl in the middle of the altar top to hold an orb, and a short white candle with a tiny flame standing on each end of the altar top. Small flames only, no glow halo. Night scene, muted slate blue and grey stone palette, chunky pixel art matching the surroundings. No people, no orb."
+      },
+      {
+        "name": "tier-3",
+        "tool": "edit_image_pro_flash",
+        "jobId": "5ef4076d-a046-44ab-85f9-a713130380ed",
+        "seed": 11,
+        "source": "The tier-2 altar's pixels pasted into the tier-3 background (so both tiers share the altar's shape and the Esfera's anchor), then a 64x64 crop at (72,84) recoloured; only pixels inside the altar's outline were kept.",
+        "prompt": "Restyle only the stone altar in the middle so it looks consecrated and well kept, without changing its shape, size or position: drape a deep muted dark-red cloth with a thin dull antique-gold border over the altar top and front (keep the stitched cross, now in dull gold), turn the round cradle bowl on top into tarnished dark gold, and give the candle a small warm flame. Keep the stone the same cool moonlit slate grey with dark outlines and blue night shading, low saturation, matching the rest of the night scene. Do not change the sky, the church wall, the stained glass window or the stone platform."
+      }
+    ]
   }
 }

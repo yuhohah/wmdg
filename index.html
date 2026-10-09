@@ -38,6 +38,13 @@
               <span class="res-dash">-</span>
               <span id="faith-per-sec-counter" class="res-rate">0/s</span>
             </div>
+            <div class="resource-divider"></div>
+            <div class="resource-item resource-item-followers">
+              <span class="res-name">FIÉIS:</span>
+              <span id="followers-counter" class="res-num">0</span>
+              <span class="res-dash">-</span>
+              <span class="res-rate">fiéis</span>
+            </div>
             <div class="resource-divider" id="hud-fervor-divider"></div>
             <div class="resource-item resource-item-fervor" id="hud-fervor-item">
               <span class="res-name">FERVOR:</span>
@@ -111,15 +118,11 @@
             <img class="church-background" id="church-background" alt="">
             <canvas class="church-crowd" id="church-crowd" aria-hidden="true" hidden></canvas>
             <div class="church-followers" id="church-followers"></div>
-            <button type="button" class="church-sphere" id="church-sphere" data-location="ruins" aria-label="Tocar a Esfera e gerar Fé"><canvas width="64" height="64"></canvas></button>
-            <div class="church-protagonist" id="church-protagonist" data-look="0"><div class="protagonist-viewport"><img class="protagonist-strip" id="church-protagonist-strip" src="/assets/church/protagonist/look-0-idle.png" alt=""></div></div><span class="protagonist-label" id="church-protagonist-label">O Escolhido</span>
-            <button type="button" class="church-blessing" id="church-blessing" aria-label="Invocar a Bênção: +2 segundos de Fé em dobro" hidden><span class="church-blessing-fill"></span><span class="church-blessing-label" id="church-blessing-label">✦ 2× · 0s</span></button>
+            <div class="church-sphere" id="church-sphere" data-location="ruins" role="img" aria-label="A Esfera, o deus do culto"><canvas width="64" height="64"></canvas></div>
+            <div class="church-protagonist" id="church-protagonist" data-look="0"><div class="protagonist-viewport"><img class="protagonist-strip" id="church-protagonist-strip" src="/assets/church/protagonist/look-0-idle.png" alt=""></div></div>
           </div>
           <div class="world-veil"></div>
-          <div class="world-heading"><span class="world-eyebrow">ERA I · O CHAMADO</span><h1 id="church-title">A Igreja em Ruínas</h1></div>
-          <div class="world-status"><span class="status-light"></span><span id="church-status">Uma luz fraca entre os escombros</span></div>
           <div class="ritual-sigil" aria-hidden="true">◉</div>
-          <div class="world-footer"><span id="church-caption">Algo ainda brilha onde ninguém reza.</span><span id="church-count">0 fiéis</span></div>
         </section>
         <!-- Kept for the future boss battle; mounted only under ?art-review. -->
         <section class="procession-world" id="procession-world" aria-label="A procissão do culto" hidden>
@@ -366,9 +369,10 @@
 
                   <div id="divine-sphere-btn" class="divine-sphere-btn" role="button"
                     aria-label="Tocar a Esfera">
-                    <div class="sphere-inner-pulse"></div>
+                    <canvas class="sphere-pixel-art" width="64" height="64" aria-hidden="true"></canvas>
                   </div>
                 </div>
+                <button type="button" class="church-blessing" id="church-blessing" aria-label="Invocar a Bênção: +2 segundos de Fé em dobro" hidden><span class="church-blessing-fill"></span><span class="church-blessing-label" id="church-blessing-label">✦ 2× · 0s</span></button>
               </div>
             </div>
             <div class="sacred-window-footer"><span>CANALIZAR FÉ</span><p>Clique na Esfera</p></div>

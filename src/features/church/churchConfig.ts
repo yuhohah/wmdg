@@ -40,13 +40,13 @@ export const FOLLOWER_SPOTS: readonly FollowerSpot[] = [
 ];
 
 /**
- * Where the follower who brings a miracle request prays: right of the Bênção button under the altar and
- * left of the protagonist, so they cover neither. They face the altar.
+ * Where the follower who brings a miracle request prays: up the steps on the sanctuary dais, right of the protagonist
+ * (who stands at x 150), so the walk from the yard never crosses them. They face the altar.
  */
-export const ALTAR_STAND: YardPoint = { x: 171, feet: 146 };
+export const ALTAR_STAND: YardPoint = { x: 186, feet: 137 };
 
-/** Everyone in the yard, and the crowd, faces this line through the altar: the Esfera's x when it sits on the altar. */
-export const ALTAR_X = 122;
+/** Everyone in the yard, and the crowd, faces this line through the altar: about the Esfera's x in the altar cradles. */
+export const ALTAR_X = 110;
 
 /**
  * Each crowd level beyond 0: the follower count that reaches it, and how many silhouettes it draws.
