@@ -19,10 +19,10 @@ The button under the Esfera, shown once the Selo da Encarnação is broken. Each
 The ground in front of the church door where converted followers stand. The Crowd gathers behind it and the Details line its front.
 
 **Follower spot**
-One of the 12 fixed places in the Church yard. Followers fill the spots in a set order, one per follower, up to 12; every follower beyond that joins the Crowd instead.
+One of the 12 fixed places in the Church yard. Followers fill the spots in a set order, one per follower, up to 12. Followers beyond 12 are not drawn one by one; from 50 followers a crowd of silhouettes gathers behind the yard (see Crowd level).
 
 **Miracle request**
 A follower from the Church yard walks to the altar and prays; their request can then be clicked for 15 s to grant a miracle. Granted or expired, they walk back to their Follower spot. A new request comes after a random wait of about 35–65 s.
 
 **Crowd level**
-How many silhouettes stand behind the Church yard, from 0 to 4: one level per follower threshold reached (50, 250, 1,000 and 10,000), and the top level is the cap however large the cult grows. Derived from the follower count; never saved.
+How thick the crowd of silhouettes behind the Church yard is, from 0 (none) to 4: one level per follower threshold reached (50, 250, 1,000 and 10,000), and the top level is the cap however large the cult grows. Derived from the follower count; never saved.
