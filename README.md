@@ -11,7 +11,7 @@ Jogo idle/clicker monocromático em **TypeScript** + **Vite**, com estética *da
 ### 1. Fé — o recurso base
 - **Clique na Esfera** para gerar **Fé** (base 1 por clique, multiplicada por Fervor, upgrades e conquistas).
 - **Fiel Devoto**: único gerador. Custa 20 Fé, escala ×1.10 por compra e produz +1 Fé/s (antes dos multiplicadores). O botão **Converter Máximo** libera com 25 fiéis.
-- **Milagres**: de tempos em tempos (~35–65 s) um fiel na arena pede um milagre. Clicar nele concede `30 × Fé/s + 10% da Fé atual`.
+- **Milagres**: de tempos em tempos (~35–65 s) um fiel pede um milagre na igreja. Clicar na prece concede `30 × Fé/s + 10% da Fé atual`.
 
 ### 2. Selos (desbloqueios)
 | Selo | Custo | Efeito |
@@ -68,7 +68,7 @@ Bônus da mesma categoria **somam**; categorias diferentes **multiplicam** entre
 ---
 
 ## ✨ Outras funcionalidades
-- 🎮 **Cena da igreja e arena dos fiéis**: a tela principal mostra a igreja ao pôr do sol, com a Esfera e o botão **Bênção**; a aba Fiéis tem a arena animada em Canvas 2D (com sprites e milagres). A Encarnação não tem mais arena, só o estágio e o upgrade.
+- 🎮 **Cena da igreja**: a tela principal mostra a igreja ao pôr do sol, em ruínas e depois restaurada, com a Esfera e o botão **Bênção**. A Encarnação não tem mais arena, só o estágio e o upgrade.
 - 💾 **Salvamento automático** no `localStorage` a cada 20 s, ao trocar de aba e ao fechar a página, com cópia de backup.
 - 📤 **Exportar/Importar save** em Base64 e reset completo nas Configurações.
 - 🔊 Áudio sintetizado (Web Audio) + trilha sonora, e vibração em dispositivos móveis.
@@ -120,7 +120,7 @@ wmdg/
 │   │   └── notifications.ts     # Popups de notificação
 │   ├── features/            # Uma pasta por aba: followers, incarnation, fervor, relics,
 │   │                        #   unlocks, achievements, stats e a esfera (sphere)
-│   ├── ui/                  # HUD, navegação, modais, onboarding, tooltips, a cena da igreja e a arena dos fiéis em canvas
+│   ├── ui/                  # HUD, navegação, modais, onboarding, tooltips e a cena da igreja
 │   ├── styles/              # CSS por área (base, hud, cards, panels, modals, sphere, responsive)
 │   ├── types.ts             # Tipagens compartilhadas
 │   └── main.ts              # AppManager: instancia e conecta todos os módulos
