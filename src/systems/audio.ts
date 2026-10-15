@@ -177,4 +177,29 @@ export class AudioManager {
     setTimeout(() => this.playTone(659.25, 'sine', 0.18), 80);
     setTimeout(() => this.playTone(783.99, 'sine', 0.25), 160);
   }
+
+  public playBossHit(): void {
+    if (!this.sfxEnabled) return;
+    this.playTone(180 + Math.random() * 60, 'sawtooth', 0.08);
+  }
+
+  public playBossCrit(): void {
+    if (!this.sfxEnabled) return;
+    this.playTone(320, 'triangle', 0.12);
+    setTimeout(() => this.playTone(480, 'sine', 0.15), 50);
+  }
+
+  public playAnomalyShatter(): void {
+    if (!this.sfxEnabled) return;
+    this.playTone(600, 'square', 0.08);
+    setTimeout(() => this.playTone(850, 'sine', 0.14), 40);
+  }
+
+  public playBossVictory(): void {
+    if (!this.sfxEnabled) return;
+    this.playTone(440, 'triangle', 0.25);
+    setTimeout(() => this.playTone(554.37, 'sine', 0.3), 150);
+    setTimeout(() => this.playTone(659.25, 'sine', 0.35), 300);
+    setTimeout(() => this.playTone(880, 'sine', 0.5), 450);
+  }
 }

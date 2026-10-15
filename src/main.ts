@@ -18,6 +18,8 @@ import { FollowersTab } from './features/followers/FollowersTab.js';
 import { IncarnationTab } from './features/incarnation/IncarnationTab.js';
 import { FervorTab } from './features/fervor/FervorTab.js';
 import { RelicsTab } from './features/relics/RelicsTab.js';
+import { PantheonTab } from './features/pantheon/PantheonTab.js';
+import { BossBattleController } from './features/pantheon/BossBattleController.js';
 import { UnlocksTab } from './features/unlocks/UnlocksTab.js';
 import { AchievementsTab } from './features/achievements/AchievementsTab.js';
 import { StatsTab } from './features/stats/StatsTab.js';
@@ -54,6 +56,8 @@ class AppManager {
   public unlocksTab: UnlocksTab;
   public achievementsTab: AchievementsTab;
   public statsTab: StatsTab;
+  public pantheonTab: PantheonTab;
+  public bossBattle: BossBattleController;
 
   // Save & System State
   private lastSaveTime: number = Date.now();
@@ -131,6 +135,28 @@ class AppManager {
       }
     });
 
+    this.bossBattle = new BossBattleController({
+      gameState: this.gameState,
+      audio: this.audio,
+      notifications: this.notifications,
+      onBattleEnd: () => {
+        this.pantheonTab.updateUI();
+        this.sphere.renderSatellites();
+        this.updateUnlockedTabsVisibility();
+        events.emit(GameEvents.STATE_CHANGED);
+      }
+    });
+
+    this.pantheonTab = new PantheonTab({
+      gameState: this.gameState,
+      audio: this.audio,
+      tooltips: this.tooltips,
+      notifications: this.notifications,
+      onInitiateBattle: (bossId) => {
+        this.bossBattle.startBattle(bossId);
+      }
+    });
+
     this.unlocksTab = new UnlocksTab({
       gameState: this.gameState,
       audio: this.audio,
@@ -145,6 +171,8 @@ class AppManager {
         } else if (unlock.id === 'unlock_relics') {
           this.relicsTab.updateUI();
           this.relicsTab.renderList();
+        } else if (unlock.id === 'unlock_pantheon') {
+          this.pantheonTab.updateUI();
         }
         events.emit(GameEvents.STATE_CHANGED);
       }
@@ -295,12 +323,15 @@ class AppManager {
 
     if (tabId === 'tab-relics') {
       this.relicsTab.updateUI();
+    } else if (tabId === 'tab-pantheon') {
+      this.pantheonTab.updateUI();
     }
   }
 
   private updateUnlockedTabsVisibility(): void {
     this.incarnationTab.setTabVisibility(this.gameState.isIncarnationUnlocked());
     this.fervorTab.setTabVisibility(this.gameState.isFervorUpgradesUnlocked());
+    this.pantheonTab.setTabVisibility(this.gameState.isPantheonUnlocked());
     this.relicsTab.setTabVisibility(this.gameState.isRelicsUnlocked());
   }
 
@@ -309,6 +340,7 @@ class AppManager {
     this.incarnationTab.updateUI();
     this.fervorTab.renderList();
     this.unlocksTab.renderList();
+    this.pantheonTab.updateUI();
     this.relicsTab.renderList();
     this.achievementsTab.renderList();
   }
@@ -345,6 +377,7 @@ class AppManager {
     if (isArtReview) return;
     this.gameLoop.onTick((deltaSec) => {
       this.gameState.tick(deltaSec);
+      this.bossBattle.tick(deltaSec);
       events.emit(GameEvents.GAME_TICK, deltaSec);
     });
     this.gameLoop.start();

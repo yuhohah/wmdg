@@ -27,6 +27,19 @@ export const initialUnlocks: MechanicUnlock[] = [
     prerequisiteId: 'unlock_incarnation'
   },
   {
+    id: 'unlock_pantheon',
+    name: 'Selo do Panteão',
+    desc: 'Rasga o véu da realidade e revela os deuses rivais que orbitam a Esfera. Desbloqueia a aba Panteão e o combate divino.',
+    lore: 'Outras divindades observam o despertar do seu culto das trevas do éter. É hora de expurgá-las ou consumi-las.',
+    symbol: '',
+    cost: 10000,
+    costCurrency: 'faith',
+    unlocked: false,
+    tabId: 'tab-pantheon',
+    tabName: 'Panteão',
+    prerequisiteId: 'unlock_incarnation'
+  },
+  {
     id: 'unlock_relics',
     name: 'Selo das Relíquias',
     desc: 'Libera a Transmutação: troque toda a sua Fé por Fragmentos e use-os para restaurar relíquias de deuses caídos. Abre a aba Relíquias.',

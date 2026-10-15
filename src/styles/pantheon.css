@@ -1,0 +1,502 @@
+/* ===================================================
+   PANTHEON & BOSS BATTLE (TEOMAQUIA) STYLES
+   Engraving, Hermetic & Cosmic Occult Aesthetic
+   =================================================== */
+
+/* --- BOSS BATTLE ARENA OVERLAY (CENTER FRAME) --- */
+.boss-battle-overlay {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 380px;
+  background: rgba(14, 11, 8, 0.94);
+  border: 1px solid var(--boss-glow-color, #c9a44c);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.8), 0 0 15px rgba(201, 164, 76, 0.25);
+  border-radius: 4px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 100;
+  pointer-events: auto;
+  backdrop-filter: blur(4px);
+  animation: bossOverlayEnter 0.35s ease-out;
+}
+
+@keyframes bossOverlayEnter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -15px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.boss-battle-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.boss-battle-title {
+  font-size: 0.65rem;
+  font-family: var(--font-cinzel, 'Cinzel', serif);
+  letter-spacing: 0.14em;
+  color: #a89f91;
+  text-transform: uppercase;
+}
+
+.boss-battle-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-family: var(--font-cinzel, 'Cinzel', serif);
+  letter-spacing: 0.08em;
+  margin: 2px 0 0 0;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+.boss-hp-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+}
+
+.boss-hp-bar-track {
+  width: 100%;
+  height: 12px;
+  background: #1e1710;
+  border: 1px solid #4a3b2c;
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.boss-hp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8a1f1d 0%, #d93829 60%, #ff6b4a 100%);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+  transition: width 0.15s ease-out;
+}
+
+.boss-hp-text {
+  font-size: 0.72rem;
+  font-family: monospace;
+  text-align: center;
+  color: #dfd5c6;
+}
+
+.boss-battle-subbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 4px;
+  border-top: 1px dashed rgba(201, 164, 76, 0.2);
+}
+
+.boss-timer-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #f5eedc;
+}
+
+.boss-timer-text.timer-warning {
+  color: #ff4d4d;
+  animation: timerPulse 0.5s infinite alternate;
+}
+
+@keyframes timerPulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.15); }
+}
+
+.boss-retreat-btn {
+  background: #241c14;
+  border: 1px solid #6b5339;
+  color: #c4b5a0;
+  font-size: 0.68rem;
+  font-family: var(--font-cinzel, 'Cinzel', serif);
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.boss-retreat-btn:hover {
+  background: #3d2d1e;
+  color: #fff;
+  border-color: #a37f54;
+}
+
+/* --- BLASPHEMY RIFTS (WEAKSPOTS) --- */
+.blasphemy-rift-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 90;
+}
+
+.blasphemy-rift {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(230, 80, 50, 0.9) 0%, rgba(120, 20, 20, 0.4) 70%, transparent 100%);
+  border: 1.5px solid #ffaa44;
+  box-shadow: 0 0 16px #ff4400, inset 0 0 10px #ffe066;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  animation: riftRumble 0.6s infinite alternate ease-in-out;
+}
+
+.blasphemy-rift .rift-glyph {
+  font-size: 1.4rem;
+  color: #fff;
+  text-shadow: 0 0 8px #ff4400;
+  pointer-events: none;
+}
+
+@keyframes riftRumble {
+  0% { transform: translate(-50%, -50%) scale(0.9) rotate(-5deg); }
+  100% { transform: translate(-50%, -50%) scale(1.1) rotate(5deg); }
+}
+
+/* --- BOSS FLOATING DAMAGE NUMBERS --- */
+.boss-damage-number {
+  position: fixed;
+  pointer-events: none;
+  font-family: var(--font-cinzel, 'Cinzel', serif);
+  font-weight: 700;
+  z-index: 9999;
+  animation: damageFloat 0.75s ease-out forwards;
+}
+
+.boss-damage-number.normal-damage {
+  font-size: 1rem;
+  color: #ff9955;
+  text-shadow: 0 0 4px #000, 0 0 6px #ff3300;
+}
+
+.boss-damage-number.crit-damage {
+  font-size: 1.35rem;
+  color: #ffea70;
+  text-shadow: 0 0 6px #000, 0 0 14px #ff5500;
+}
+
+@keyframes damageFloat {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-25px) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.85);
+  }
+}
+
+/* --- RIGHT PANEL: PANTHEON TAB & GOD CARDS --- */
+.pantheon-tab-header {
+  padding: 12px 14px;
+  background: rgba(22, 17, 12, 0.85);
+  border: 1px solid #3d2f21;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.pantheon-stat-label {
+  font-size: 0.65rem;
+  font-family: var(--font-cinzel, 'Cinzel', serif);
+  letter-spacing: 0.15em;
+  color: #c9a44c;
+  text-transform: uppercase;
+}
+
+.pantheon-header-title {
+  font-size: 1.1rem;
+  font-family: var(--font-cinzel, 'Cinzel', serif);
+  font-weight: 700;
+  color: #f5eedc;
+}
+
+.pantheon-header-desc {
+  font-size: 0.78rem;
+  color: #a39580;
+  margin: 6px 0 0 0;
+  line-height: 1.4;
+}
+
+.pantheon-section-title {
+  font-size: 0.7rem;
+  font-family: var(--font-cinzel, 'Cinzel', serif);
+  letter-spacing: 0.12em;
+  color: #c9a44c;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(201, 164, 76, 0.25);
+  padding-bottom: 4px;
+}
+
+.pantheon-god-card {
+  background: #17120c;
+  border: 1px solid #38291c;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.pantheon-god-card.unlocked:hover {
+  border-color: #8c6a38;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+.pantheon-god-card.locked {
+  opacity: 0.6;
+  filter: grayscale(0.6);
+}
+
+.god-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.god-title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.god-tier-tag {
+  font-size: 0.62rem;
+  font-family: var(--font-cinzel, 'Cinzel', serif);
+  letter-spacing: 0.1em;
+  color: #9c8a70;
+}
+
+.god-name {
+  font-size: 1.05rem;
+  font-family: var(--font-cinzel, 'Cinzel', serif);
+  font-weight: 700;
+  color: #f5eedc;
+  margin: 2px 0;
+}
+
+.god-subtitle {
+  font-size: 0.72rem;
+  color: #c9a44c;
+}
+
+.god-ascension-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  background: #241c14;
+  border: 1px solid #574128;
+  padding: 4px 8px;
+  border-radius: 3px;
+}
+
+.god-ascension-badge .asc-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  color: #9e8a72;
+}
+
+.god-ascension-badge .asc-value {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #e5b95a;
+}
+
+.god-lore {
+  font-size: 0.74rem;
+  color: #9c907e;
+  font-style: italic;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.god-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: rgba(10, 8, 6, 0.5);
+  padding: 8px;
+  border-radius: 3px;
+  border: 1px solid #291e14;
+}
+
+.god-stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.god-stat-item .stat-label {
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  color: #8c7e6b;
+}
+
+.god-stat-item .stat-val {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #e6ded1;
+}
+
+.god-stat-item .stat-val.hp-val {
+  color: #e66050;
+}
+
+.god-stat-item .stat-val.reward-val {
+  color: #e5b95a;
+}
+
+.god-stat-item .stat-val.fragment-obtained {
+  color: #55d988;
+}
+
+.god-stat-item .stat-val.fragment-missing {
+  color: #a89478;
+}
+
+.god-card-actions {
+  display: flex;
+  width: 100%;
+}
+
+.btn-challenge-god {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 3px;
+  font-family: var(--font-cinzel, 'Cinzel', serif);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid #a37a34;
+  background: linear-gradient(180deg, #59391a 0%, #3d240d 100%);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.btn-challenge-god:hover {
+  background: linear-gradient(180deg, #784d23 0%, #523112 100%);
+  border-color: #d19f49;
+  box-shadow: 0 0 10px rgba(209, 159, 73, 0.35);
+}
+
+.god-req-lock {
+  width: 100%;
+  background: #14100c;
+  border: 1px dashed #423324;
+  padding: 6px;
+  text-align: center;
+  font-size: 0.68rem;
+  color: #8c7a65;
+}
+
+.god-req-lock strong {
+  color: #c9a44c;
+  margin-left: 4px;
+}
+
+/* --- FRAGMENT CARDS --- */
+.fragment-card {
+  display: flex;
+  gap: 12px;
+  padding: 10px;
+  background: #17120c;
+  border: 1px solid #38291c;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.fragment-card.owned {
+  border-color: #8c6a38;
+  background: linear-gradient(90deg, #1f1710 0%, #17120c 100%);
+}
+
+.fragment-card.missing {
+  opacity: 0.5;
+}
+
+.fragment-icon {
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: #241c14;
+  border: 1px solid #4a3825;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.fragment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+}
+
+.fragment-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fragment-name {
+  font-family: var(--font-cinzel, 'Cinzel', serif);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #f5eedc;
+}
+
+.fragment-status-tag {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  padding: 1px 6px;
+  border-radius: 2px;
+  background: #2b2116;
+  color: #c9a44c;
+}
+
+.fragment-title {
+  font-size: 0.7rem;
+  color: #c9a44c;
+}
+
+.fragment-effect {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #55d988;
+  margin: 2px 0 0 0;
+}
+
+.fragment-lore {
+  font-size: 0.68rem;
+  color: #8c806e;
+  font-style: italic;
+  margin: 2px 0 0 0;
+}

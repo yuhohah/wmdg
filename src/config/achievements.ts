@@ -296,5 +296,61 @@ export const initialAchievements: Achievement[] = [
       percent: Math.min(100, (s.fps / 100) * 100),
       label: `${Math.floor(s.fps)} / 100 Fé/s`
     })
+  },
+
+  // --- Teomaquia / Boss Battles Milestones ---
+  {
+    id: 'ach_boss_first',
+    name: 'Deicida Novato',
+    desc: 'Derrube seu primeiro deus rival na Guerra do Panteão.',
+    lore: 'O sangue dourado de uma divindade morta escorre pelos pilares do templo. As estrelas tremem.',
+    icon: '',
+    unlocked: false,
+    buffText: '+15% de Fé por Clique',
+    buffType: 'fpc_mult',
+    buffVal: 0.15,
+    check: (s) => (s.bossesDefeated ?? 0) >= 1,
+    getProgress: (s) => ({
+      current: Math.min(s.bossesDefeated ?? 0, 1),
+      target: 1,
+      percent: Math.min(100, ((s.bossesDefeated ?? 0) / 1) * 100),
+      label: `${s.bossesDefeated ?? 0} / 1 Deus Derrotado`
+    })
+  },
+  {
+    id: 'ach_boss_all',
+    name: 'Devorador de Deuses',
+    desc: "Derrote os 3 Deuses Cósmicos do Panteão (Morvath, Aethelgard e Xul'Khor).",
+    lore: 'Os três tronos rivais estão vazios. A Esfera agora reina incontestável sobre o firmamento.',
+    icon: '',
+    unlocked: false,
+    buffText: '+25% em toda a Fé',
+    buffType: 'global_mult',
+    buffVal: 0.25,
+    check: (s) => (s.bossesDefeated ?? 0) >= 3,
+    getProgress: (s) => ({
+      current: Math.min(s.bossesDefeated ?? 0, 3),
+      target: 3,
+      percent: Math.min(100, ((s.bossesDefeated ?? 0) / 3) * 100),
+      label: `${s.bossesDefeated ?? 0} / 3 Deuses Derrotados`
+    })
+  },
+  {
+    id: 'ach_boss_ascension_5',
+    name: 'Supremacia Cósmica',
+    desc: 'Alcance o Nível 5 de Ascensão contra qualquer divindade cósmica.',
+    lore: 'Não basta vencê-los uma vez; você os subjugou repetidamente em formas cada vez mais aterrorizantes.',
+    icon: '',
+    unlocked: false,
+    buffText: '+25% Fé/s dos fiéis',
+    buffType: 'fps_mult',
+    buffVal: 0.25,
+    check: (s) => (s.maxAscension ?? 0) >= 5,
+    getProgress: (s) => ({
+      current: Math.min(s.maxAscension ?? 0, 5),
+      target: 5,
+      percent: Math.min(100, ((s.maxAscension ?? 0) / 5) * 100),
+      label: `${s.maxAscension ?? 0} / Nível 5 de Ascensão`
+    })
   }
 ];

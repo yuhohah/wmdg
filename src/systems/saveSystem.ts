@@ -1,5 +1,7 @@
 // --- Save System for Cult of the Sphere ---
 
+import type { PantheonSaveData } from '../types.js';
+
 export interface SaveData {
   version: number;
   timestamp: number;
@@ -21,6 +23,7 @@ export interface SaveData {
   unlocks: string[];
   achievements: string[];
   sphereSatellites?: boolean[];
+  pantheon?: PantheonSaveData;
 }
 
 export class SaveSystem {

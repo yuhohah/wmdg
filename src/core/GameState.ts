@@ -4,7 +4,8 @@ import type {
   Achievement,
   MechanicUnlock,
   RelicUpgrade,
-  GameState as GameStateSnapshot
+  GameState as GameStateSnapshot,
+  BossSaveEntry
 } from '../types.js';
 import { initialFollowers } from '../config/followers.js';
 import { initialFervorUpgrades, BASE_FERVOR_RATE, getFervorUpgradeMultiplier } from '../config/fervor.js';
@@ -12,6 +13,7 @@ import { initialAchievements } from '../config/achievements.js';
 import { initialUnlocks } from '../config/unlocks.js';
 import { initialRelicUpgrades } from '../config/relics.js';
 import { INCARNATION_STAGES, BLESSING_MAX_SECONDS } from '../config/incarnation.js';
+import { BOSS_GODS, getBossRelicReward } from '../config/bosses.js';
 import {
   calculateItemCost,
   calculateFervorUpgradeCost,
@@ -48,7 +50,6 @@ export class GameStateManager {
   // Incarnation State
   public incarnationStage: number = 1;
   public incarnationBoostTimer: number = 0;
-  public readonly MAX_INCARNATION_BOOST: number = BLESSING_MAX_SECONDS;
 
   // Relics (Prestige) State
   public relicPoints: number = 0;
@@ -57,6 +58,10 @@ export class GameStateManager {
 
   // 6 Sphere Satellite Nodes State
   public sphereSatellitesUnlocked: boolean[] = [false, false, false, false, false, false];
+
+  // Pantheon & Boss Battle State
+  public bossRecords: Map<string, BossSaveEntry> = new Map();
+  public collectedFragments: Set<string> = new Set();
 
   // Onboarding & Intro Sequence
   public hasSeenIntro: boolean = false;
@@ -83,10 +88,27 @@ export class GameStateManager {
     this.achievements = initialAchievements.map((a) => ({ ...a }));
     this.unlocks = initialUnlocks.map((u) => ({ ...u }));
     this.relicUpgrades = initialRelicUpgrades.map((r) => ({ ...r }));
+
+    this.bossRecords.clear();
+    BOSS_GODS.forEach((boss) => {
+      this.bossRecords.set(boss.id, {
+        id: boss.id,
+        defeated: false,
+        ascensionLevel: 0
+      });
+    });
+    this.collectedFragments.clear();
   }
 
   // --- Snapshot for external checks / achievements ---
   public getSnapshot(): GameStateSnapshot {
+    let defeatedCount = 0;
+    let maxAsc = 0;
+    this.bossRecords.forEach((entry) => {
+      if (entry.defeated) defeatedCount += 1;
+      if (entry.ascensionLevel > maxAsc) maxAsc = entry.ascensionLevel;
+    });
+
     return {
       faith: this.faithPoints,
       totalFaith: this.totalFaithAccumulated,
@@ -95,7 +117,9 @@ export class GameStateManager {
       fps: this.getFaithPerSecond(),
       fervor: this.fervorPoints,
       relics: this.relicPoints,
-      totalRelics: this.bestRelicsToGet
+      totalRelics: this.bestRelicsToGet,
+      bossesDefeated: defeatedCount,
+      maxAscension: maxAsc
     };
   }
 
@@ -106,6 +130,10 @@ export class GameStateManager {
 
   public isIncarnationUnlocked(): boolean {
     return this.unlocks.find((u) => u.id === 'unlock_incarnation')?.unlocked ?? false;
+  }
+
+  public isPantheonUnlocked(): boolean {
+    return this.unlocks.find((u) => u.id === 'unlock_pantheon')?.unlocked ?? false;
   }
 
   public isFervorUpgradesUnlocked(): boolean {
@@ -120,10 +148,24 @@ export class GameStateManager {
     return (this.relicUpgrades.find((r) => r.id === 'relic_phoenix')?.level ?? 0) >= 1;
   }
 
+  public hasFragment(fragmentId: string): boolean {
+    return this.collectedFragments.has(fragmentId);
+  }
+
+  public getMaxIncarnationBoost(): number {
+    return this.hasFragment('fragment_aethelgard') ? 90 : BLESSING_MAX_SECONDS;
+  }
+
   public getRelicsBonusMultiplier(): number {
     const fuRelics = this.fervorUpgrades.find((u) => u.id === 'fu_relics');
-    if (!fuRelics || fuRelics.level <= 0) return 1.0;
-    return getFervorUpgradeMultiplier(fuRelics);
+    let mult = 1.0;
+    if (fuRelics && fuRelics.level > 0) {
+      mult = getFervorUpgradeMultiplier(fuRelics);
+    }
+    if (this.hasFragment('fragment_xulkhor')) {
+      mult *= 2.0;
+    }
+    return mult;
   }
 
   public getRelicsToGet(): number {
@@ -148,19 +190,36 @@ export class GameStateManager {
 
   public getFaithPerClick(): number {
     const clickBuff = calculateClickBuffMultiplier(this.achievements);
-    const globalBuff = calculateGlobalBuffMultiplier(this.achievements);
+    let globalBuff = calculateGlobalBuffMultiplier(this.achievements);
+    if (this.hasFragment('fragment_xulkhor')) {
+      globalBuff *= 3.0;
+    }
+
     const fervorClickMult = getFervorUpgradeMultiplier(this.fervorUpgrades[2]);
     const fervorEffectMult = getFervorUpgradeMultiplier(this.fervorUpgrades[1]);
     const fervorFaithBonus = calculateFervorFaithBonus(this.fervorPoints, fervorEffectMult);
 
-    return calculateFaithPerClick(clickBuff, globalBuff, fervorClickMult, fervorFaithBonus);
+    let fpc = calculateFaithPerClick(clickBuff, globalBuff, fervorClickMult, fervorFaithBonus);
+    if (this.hasFragment('fragment_morvath')) {
+      fpc *= 1.25;
+    }
+
+    return fpc;
   }
 
   public getFaithPerSecond(): number {
-    const fervorFollowersMult = getFervorUpgradeMultiplier(this.fervorUpgrades[3], this.getTotalFollowersCount());
+    let fervorFollowersMult = getFervorUpgradeMultiplier(this.fervorUpgrades[3], this.getTotalFollowersCount());
+    if (this.hasFragment('fragment_aethelgard')) {
+      fervorFollowersMult *= 1.5;
+    }
+
     const incFollowerMult = calculateIncarnationFollowerMultiplier(this.fervorPoints, this.incarnationStage);
     const passiveBuff = calculatePassiveBuffMultiplier(this.achievements);
-    const globalBuff = calculateGlobalBuffMultiplier(this.achievements);
+    let globalBuff = calculateGlobalBuffMultiplier(this.achievements);
+    if (this.hasFragment('fragment_xulkhor')) {
+      globalBuff *= 3.0;
+    }
+
     const fervorEffectMult = getFervorUpgradeMultiplier(this.fervorUpgrades[1]);
     const fervorFaithBonus = calculateFervorFaithBonus(this.fervorPoints, fervorEffectMult);
 
@@ -246,16 +305,24 @@ export class GameStateManager {
   }
 
   // --- Click & Actions ---
-  public addClick(): number {
-    const fpc = this.getFaithPerClick();
+  public addClick(): { fpc: number; isCrit: boolean } {
+    let fpc = this.getFaithPerClick();
+    let isCrit = false;
+
+    if (this.hasFragment('fragment_morvath') && Math.random() < 0.05) {
+      fpc *= 5;
+      isCrit = true;
+    }
+
     this.faithPoints += fpc;
     this.totalFaithAccumulated += fpc;
     this.totalClicks += 1;
-    return fpc;
+    return { fpc, isCrit };
   }
 
   public addIncarnationBoost(seconds: number): void {
-    this.incarnationBoostTimer = Math.min(this.MAX_INCARNATION_BOOST, this.incarnationBoostTimer + seconds);
+    const maxCap = this.getMaxIncarnationBoost();
+    this.incarnationBoostTimer = Math.min(maxCap, this.incarnationBoostTimer + seconds);
   }
 
   public buyOneFollower(index: number = 0): boolean {
@@ -367,6 +434,35 @@ export class GameStateManager {
     return !!this.sphereSatellitesUnlocked[index];
   }
 
+  // --- Boss Battle Victory Recording ---
+  public recordBossDefeat(bossId: string): { relicsGained: number; fragmentUnlocked: string | null } {
+    const bossConfig = BOSS_GODS.find((b) => b.id === bossId);
+    if (!bossConfig) return { relicsGained: 0, fragmentUnlocked: null };
+
+    let record = this.bossRecords.get(bossId);
+    if (!record) {
+      record = { id: bossId, defeated: false, ascensionLevel: 0 };
+      this.bossRecords.set(bossId, record);
+    }
+
+    const relicsReward = getBossRelicReward(bossConfig, record.ascensionLevel);
+    this.relicPoints += relicsReward;
+
+    let fragmentUnlocked: string | null = null;
+    if (!this.collectedFragments.has(bossConfig.fragmentId)) {
+      this.collectedFragments.add(bossConfig.fragmentId);
+      fragmentUnlocked = bossConfig.fragmentId;
+    }
+
+    record.defeated = true;
+    record.ascensionLevel += 1;
+
+    // Unlock satellite node on sphere
+    this.unlockSphereSatellite(bossConfig.satelliteIndex);
+
+    return { relicsGained: relicsReward, fragmentUnlocked };
+  }
+
   public checkAchievements(): Achievement[] {
     const snapshot = this.getSnapshot();
     const newlyUnlocked: Achievement[] = [];
@@ -381,6 +477,9 @@ export class GameStateManager {
 
   // --- Serialization & Persistence ---
   public buildSaveData(): SaveData {
+    const bossesArray: BossSaveEntry[] = [];
+    this.bossRecords.forEach((entry) => bossesArray.push({ ...entry }));
+
     return {
       version: SaveSystem.CURRENT_VERSION,
       timestamp: Date.now(),
@@ -400,7 +499,11 @@ export class GameStateManager {
       relicUpgrades: this.relicUpgrades.map((r) => ({ id: r.id, level: r.level })),
       unlocks: this.unlocks.filter((u) => u.unlocked).map((u) => u.id),
       achievements: this.achievements.filter((a) => a.unlocked).map((a) => a.id),
-      sphereSatellites: [...this.sphereSatellitesUnlocked]
+      sphereSatellites: [...this.sphereSatellitesUnlocked],
+      pantheon: {
+        bosses: bossesArray,
+        fragments: Array.from(this.collectedFragments)
+      }
     };
   }
 
@@ -417,7 +520,7 @@ export class GameStateManager {
     this.relicPoints = typeof save.stats.relicPoints === 'number' ? Math.max(0, save.stats.relicPoints) : 0;
     this.bestRelicsToGet = typeof save.stats.bestRelicsToGet === 'number' ? Math.max(0, save.stats.bestRelicsToGet) : 0;
     this.incarnationBoostTimer = typeof save.stats.incarnationBoostTimer === 'number'
-      ? Math.max(0, Math.min(this.MAX_INCARNATION_BOOST, save.stats.incarnationBoostTimer))
+      ? Math.max(0, Math.min(this.getMaxIncarnationBoost(), save.stats.incarnationBoostTimer))
       : 0;
     this.hasSeenIntro = typeof save.stats.hasSeenIntro === 'boolean' ? save.stats.hasSeenIntro : false;
 
@@ -472,6 +575,22 @@ export class GameStateManager {
       }
     } else {
       this.sphereSatellitesUnlocked = [false, false, false, false, false, false];
+    }
+
+    // Restore Pantheon data if present
+    if (save.pantheon) {
+      if (Array.isArray(save.pantheon.bosses)) {
+        save.pantheon.bosses.forEach((savedBoss) => {
+          this.bossRecords.set(savedBoss.id, {
+            id: savedBoss.id,
+            defeated: !!savedBoss.defeated,
+            ascensionLevel: typeof savedBoss.ascensionLevel === 'number' ? Math.max(0, savedBoss.ascensionLevel) : 0
+          });
+        });
+      }
+      if (Array.isArray(save.pantheon.fragments)) {
+        this.collectedFragments = new Set(save.pantheon.fragments);
+      }
     }
   }
 }

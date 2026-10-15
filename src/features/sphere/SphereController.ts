@@ -65,16 +65,17 @@ export class SphereController {
   public onSphereClicked(e?: MouseEvent): void {
     this.audio.init();
     this.triggerHaptic(8);
-    const fpc = this.gameState.getFaithPerClick();
-
-    this.gameState.faithPoints += fpc;
-    this.gameState.totalFaithAccumulated += fpc;
-    this.gameState.totalClicks += 1;
+    const { fpc, isCrit } = this.gameState.addClick();
 
     events.emit(GameEvents.FAITH_CHANGED, fpc);
     events.emit(GameEvents.STATE_CHANGED);
 
-    this.audio.playTone(580 + Math.random() * 180, 'sine', 0.08);
+    if (isCrit) {
+      this.audio.playTone(920, 'triangle', 0.18);
+      this.triggerHaptic([20, 40, 20]);
+    } else {
+      this.audio.playTone(580 + Math.random() * 180, 'sine', 0.08);
+    }
 
     let x = window.innerWidth / 2;
     let y = window.innerHeight / 2;
@@ -82,7 +83,8 @@ export class SphereController {
       x = e.clientX;
       y = e.clientY;
     }
-    this.spawnFloatingText(x, y, `+${formatNumber(fpc)} FÉ`);
+    const label = isCrit ? `✦ CRÍTICO! +${formatNumber(fpc)} FÉ` : `+${formatNumber(fpc)} FÉ`;
+    this.spawnFloatingText(x, y, label);
   }
 
   public onSatelliteClicked(idx: number, e: MouseEvent): void {

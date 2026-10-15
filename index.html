@@ -371,6 +371,32 @@
                     aria-label="Tocar a Esfera">
                     <canvas class="sphere-pixel-art" width="64" height="64" aria-hidden="true"></canvas>
                   </div>
+
+                  <!-- BOSS BATTLE ARENA OVERLAY -->
+                  <div id="boss-battle-overlay" class="boss-battle-overlay" style="display: none;">
+                    <div class="boss-battle-header">
+                      <span id="boss-battle-title" class="boss-battle-title">BATALHA CÓSMICA</span>
+                      <h3 id="boss-battle-name" class="boss-battle-name">MORVATH</h3>
+                    </div>
+                    <div class="boss-hp-bar-container">
+                      <div class="boss-hp-bar-track">
+                        <div id="boss-hp-fill" class="boss-hp-bar-fill" style="width: 100%;"></div>
+                      </div>
+                      <span id="boss-hp-text" class="boss-hp-text">0 / 0 HP (100%)</span>
+                    </div>
+                    <div class="boss-battle-subbar">
+                      <div class="boss-timer-badge">
+                        <span class="timer-icon">⏳</span>
+                        <span id="boss-timer-text" class="boss-timer-text">45s</span>
+                      </div>
+                      <button id="boss-retreat-btn" class="boss-retreat-btn" title="Recuar da batalha sem penalidade">
+                        Recuar
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- BLASPHEMY RIFTS CONTAINER (WEAKSPOTS) -->
+                  <div id="blasphemy-rift-container" class="blasphemy-rift-container"></div>
                 </div>
                 <button type="button" class="church-blessing" id="church-blessing" aria-label="Invocar a Bênção: +2 segundos de Fé em dobro" hidden><span class="church-blessing-fill"></span><span class="church-blessing-label" id="church-blessing-label">✦ 2× · 0s</span></button>
               </div>
@@ -409,6 +435,10 @@
             <nav class="panel-tabs-bar" aria-label="Opções do Painel Direito">
               <button class="panel-tab-btn active" data-panel="right" data-tab="tab-unlocks" id="tab-btn-unlocks">
                 <span class="tab-label">Selos</span>
+              </button>
+              <button class="panel-tab-btn" data-panel="right" data-tab="tab-pantheon" id="tab-btn-pantheon"
+                style="display: none;">
+                <span class="tab-label">Panteão</span>
               </button>
               <button class="panel-tab-btn" data-panel="right" data-tab="tab-relics" id="tab-btn-relics"
                 style="display: none;">
@@ -459,6 +489,25 @@
 
                 <!-- Mythological Relics Upgrades List -->
                 <div class="card-list" id="relic-upgrades-list"></div>
+              </div>
+
+              <!-- Tab: Panteão / Batalha de Deuses -->
+              <div id="tab-pantheon" class="tab-pane">
+                <div class="pantheon-tab-header">
+                  <div class="pantheon-stat-group">
+                    <span class="pantheon-stat-label">TEOMAQUIA CÓSMICA</span>
+                    <div class="pantheon-header-title-row">
+                      <span class="pantheon-header-title">Guerra dos Deuses</span>
+                    </div>
+                    <p class="pantheon-header-desc">Desafie as divindades rivais do firmamento para absorver suas essências e forjar Fragmentos Divinos eternos.</p>
+                  </div>
+                </div>
+
+                <div class="pantheon-section-title">DEUSES RIVAIS</div>
+                <div class="card-list" id="pantheon-bosses-list"></div>
+
+                <div class="pantheon-section-title" style="margin-top: 24px;">FRAGMENTOS DIVINOS ACUMULADOS</div>
+                <div class="card-list" id="pantheon-fragments-list"></div>
               </div>
 
               <!-- Tab: Conquistas -->
