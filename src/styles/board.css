@@ -216,64 +216,67 @@
   color: #a89379;
 }
 
-/* Specific Card Coordinates in the World */
+/* Specific Card Coordinates in the World - Clean Grid with Zero Overlap */
+
+/* Top Row: Encarnação, Conquistas, Fervor */
+#card-incarnation {
+  left: 880px;
+  top: 340px;
+  width: 460px;
+  min-height: 480px;
+}
+
+#card-achievements {
+  left: 1400px;
+  top: 340px;
+  width: 420px;
+  min-height: 520px;
+}
+
+#card-fervor {
+  left: 1880px;
+  top: 340px;
+  width: 460px;
+  min-height: 540px;
+}
+
+/* Middle Row: Selos Antigos, Altar da Esfera, Pátio dos Fiéis */
+#card-unlocks {
+  left: 880px;
+  top: 1100px;
+  width: 460px;
+  min-height: 560px;
+}
+
 #card-altar-sphere {
-  left: 1410px;
-  top: 1060px;
+  left: 1420px;
+  top: 1100px;
   width: 380px;
   min-height: 500px;
   z-index: 8;
 }
 
 #card-followers {
-  left: 1840px;
-  top: 1060px;
-  width: 460px;
-  min-height: 620px;
-}
-
-#card-unlocks {
-  left: 900px;
-  top: 1060px;
-  width: 460px;
-  min-height: 560px;
-}
-
-#card-fervor {
-  left: 1840px;
-  top: 450px;
-  width: 460px;
-  min-height: 540px;
-}
-
-#card-incarnation {
-  left: 900px;
-  top: 510px;
-  width: 460px;
-  min-height: 480px;
-}
-
-#card-achievements {
-  left: 1390px;
-  top: 450px;
-  width: 420px;
-  min-height: 540px;
-}
-
-#card-relics {
-  left: 900px;
-  top: 1680px;
+  left: 1880px;
+  top: 1100px;
   width: 460px;
   min-height: 600px;
 }
 
-#card-pantheon {
-  left: 1840px;
-  top: 1740px;
-  width: 540px;
-  min-height: 680px;
+/* Bottom Row: Opus Magnum, Teomaquia Cósmica */
+#card-relics {
+  left: 880px;
+  top: 1860px;
+  width: 460px;
+  min-height: 580px;
 }
 
+#card-pantheon {
+  left: 1880px;
+  top: 1860px;
+  width: 540px;
+  min-height: 640px;
+}
 /* FLOATING QUICK NAVIGATION BAR (RIBBON) */
 .board-quicknav-bar {
   position: absolute;
