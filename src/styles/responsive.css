@@ -4,9 +4,9 @@
 
 /* Breakpoint para telas médias (Tablets / Laptops compactos) */
 @media (max-width: 1100px) {
-  .side-panel {
-    width: 340px;
-    min-width: 300px;
+  .side-panel,
+  .side-panel-unified {
+    min-width: 320px;
   }
 }
 
@@ -104,53 +104,60 @@
     overflow: hidden !important;
   }
 
+  .gameplay-split-container,
   .gameplay-3frame-container {
     gap: 0;
     width: 100%;
     height: 100%;
     position: relative;
+    flex-direction: column;
   }
 
-  /* Estado 1: Visualização da Esfera (Padrão no Mobile) */
-  .gameplay-3frame-container[data-mobile-view="sphere"] .center-frame {
+  /* Estado 1: Visualização da Esfera e Pátio (Padrão no Mobile) */
+  .gameplay-split-container[data-mobile-view="sphere"] .gameplay-world-column,
+  .gameplay-3frame-container[data-mobile-view="sphere"] .gameplay-world-column {
     display: flex !important;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-  }
-  .gameplay-3frame-container[data-mobile-view="sphere"] .side-panel {
-    display: none !important;
-  }
-
-  /* Estado 2: Visualização Devotos & Fervor (Painel Esquerdo Full) */
-  .gameplay-3frame-container[data-mobile-view="left"] .center-frame {
-    display: none !important;
-  }
-  .gameplay-3frame-container[data-mobile-view="left"] .side-panel-right {
-    display: none !important;
-  }
-  .gameplay-3frame-container[data-mobile-view="left"] .side-panel-left {
-    display: flex !important;
-    position: relative !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
     height: 100% !important;
-    border-radius: 8px !important;
-    margin: 0 !important;
-    transform: none !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
+    flex: 1 1 100% !important;
+  }
+  .gameplay-split-container[data-mobile-view="sphere"] .center-frame,
+  .gameplay-3frame-container[data-mobile-view="sphere"] .center-frame {
+    display: flex !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  .gameplay-split-container[data-mobile-view="sphere"] .side-panel-unified,
+  .gameplay-split-container[data-mobile-view="sphere"] .side-panel,
+  .gameplay-3frame-container[data-mobile-view="sphere"] .side-panel-unified,
+  .gameplay-3frame-container[data-mobile-view="sphere"] .side-panel {
+    display: none !important;
   }
 
-  /* Estado 3: Visualização Desbloqueios & Relíquias (Painel Direito Full) */
-  .gameplay-3frame-container[data-mobile-view="right"] .center-frame {
+  /* Estado 2: Visualização de Melhorias (Painel Unificado Full) */
+  .gameplay-split-container[data-mobile-view="right"] .gameplay-world-column,
+  .gameplay-split-container[data-mobile-view="left"] .gameplay-world-column,
+  .gameplay-3frame-container[data-mobile-view="right"] .gameplay-world-column,
+  .gameplay-3frame-container[data-mobile-view="left"] .gameplay-world-column {
     display: none !important;
   }
-  .gameplay-3frame-container[data-mobile-view="right"] .side-panel-left {
+  .gameplay-split-container[data-mobile-view="right"] .center-frame,
+  .gameplay-split-container[data-mobile-view="left"] .center-frame,
+  .gameplay-3frame-container[data-mobile-view="right"] .center-frame,
+  .gameplay-3frame-container[data-mobile-view="left"] .center-frame {
     display: none !important;
   }
-  .gameplay-3frame-container[data-mobile-view="right"] .side-panel-right {
+  .gameplay-split-container[data-mobile-view="right"] .side-panel-unified,
+  .gameplay-split-container[data-mobile-view="left"] .side-panel-unified,
+  .gameplay-split-container[data-mobile-view="right"] .side-panel-right,
+  .gameplay-split-container[data-mobile-view="left"] .side-panel-left,
+  .gameplay-3frame-container[data-mobile-view="right"] .side-panel-unified,
+  .gameplay-3frame-container[data-mobile-view="left"] .side-panel-unified,
+  .gameplay-3frame-container[data-mobile-view="right"] .side-panel-right,
+  .gameplay-3frame-container[data-mobile-view="left"] .side-panel-left {
     display: flex !important;
     position: relative !important;
     width: 100% !important;
@@ -258,68 +265,5 @@
   #tab-incarnation.active {
     height: auto;
     min-height: 100%;
-  }
-
-  .followers-arena-wrapper {
-    min-height: 170px !important;
-    max-height: 220px !important;
-    height: clamp(170px, 26vh, 220px) !important;
-    flex: 0 0 auto !important;
-  }
-}
-
-/* Breakpoint para Telas Compactas (<= 640px) */
-@media (max-width: 640px) {
-  .top-hud-bar {
-    padding: 8px 12px;
-    gap: 8px;
-    justify-content: space-between;
-  }
-
-  .resources-hud-card {
-    position: static;
-    transform: none;
-    flex: 1;
-    padding: 6px 12px;
-    margin: 0;
-    max-width: calc(100% - 106px);
-  }
-
-  .top-right-group {
-    gap: 8px;
-    flex-shrink: 0;
-  }
-
-  .icon-btn-gold {
-    width: 44px;
-    height: 44px;
-    touch-action: manipulation;
-  }
-
-  .res-name {
-    font-size: 10px;
-    min-width: 46px;
-  }
-
-  .res-num {
-    font-size: 14px;
-  }
-
-  .res-rate {
-    font-size: 11px;
-  }
-
-  .panel-tag {
-    font-size: 11px;
-  }
-
-  .followers-stat-label,
-  .incarnation-stat-label,
-  .unlocks-stat-label {
-    font-size: 11px;
-  }
-
-  .cult-action-card {
-    padding: 12px 14px;
   }
 }

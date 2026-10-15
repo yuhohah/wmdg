@@ -2,9 +2,10 @@
 @font-face { font-family:'Cult Pixel'; src:url('/assets/hud/vt323.ttf') format('truetype'); font-display:swap; }
 :root { --font-game:'Cult Pixel',monospace; --ink:#38271f; --ink-muted:#66503b; --paper:#d8bf8d; --wood-frame:url('/assets/hud/wood-frame.svg'); --paper-surface:linear-gradient(#d8bf8de6,#d8bf8de6),url('/assets/hud/parchment.png'); }
 html,body { background:#211a18; }
+.bg-landscape-layer { position:absolute; inset:0; background:url('/assets/cult_bg_landscape.jpg') center / cover no-repeat; opacity:0.18; pointer-events:none; z-index:1; display:block; filter:contrast(1.15) brightness(0.8); }
 .bg-overlay-gradient { background:repeating-linear-gradient(0deg,#231b18 0 3px,#281f1b 3px 7px,#241b18 7px 11px); }
-#gameplay-screen { padding:14px 20px 18px; gap:12px; }
-.top-hud-bar { position:absolute; top:28px; left:38px; width:calc(100% - 76px); height:52px; padding:0; background:none; border:0; pointer-events:none; }
+#gameplay-screen { padding:84px 20px 14px; gap:0; display:flex; flex-direction:column; height:100%; box-sizing:border-box; overflow:hidden; }
+.top-hud-bar { position:absolute; top:20px; left:38px; width:calc(100% - 76px); height:52px; padding:0; background:none; border:0; pointer-events:none; z-index:40; }
 .top-hud-bar button,.top-hud-bar a { pointer-events:auto; }
 .cult-wordmark { font-family:var(--font-game); font-size:20px; line-height:.85; letter-spacing:1px; text-shadow:2px 2px #17110f; padding:8px 12px; background:#261e1be6; border:8px solid transparent; border-image:var(--wood-frame) 8 / 8px / 0 stretch; }
 .cult-mark { display:block; width:30px; height:30px; font-size:0; background:url('/assets/hud/faith.svg') center / contain; image-rendering:pixelated; }
@@ -27,12 +28,9 @@ html,body { background:#211a18; }
 .icon-btn-gold { width:44px; height:44px; }
 .icon-btn-gold svg { visibility:hidden; position:absolute; }
 .icon-btn-gold::before { content:''; display:block; width:24px; height:24px; background:url('/assets/hud/settings.svg') center / contain no-repeat; image-rendering:pixelated; }
-#music-quick-btn::before { background-image:url('/assets/hud/music.svg'); }
-#music-quick-btn:has(#music-icon-off[style*='block'])::before { opacity:.4; }
-#music-quick-btn.muted::before { opacity:.4; }
-.top-right-group { gap:10px; }
+#music-quick-btn::before { background-image:url('/assets/hud/music.svg'); }\n#music-quick-btn:has(#music-icon-off[style*='block'])::before { opacity:.4; }\n#music-quick-btn.muted::before { opacity:.4; }\n.top-right-group { gap:10px; }
 .procession-world { border:8px solid transparent; border-image:var(--wood-frame) 8 / 8px / 0 stretch; height:49%; min-height:270px; }
-.church-world { border:8px solid transparent; border-image:var(--wood-frame) 8 / 8px / 0 stretch; --world-h:49%; --world-min:270px; }
+.church-world { border:8px solid transparent; border-image:var(--wood-frame) 8 / 8px / 0 stretch; --world-h:52%; --world-min:200px; }
 .art-review .procession-world { height:47%; }
 .art-review .church-world { --world-h:47%; }
 .world-heading { top:88px; left:18px; padding:8px 13px 10px; background:#231e1bba; border-left:3px solid #b48b4e; }
@@ -41,42 +39,151 @@ html,body { background:#211a18; }
 .world-status { top:88px; right:20px; font:18px var(--font-game); text-shadow:2px 2px #161219; }
 .world-footer { font:16px var(--font-game); left:18px; right:18px; bottom:8px; }
 .prophet-label { font:16px var(--font-game); letter-spacing:0; bottom:-20px; }
-.gameplay-3frame-container { gap:18px; overflow:visible; }
-.side-panel { border:12px solid transparent; border-image:var(--wood-frame) 8 / 12px / 0 stretch; border-radius:0; background:var(--paper); box-shadow:4px 6px #120d0b; }
-.panel-header { background:#4e3427; border-bottom:3px solid #271b16; padding:7px 10px 8px; min-height:52px; }
+
+/* 50/50 ERGONOMIC SPLIT CONTAINER */
+.gameplay-split-container,
+.gameplay-3frame-container {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* LEFT COLUMN: 50% WIDTH WORLD & ALTAR SPHERE */
+.gameplay-world-column {
+  flex: 1 1 50%;
+  width: 50%;
+  max-width: 50%;
+  min-width: 320px;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.gameplay-world-column .church-world {
+  flex: 1 1 52%;
+  height: 52%;
+  min-height: 200px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  border: 8px solid transparent;
+  border-image: var(--wood-frame) 8 / 8px / 0 stretch;
+  border-radius: 4px;
+  box-shadow: 4px 6px #120d0b;
+}
+
+.gameplay-world-column .center-frame {
+  flex: 1 1 48%;
+  height: 48%;
+  min-height: 200px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  border: 10px solid transparent;
+  border-image: var(--wood-frame) 8 / 10px / 0 stretch;
+  border-radius: 4px;
+  background: radial-gradient(ellipse at center, #45362c, #211c1a 72%);
+  box-shadow: 4px 6px #120d0b;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+/* RIGHT COLUMN: 50% WIDTH UNIFIED PROGRESSION HUB */
+.side-panel-unified,
+.side-panel {
+  flex: 1 1 50%;
+  width: 50%;
+  max-width: 50%;
+  min-width: 340px;
+  height: 100%;
+  min-height: 0;
+  border: 12px solid transparent;
+  border-image: var(--wood-frame) 8 / 12px / 0 stretch;
+  border-radius: 0;
+  background: var(--paper);
+  box-shadow: 4px 6px #120d0b;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), margin 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+.side-panel-unified.collapsed,
+.side-panel-right.collapsed {
+  transform: translateX(110%);
+  margin-left: -50%;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  min-width: 0;
+  max-width: 0;
+}
+
+.gameplay-split-container:has(.side-panel-unified.collapsed) .gameplay-world-column,
+.gameplay-3frame-container:has(.side-panel-right.collapsed) .gameplay-world-column {
+  flex: 1 1 100%;
+  max-width: 100%;
+  width: 100%;
+}
+
+.panel-header { background:#4e3427; border-bottom:3px solid #271b16; padding:7px 10px 8px; min-height:52px; display:flex; align-items:center; justify-content:space-between; }
 .panel-tag { display:none; }
-.panel-title-group { flex-direction:row; align-items:center; gap:9px; }
+.panel-title-group { display:flex; flex-direction:row; align-items:center; gap:9px; }
 .panel-title-group::before { content:''; width:27px; height:27px; flex-shrink:0; background:url('/assets/hud/book.svg') center / contain no-repeat; image-rendering:pixelated; }
 .panel-title-group.text-right { text-align:left; }
 .panel-title { font:27px/1 var(--font-game); color:#f2d297; text-transform:none; text-shadow:2px 2px #2c1b15; letter-spacing:0; }
 .side-panel-left .panel-title-group::before { background-image:url('/assets/procession/follower-0.png'); }
-.panel-body { background-color:var(--paper); background-image:linear-gradient(#d8bf8de6,#d8bf8de6),url('/assets/hud/parchment.png'); background-size:auto,1024px 1024px; background-position:center; background-repeat:no-repeat; padding:13px 14px; color:var(--ink); font:18px/1.1 var(--font-game); }
-.panel-tabs-bar { padding:5px 6px 0; background:#745137; gap:5px; border-bottom:3px solid #9a7447; }
-.panel-tab-btn { flex:1; border:2px solid #3c281e; border-bottom:0; border-radius:0; background:#a48658; color:#39291e; font:20px/1 var(--font-game); padding:5px 8px; box-shadow:inset 2px 2px #cbb17a; transition:none; }
+.panel-body { background-color:var(--paper); background-image:linear-gradient(#d8bf8de6,#d8bf8de6),url('/assets/hud/parchment.png'); background-size:auto,1024px 1024px; background-position:center; background-repeat:no-repeat; padding:13px 14px; color:var(--ink); font:18px/1.1 var(--font-game); flex:1; min-height:0; overflow-y:auto; }
+
+/* TABS NAVIGATION */
+.panel-tabs-bar { padding:5px 6px 0; background:#745137; gap:4px; border-bottom:3px solid #9a7447; display:flex; flex-wrap:wrap; }
+.panel-tab-btn { flex:1 1 auto; min-width:68px; border:2px solid #3c281e; border-bottom:0; border-radius:0; background:#a48658; color:#39291e; font:19px/1 var(--font-game); padding:6px 10px; box-shadow:inset 2px 2px #cbb17a; transition:none; text-align:center; }
 .panel-tab-btn.active { background:#dec495; border-color:#352319; color:#39271b; box-shadow:inset 2px 2px #f0dbaa; }
 .panel-tab-btn:hover:not(.active) { background:#c4a36b; color:#2c211b; }
+
 .followers-tab-header { background:none; border:0; border-bottom:2px dashed #a78a59; border-radius:0; padding:0 0 10px; box-shadow:none; }
 .followers-stat-label,.incarnation-stat-label,.unlocks-stat-label { color:#6a4c2c; font:17px/1 var(--font-game); letter-spacing:0; }
 .followers-total-val { font:34px/1 var(--font-game); color:#38271f; }
 .followers-stat-unit { color:#55412d; font:19px var(--font-game); }
 .followers-rate-badge { font:20px var(--font-game); color:#49613a; background:none; border:0; box-shadow:none; padding:0; }
-.followers-controls { margin-top:14px; gap:13px; }
-.btn-follower-action { border:7px solid transparent; border-image:var(--wood-frame) 8 / 7px / 0 stretch; border-radius:0; padding:8px 10px; min-height:66px; gap:8px; background:#775132; color:#ffdf9c; box-shadow:0 3px #3b281d; transition:none; }
+.followers-controls { margin-top:14px; gap:13px; display:flex; flex-direction:column; }
+
+/* ACTION BUTTONS WITH BALANCED SPACING */
+.btn-follower-action { border:7px solid transparent; border-image:var(--wood-frame) 8 / 7px / 0 stretch; border-radius:0; padding:10px 14px; min-height:66px; gap:12px; background:#775132; color:#ffdf9c; box-shadow:0 3px #3b281d; transition:none; display:flex; align-items:center; justify-content:space-between; width:100%; box-sizing:border-box; }
 .btn-follower-action::before { content:''; width:28px; height:32px; flex-shrink:0; background:url('/assets/hud/book.svg') center / contain no-repeat; image-rendering:pixelated; }
 .btn-convert-primary { background:#754333; }
 .btn-convert-max:not(.locked) { background:#625032; border-color:transparent; }
 .btn-convert-primary::before { background-image:url('/assets/procession/follower-0.png'); }
-.btn-action-main { flex:1; text-align:left; }
+.btn-action-main { flex:1 1 auto; text-align:left; display:flex; flex-direction:column; gap:2px; }
 .btn-action-title { font:21px/1 var(--font-game); letter-spacing:0; text-transform:none; color:#ffe5ad; text-shadow:1px 2px #3c241e; }
 .btn-action-benefit { font:18px/1 var(--font-game); color:#c6d293; }
-.btn-action-cost { font:16px var(--font-game); color:#dbc59e; }
+.btn-action-cost { flex:0 0 auto; font:16px var(--font-game); color:#dbc59e; text-align:right; display:flex; flex-direction:column; align-items:flex-end; white-space:nowrap; }
 .btn-action-cost .cost-val { font:20px var(--font-game); color:#ffe1a1; }
 .btn-follower-action:disabled { opacity:1; background:#9e8d70; filter:saturate(.5); }
 .btn-follower-action:disabled .btn-action-title { color:#e8dbbf; }
 .btn-follower-action:disabled .btn-action-benefit,.btn-follower-action:disabled .cost-val { color:#e8dbbf; }
 .btn-follower-action:hover,.btn-follower-action:active { transform:none; }
 .btn-follower-action:not(:disabled):active { box-shadow:inset 2px 3px #3b281d; background:#593725; }
-.cult-action-card { background:#d5bc88; border:0; border-top:2px solid #a18454; border-bottom:2px solid #aa8b59; border-radius:0; box-shadow:none; padding:10px 4px; color:var(--ink); transition:none; }
+
+.cult-action-card { background:#d5bc88; border:0; border-top:2px solid #a18454; border-bottom:2px solid #aa8b59; border-radius:0; box-shadow:none; padding:10px 8px; color:var(--ink); transition:none; }
 .cult-action-card:hover,.cult-action-card.unaffordable { background:#d0b47f; border-color:#96744b; box-shadow:none; transform:none; opacity:1; }
 .cult-action-card .card-name { font:21px var(--font-game)!important; color:#39291f!important; font-weight:400!important; }
 .cult-action-card .card-desc,.cult-action-card .card-lore { font:17px/1.15 var(--font-game); color:#6a523c; }
@@ -93,50 +200,71 @@ html,body { background:#211a18; }
 .btn-convert-primary:hover:not(:disabled),.btn-convert-max:not(.locked):hover:not(:disabled) { transform:none; box-shadow:0 3px #3b281d; border-color:transparent; background:#88563c; }
 .unlocks-header-title { font:26px/1 var(--font-game); color:#38271f; }
 .unlocks-header-desc,.panel-section-info { font:18px/1.1 var(--font-game); color:#6a523c; margin:5px 0 10px; }
-.center-frame { border:12px solid transparent; border-image:var(--wood-frame) 8 / 12px / 0 stretch; border-radius:0; background:radial-gradient(ellipse at center,#45362c,#211c1a 72%); box-shadow:4px 6px #120d0b; padding:12px; }
-.center-frame::before { content:''; position:absolute; inset:8px; border:2px solid #655038; pointer-events:none; }
-.sacred-window-heading { z-index:1; }
-.sacred-window-heading .world-eyebrow { font:16px var(--font-game); letter-spacing:1px; }
-.sacred-window-heading h2 { font:36px/1 var(--font-game); color:#f3d399; margin:4px 0; text-shadow:2px 2px #151010; }
-.sacred-window-heading p { font:17px var(--font-game); color:#a48b6c; }
-.sphere-wrapper { background:repeating-conic-gradient(from 0deg,#927248 0deg 2deg,transparent 2deg 30deg); border:5px double #8b6b44; border-radius:50%; box-shadow:0 0 0 6px #241b17,0 0 0 8px #664b31; width:174px; height:174px; }
-.divine-sphere-btn { background:#29211e; width:146px; height:146px; border-radius:50%; filter:none; }
+
+/* CENTER FRAME STYLING */
+.center-frame { border:10px solid transparent; border-image:var(--wood-frame) 8 / 10px / 0 stretch; border-radius:0; background:radial-gradient(ellipse at center,#45362c,#211c1a 72%); box-shadow:4px 6px #120d0b; padding:10px 14px; }
+.center-frame::before { content:''; position:absolute; inset:6px; border:2px solid #655038; pointer-events:none; }
+.sacred-window-heading { z-index:1; text-align:center; }
+.sacred-window-heading .world-eyebrow { font:16px var(--font-game); letter-spacing:1px; color:#d4b57d; }
+.sacred-window-heading h2 { font:32px/1 var(--font-game); color:#f3d399; margin:3px 0; text-shadow:2px 2px #151010; }
+.sacred-window-heading p { font:16px var(--font-game); color:#a48b6c; margin:0; }
+.sphere-wrapper { background:repeating-conic-gradient(from 0deg,#927248 0deg 2deg,transparent 2deg 30deg); border:5px double #8b6b44; border-radius:50%; box-shadow:0 0 0 6px #241b17,0 0 0 8px #664b31; width:160px; height:160px; position:relative; }
+.divine-sphere-btn {
+  background: radial-gradient(circle at center, rgba(30, 24, 20, 0.2) 0%, rgba(10, 8, 8, 0.8) 100%), url('/assets/sphere_base.png') center / cover no-repeat;
+  width: 134px;
+  height: 134px;
+  border-radius: 50%;
+  border: 3px solid #8b6b44;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.9), inset 0 0 15px rgba(0, 0, 0, 0.8), 0 0 25px rgba(184, 135, 69, 0.35);
+  cursor: pointer;
+  transition: transform 120ms var(--ease-out), filter 120ms var(--ease-out), box-shadow 120ms var(--ease-out);
+}
+.divine-sphere-btn canvas.sphere-pixel-art { display: none !important; }
+.sphere-wrapper:hover .divine-sphere-btn {
+  transform: scale(1.05);
+  filter: brightness(1.2) drop-shadow(0 0 22px rgba(220, 180, 110, 0.5));
+  border-color: #c49850;
+}
+.sphere-wrapper:active .divine-sphere-btn {
+  transform: scale(0.95);
+  filter: brightness(1.35);
+}
 .sphere-orbit-ring,.sphere-aura { display:none; }
-.sacred-window-footer { z-index:1; background:#4a3326; border:6px solid transparent; border-image:var(--wood-frame) 8 / 6px / 0 stretch; padding:4px 20px; }
-.sacred-window-footer span { font:24px/1 var(--font-game); letter-spacing:0; color:#f4d596; text-shadow:2px 2px #271b15; }
-.sacred-window-footer p { font:17px/1 var(--font-game); color:#b49b78; margin-top:2px; }
+.sacred-window-footer { z-index:1; background:#4a3326; border:6px solid transparent; border-image:var(--wood-frame) 8 / 6px / 0 stretch; padding:4px 18px; text-align:center; }
+.sacred-window-footer span { font:22px/1 var(--font-game); letter-spacing:0; color:#f4d596; text-shadow:2px 2px #271b15; }
+.sacred-window-footer p { font:16px/1 var(--font-game); color:#b49b78; margin-top:2px; }
 .art-review-controls { justify-content:center; font:16px var(--font-game); letter-spacing:0; }
 .art-review-controls button,.art-review-controls a { font:16px var(--font-game); border-radius:0; padding:3px 10px; }
 .custom-scrollbar::-webkit-scrollbar-track { background:#b49562; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background:#755033; border:1px solid #4c3223; border-radius:0; }
+
 @media (hover:hover) and (pointer:fine) {
   .btn-follower-action:not(:disabled):hover { background:#88563c; box-shadow:0 3px #3b281d; }
   .cult-action-card:hover:not(.unaffordable) { transform:none; background:#e1c998; border-color:#96744b; box-shadow:none; }
 }
+
 @media (max-height:760px) and (min-width:861px) {
-  .procession-world { min-height:245px; height:45%; }
-  .church-world { --world-min:245px; --world-h:45%; }
-  .art-review .procession-world { height:43%; }
-  .art-review .church-world { --world-h:43%; }
-  .world-heading { top:76px; }
-  .world-status { top:80px; }
-  .center-frame { padding:8px; }
-  .sacred-window-heading h2 { font-size:29px; }
+  #gameplay-screen { padding-top:76px; }
+  .church-world { --world-min:180px; }
+  .center-frame { padding:6px 10px; }
+  .sacred-window-heading h2 { font-size:26px; }
   .sacred-window-heading p { display:none; }
-  .sphere-wrapper { width:136px; height:136px; }
-  .divine-sphere-btn { width:112px; height:112px; }
-  .sacred-window-footer span { font-size:20px; }
+  .sphere-wrapper { width:130px; height:130px; }
+  .divine-sphere-btn { width:108px; height:108px; }
+  .sacred-window-footer span { font-size:18px; }
   .sacred-window-footer p { display:none; }
   .panel-header { min-height:42px; padding:5px 8px; }
   .panel-body { padding:8px 12px; }
-  .btn-follower-action { min-height:56px; padding:5px 6px; }
+  .btn-follower-action { min-height:54px; padding:6px 10px; }
   .btn-action-title { font-size:18px; }
   .btn-action-cost .cost-val { font-size:18px; }
   .btn-action-benefit { font-size:16px; }
-  .followers-controls { margin-top:8px; gap:10px; }
+  .followers-controls { margin-top:8px; gap:8px; }
   .world-footer { font-size:14px; }
 }
+
 @media (max-width:860px) {
+  #gameplay-screen { padding: 6px 10px calc(78px + env(safe-area-inset-bottom, 0px)) 10px !important; }
   .top-hud-bar { position:relative; top:0; left:0; width:100%; height:70px; padding:8px 12px; }
   .cult-wordmark { display:none; }
   .resource-item { min-width:110px; padding:2px 6px; grid-template-columns:24px auto; }
@@ -145,5 +273,5 @@ html,body { background:#211a18; }
   .resources-hud-row { gap:5px; }
   .world-heading { top:12px; }
   .procession-world { min-height:230px; }
-  .church-world { --world-min:230px; }
+  .church-world { --world-min:200px; }
 }

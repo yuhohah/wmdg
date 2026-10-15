@@ -607,8 +607,10 @@ export class FollowersArena {
       bob = Math.sin(w.breathTimer) * 0.8;
     }
 
-    const frameW = 1024 / 6;
-    const frameH = 341 / 2;
+    const totalW = this.spriteSheet.naturalWidth || this.spriteSheet.width || 1024;
+    const totalH = this.spriteSheet.naturalHeight || this.spriteSheet.height || 341;
+    const frameW = totalW / 6;
+    const frameH = totalH / 2;
     const sx = Math.floor(col * frameW);
     const sy = Math.floor(row * frameH);
     const sw = Math.floor((col + 1) * frameW) - sx;

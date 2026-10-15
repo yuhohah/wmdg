@@ -16,6 +16,7 @@ export class NavigationManager {
 
   private startScreen: HTMLElement | null = null;
   private gameplayScreen: HTMLElement | null = null;
+
   private panelLeft: HTMLElement | null = null;
   private panelRight: HTMLElement | null = null;
   private toggleLeftBtn: HTMLButtonElement | null = null;
@@ -28,6 +29,7 @@ export class NavigationManager {
   private btnNavUnlocks: HTMLButtonElement | null = null;
   private badgeNavDevotees: HTMLElement | null = null;
   private badgeNavUnlocks: HTMLElement | null = null;
+
   private playBtn: HTMLButtonElement | null = null;
 
   private currentMobileView: 'sphere' | 'left' | 'right' = 'sphere';
@@ -97,20 +99,12 @@ export class NavigationManager {
     // Mobile Bottom Navigation Bar Events
     this.btnNavDevotees?.addEventListener('click', () => {
       this.triggerHaptic(8);
-      if (this.currentMobileView === 'left') {
-        this.setMobileView('sphere');
-      } else {
-        this.setMobileView('left');
-      }
+      this.setMobileView('sphere');
     });
 
     this.btnNavUnlocks?.addEventListener('click', () => {
       this.triggerHaptic(8);
-      if (this.currentMobileView === 'right') {
-        this.setMobileView('sphere');
-      } else {
-        this.setMobileView('right');
-      }
+      this.setMobileView('right');
     });
 
     window.addEventListener('resize', () => {
@@ -123,7 +117,7 @@ export class NavigationManager {
     const tabButtons = document.querySelectorAll<HTMLButtonElement>('.panel-tab-btn');
     tabButtons.forEach((btn) => {
       btn.addEventListener('click', () => {
-        const panel = btn.getAttribute('data-panel') as 'left' | 'right';
+        const panel = (btn.getAttribute('data-panel') as 'left' | 'right') || 'right';
         const targetTab = btn.getAttribute('data-tab')!;
         this.switchTab(panel, targetTab, btn);
         this.audio.playTone(550, 'sine', 0.05);
@@ -159,7 +153,7 @@ export class NavigationManager {
   }
 
   public switchTab(panel: 'left' | 'right', targetTabId: string, clickedBtn: HTMLButtonElement): void {
-    const parentAside = panel === 'left' ? this.panelLeft : this.panelRight;
+    const parentAside = (clickedBtn.closest('.side-panel') as HTMLElement | null) || this.panelRight || this.panelLeft;
     if (!parentAside) return;
 
     parentAside.querySelectorAll<HTMLButtonElement>('.panel-tab-btn').forEach((btn) => {
@@ -184,14 +178,12 @@ export class NavigationManager {
     this.currentMobileView = view;
     this.gameplayContainer?.setAttribute('data-mobile-view', view);
 
-    this.btnNavDevotees?.classList.toggle('active', view === 'left');
-    this.btnNavUnlocks?.classList.toggle('active', view === 'right');
+    this.btnNavDevotees?.classList.toggle('active', view === 'sphere');
+    this.btnNavUnlocks?.classList.toggle('active', view === 'right' || view === 'left');
 
-    if (view === 'left') {
-      const activeTab = this.panelLeft?.querySelector('.tab-pane.active')?.id;
-      if (activeTab) {
-        this.onTabSwitched?.('left', activeTab);
-      }
+    const activeTab = (this.panelRight || this.panelLeft)?.querySelector('.tab-pane.active')?.id;
+    if (activeTab) {
+      this.onTabSwitched?.('right', activeTab);
     }
   }
 
