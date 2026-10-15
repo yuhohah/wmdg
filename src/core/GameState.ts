@@ -194,6 +194,9 @@ export class GameStateManager {
     if (this.hasFragment('fragment_xulkhor')) {
       globalBuff *= 3.0;
     }
+    if (this.hasFragment('fragment_solinvictus')) {
+      globalBuff *= 5.0;
+    }
 
     const fervorClickMult = getFervorUpgradeMultiplier(this.fervorUpgrades[2]);
     const fervorEffectMult = getFervorUpgradeMultiplier(this.fervorUpgrades[1]);
@@ -202,6 +205,13 @@ export class GameStateManager {
     let fpc = calculateFaithPerClick(clickBuff, globalBuff, fervorClickMult, fervorFaithBonus);
     if (this.hasFragment('fragment_morvath')) {
       fpc *= 1.25;
+    }
+    if (this.hasFragment('fragment_ouroboros')) {
+      const totalRelicLevels = this.relicUpgrades.reduce((sum, r) => sum + r.level, 0);
+      fpc *= (1 + totalRelicLevels * 0.05);
+    }
+    if (this.hasFragment('fragment_solinvictus')) {
+      fpc *= 5.0;
     }
 
     return fpc;
@@ -219,6 +229,9 @@ export class GameStateManager {
     if (this.hasFragment('fragment_xulkhor')) {
       globalBuff *= 3.0;
     }
+    if (this.hasFragment('fragment_solinvictus')) {
+      globalBuff *= 5.0;
+    }
 
     const fervorEffectMult = getFervorUpgradeMultiplier(this.fervorUpgrades[1]);
     const fervorFaithBonus = calculateFervorFaithBonus(this.fervorPoints, fervorEffectMult);
@@ -226,7 +239,8 @@ export class GameStateManager {
     const cornucopiaMult = 1 + (this.relicUpgrades[0].level * 0.20);
     const arkMult = calculateRelicFaithMultiplier(this.relicPoints, this.relicUpgrades[5].level);
     const relicFaithMult = cornucopiaMult * arkMult;
-    const incarnationBoostMult = this.incarnationBoostTimer > 0 ? 2.0 : 1.0;
+    const baseBoostMult = this.hasFragment('fragment_solinvictus') ? 4.0 : 2.0;
+    const incarnationBoostMult = this.incarnationBoostTimer > 0 ? baseBoostMult : 1.0;
 
     return calculateFaithPerSecond(
       this.followers,
@@ -249,6 +263,9 @@ export class GameStateManager {
     const torchMult = 1 + (this.relicUpgrades[1].level * 0.20);
     prodMult *= torchMult;
     prodMult *= this.getIncarnationStageMultiplier();
+    if (this.hasFragment('fragment_vaelzaphir')) {
+      prodMult *= 1.30;
+    }
 
     let synergyMult = getFervorUpgradeMultiplier(this.fervorUpgrades[4], 0, this.faithPoints);
     if (this.relicUpgrades[2].level >= 1) {
@@ -405,7 +422,7 @@ export class GameStateManager {
       this.bestRelicsToGet = toGet;
     }
     this.faithPoints = 0;
-    this.relicConvertCooldown = 3;
+    this.relicConvertCooldown = this.hasFragment('fragment_vaelzaphir') ? 1 : 3;
     return { gained: toGet, success: true };
   }
 

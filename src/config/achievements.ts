@@ -320,19 +320,19 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_boss_all',
     name: 'Devorador de Deuses',
-    desc: "Derrote os 3 Deuses Cósmicos do Panteão (Morvath, Aethelgard e Xul'Khor).",
-    lore: 'Os três tronos rivais estão vazios. A Esfera agora reina incontestável sobre o firmamento.',
+    desc: "Derrote todos os 6 Deuses Cósmicos do Panteão da Esfera.",
+    lore: 'Os seis tronos rivais estão vazios. A Esfera agora reina incontestável sobre o firmamento e as estrelas.',
     icon: '',
     unlocked: false,
-    buffText: '+25% em toda a Fé',
+    buffText: '+50% em toda a Fé',
     buffType: 'global_mult',
-    buffVal: 0.25,
-    check: (s) => (s.bossesDefeated ?? 0) >= 3,
+    buffVal: 0.50,
+    check: (s) => (s.bossesDefeated ?? 0) >= 6,
     getProgress: (s) => ({
-      current: Math.min(s.bossesDefeated ?? 0, 3),
-      target: 3,
-      percent: Math.min(100, ((s.bossesDefeated ?? 0) / 3) * 100),
-      label: `${s.bossesDefeated ?? 0} / 3 Deuses Derrotados`
+      current: Math.min(s.bossesDefeated ?? 0, 6),
+      target: 6,
+      percent: Math.min(100, ((s.bossesDefeated ?? 0) / 6) * 100),
+      label: `${s.bossesDefeated ?? 0} / 6 Deuses Derrotados`
     })
   },
   {

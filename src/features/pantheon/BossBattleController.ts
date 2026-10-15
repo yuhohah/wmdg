@@ -1,7 +1,7 @@
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { NotificationManager } from '../../systems/notifications.js';
-import { BOSS_GODS, getBossHp } from '../../config/bosses.js';
+import { BOSS_GODS, DIVINE_FRAGMENTS, getBossHp } from '../../config/bosses.js';
 import type { BossGodConfig } from '../../types.js';
 import { formatNumber } from '../../systems/calculations.js';
 import { events, GameEvents } from '../../core/EventBus.js';
@@ -297,7 +297,8 @@ export class BossBattleController {
 
     let msg = `O deus rival ${boss.name} caiu ante seu poder supremo! Você ganhou +${relicsGained} Relíquias sagradas.`;
     if (fragmentUnlocked) {
-      msg += ` Além disso, você forjou o ${boss.fragmentId === 'fragment_morvath' ? 'Olho de Morvath' : boss.fragmentId === 'fragment_aethelgard' ? 'Coração de Aethelgard' : 'Manto de Xul\'Khor'}!`;
+      const frag = DIVINE_FRAGMENTS[boss.fragmentId];
+      msg += ` Além disso, você forjou o ${frag ? frag.name : 'Fragmento Divino'}!`;
     }
 
     this.notifications.showCustomPopup(

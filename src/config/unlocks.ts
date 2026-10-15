@@ -27,19 +27,6 @@ export const initialUnlocks: MechanicUnlock[] = [
     prerequisiteId: 'unlock_incarnation'
   },
   {
-    id: 'unlock_pantheon',
-    name: 'Selo do Panteão',
-    desc: 'Rasga o véu da realidade e revela os deuses rivais que orbitam a Esfera. Desbloqueia a aba Panteão e o combate divino.',
-    lore: 'Outras divindades observam o despertar do seu culto das trevas do éter. É hora de expurgá-las ou consumi-las.',
-    symbol: '',
-    cost: 10000,
-    costCurrency: 'faith',
-    unlocked: false,
-    tabId: 'tab-pantheon',
-    tabName: 'Panteão',
-    prerequisiteId: 'unlock_incarnation'
-  },
-  {
     id: 'unlock_relics',
     name: 'Selo das Relíquias',
     desc: 'Libera a Transmutação: troque toda a sua Fé por Fragmentos e use-os para restaurar relíquias de deuses caídos. Abre a aba Relíquias.',
@@ -51,5 +38,18 @@ export const initialUnlocks: MechanicUnlock[] = [
     tabId: 'tab-relics',
     tabName: 'Relíquias',
     prerequisiteId: 'unlock_fervor_upgrades'
+  },
+  {
+    id: 'unlock_pantheon',
+    name: 'Selo do Panteão',
+    desc: 'Ao restaurar relíquias ancestrais e quebrar as leis mortais, sua ascensão atrai a fúria dos Deuses Cósmicos que disputam a primazia do éter. Desbloqueia a aba Panteão e a Teomaquia.',
+    lore: 'Os ecos das suas transmutações rasgaram o firmamento estelar. Seis divindades titânicas acordam e exigem a sua ruína ou a sua consagração absoluta.',
+    symbol: '',
+    cost: 50000000,
+    costCurrency: 'faith',
+    unlocked: false,
+    tabId: 'tab-pantheon',
+    tabName: 'Panteão',
+    prerequisiteId: 'unlock_relics'
   }
 ];
