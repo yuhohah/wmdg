@@ -115,396 +115,470 @@
       </main>
 
       <!-- GAMEPLAY SCREEN: 50/50 ERGONOMIC SPLIT LAYOUT -->
+            <!-- GAMEPLAY SCREEN: DODECADRAGONS PANNABLE & ZOOMABLE CARD BOARD -->
       <main id="gameplay-screen" class="main-content screen">
-        <!-- Kept for the future boss battle; mounted only under ?art-review. -->
-        <section class="procession-world" id="procession-world" aria-label="A procissão do culto" hidden>
-          <div class="world-landscape"></div>
-          <div class="world-veil"></div>
-          <img class="ascended-monastery" src="/assets/procession/monastery.png" alt="" hidden>
-          <div class="world-heading"><span class="world-eyebrow" id="world-era">ERA I · O CHAMADO</span><h1 id="world-title">Uma pequena fé. Um longo caminho.</h1></div>
-          <div class="world-status"><span class="status-light"></span><span id="world-status">A procissão avança</span></div>
-          <div id="procession-entourage" class="procession-entourage"></div>
-          <div class="prophet-position"><img class="prophet-sprite" src="/assets/procession/prophet.png" alt="O Profeta lidera o culto"><div class="world-sphere" id="world-sphere"><canvas class="sphere-pixel-art" width="64" height="64"></canvas></div><span class="prophet-label">O PROFETA</span></div>
-          <div class="ritual-sigil" aria-hidden="true">◉</div>
-          <div class="world-footer"><span id="world-caption">O caminho começa com uma promessa.</span><span id="entourage-count">0 fiéis · uma só promessa</span></div>
-        </section>
-        <div class="art-review-controls" id="art-review-controls" hidden aria-label="Revisão da direção de arte">
-          <span>REVISÃO DE ARTE</span><button type="button" data-art-scene="tier-0" aria-pressed="true">Igreja · Ruína</button><button type="button" data-art-scene="tier-1" aria-pressed="false">Igreja · Altar</button><button type="button" data-art-scene="tier-2" aria-pressed="false">Igreja · Velas</button><button type="button" data-art-scene="tier-3" aria-pressed="false">Igreja · Restaurada</button><button type="button" data-art-scene="procession" aria-pressed="false">Procissão</button><span class="church-review-only">FIÉIS</span><button type="button" class="church-review-only" data-art-followers="0" aria-pressed="false">0</button><button type="button" class="church-review-only" data-art-followers="1" aria-pressed="false">1</button><button type="button" class="church-review-only" data-art-followers="4" aria-pressed="true">4</button><button type="button" class="church-review-only" data-art-followers="8" aria-pressed="false">8</button><button type="button" class="church-review-only" data-art-followers="12" aria-pressed="false">12</button><span class="church-review-only">MULTIDÃO</span><button type="button" class="church-review-only" data-art-followers="50" aria-pressed="false">50</button><button type="button" class="church-review-only" data-art-followers="250" aria-pressed="false">250</button><button type="button" class="church-review-only" data-art-followers="1000" aria-pressed="false">1k</button><button type="button" class="church-review-only" data-art-followers="10000" aria-pressed="false">10k</button><button type="button" class="church-review-only" id="art-review-plea">Pedir milagre</button><span class="church-review-only">DETALHES</span><button type="button" class="church-review-only" data-art-details="0" aria-pressed="false">Nenhum</button><button type="button" class="church-review-only" data-art-details="1" aria-pressed="false">+Tochas</button><button type="button" class="church-review-only" data-art-details="2" aria-pressed="false">+Bancos</button><button type="button" class="church-review-only" data-art-details="3" aria-pressed="false">+Jardim</button><button type="button" class="church-review-only" data-art-details="4" aria-pressed="false">+Estandarte</button><button type="button" class="church-review-only" data-art-details="5" aria-pressed="false">+Estátua</button><span class="church-review-only">PROTAGONISTA</span><button type="button" class="church-review-only" data-art-look="auto" aria-pressed="true">Automático</button><button type="button" class="church-review-only" data-art-look="0" aria-pressed="false">Escolhido</button><button type="button" class="church-review-only" data-art-look="1" aria-pressed="false">Profeta I</button><button type="button" class="church-review-only" data-art-look="2" aria-pressed="false">Profeta II</button><button type="button" class="church-review-only" data-art-look="3" aria-pressed="false">Profeta III</button><button type="button" class="church-review-only" data-art-look="4" aria-pressed="false">Profeta IV</button><button type="button" class="church-review-only" data-art-look="5" aria-pressed="false">Profeta V</button><button type="button" class="procession-review-only" data-art-era="early" aria-pressed="true" hidden>Devoção inicial</button><button type="button" class="procession-review-only" data-art-era="late" aria-pressed="false" hidden>Ascensão</button><button type="button" class="procession-review-only" id="preview-miracle" hidden>Ver milagre</button><a href="/">Voltar ao jogo</a>
+
+        <!-- Hidden legacy / art-review elements for 100% backward & test compatibility -->
+        <div id="legacy-hidden-compat" style="display: none;" aria-hidden="true">
+          <div id="church-world">
+            <div class="church-backdrop"></div>
+            <div id="church-stage">
+              <img id="church-background" alt="">
+              <canvas id="church-crowd"></canvas>
+              <div id="church-followers"></div>
+              <div id="church-sphere"><canvas width="64" height="64"></canvas></div>
+              <div id="church-protagonist"><div class="protagonist-viewport"><img id="church-protagonist-strip" src="/assets/church/protagonist/look-0-idle.png" alt=""></div></div>
+            </div>
+            <div class="world-veil"></div>
+            <div class="ritual-sigil">◉</div>
+          </div>
+          <section class="procession-world" id="procession-world" hidden></section>
+          <div class="art-review-controls" id="art-review-controls" hidden></div>
+          <div id="panel-left" class="side-panel side-panel-left"></div>
+          <aside id="panel-right" class="side-panel side-panel-right">
+            <button class="panel-tab-btn" id="tab-btn-followers" data-panel="right" data-tab="tab-followers"></button>
+            <button class="panel-tab-btn" id="tab-btn-incarnation" data-panel="right" data-tab="tab-incarnation"></button>
+            <button class="panel-tab-btn" id="tab-btn-fervor" data-panel="right" data-tab="tab-fervor"></button>
+            <button class="panel-tab-btn" id="tab-btn-unlocks" data-panel="right" data-tab="tab-unlocks"></button>
+            <button class="panel-tab-btn" id="tab-btn-relics" data-panel="right" data-tab="tab-relics"></button>
+            <button class="panel-tab-btn" id="tab-btn-pantheon" data-panel="right" data-tab="tab-pantheon"></button>
+            <button class="panel-tab-btn" id="tab-btn-achievements" data-panel="right" data-tab="tab-achievements"></button>
+          </aside>
+          <button id="toggle-left-btn"></button>
+          <button id="toggle-right-btn"></button>
+          <button id="expand-left-btn"></button>
+          <button id="expand-right-btn"></button>
+          <div class="gameplay-split-container gameplay-3frame-container"></div>
         </div>
 
-        <div class="gameplay-split-container gameplay-3frame-container">
+        <!-- DODECADRAGONS 2D CANVAS VIEWPORT -->
+        <div id="dodeca-board-viewport" class="dodeca-board-viewport">
 
-          <!-- LEFT COLUMN: WORLD & SACRED SPHERE (50% WIDTH) -->
-          <div class="gameplay-world-column" id="gameplay-world-column">
-            <!-- PÁTIO DOS FIÉIS -->
-            <section class="church-world" id="church-world" aria-label="A igreja do culto">
-              <div class="church-backdrop" aria-hidden="true"></div>
-              <div class="church-stage" id="church-stage">
-                <img class="church-background" id="church-background" alt="">
-                <canvas class="church-crowd" id="church-crowd" aria-hidden="true" hidden></canvas>
-                <div class="church-followers" id="church-followers"></div>
-                <div class="church-sphere" id="church-sphere" data-location="ruins" role="img" aria-label="A Esfera, o deus do culto"><canvas width="64" height="64"></canvas></div>
-                <div class="church-protagonist" id="church-protagonist" data-look="0"><div class="protagonist-viewport"><img class="protagonist-strip" id="church-protagonist-strip" src="/assets/church/protagonist/look-0-idle.png" alt=""></div></div>
-              </div>
-              <div class="world-veil"></div>
-              <div class="ritual-sigil" aria-hidden="true">◉</div>
-            </section>
+          <!-- 2D WORLD CONTAINER (PANNABLE & ZOOMABLE) -->
+          <div id="dodeca-board-world" class="dodeca-board-world">
 
-            <!-- RELICÁRIO DO PROFETA (A ESFERA SAGRADA) -->
-            <section id="panel-center" class="center-frame">
-              <div class="sacred-window-heading"><span class="world-eyebrow">RELICÁRIO DO PROFETA</span><h2>A Esfera</h2><p>Que o chamado seja ouvido.</p></div>
-              <div class="center-frame-content">
-                <div class="sphere-presentation-area">
-                  <!-- CLICKABLE DIVINE SPHERE IN THE MIDDLE OF THE SCREEN -->
-                  <div class="sphere-wrapper" id="divine-sphere-container">
-                    <div class="sphere-orbit-ring ring-1"></div>
-                    <div class="sphere-orbit-ring ring-2"></div>
-                    <div class="sphere-aura"></div>
+            <!-- Astrological Woodcut Landscape Backdrop -->
+            <div class="board-celestial-backdrop"></div>
 
-                    <!-- 6 Round Satellite Figures Orbiting the Sphere -->
-                    <div class="sphere-satellites-orbit" id="sphere-satellites-orbit">
-                      <div class="sphere-satellite-node state-locked" data-node-index="0" style="--node-angle: 0deg;"
-                        title="Deus Rival I (Adormecido)">
-                        <div class="satellite-node-inner">
-                          <div class="satellite-sprite-view frame-0"></div>
-                          <span class="satellite-roman">I</span>
-                          <div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none"
-                              stroke="currentColor" stroke-width="2">
-                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg></div>
-                        </div>
-                      </div>
-                      <div class="sphere-satellite-node state-locked" data-node-index="1" style="--node-angle: 60deg;"
-                        title="Deus Rival II (Adormecido)">
-                        <div class="satellite-node-inner">
-                          <div class="satellite-sprite-view frame-1"></div>
-                          <span class="satellite-roman">II</span>
-                          <div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none"
-                              stroke="currentColor" stroke-width="2">
-                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg></div>
-                        </div>
-                      </div>
-                      <div class="sphere-satellite-node state-locked" data-node-index="2" style="--node-angle: 120deg;"
-                        title="Deus Rival III (Adormecido)">
-                        <div class="satellite-node-inner">
-                          <div class="satellite-sprite-view frame-2"></div>
-                          <span class="satellite-roman">III</span>
-                          <div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none"
-                              stroke="currentColor" stroke-width="2">
-                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg></div>
-                        </div>
-                      </div>
-                      <div class="sphere-satellite-node state-locked" data-node-index="3" style="--node-angle: 180deg;"
-                        title="Deus Rival IV (Adormecido)">
-                        <div class="satellite-node-inner">
-                          <div class="satellite-sprite-view frame-3"></div>
-                          <span class="satellite-roman">IV</span>
-                          <div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none"
-                              stroke="currentColor" stroke-width="2">
-                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg></div>
-                        </div>
-                      </div>
-                      <div class="sphere-satellite-node state-locked" data-node-index="4" style="--node-angle: 240deg;"
-                        title="Deus Rival V (Adormecido)">
-                        <div class="satellite-node-inner">
-                          <div class="satellite-sprite-view frame-4"></div>
-                          <span class="satellite-roman">V</span>
-                          <div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none"
-                              stroke="currentColor" stroke-width="2">
-                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg></div>
-                        </div>
-                      </div>
-                      <div class="sphere-satellite-node state-locked" data-node-index="5" style="--node-angle: 300deg;"
-                        title="Deus Rival VI (Adormecido)">
-                        <div class="satellite-node-inner">
-                          <div class="satellite-sprite-view frame-5"></div>
-                          <span class="satellite-roman">VI</span>
-                          <div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none"
-                              stroke="currentColor" stroke-width="2">
-                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg></div>
-                        </div>
-                      </div>
-                    </div>
+            <!-- Constellation Guide Rays SVG connecting Center Sphere to Satellite Cards -->
+            <svg class="board-constellation-lines" viewBox="0 0 3400 2800">
+              <!-- Sphere to Followers -->
+              <line x1="1600" y1="1310" x2="2070" y2="1370"></line>
+              <!-- Sphere to Unlocks -->
+              <line x1="1600" y1="1310" x2="1130" y2="1340"></line>
+              <!-- Sphere to Fervor -->
+              <line x1="1600" y1="1310" x2="2070" y2="720"></line>
+              <!-- Sphere to Incarnation -->
+              <line x1="1600" y1="1310" x2="1130" y2="750"></line>
+              <!-- Sphere to Achievements -->
+              <line x1="1600" y1="1310" x2="1600" y2="720"></line>
+              <!-- Sphere to Relics -->
+              <line x1="1600" y1="1310" x2="1130" y2="1980"></line>
+              <!-- Sphere to Pantheon -->
+              <line x1="1600" y1="1310" x2="2110" y2="2080"></line>
+            </svg>
 
-                    <div id="divine-sphere-btn" class="divine-sphere-btn" role="button"
-                      aria-label="Tocar a Esfera">
-                      <canvas class="sphere-pixel-art" width="64" height="64" aria-hidden="true"></canvas>
-                    </div>
-
-                    <!-- BOSS BATTLE ARENA OVERLAY -->
-                    <div id="boss-battle-overlay" class="boss-battle-overlay" style="display: none;">
-                      <div class="boss-battle-header">
-                        <span id="boss-battle-title" class="boss-battle-title">BATALHA CÓSMICA</span>
-                        <h3 id="boss-battle-name" class="boss-battle-name">MORVATH</h3>
-                      </div>
-                      <div class="boss-hp-bar-container">
-                        <div class="boss-hp-bar-track">
-                          <div id="boss-hp-fill" class="boss-hp-bar-fill" style="width: 100%;"></div>
-                        </div>
-                        <span id="boss-hp-text" class="boss-hp-text">0 / 0 HP (100%)</span>
-                      </div>
-                      <div class="boss-battle-subbar">
-                        <div class="boss-timer-badge">
-                          <span class="timer-icon">⏳</span>
-                          <span id="boss-timer-text" class="boss-timer-text">45s</span>
-                        </div>
-                        <button id="boss-retreat-btn" class="boss-retreat-btn" title="Recuar da batalha sem penalidade">
-                          Recuar
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- BLASPHEMY RIFTS CONTAINER (WEAKSPOTS) -->
-                    <div id="blasphemy-rift-container" class="blasphemy-rift-container"></div>
-                  </div>
-                  <button type="button" class="church-blessing" id="church-blessing" aria-label="Invocar a Bênção: +2 segundos de Fé em dobro" hidden><span class="church-blessing-fill"></span><span class="church-blessing-label" id="church-blessing-label">✦ 2× · 0s</span></button>
+            <!-- CARD 1: ALTAR DA ESFERA SAGRADA (Center of the Cult) -->
+            <div id="card-altar-sphere" class="dodeca-card">
+              <div class="dodeca-card-header">
+                <div class="dodeca-card-title-group">
+                  <span class="dodeca-card-icon">✦</span>
+                  <h3 class="dodeca-card-title">Altar da Esfera</h3>
+                  <span class="dodeca-card-tag">Relicário</span>
+                </div>
+                <div class="dodeca-card-actions">
+                  <button type="button" class="dodeca-card-btn-toggle" title="Recolher Card">&minus;</button>
                 </div>
               </div>
-              <div class="sacred-window-footer"><span>CANALIZAR FÉ</span><p>Clique na Esfera</p></div>
-            </section>
+              <div class="dodeca-card-body">
+                <section id="panel-center" class="center-frame" style="width: 100%; border: none; background: transparent; padding: 0;">
+                  <div class="sacred-window-heading"><span class="world-eyebrow">RELICÁRIO DO PROFETA</span><h2>A Esfera</h2><p>Que o chamado seja ouvido.</p></div>
+                  <div class="center-frame-content">
+                    <div class="sphere-presentation-area">
+                      <!-- CLICKABLE DIVINE SPHERE IN THE MIDDLE OF THE SCREEN -->
+                      <div class="sphere-wrapper" id="divine-sphere-container">
+                        <div class="sphere-orbit-ring ring-1"></div>
+                        <div class="sphere-orbit-ring ring-2"></div>
+                        <div class="sphere-aura"></div>
+
+                        <!-- 6 Round Satellite Figures Orbiting the Sphere -->
+                        <div class="sphere-satellites-orbit" id="sphere-satellites-orbit">
+                          <div class="sphere-satellite-node state-locked" data-node-index="0" style="--node-angle: 0deg;" title="Deus Rival I (Adormecido)">
+                            <div class="satellite-node-inner"><div class="satellite-sprite-view frame-0"></div><span class="satellite-roman">I</span><div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                          </div>
+                          <div class="sphere-satellite-node state-locked" data-node-index="1" style="--node-angle: 60deg;" title="Deus Rival II (Adormecido)">
+                            <div class="satellite-node-inner"><div class="satellite-sprite-view frame-1"></div><span class="satellite-roman">II</span><div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                          </div>
+                          <div class="sphere-satellite-node state-locked" data-node-index="2" style="--node-angle: 120deg;" title="Deus Rival III (Adormecido)">
+                            <div class="satellite-node-inner"><div class="satellite-sprite-view frame-2"></div><span class="satellite-roman">III</span><div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                          </div>
+                          <div class="sphere-satellite-node state-locked" data-node-index="3" style="--node-angle: 180deg;" title="Deus Rival IV (Adormecido)">
+                            <div class="satellite-node-inner"><div class="satellite-sprite-view frame-3"></div><span class="satellite-roman">IV</span><div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                          </div>
+                          <div class="sphere-satellite-node state-locked" data-node-index="4" style="--node-angle: 240deg;" title="Deus Rival V (Adormecido)">
+                            <div class="satellite-node-inner"><div class="satellite-sprite-view frame-4"></div><span class="satellite-roman">V</span><div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                          </div>
+                          <div class="sphere-satellite-node state-locked" data-node-index="5" style="--node-angle: 300deg;" title="Deus Rival VI (Adormecido)">
+                            <div class="satellite-node-inner"><div class="satellite-sprite-view frame-5"></div><span class="satellite-roman">VI</span><div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
+                          </div>
+                        </div>
+
+                        <div id="divine-sphere-btn" class="divine-sphere-btn" role="button" aria-label="Tocar a Esfera">
+                          <canvas class="sphere-pixel-art" width="64" height="64" aria-hidden="true"></canvas>
+                        </div>
+
+                        <!-- BOSS BATTLE ARENA OVERLAY -->
+                        <div id="boss-battle-overlay" class="boss-battle-overlay" style="display: none;">
+                          <div class="boss-battle-header">
+                            <span id="boss-battle-title" class="boss-battle-title">BATALHA CÓSMICA</span>
+                            <h3 id="boss-battle-name" class="boss-battle-name">MORVATH</h3>
+                          </div>
+                          <div class="boss-hp-bar-container">
+                            <div class="boss-hp-bar-track">
+                              <div id="boss-hp-fill" class="boss-hp-bar-fill" style="width: 100%;"></div>
+                            </div>
+                            <span id="boss-hp-text" class="boss-hp-text">0 / 0 HP (100%)</span>
+                          </div>
+                          <div class="boss-battle-subbar">
+                            <div class="boss-timer-badge">
+                              <span class="timer-icon">⏳</span>
+                              <span id="boss-timer-text" class="boss-timer-text">45s</span>
+                            </div>
+                            <button id="boss-retreat-btn" class="boss-retreat-btn" title="Recuar da batalha sem penalidade">Recuar</button>
+                          </div>
+                        </div>
+
+                        <!-- BLASPHEMY RIFTS CONTAINER (WEAKSPOTS) -->
+                        <div id="blasphemy-rift-container" class="blasphemy-rift-container"></div>
+                      </div>
+                      <button type="button" class="church-blessing" id="church-blessing" aria-label="Invocar a Bênção: +2 segundos de Fé em dobro" hidden><span class="church-blessing-fill"></span><span class="church-blessing-label" id="church-blessing-label">✦ 2× · 0s</span></button>
+                    </div>
+                  </div>
+                  <div class="sacred-window-footer"><span>CANALIZAR FÉ</span><p>Clique na Esfera</p></div>
+                </section>
+              </div>
+            </div>
+
+            <!-- CARD 2: PÁTIO DOS FIÉIS & CULTISTAS -->
+            <div id="card-followers" class="dodeca-card">
+              <div class="dodeca-card-header">
+                <div class="dodeca-card-title-group">
+                  <span class="dodeca-card-icon">👥</span>
+                  <h3 class="dodeca-card-title">Pátio dos Fiéis</h3>
+                  <span class="dodeca-card-tag">Congregação</span>
+                </div>
+                <div class="dodeca-card-actions">
+                  <button type="button" class="dodeca-card-btn-toggle" title="Recolher Card">&minus;</button>
+                </div>
+              </div>
+              <div class="dodeca-card-body">
+                <div id="tab-followers" class="tab-pane active" style="display: block;">
+                  <div class="followers-tab-header">
+                    <div class="followers-stat-group">
+                      <span class="followers-stat-label">ALMAS DEVOTADAS</span>
+                      <div class="followers-stat-row">
+                        <span id="followers-total-count" class="followers-total-val">0</span>
+                        <span class="followers-stat-unit">Fiéis</span>
+                      </div>
+                    </div>
+                    <div class="followers-rate-badge" id="followers-rate-badge">+0 Fé/s</div>
+                  </div>
+
+                  <!-- Pátio dos Fiéis Hermético (Walking & Praying Cultists Arena) -->
+                  <div class="followers-arena-container" id="followers-arena-container">
+                    <canvas id="followers-walk-canvas" class="followers-walk-canvas" width="400" height="180"></canvas>
+                    <div class="followers-arena-overlay">
+                      <span class="followers-arena-hint">PÁTIO HERMÉTICO</span>
+                    </div>
+                  </div>
+
+                  <div class="followers-controls">
+                    <!-- Buy 1 Button -->
+                    <button id="btn-convert-one" class="btn-follower-action btn-convert-primary">
+                      <div class="btn-action-main">
+                        <span class="btn-action-title">CONVERTER FIEL</span>
+                        <span class="btn-action-benefit" id="convert-one-benefit">+1 Fé/s</span>
+                      </div>
+                      <div class="btn-action-cost">
+                        <span>CUSTO:</span>
+                        <span class="cost-val" id="convert-one-cost-val">20 Fé</span>
+                      </div>
+                    </button>
+
+                    <!-- Buy Max Button (Future Unlock at 25 followers) -->
+                    <button id="btn-convert-max" class="btn-follower-action btn-convert-max locked" disabled>
+                      <div class="btn-action-main">
+                        <span class="btn-action-title" id="convert-max-title">CONVERTER MÁXIMO</span>
+                        <span class="btn-action-benefit" id="convert-max-sub">Desbloqueia com 25 Fiéis</span>
+                      </div>
+                      <div class="btn-action-cost" id="convert-max-cost">
+                        <span id="convert-max-cost-label">BLOQUEADO</span>
+                        <span class="cost-val" id="convert-max-cost-val"></span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CARD 3: OS SELOS ANTIGOS -->
+            <div id="card-unlocks" class="dodeca-card">
+              <div class="dodeca-card-header">
+                <div class="dodeca-card-title-group">
+                  <span class="dodeca-card-icon">🔓</span>
+                  <h3 class="dodeca-card-title">Os Selos Antigos</h3>
+                  <span class="dodeca-card-tag">Desbloqueios</span>
+                </div>
+                <div class="dodeca-card-actions">
+                  <button type="button" class="dodeca-card-btn-toggle" title="Recolher Card">&minus;</button>
+                </div>
+              </div>
+              <div class="dodeca-card-body">
+                <div id="tab-unlocks" class="tab-pane active" style="display: block;">
+                  <div class="unlocks-tab-header">
+                    <div class="unlocks-stat-group">
+                      <span class="unlocks-stat-label">OS SELOS</span>
+                      <div class="unlocks-header-title-row">
+                        <span class="unlocks-header-title">Seu poder, selado</span>
+                      </div>
+                      <p class="unlocks-header-desc">Gaste Fé para romper os selos que te prendem.</p>
+                    </div>
+                  </div>
+                  <div class="card-list" id="unlocks-list"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CARD 4: FERVOR SAGRADO -->
+            <div id="card-fervor" class="dodeca-card">
+              <div class="dodeca-card-header">
+                <div class="dodeca-card-title-group">
+                  <span class="dodeca-card-icon">🔥</span>
+                  <h3 class="dodeca-card-title">Fervor Sagrado</h3>
+                  <span class="dodeca-card-tag">Chama</span>
+                </div>
+                <div class="dodeca-card-actions">
+                  <button type="button" class="dodeca-card-btn-toggle" title="Recolher Card">&minus;</button>
+                </div>
+              </div>
+              <div class="dodeca-card-body">
+                <div id="tab-fervor" class="tab-pane active" style="display: block;">
+                  <div class="fervor-header-card">
+                    <div class="fervor-header-row">
+                      <div class="fervor-badge-group">
+                        <div class="fervor-text-col">
+                          <span class="fervor-label">CHAMA DO CULTO</span>
+                          <div class="fervor-val-row">
+                            <span id="fervor-counter" class="fervor-val">0</span>
+                            <span class="fervor-unit">Fervor</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="fervor-rate-tag" id="fervor-rate-counter">+0 Fervor/s</div>
+                    </div>
+                  </div>
+                  <div class="card-list" id="fervor-upgrades-list"></div>
+                </div>
+              </div>
+              <div class="dodeca-card-locked-overlay" style="display: flex;">
+                <div class="card-lock-seal">
+                  <svg class="card-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                  <span class="card-lock-title">SELO DO FERVOR</span>
+                  <span class="card-lock-desc">Rompa o Selo do Fervor no card de Selos Antigos para ascender a chama.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- CARD 5: ENCARNAÇÃO SAGRADA -->
+            <div id="card-incarnation" class="dodeca-card">
+              <div class="dodeca-card-header">
+                <div class="dodeca-card-title-group">
+                  <span class="dodeca-card-icon">👤</span>
+                  <h3 class="dodeca-card-title">Encarnação Sagrada</h3>
+                  <span class="dodeca-card-tag">Ascensão</span>
+                </div>
+                <div class="dodeca-card-actions">
+                  <button type="button" class="dodeca-card-btn-toggle" title="Recolher Card">&minus;</button>
+                </div>
+              </div>
+              <div class="dodeca-card-body">
+                <div id="tab-incarnation" class="tab-pane active" style="display: block;">
+                  <div class="incarnation-tab-header">
+                    <div class="incarnation-stat-group">
+                      <span class="incarnation-stat-label">ENCARNAÇÃO SAGRADA</span>
+                      <div class="incarnation-stat-row">
+                        <span class="incarnation-stage-tag" id="incarnation-stage-badge">ESTÁGIO 1</span>
+                      </div>
+                    </div>
+                    <div class="incarnation-mult-wrapper" style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+                      <span class="incarnation-mult-sublabel" style="font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #a1a1aa; text-transform: uppercase;">MULTIPLICADOR DOS FIÉIS</span>
+                      <div class="incarnation-rate-badge" id="incarnation-rate-badge" title="Multiplicador: 1 + log10(1 + Fervor / 150) × 1,5 × Estágio">x1.00</div>
+                    </div>
+                  </div>
+
+                  <!-- Upgrade Action Card -->
+                  <div class="incarnation-controls">
+                    <button id="btn-upgrade-incarnation" class="btn-follower-action btn-incarnation-upgrade">
+                      <div class="btn-action-main">
+                        <span class="btn-action-title" id="incarnation-upgrade-title">EVOLUIR</span>
+                        <span class="btn-action-benefit" id="incarnation-upgrade-benefit">100x Fervor/s</span>
+                      </div>
+                      <div class="btn-action-cost" id="incarnation-upgrade-cost-group">
+                        <span id="incarnation-cost-label">CUSTO:</span>
+                        <span class="cost-val" id="incarnation-cost-val">2.50M Fé</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="dodeca-card-locked-overlay" style="display: flex;">
+                <div class="card-lock-seal">
+                  <svg class="card-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                  <span class="card-lock-title">SELO DA ENCARNAÇÃO</span>
+                  <span class="card-lock-desc">Rompa o Selo da Encarnação para manifestar a presença divina no mundo terreno.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- CARD 6: OPUS MAGNUM & RELÍQUIAS -->
+            <div id="card-relics" class="dodeca-card">
+              <div class="dodeca-card-header">
+                <div class="dodeca-card-title-group">
+                  <span class="dodeca-card-icon">⚗️</span>
+                  <h3 class="dodeca-card-title">Opus Magnum</h3>
+                  <span class="dodeca-card-tag">Transmutação</span>
+                </div>
+                <div class="dodeca-card-actions">
+                  <button type="button" class="dodeca-card-btn-toggle" title="Recolher Card">&minus;</button>
+                </div>
+              </div>
+              <div class="dodeca-card-body">
+                <div id="tab-relics" class="tab-pane active" style="display: block;">
+                  <div class="relic-monument-banner">
+                    <img src="/assets/monument_relic.jpg" alt="Monumento Alquímico" class="relic-monument-img">
+                    <div class="relic-monument-caption">
+                      <span class="relic-monument-title">OPUS MAGNUM</span>
+                      <span class="relic-monument-desc">As Above, So Below — Transmutações Alquímicas</span>
+                    </div>
+                  </div>
+                  <!-- Conversion Section (Based on DodecaDragons Alchemy) -->
+                  <div class="relics-convert-section">
+                    <button id="btn-convert-relics" class="btn-convert-relics" disabled>
+                      Transmutar toda a Fé → +<span id="relics-to-get">0</span> Fragmentos
+                    </button>
+                    <div class="relics-status-info">
+                      <div class="relics-balance-text">
+                        Você possui <span id="relics-balance-val">0</span> Fragmentos
+                      </div>
+                      <div class="relics-extra-rate-text">
+                        Geração passiva: +<span id="relics-extra-val">0</span> Fragmentos/s
+                      </div>
+                      <div class="relics-extra-rate-text" id="relics-cooldown-line" style="display: none;">
+                        O vaso esfria: <span id="relics-convert-cooldown">0</span>s
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Mythological Relics Upgrades List -->
+                  <div class="card-list" id="relic-upgrades-list"></div>
+                </div>
+              </div>
+              <div class="dodeca-card-locked-overlay" style="display: flex;">
+                <div class="card-lock-seal">
+                  <svg class="card-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                  <span class="card-lock-title">SELO DAS RELÍQUIAS</span>
+                  <span class="card-lock-desc">Rompa o Selo das Relíquias para transmutar Fé em Fragmentos Alquímicos.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- CARD 7: PANTEÃO CÓSMICO -->
+            <div id="card-pantheon" class="dodeca-card">
+              <div class="dodeca-card-header">
+                <div class="dodeca-card-title-group">
+                  <span class="dodeca-card-icon">⚔️</span>
+                  <h3 class="dodeca-card-title">Teomaquia Cósmica</h3>
+                  <span class="dodeca-card-tag">Panteão</span>
+                </div>
+                <div class="dodeca-card-actions">
+                  <button type="button" class="dodeca-card-btn-toggle" title="Recolher Card">&minus;</button>
+                </div>
+              </div>
+              <div class="dodeca-card-body">
+                <div id="tab-pantheon" class="tab-pane active" style="display: block;">
+                  <div class="pantheon-tab-header">
+                    <div class="pantheon-stat-group">
+                      <span class="pantheon-stat-label">TEOMAQUIA CÓSMICA</span>
+                      <div class="pantheon-header-title-row">
+                        <span class="pantheon-header-title">Guerra dos Deuses</span>
+                      </div>
+                      <p class="pantheon-header-desc">Desafie as divindades rivais do firmamento para absorver suas essências e forjar Fragmentos Divinos eternos.</p>
+                    </div>
+                  </div>
+
+                  <div class="pantheon-section-title">DEUSES RIVAIS</div>
+                  <div class="card-list" id="pantheon-bosses-list"></div>
+
+                  <div class="pantheon-section-title" style="margin-top: 24px;">FRAGMENTOS DIVINOS ACUMULADOS</div>
+                  <div class="card-list" id="pantheon-fragments-list"></div>
+                </div>
+              </div>
+              <div class="dodeca-card-locked-overlay" style="display: flex;">
+                <div class="card-lock-seal">
+                  <svg class="card-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                  <span class="card-lock-title">SELO DO PANTEÃO</span>
+                  <span class="card-lock-desc">Rompa o Selo do Panteão para desafiar os Titãs e Deuses Rivais do Cosmos.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- CARD 8: GRIMÓRIO DE CONQUISTAS -->
+            <div id="card-achievements" class="dodeca-card">
+              <div class="dodeca-card-header">
+                <div class="dodeca-card-title-group">
+                  <span class="dodeca-card-icon">🏆</span>
+                  <h3 class="dodeca-card-title">Grimório de Conquistas</h3>
+                  <span class="dodeca-card-tag">Marcos</span>
+                </div>
+                <div class="dodeca-card-actions">
+                  <button type="button" class="dodeca-card-btn-toggle" title="Recolher Card">&minus;</button>
+                </div>
+              </div>
+              <div class="dodeca-card-body">
+                <div id="tab-achievements" class="tab-pane active" style="display: block;">
+                  <div class="card-list" id="achievements-list"></div>
+                </div>
+              </div>
+            </div>
+
           </div>
 
-          <!-- Expander Bar when Unified Upgrades Panel is Collapsed -->
-          <button id="expand-right-btn" class="panel-expand-strip expand-right" title="Abrir Menu de Melhorias"
-            aria-label="Abrir Menu de Melhorias">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"
-              stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-            <span class="expand-label">MELHORIAS</span>
-          </button>
+          <!-- FLOATING QUICK NAVIGATION RIBBON (TOP CENTER) -->
+          <nav class="board-quicknav-bar" id="board-quicknav-bar" aria-label="Navegação do Culto">
+            <button class="quicknav-btn active" data-target="card-altar-sphere"><span>✦</span> <span>Esfera</span></button>
+            <button class="quicknav-btn" data-target="card-followers"><span>👥</span> <span>Fiéis</span></button>
+            <button class="quicknav-btn" data-target="card-unlocks"><span>🔓</span> <span>Selos</span></button>
+            <button class="quicknav-btn" data-target="card-fervor" id="quicknav-fervor" style="display: none;"><span>🔥</span> <span>Fervor</span></button>
+            <button class="quicknav-btn" data-target="card-incarnation" id="quicknav-incarnation" style="display: none;"><span>👤</span> <span>Encarnação</span></button>
+            <button class="quicknav-btn" data-target="card-relics" id="quicknav-relics" style="display: none;"><span>⚗️</span> <span>Relíquias</span></button>
+            <button class="quicknav-btn" data-target="card-pantheon" id="quicknav-pantheon" style="display: none;"><span>⚔️</span> <span>Panteão</span></button>
+            <button class="quicknav-btn" data-target="card-achievements"><span>🏆</span> <span>Conquistas</span></button>
+          </nav>
 
-          <!-- RIGHT COLUMN: UNIFIED UPGRADE & PROGRESSION HUB (50% WIDTH) -->
-          <aside id="panel-right" class="side-panel side-panel-right side-panel-unified open">
-            <!-- Panel Header with Title and Toggle Button -->
-            <div class="panel-header">
-              <div class="panel-title-group">
-                <span class="panel-tag">GESTÃO DO CULTO</span>
-                <h3 class="panel-title">Melhorias & Mistérios</h3>
-              </div>
-              <button id="toggle-right-btn" class="panel-toggle-btn" title="Recolher Painel de Melhorias"
-                aria-label="Recolher Painel de Melhorias">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
-              </button>
-            </div>
+          <!-- FLOATING ZOOM CONTROLS (BOTTOM RIGHT) -->
+          <div class="board-zoom-controls">
+            <button id="btn-zoom-in" class="board-zoom-btn" title="Aproximar (+)" aria-label="Aproximar Zoom">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+            <span id="board-zoom-level" class="board-zoom-level">100%</span>
+            <button id="btn-zoom-out" class="board-zoom-btn" title="Afastar (-)" aria-label="Afastar Zoom">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+            <button id="btn-zoom-reset" class="board-zoom-btn btn-reset-center" title="Centralizar na Esfera" aria-label="Centralizar na Esfera">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
 
-            <!-- Options Navigation Tabs: All 7 tabs in unified bar -->
-            <nav class="panel-tabs-bar" aria-label="Abas de Gestão do Culto">
-              <button class="panel-tab-btn active" data-panel="right" data-tab="tab-followers" id="tab-btn-followers">
-                <span class="tab-label">Fiéis</span>
-              </button>
-              <button class="panel-tab-btn" data-panel="right" data-tab="tab-incarnation" id="tab-btn-incarnation"
-                style="display: none;">
-                <span class="tab-label">Encarnação</span>
-              </button>
-              <button class="panel-tab-btn" data-panel="right" data-tab="tab-fervor" id="tab-btn-fervor"
-                style="display: none;">
-                <span class="tab-label">Fervor</span>
-              </button>
-              <button class="panel-tab-btn" data-panel="right" data-tab="tab-unlocks" id="tab-btn-unlocks">
-                <span class="tab-label">Selos</span>
-              </button>
-              <button class="panel-tab-btn" data-panel="right" data-tab="tab-relics" id="tab-btn-relics"
-                style="display: none;">
-                <span class="tab-label">Relíquias</span>
-              </button>
-              <button class="panel-tab-btn" data-panel="right" data-tab="tab-pantheon" id="tab-btn-pantheon"
-                style="display: none;">
-                <span class="tab-label">Panteão</span>
-              </button>
-              <button class="panel-tab-btn" data-panel="right" data-tab="tab-achievements" id="tab-btn-achievements">
-                <span class="tab-label">Conquistas</span>
-              </button>
-            </nav>
-
-            <!-- Panel Tab Contents: All Tab Panes -->
-            <div class="panel-body custom-scrollbar">
-              <!-- Tab: Fiéis & Recrutamento -->
-              <div id="tab-followers" class="tab-pane active">
-                <div class="followers-tab-header">
-                  <div class="followers-stat-group">
-                    <span class="followers-stat-label">ALMAS DEVOTADAS</span>
-                    <div class="followers-stat-row">
-                      <span id="followers-total-count" class="followers-total-val">0</span>
-                      <span class="followers-stat-unit">Fiéis</span>
-                    </div>
-                  </div>
-                  <div class="followers-rate-badge" id="followers-rate-badge">+0 Fé/s</div>
-                </div>
-
-                <!-- Pátio dos Fiéis Hermético (Walking & Praying Cultists Arena) -->
-                <div class="followers-arena-container" id="followers-arena-container">
-                  <canvas id="followers-walk-canvas" class="followers-walk-canvas" width="400" height="180"></canvas>
-                  <div class="followers-arena-overlay">
-                    <span class="followers-arena-hint">PÁTIO HERMÉTICO</span>
-                  </div>
-                </div>
-
-                <div class="followers-controls">
-                  <!-- Buy 1 Button -->
-                  <button id="btn-convert-one" class="btn-follower-action btn-convert-primary">
-                    <div class="btn-action-main">
-                      <span class="btn-action-title">CONVERTER FIEL</span>
-                      <span class="btn-action-benefit" id="convert-one-benefit">+1 Fé/s</span>
-                    </div>
-                    <div class="btn-action-cost">
-                      <span>CUSTO:</span>
-                      <span class="cost-val" id="convert-one-cost-val">20 Fé</span>
-                    </div>
-                  </button>
-
-                  <!-- Buy Max Button (Future Unlock at 25 followers) -->
-                  <button id="btn-convert-max" class="btn-follower-action btn-convert-max locked" disabled>
-                    <div class="btn-action-main">
-                      <span class="btn-action-title" id="convert-max-title">CONVERTER MÁXIMO</span>
-                      <span class="btn-action-benefit" id="convert-max-sub">Desbloqueia com 25 Fiéis</span>
-                    </div>
-                    <div class="btn-action-cost" id="convert-max-cost">
-                      <span id="convert-max-cost-label">BLOQUEADO</span>
-                      <span class="cost-val" id="convert-max-cost-val"></span>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Tab: Incarnation (Encarnação Sagrada) -->
-              <div id="tab-incarnation" class="tab-pane">
-                <div class="incarnation-tab-header">
-                  <div class="incarnation-stat-group">
-                    <span class="incarnation-stat-label">ENCARNAÇÃO SAGRADA</span>
-                    <div class="incarnation-stat-row">
-                      <span class="incarnation-stage-tag" id="incarnation-stage-badge">ESTÁGIO 1</span>
-                    </div>
-                  </div>
-                  <div class="incarnation-mult-wrapper" style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
-                    <span class="incarnation-mult-sublabel" style="font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #a1a1aa; text-transform: uppercase;">MULTIPLICADOR DOS FIÉIS</span>
-                    <div class="incarnation-rate-badge" id="incarnation-rate-badge" title="Multiplicador: 1 + log10(1 + Fervor / 150) × 1,5 × Estágio">x1.00</div>
-                  </div>
-                </div>
-
-                <!-- Upgrade Action Card -->
-                <div class="incarnation-controls">
-                  <button id="btn-upgrade-incarnation" class="btn-follower-action btn-incarnation-upgrade">
-                    <div class="btn-action-main">
-                      <span class="btn-action-title" id="incarnation-upgrade-title">EVOLUIR</span>
-                      <span class="btn-action-benefit" id="incarnation-upgrade-benefit">100x Fervor/s</span>
-                    </div>
-                    <div class="btn-action-cost" id="incarnation-upgrade-cost-group">
-                      <span id="incarnation-cost-label">CUSTO:</span>
-                      <span class="cost-val" id="incarnation-cost-val">2.50M Fé</span>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Tab: Fervor & Upgrades -->
-              <div id="tab-fervor" class="tab-pane">
-                <div class="fervor-header-card">
-                  <div class="fervor-header-row">
-                    <div class="fervor-badge-group">
-                      <div class="fervor-text-col">
-                        <span class="fervor-label">CHAMA DO CULTO</span>
-                        <div class="fervor-val-row">
-                          <span id="fervor-counter" class="fervor-val">0</span>
-                          <span class="fervor-unit">Fervor</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="fervor-rate-tag" id="fervor-rate-counter">+0 Fervor/s</div>
-                  </div>
-                </div>
-                <div class="card-list" id="fervor-upgrades-list"></div>
-              </div>
-
-              <!-- Tab: Desbloqueios -->
-              <div id="tab-unlocks" class="tab-pane">
-                <div class="unlocks-tab-header">
-                  <div class="unlocks-stat-group">
-                    <span class="unlocks-stat-label">OS SELOS</span>
-                    <div class="unlocks-header-title-row">
-                      <span class="unlocks-header-title">Seu poder, selado</span>
-                    </div>
-                    <p class="unlocks-header-desc">Gaste Fé para romper os selos que te prendem.</p>
-                  </div>
-                </div>
-                <div class="card-list" id="unlocks-list"></div>
-              </div>
-
-              <!-- Tab: Relíquias -->
-              <div id="tab-relics" class="tab-pane">
-                <div class="relic-monument-banner">
-                  <img src="/assets/monument_relic.jpg" alt="Monumento Alquímico" class="relic-monument-img">
-                  <div class="relic-monument-caption">
-                    <span class="relic-monument-title">OPUS MAGNUM</span>
-                    <span class="relic-monument-desc">As Above, So Below — Transmutações Alquímicas</span>
-                  </div>
-                </div>
-                <!-- Conversion Section (Based on DodecaDragons Alchemy) -->
-                <div class="relics-convert-section">
-                  <button id="btn-convert-relics" class="btn-convert-relics" disabled>
-                    Transmutar toda a Fé → +<span id="relics-to-get">0</span> Fragmentos
-                  </button>
-                  <div class="relics-status-info">
-                    <div class="relics-balance-text">
-                      Você possui <span id="relics-balance-val">0</span> Fragmentos
-                    </div>
-                    <div class="relics-extra-rate-text">
-                      Geração passiva: +<span id="relics-extra-val">0</span> Fragmentos/s
-                    </div>
-                    <div class="relics-extra-rate-text" id="relics-cooldown-line" style="display: none;">
-                      O vaso esfria: <span id="relics-convert-cooldown">0</span>s
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Mythological Relics Upgrades List -->
-                <div class="card-list" id="relic-upgrades-list"></div>
-              </div>
-
-              <!-- Tab: Panteão / Batalha de Deuses -->
-              <div id="tab-pantheon" class="tab-pane">
-                <div class="pantheon-tab-header">
-                  <div class="pantheon-stat-group">
-                    <span class="pantheon-stat-label">TEOMAQUIA CÓSMICA</span>
-                    <div class="pantheon-header-title-row">
-                      <span class="pantheon-header-title">Guerra dos Deuses</span>
-                    </div>
-                    <p class="pantheon-header-desc">Desafie as divindades rivais do firmamento para absorver suas essências e forjar Fragmentos Divinos eternos.</p>
-                  </div>
-                </div>
-
-                <div class="pantheon-section-title">DEUSES RIVAIS</div>
-                <div class="card-list" id="pantheon-bosses-list"></div>
-
-                <div class="pantheon-section-title" style="margin-top: 24px;">FRAGMENTOS DIVINOS ACUMULADOS</div>
-                <div class="card-list" id="pantheon-fragments-list"></div>
-              </div>
-
-              <!-- Tab: Conquistas -->
-              <div id="tab-achievements" class="tab-pane">
-                <div class="card-list" id="achievements-list"></div>
-              </div>
-            </div>
-          </aside>
-
-          <!-- Hidden dummy elements for complete backwards compatibility -->
-          <div id="panel-left" class="side-panel side-panel-left" style="display:none;" aria-hidden="true"></div>
-          <button id="toggle-left-btn" style="display:none;" aria-hidden="true"></button>
-          <button id="expand-left-btn" style="display:none;" aria-hidden="true"></button>
         </div>
       </main>
 

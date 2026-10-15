@@ -25,6 +25,7 @@ import { AchievementsTab } from './features/achievements/AchievementsTab.js';
 import { StatsTab } from './features/stats/StatsTab.js';
 import { SphereController } from './features/sphere/SphereController.js';
 import { OnboardingGuide } from './ui/OnboardingGuide.js';
+import { BoardManager } from './ui/BoardManager.js';
 import { ProcessionScene } from './ui/ProcessionScene.js';
 import { ChurchScene } from './ui/ChurchScene.js';
 import { isArtReview } from './ui/artReview.js';
@@ -46,6 +47,7 @@ class AppManager {
   public saveDataModal: SaveDataModal;
   public onboardingGuide: OnboardingGuide;
   public church: ChurchScene;
+  public board: BoardManager;
   public procession: ProcessionScene | null = null;
 
   // Feature Tabs
@@ -252,6 +254,7 @@ class AppManager {
     this.statsTab.updateUI();
     this.onboardingGuide.update();
     if (isArtReview) this.procession = new ProcessionScene(this.gameState, (x, y) => this.sphere.grantMiracle(x, y));
+    this.board = new BoardManager();
     this.church = new ChurchScene(
       this.gameState,
       (x, y) => this.sphere.grantMiracle(x, y),
@@ -329,10 +332,22 @@ class AppManager {
   }
 
   private updateUnlockedTabsVisibility(): void {
-    this.incarnationTab.setTabVisibility(this.gameState.isIncarnationUnlocked());
-    this.fervorTab.setTabVisibility(this.gameState.isFervorUpgradesUnlocked());
-    this.pantheonTab.setTabVisibility(this.gameState.isPantheonUnlocked());
-    this.relicsTab.setTabVisibility(this.gameState.isRelicsUnlocked());
+    const inc = this.gameState.isIncarnationUnlocked();
+    const ferv = this.gameState.isFervorUpgradesUnlocked();
+    const pan = this.gameState.isPantheonUnlocked();
+    const rel = this.gameState.isRelicsUnlocked();
+
+    this.incarnationTab.setTabVisibility(inc);
+    this.fervorTab.setTabVisibility(ferv);
+    this.pantheonTab.setTabVisibility(pan);
+    this.relicsTab.setTabVisibility(rel);
+
+    if (this.board) {
+      this.board.setCardUnlocked('card-incarnation', inc);
+      this.board.setCardUnlocked('card-fervor', ferv);
+      this.board.setCardUnlocked('card-pantheon', pan);
+      this.board.setCardUnlocked('card-relics', rel);
+    }
   }
 
   private renderAllLists(): void {

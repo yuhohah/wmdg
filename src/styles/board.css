@@ -1,0 +1,474 @@
+/* ===================================================
+   DODECADRAGONS-STYLE PANNABLE & ZOOMABLE BOARD
+   Dark Hermetic Engraving Aesthetics
+   =================================================== */
+
+.dodeca-board-viewport {
+  position: relative;
+  width: 100vw;
+  height: calc(100vh - 44px);
+  overflow: hidden;
+  background-color: #0e0a08;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.dodeca-board-viewport.is-dragging {
+  cursor: grabbing;
+}
+
+/* The 2D World Space */
+.dodeca-board-world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3400px;
+  height: 2800px;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+/* Astrological & Engraved Landscape Backdrop */
+.board-celestial-backdrop {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 1600px 1310px, rgba(196, 152, 80, 0.12) 0%, rgba(30, 20, 16, 0.6) 45%, #0e0a08 85%),
+    url('/assets/cult_bg_landscape.jpg') center / cover no-repeat;
+  opacity: 0.35;
+  pointer-events: none;
+  filter: contrast(1.2) brightness(0.7);
+}
+
+/* Astrological Constellation Lines SVG */
+.board-constellation-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  stroke: rgba(196, 152, 80, 0.18);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 6;
+}
+
+/* Dodeca-style Cards */
+.dodeca-card {
+  position: absolute;
+  z-index: 5;
+  background: #231b17;
+  background: linear-gradient(180deg, #2b201a 0%, #1a1310 100%);
+  border: 8px solid transparent;
+  border-image: var(--wood-frame) 8 / 8px / 0 stretch;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.92), 0 0 20px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  transition: box-shadow 0.25s ease, filter 0.25s ease, border-color 0.25s ease;
+  user-select: text;
+}
+
+.dodeca-card.focused-glow {
+  box-shadow: 0 0 45px rgba(220, 180, 110, 0.7), 0 14px 40px rgba(0, 0, 0, 0.95);
+  filter: brightness(1.08);
+}
+
+/* Card Header */
+.dodeca-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #18110d;
+  background: linear-gradient(90deg, #18110d 0%, #221712 100%);
+  border-bottom: 2px solid #5a422d;
+  cursor: grab;
+  user-select: none;
+}
+
+.dodeca-card-header:active {
+  cursor: grabbing;
+}
+
+.dodeca-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dodeca-card-icon {
+  font-size: 16px;
+  color: #f7d99a;
+  line-height: 1;
+}
+
+.dodeca-card-title {
+  font-family: var(--font-game);
+  font-size: 19px;
+  line-height: 1;
+  color: #f7d99a;
+  letter-spacing: 1px;
+  margin: 0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+.dodeca-card-tag {
+  font-family: var(--font-game);
+  font-size: 10px;
+  color: #c49850;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 1px 6px;
+  border-radius: 2px;
+  border: 1px solid rgba(196, 152, 80, 0.3);
+  text-transform: uppercase;
+}
+
+.dodeca-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dodeca-card-btn-toggle {
+  background: #2e1f16;
+  border: 1px solid #6b4e33;
+  color: #d1b894;
+  cursor: pointer;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.dodeca-card-btn-toggle:hover {
+  background: #4a3424;
+  color: #fff;
+  border-color: #9d754c;
+}
+
+/* Card Body */
+.dodeca-card-body {
+  padding: 12px;
+  overflow-y: auto;
+  max-height: 580px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Collapsed State */
+.dodeca-card.collapsed .dodeca-card-body {
+  display: none !important;
+}
+
+.dodeca-card.collapsed {
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+/* Locked Card Overlay */
+.dodeca-card-locked-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(14, 10, 8, 0.88);
+  backdrop-filter: blur(3px);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  border-radius: 2px;
+}
+
+.card-lock-seal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 280px;
+}
+
+.card-lock-icon {
+  width: 44px;
+  height: 44px;
+  color: #c49850;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
+}
+
+.card-lock-title {
+  font-family: var(--font-game);
+  font-size: 20px;
+  color: #f7d99a;
+  letter-spacing: 1px;
+}
+
+.card-lock-desc {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #a89379;
+}
+
+/* Specific Card Coordinates in the World */
+#card-altar-sphere {
+  left: 1410px;
+  top: 1060px;
+  width: 380px;
+  min-height: 500px;
+  z-index: 8;
+}
+
+#card-followers {
+  left: 1840px;
+  top: 1060px;
+  width: 460px;
+  min-height: 620px;
+}
+
+#card-unlocks {
+  left: 900px;
+  top: 1060px;
+  width: 460px;
+  min-height: 560px;
+}
+
+#card-fervor {
+  left: 1840px;
+  top: 450px;
+  width: 460px;
+  min-height: 540px;
+}
+
+#card-incarnation {
+  left: 900px;
+  top: 510px;
+  width: 460px;
+  min-height: 480px;
+}
+
+#card-achievements {
+  left: 1390px;
+  top: 450px;
+  width: 420px;
+  min-height: 540px;
+}
+
+#card-relics {
+  left: 900px;
+  top: 1680px;
+  width: 460px;
+  min-height: 600px;
+}
+
+#card-pantheon {
+  left: 1840px;
+  top: 1740px;
+  width: 540px;
+  min-height: 680px;
+}
+
+/* FLOATING QUICK NAVIGATION BAR (RIBBON) */
+.board-quicknav-bar {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(24, 18, 14, 0.92);
+  backdrop-filter: blur(8px);
+  border: 4px solid transparent;
+  border-image: var(--wood-frame) 8 / 4px / 0 stretch;
+  padding: 4px 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  border-radius: 4px;
+  max-width: 95vw;
+  overflow-x: auto;
+}
+
+.quicknav-btn {
+  background: #2b1f17;
+  border: 1px solid #5a422d;
+  color: #d1b894;
+  font-family: var(--font-game);
+  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.quicknav-btn:hover {
+  background: #3e2d21;
+  color: #f7d99a;
+  border-color: #8b6b44;
+}
+
+.quicknav-btn.active {
+  background: #503928;
+  color: #fff;
+  border-color: #c49850;
+  box-shadow: 0 0 10px rgba(196, 152, 80, 0.4);
+}
+
+/* FLOATING ZOOM CONTROLS (BOTTOM-RIGHT) */
+.board-zoom-controls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(24, 18, 14, 0.94);
+  backdrop-filter: blur(8px);
+  border: 4px solid transparent;
+  border-image: var(--wood-frame) 8 / 4px / 0 stretch;
+  padding: 4px 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75);
+  border-radius: 4px;
+}
+
+.board-zoom-btn {
+  background: #2b1f17;
+  border: 1px solid #5a422d;
+  color: #d1b894;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.15s ease;
+}
+
+.board-zoom-btn:hover {
+  background: #423022;
+  color: #fff;
+  border-color: #9d754c;
+}
+
+.board-zoom-level {
+  font-family: var(--font-game);
+  font-size: 14px;
+  color: #f7d99a;
+  min-width: 44px;
+  text-align: center;
+  padding: 0 4px;
+}
+
+.btn-reset-center {
+  margin-left: 2px;
+}
+
+
+/* Ensure all tab panes inside Dodeca cards are displayed as open cards */
+.dodeca-card .tab-pane {
+  display: block !important;
+  width: 100%;
+}
+
+/* Hide legacy mobile bottom nav so it does not obstruct board viewport */
+.mobile-bottom-nav {
+  display: none !important;
+}
+
+/* Sphere Presentation Area within Altar Card */
+#card-altar-sphere .dodeca-card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+#card-altar-sphere .center-frame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+#card-altar-sphere .sphere-presentation-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+  width: 100%;
+}
+
+#card-altar-sphere .sacred-window-heading {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+#card-altar-sphere .sacred-window-heading h2 {
+  font-family: var(--font-game);
+  font-size: 26px;
+  color: #f7d99a;
+  margin: 2px 0;
+}
+
+#card-altar-sphere .sacred-window-heading p {
+  font-size: 13px;
+  color: #a89379;
+  margin: 0;
+}
+
+#card-altar-sphere .sacred-window-footer {
+  text-align: center;
+  margin-top: 10px;
+  color: #c49850;
+  font-family: var(--font-game);
+}
+
+/* Followers Courtyard inside Card */
+#card-followers .followers-arena-container {
+  width: 100%;
+  margin: 12px 0;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  background: #140e0b;
+  border: 1px solid #5a422d;
+  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.8);
+}
+
+#card-followers .followers-walk-canvas {
+  width: 100%;
+  height: 180px;
+  display: block;
+}
+
+/* Custom Scrollbars for Card Bodies */
+.dodeca-card-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dodeca-card-body::-webkit-scrollbar-track {
+  background: rgba(14, 10, 8, 0.6);
+}
+
+.dodeca-card-body::-webkit-scrollbar-thumb {
+  background: #5a422d;
+  border-radius: 3px;
+}
+
+.dodeca-card-body::-webkit-scrollbar-thumb:hover {
+  background: #8b6b44;
+}
