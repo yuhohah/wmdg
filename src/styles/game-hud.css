@@ -8,13 +8,13 @@ html,body { background:#211a18; }
 .top-hud-bar { position:absolute; top:20px; left:38px; width:calc(100% - 76px); height:52px; padding:0; background:none; border:0; pointer-events:none; z-index:40; }
 .top-hud-bar button,.top-hud-bar a { pointer-events:auto; }
 .cult-wordmark { font-family:var(--font-game); font-size:20px; line-height:.85; letter-spacing:1px; text-shadow:2px 2px #17110f; padding:8px 12px; background:#261e1be6; border:8px solid transparent; border-image:var(--wood-frame) 8 / 8px / 0 stretch; }
-.cult-mark { display:block; width:30px; height:30px; font-size:0; background:url('/assets/hud/faith.svg') center / contain; image-rendering:pixelated; }
+.cult-mark { display:block; width:30px; height:30px; font-size:0; background:url('/assets/hud/faith.svg') center / contain no-repeat; }
 .resources-hud-card { top:0; padding:0; }
 .resources-hud-header,.resource-divider,.res-unit,.res-dash { display:none!important; }
 .resources-hud-row { gap:12px; }
 .resource-item { position:relative; display:grid; grid-template-columns:34px auto; grid-template-rows:28px 16px; gap:0 8px; min-width:154px; padding:4px 12px 4px 8px; border:8px solid transparent; border-image:var(--wood-frame) 8 / 8px / 0 stretch; background:#28211eea; }
 .res-name { grid-column:1; grid-row:1 / 3; width:34px; min-width:0; height:40px; font-size:0; align-self:center; }
-.res-name::before { content:''; display:block; width:34px; height:34px; background:url('/assets/hud/faith.svg') center / contain no-repeat; image-rendering:pixelated; }
+.res-name::before { content:''; display:block; width:34px; height:34px; background:url('/assets/hud/faith.svg') center / contain no-repeat; }
 .resource-item-fervor .res-name::before { background-image:url('/assets/hud/fervor.svg'); }
 .resource-item-relic .res-name::before { background-image:url('/assets/hud/relic.svg'); }
 .resource-item-followers .res-name::before { background-image:url('/assets/procession/follower-0.png'); }
@@ -27,8 +27,11 @@ html,body { background:#211a18; }
 .icon-btn-gold,.panel-toggle-btn { border:6px solid transparent; border-image:var(--wood-frame) 8 / 6px / 0 stretch; background:#3f3025; border-radius:0; box-shadow:2px 3px #15100f; color:#eed29a; }
 .icon-btn-gold { width:44px; height:44px; }
 .icon-btn-gold svg { visibility:hidden; position:absolute; }
-.icon-btn-gold::before { content:''; display:block; width:24px; height:24px; background:url('/assets/hud/settings.svg') center / contain no-repeat; image-rendering:pixelated; }
-#music-quick-btn::before { background-image:url('/assets/hud/music.svg'); }\n#music-quick-btn:has(#music-icon-off[style*='block'])::before { opacity:.4; }\n#music-quick-btn.muted::before { opacity:.4; }\n.top-right-group { gap:10px; }
+.icon-btn-gold::before { content:''; display:block; width:24px; height:24px; background:url('/assets/hud/settings.svg') center / contain no-repeat; }
+#music-quick-btn::before { background-image:url('/assets/hud/music.svg'); }
+#music-quick-btn:has(#music-icon-off[style*='block'])::before { opacity:.4; }
+#music-quick-btn.muted::before { opacity:.4; }
+.top-right-group { gap:10px; }
 .procession-world { border:8px solid transparent; border-image:var(--wood-frame) 8 / 8px / 0 stretch; height:49%; min-height:270px; }
 .church-world { border:8px solid transparent; border-image:var(--wood-frame) 8 / 8px / 0 stretch; --world-h:52%; --world-min:200px; }
 .art-review .procession-world { height:47%; }
@@ -147,7 +150,7 @@ html,body { background:#211a18; }
 .panel-header { background:#4e3427; border-bottom:3px solid #271b16; padding:7px 10px 8px; min-height:52px; display:flex; align-items:center; justify-content:space-between; }
 .panel-tag { display:none; }
 .panel-title-group { display:flex; flex-direction:row; align-items:center; gap:9px; }
-.panel-title-group::before { content:''; width:27px; height:27px; flex-shrink:0; background:url('/assets/hud/book.svg') center / contain no-repeat; image-rendering:pixelated; }
+.panel-title-group::before { content:''; width:27px; height:27px; flex-shrink:0; background:url('/assets/hud/book.svg') center / contain no-repeat; }
 .panel-title-group.text-right { text-align:left; }
 .panel-title { font:27px/1 var(--font-game); color:#f2d297; text-transform:none; text-shadow:2px 2px #2c1b15; letter-spacing:0; }
 .side-panel-left .panel-title-group::before { background-image:url('/assets/procession/follower-0.png'); }
@@ -168,7 +171,7 @@ html,body { background:#211a18; }
 
 /* ACTION BUTTONS WITH BALANCED SPACING */
 .btn-follower-action { border:7px solid transparent; border-image:var(--wood-frame) 8 / 7px / 0 stretch; border-radius:0; padding:10px 14px; min-height:66px; gap:12px; background:#775132; color:#ffdf9c; box-shadow:0 3px #3b281d; transition:none; display:flex; align-items:center; justify-content:space-between; width:100%; box-sizing:border-box; }
-.btn-follower-action::before { content:''; width:28px; height:32px; flex-shrink:0; background:url('/assets/hud/book.svg') center / contain no-repeat; image-rendering:pixelated; }
+.btn-follower-action::before { content:''; width:28px; height:32px; flex-shrink:0; background:url('/assets/hud/book.svg') center / contain no-repeat; }
 .btn-convert-primary { background:#754333; }
 .btn-convert-max:not(.locked) { background:#625032; border-color:transparent; }
 .btn-convert-primary::before { background-image:url('/assets/procession/follower-0.png'); }

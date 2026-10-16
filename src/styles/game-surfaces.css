@@ -18,14 +18,14 @@ body,button,input,textarea { font-family:var(--font-game); }
 .panel-body :is(.cost-tag,.cost-tag *,.relic-cost-tag,.relic-cost-tag *,.relic-benefit-text,.card-benefit) { font:18px var(--font-game); color:var(--ink); }
 #tab-fervor .cost-tag,#tab-fervor .cost-tag * { color:var(--fervor-ink); }
 #tab-relics .relic-cost-tag,#tab-relics .relic-cost-tag * { color:var(--relic-ink); }
-.card-symbol,.cult-tooltip-symbol { width:24px; height:24px; font-size:0; flex-shrink:0; background:url('/assets/hud/book.svg') center/contain no-repeat; image-rendering:pixelated; }
+.card-symbol,.cult-tooltip-symbol { width:24px; height:24px; font-size:0; flex-shrink:0; background:url('/assets/hud/book.svg') center/contain no-repeat; }
 .fervor-upgrade-card .card-symbol { background-image:url('/assets/hud/fervor.svg'); }
 .relic-action-card .card-symbol { background-image:url('/assets/hud/relic.svg'); }
 .fervor-header-card,.incarnation-tab-header,.relics-convert-section,.stat-box,.tooltip-buff-highlight,.cult-tooltip-stats,.setting-item,.spotlight-balloon-tracker,.intro-action-hint-card,.unlocks-completed-banner {
   background:#c4a87340; border:1px solid #a18454; border-radius:0; box-shadow:none; color:var(--ink); padding:10px; transition:none;
 }
 .fervor-header-card { border:0; border-bottom:2px dashed #a18454; padding:0 0 10px; }
-.fervor-badge-group::before { content:''; width:36px; height:36px; background:url('/assets/hud/fervor.svg') center/contain; image-rendering:pixelated; }
+.fervor-badge-group::before { content:''; width:36px; height:36px; background:url('/assets/hud/fervor.svg') center/contain no-repeat; }
 .fervor-label,.fervor-unit,.incarnation-mult-sublabel { font:16px var(--font-game)!important; color:var(--ink-muted)!important; letter-spacing:0!important; }
 .fervor-val { font:32px var(--font-game); color:var(--fervor-ink); text-shadow:none; }
 .fervor-rate-tag,.incarnation-rate-badge,.incarnation-stage-tag { background:#c8ad79; border:1px solid #9c794b; border-radius:0; color:var(--ink); font:20px var(--font-game); box-shadow:none; }

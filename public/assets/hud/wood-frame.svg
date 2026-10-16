@@ -1,1 +1,110 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges"><path fill="#171010" d="M4 0h24v2h2v2h2v24h-2v2h-2v2H4v-2H2v-2H0V4h2V2h2z"/><path fill="#62412c" d="M4 2h24v2h2v24h-2v2H4v-2H2V4h2z"/><path fill="#c49b60" d="M4 2h24v2H4zM2 4h2v24H2z"/><path fill="#35251f" d="M28 4h2v24h-2zM4 28h24v2H4z"/><path fill="#8b6340" d="M6 4h20v2h2v20h-2v2H6v-2H4V6h2z"/><path fill="#33251f" d="M8 6h16v2h2v16h-2v2H8v-2H6V8h2z"/><path fill="#dfb876" d="M4 4h2v2H4zM26 4h2v2h-2zM4 26h2v2H4zM26 26h2v2h-2z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <!-- 8x8 Corner Boss with Carved Renaissance Diamond Pyramid -->
+    <g id="corner-boss">
+      <!-- Corner Background Plinth -->
+      <rect x="0" y="0" width="8" height="8" fill="#4e321e"/>
+      <!-- Mitre Border Lines -->
+      <path d="M0 0h8v1H1v7H0z" fill="#18110d"/>
+      <path d="M1 1h7v1H2v6H1z" fill="#c59858"/>
+      <path d="M7 1v7H8V0zM1 7h7v1H0z" fill="#22140d"/>
+      <!-- Chiseled Diamond Pyramid Stud -->
+      <polygon points="4,1.5 6.5,4 4,4" fill="#eec77d"/>
+      <polygon points="4,1.5 1.5,4 4,4" fill="#d2a154"/>
+      <polygon points="4,6.5 1.5,4 4,4" fill="#3a2214"/>
+      <polygon points="4,6.5 6.5,4 4,4" fill="#22130b"/>
+      <!-- Pyramid Center Highlight Point -->
+      <circle cx="4" cy="4" r="0.5" fill="#fff5da"/>
+    </g>
+  </defs>
+
+  <!-- TOP-LEFT CORNER (0..8, 0..8) -->
+  <use href="#corner-boss" x="0" y="0"/>
+
+  <!-- TOP-RIGHT CORNER (24..32, 0..8) -->
+  <use href="#corner-boss" x="32" y="0" transform="scale(-1, 1)"/>
+
+  <!-- BOTTOM-LEFT CORNER (0..8, 24..32) -->
+  <use href="#corner-boss" x="0" y="32" transform="scale(1, -1)"/>
+
+  <!-- BOTTOM-RIGHT CORNER (24..32, 24..32) -->
+  <use href="#corner-boss" x="32" y="32" transform="scale(-1, -1)"/>
+
+  <!-- TOP EDGE MOLDING (8..24, 0..8) -->
+  <g>
+    <!-- Base timber -->
+    <rect x="8" y="0" width="16" height="8" fill="#543722"/>
+    <!-- Outer boundary contour -->
+    <rect x="8" y="0" width="16" height="1" fill="#18110d"/>
+    <!-- Chiseled highlight bevel -->
+    <rect x="8" y="1" width="16" height="1" fill="#c59858"/>
+    <!-- Recessed fluted fascia -->
+    <rect x="8" y="2" width="16" height="4" fill="#382115"/>
+    <!-- Woodcut vertical hatching lines (fluting grooves) -->
+    <path d="M9 2.5v3M11 2.5v3M13 2.5v3M15 2.5v3M17 2.5v3M19 2.5v3M21 2.5v3M23 2.5v3" stroke="#7a5030" stroke-width="0.8" stroke-linecap="square"/>
+    <path d="M9.5 2.5v3M11.5 2.5v3M13.5 2.5v3M15.5 2.5v3M17.5 2.5v3M19.5 2.5v3M21.5 2.5v3M23.5 2.5v3" stroke="#d0a25e" stroke-width="0.4" stroke-linecap="square"/>
+    <!-- Inner stepped shadow ridge -->
+    <rect x="8" y="6" width="16" height="1" fill="#22140d"/>
+    <!-- Inner lip highlight -->
+    <rect x="8" y="7" width="16" height="1" fill="#9d6c3e"/>
+  </g>
+
+  <!-- BOTTOM EDGE MOLDING (8..24, 24..32) -->
+  <g>
+    <!-- Base timber -->
+    <rect x="8" y="24" width="16" height="8" fill="#543722"/>
+    <!-- Inner lip highlight -->
+    <rect x="8" y="24" width="16" height="1" fill="#9d6c3e"/>
+    <!-- Inner stepped shadow ridge -->
+    <rect x="8" y="25" width="16" height="1" fill="#22140d"/>
+    <!-- Recessed fluted fascia -->
+    <rect x="8" y="26" width="16" height="4" fill="#382115"/>
+    <!-- Woodcut vertical hatching lines -->
+    <path d="M9 26.5v3M11 26.5v3M13 26.5v3M15 26.5v3M17 26.5v3M19 26.5v3M21 26.5v3M23 26.5v3" stroke="#7a5030" stroke-width="0.8" stroke-linecap="square"/>
+    <path d="M9.5 26.5v3M11.5 26.5v3M13.5 26.5v3M15.5 26.5v3M17.5 26.5v3M19.5 26.5v3M21.5 26.5v3M23.5 26.5v3" stroke="#d0a25e" stroke-width="0.4" stroke-linecap="square"/>
+    <!-- Chiseled highlight bevel -->
+    <rect x="8" y="30" width="16" height="1" fill="#c59858"/>
+    <!-- Outer boundary contour -->
+    <rect x="8" y="31" width="16" height="1" fill="#18110d"/>
+  </g>
+
+  <!-- LEFT EDGE MOLDING (0..8, 8..24) -->
+  <g>
+    <!-- Base timber -->
+    <rect x="0" y="8" width="8" height="16" fill="#543722"/>
+    <!-- Outer boundary contour -->
+    <rect x="0" y="8" width="1" height="16" fill="#18110d"/>
+    <!-- Chiseled highlight bevel -->
+    <rect x="1" y="8" width="1" height="16" fill="#c59858"/>
+    <!-- Recessed fluted fascia -->
+    <rect x="2" y="8" width="4" height="16" fill="#382115"/>
+    <!-- Woodcut horizontal hatching lines -->
+    <path d="M2.5 9h3M2.5 11h3M2.5 13h3M2.5 15h3M2.5 17h3M2.5 19h3M2.5 21h3M2.5 23h3" stroke="#7a5030" stroke-width="0.8" stroke-linecap="square"/>
+    <path d="M2.5 9.5h3M2.5 11.5h3M2.5 13.5h3M2.5 15.5h3M2.5 17.5h3M2.5 19.5h3M2.5 21.5h3M2.5 23.5h3" stroke="#d0a25e" stroke-width="0.4" stroke-linecap="square"/>
+    <!-- Inner stepped shadow ridge -->
+    <rect x="6" y="8" width="1" height="16" fill="#22140d"/>
+    <!-- Inner lip highlight -->
+    <rect x="7" y="8" width="1" height="16" fill="#9d6c3e"/>
+  </g>
+
+  <!-- RIGHT EDGE MOLDING (24..32, 8..24) -->
+  <g>
+    <!-- Base timber -->
+    <rect x="24" y="8" width="8" height="16" fill="#543722"/>
+    <!-- Inner lip highlight -->
+    <rect x="24" y="8" width="1" height="16" fill="#9d6c3e"/>
+    <!-- Inner stepped shadow ridge -->
+    <rect x="25" y="8" width="1" height="16" fill="#22140d"/>
+    <!-- Recessed fluted fascia -->
+    <rect x="26" y="8" width="4" height="16" fill="#382115"/>
+    <!-- Woodcut horizontal hatching lines -->
+    <path d="M26.5 9h3M26.5 11h3M26.5 13h3M26.5 15h3M26.5 17h3M26.5 19h3M26.5 21h3M26.5 23h3" stroke="#7a5030" stroke-width="0.8" stroke-linecap="square"/>
+    <path d="M26.5 9.5h3M26.5 11.5h3M26.5 13.5h3M26.5 15.5h3M26.5 17.5h3M26.5 19.5h3M26.5 21.5h3M26.5 23.5h3" stroke="#d0a25e" stroke-width="0.4" stroke-linecap="square"/>
+    <!-- Chiseled highlight bevel -->
+    <rect x="30" y="8" width="1" height="16" fill="#c59858"/>
+    <!-- Outer boundary contour -->
+    <rect x="31" y="8" width="1" height="16" fill="#18110d"/>
+  </g>
+
+  <!-- CENTER (8..24, 8..24) IS TRANSPARENT (NO BACKGROUND RECT) -->
+</svg>

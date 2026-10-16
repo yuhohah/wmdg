@@ -376,6 +376,11 @@ export class FollowersArena {
   }
 
   private drawPatioBackground(): void {
+    // If arena is flagged as transparent (e.g. on cathedral engraving floor), leave clear
+    if (this.canvas.classList.contains('transparent-arena') || this.canvas.closest('#dodeca-board-world')) {
+      return;
+    }
+
     const ctx = this.ctx;
     const w = this.width;
     const h = this.height;
