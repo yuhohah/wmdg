@@ -2,7 +2,7 @@ import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { NotificationManager } from '../../systems/notifications.js';
 import { INCARNATION_STAGES } from '../../config/incarnation.js';
-import { formatNumber, calculateIncarnationFollowerMultiplier } from '../../systems/calculations.js';
+import { formatNumber } from '../../systems/calculations.js';
 
 export interface IncarnationTabOptions {
   gameState: GameStateManager;
@@ -88,22 +88,20 @@ export class IncarnationTab {
       this.descSubEl.style.display = 'none';
     }
     if (this.rateBadgeEl) {
-      const incFollowerMult = calculateIncarnationFollowerMultiplier(
-        this.options.gameState.fervorPoints,
-        stage
-      );
+      const incFollowerMult = this.options.gameState.getEffectiveIncarnationFollowerMultiplier();
       this.rateBadgeEl.textContent = `x${incFollowerMult.toFixed(2)}`;
     }
 
     if (this.btnUpgradeEl && this.upgradeTitleEl && this.upgradeCostValEl) {
       if (nextStage) {
+        const stageCost = this.options.gameState.getIncarnationStageCost(nextStage);
         this.upgradeTitleEl.textContent = 'EVOLUIR';
         if (this.upgradeBenefitEl) {
           this.upgradeBenefitEl.textContent = `${formatNumber(nextStage.multiplier)}x Fervor/s`;
           this.upgradeBenefitEl.style.display = 'block';
         }
-        this.upgradeCostValEl.textContent = `${formatNumber(nextStage.cost)} Fé`;
-        this.btnUpgradeEl.disabled = this.options.gameState.faithPoints < nextStage.cost;
+        this.upgradeCostValEl.textContent = `${formatNumber(stageCost)} Fé`;
+        this.btnUpgradeEl.disabled = this.options.gameState.faithPoints < stageCost;
       } else {
         this.upgradeTitleEl.textContent = 'ENCARNAÇÃO MÁXIMA';
         if (this.upgradeBenefitEl) {
@@ -120,16 +118,14 @@ export class IncarnationTab {
     if (!this.btnUpgradeEl) return;
     const nextStage = INCARNATION_STAGES.find((s) => s.stage === this.options.gameState.incarnationStage + 1);
     if (nextStage) {
-      this.btnUpgradeEl.disabled = this.options.gameState.faithPoints < nextStage.cost;
+      const stageCost = this.options.gameState.getIncarnationStageCost(nextStage);
+      this.btnUpgradeEl.disabled = this.options.gameState.faithPoints < stageCost;
     }
   }
 
   public updateRealtime(): void {
     if (this.rateBadgeEl) {
-      const incFollowerMult = calculateIncarnationFollowerMultiplier(
-        this.options.gameState.fervorPoints,
-        this.options.gameState.incarnationStage
-      );
+      const incFollowerMult = this.options.gameState.getEffectiveIncarnationFollowerMultiplier();
       this.rateBadgeEl.textContent = `x${incFollowerMult.toFixed(2)}`;
     }
     this.updateUpgradeButtonState();

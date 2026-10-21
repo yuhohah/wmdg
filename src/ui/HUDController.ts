@@ -22,6 +22,9 @@ export class HUDController {
   private relicCounterHudEl: HTMLElement | null = null;
   private relicRateCounterHudEl: HTMLElement | null = null;
 
+  private gnoseCounterHudEl: HTMLElement | null = null;
+  private gnoseMultCounterHudEl: HTMLElement | null = null;
+
   constructor(options: HUDControllerOptions) {
     this.gameState = options.gameState;
     this.initElements();
@@ -42,6 +45,9 @@ export class HUDController {
 
     this.relicCounterHudEl = document.getElementById('relic-counter-hud');
     this.relicRateCounterHudEl = document.getElementById('relic-rate-counter-hud');
+
+    this.gnoseCounterHudEl = document.getElementById('gnose-counter-hud');
+    this.gnoseMultCounterHudEl = document.getElementById('gnose-mult-counter-hud');
   }
 
   private bindEvents(): void {
@@ -93,6 +99,15 @@ export class HUDController {
     }
     if (this.relicRateCounterHudEl) {
       this.relicRateCounterHudEl.textContent = `${formatNumber(relicRate)}/s`;
+    }
+
+    const gnose = Math.floor(this.gameState.gnosePoints);
+    const gnoseMult = this.gameState.getTotalGnosePassiveMultiplier();
+    if (this.gnoseCounterHudEl) {
+      this.gnoseCounterHudEl.textContent = formatNumber(gnose);
+    }
+    if (this.gnoseMultCounterHudEl) {
+      this.gnoseMultCounterHudEl.textContent = `×${formatNumber(gnoseMult)}`;
     }
   }
 }

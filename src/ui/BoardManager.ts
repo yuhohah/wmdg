@@ -395,9 +395,16 @@ export class BoardManager {
     if (card) {
       const lockOverlay = card.querySelector<HTMLElement>('.dodeca-card-locked-overlay');
       if (lockOverlay) {
-        lockOverlay.style.display = unlocked ? 'none' : 'flex';
+        lockOverlay.style.display = 'none';
       }
       card.classList.toggle('card-locked', !unlocked);
+      card.style.display = unlocked ? 'flex' : 'none';
+    }
+
+    const rayId = `ray-${cardId.replace('card-', '')}`;
+    const rayEl = document.getElementById(rayId);
+    if (rayEl) {
+      rayEl.style.display = unlocked ? '' : 'none';
     }
 
     const quickBtn = this.quickNavBtns.get(cardId);

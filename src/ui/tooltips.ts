@@ -1,4 +1,4 @@
-import type { BuyableItem, FervorUpgrade, Achievement, GameState, MechanicUnlock, RelicUpgrade } from '../types.js';
+import type { BuyableItem, FervorUpgrade, Achievement, GameState, MechanicUnlock, RelicUpgrade, GnoseUpgrade } from '../types.js';
 import { formatNumber } from '../systems/calculations.js';
 import { DISPLAY_CONFIG } from '../config/display.js';
 import { getFervorUpgradeFormula } from '../config/fervor.js';
@@ -109,7 +109,7 @@ export class TooltipManager {
     this.render(html, item.name, e);
   }
 
-  public showFervorTooltip(upg: FervorUpgrade, cost: number, mult: number, e: MouseEvent): void {
+  public showFervorTooltip(upg: FervorUpgrade, cost: number, mult: number, e: MouseEvent, fu1Boosted: boolean = false): void {
     this.currentAch = null;
 
     const symbolHtml = DISPLAY_CONFIG.showEmojisAndSymbols
@@ -129,7 +129,7 @@ export class TooltipManager {
 
       <div class="tooltip-buff-highlight" style="  ">
         <span>FÓRMULA DE PROGRESSÃO:</span>
-        <span>${getFervorUpgradeFormula(upg)}</span>
+        <span>${getFervorUpgradeFormula(upg, fu1Boosted)}</span>
       </div>
 
       <div class="cult-tooltip-stats">
@@ -256,6 +256,68 @@ export class TooltipManager {
     `;
 
     this.render(html, relic.name, e);
+  }
+
+  public showGnoseTooltip(
+    upg: GnoseUpgrade,
+    isUnlocked: boolean,
+    prereqsMet: boolean,
+    canAfford: boolean,
+    prereqNames: string[],
+    e: MouseEvent
+  ): void {
+    this.currentAch = null;
+
+    const symbolHtml = DISPLAY_CONFIG.showEmojisAndSymbols
+      ? `<span class="cult-tooltip-symbol">${upg.icon}</span>`
+      : '';
+
+    const statusText = isUnlocked
+      ? 'ASSIMILADO'
+      : !prereqsMet
+        ? 'REQUER NÓ ANTERIOR'
+        : canAfford
+          ? 'PRONTO PARA ASSIMILAR'
+          : 'GNOSE INSUFICIENTE';
+
+    const prereqHtml =
+      prereqNames.length > 0
+        ? `<div class="tooltip-stat-item" style="grid-column: span 2;">
+             <span class="tooltip-stat-label">PRÉ-REQUISITOS</span>
+             <span class="tooltip-stat-val">${prereqNames.join(' • ')}</span>
+           </div>`
+        : '';
+
+    const html = `
+      <div class="cult-tooltip-header">
+        <div class="cult-tooltip-title">
+          ${symbolHtml}
+          <span>${upg.name}</span>
+        </div>
+        <span class="cult-tooltip-tag">GNOSE • TIER ${upg.tier}</span>
+      </div>
+
+      <div class="cult-tooltip-lore">${upg.lore}</div>
+
+      <div class="tooltip-buff-highlight">
+        <span>EFEITO HERMÉTICO:</span>
+        <span>${upg.desc}</span>
+      </div>
+
+      <div class="cult-tooltip-stats">
+        <div class="tooltip-stat-item">
+          <span class="tooltip-stat-label">STATUS</span>
+          <span class="tooltip-stat-val">${statusText}</span>
+        </div>
+        <div class="tooltip-stat-item">
+          <span class="tooltip-stat-label">CUSTO</span>
+          <span class="tooltip-stat-val" style="color: #e9d5ff; font-weight: 800;">${isUnlocked ? 'CONCLUÍDO' : `${formatNumber(upg.cost)} Gnose`}</span>
+        </div>
+        ${prereqHtml}
+      </div>
+    `;
+
+    this.render(html, upg.name, e);
   }
 
   public updateRealtimeProgress(state: GameState): void {

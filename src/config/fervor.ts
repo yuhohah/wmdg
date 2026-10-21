@@ -68,13 +68,17 @@ export const initialFervorUpgrades: FervorUpgrade[] = [
 export function getFervorUpgradeMultiplier(
   upg: FervorUpgrade,
   followersCount: number = 0,
-  faithPoints: number = 0
+  faithPoints: number = 0,
+  fu1Boosted: boolean = false
 ): number {
   if (upg.level <= 0) return 1.0;
 
   switch (upg.id) {
     case 'fu_prod':
-      // DodecaDragons FU1: 2 ^ (level ^ 0.6)
+      // DodecaDragons FU1: 2 ^ (level ^ 0.6), or 3.5 ^ (level ^ 0.7) with Magic Upgrade 14 (gn_fu1_boost)
+      if (fu1Boosted) {
+        return Math.pow(3.5, Math.pow(upg.level, 0.7));
+      }
       return Math.pow(2, Math.pow(upg.level, 0.6));
 
     case 'fu_effect':
@@ -102,10 +106,10 @@ export function getFervorUpgradeMultiplier(
   }
 }
 
-export function getFervorUpgradeFormula(upg: FervorUpgrade): string {
+export function getFervorUpgradeFormula(upg: FervorUpgrade, fu1Boosted: boolean = false): string {
   switch (upg.id) {
     case 'fu_prod':
-      return '2^(Nível^0.6)';
+      return fu1Boosted ? '3.5^(Nível^0.7)' : '2^(Nível^0.6)';
     case 'fu_effect':
       return '1.25^(Nível^0.8)';
     case 'fu_click':

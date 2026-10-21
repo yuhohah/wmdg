@@ -1,14 +1,41 @@
 /* ===================================================
    DODECADRAGONS-STYLE PANNABLE & ZOOMABLE BOARD
    Diegetic Hermetic Cathedral Architecture & Cosmic Oculus
+   Palette & Linework aligned with dark-hermetic-art skill
+   and /assets/hermetic_cathedral_board_bg.jpg
    =================================================== */
+
+:root {
+  --hermetic-parchment-light: #e5d4b4;
+  --hermetic-parchment: #d8c39e;
+  --hermetic-parchment-mid: #cbb286;
+  --hermetic-parchment-dark: #b89b6c;
+  --hermetic-ink-black: #16100c;
+  --hermetic-ink-soot: #221913;
+  --hermetic-ink-umber: #423022;
+  --hermetic-ink-sepia: #5e4631;
+  --hermetic-rule-brass: #7d603e;
+  --hermetic-gold-ochre: #c89d54;
+  --hermetic-crimson-ink: #7d291b;
+  --hermetic-relic-ink: #493850;
+  --hermetic-gnose-ink: #6b4918;
+}
+
+#gameplay-screen {
+  padding: 0 !important;
+  margin: 0 !important;
+  gap: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+}
 
 .dodeca-board-viewport {
   position: relative;
   width: 100vw;
-  height: calc(100vh - 44px);
+  height: 100vh;
   overflow: hidden;
-  background-color: #080605;
+  background-color: #16100c;
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -34,58 +61,358 @@
   position: absolute;
   inset: 0;
   background: url('/assets/hermetic_cathedral_board_bg.jpg') top left / 100% 100% no-repeat;
-  opacity: 0.95;
+  opacity: 0.97;
   pointer-events: none;
-  filter: contrast(1.15) brightness(0.9);
+  filter: contrast(1.12) brightness(0.93);
 }
 
-/* Astrological Constellation Lines SVG */
+/* Astrological Constellation Lines SVG - Etched Soot & Sepia Geometry */
 .board-constellation-lines {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  stroke: rgba(220, 180, 110, 0.4);
-  stroke-width: 1.5;
-  stroke-dasharray: 6 6;
-  filter: drop-shadow(0 0 6px rgba(220, 180, 110, 0.3));
+  stroke: rgba(26, 19, 14, 0.65);
+  stroke-width: 1.75;
+  stroke-dasharray: 7 5;
+  filter: drop-shadow(0 1px 0 rgba(229, 212, 180, 0.55));
 }
 
-/* Dodeca-style Cards - Semi-Translucent Antique Stone & Parchment Tablets */
+/* ===================================================
+   TOP HUD BAR — CLASSICAL HERMETIC TREATISE CARTOUCHES
+   Matches the engraved plaques of hermetic_cathedral_board_bg.jpg
+   =================================================== */
+
+.top-hud-bar {
+  position: fixed !important;
+  top: 14px !important;
+  left: 22px !important;
+  right: 22px !important;
+  width: calc(100vw - 44px) !important;
+  height: auto !important;
+  min-height: 50px;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  pointer-events: none;
+  z-index: 60 !important;
+}
+
+.top-hud-bar button,
+.top-hud-bar a,
+.resources-hud-card {
+  pointer-events: auto;
+}
+
+/* Left Emblem Cartouche — Engraved Parchment Plaque */
+.cult-wordmark {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 7px 14px !important;
+  background-color: var(--hermetic-parchment) !important;
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(22, 16, 12, 0.045) 0px,
+      rgba(22, 16, 12, 0.045) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    linear-gradient(180deg, #e5d4b4 0%, #cbb286 100%) !important;
+  border: 2px solid var(--hermetic-ink-black) !important;
+  border-image: none !important;
+  border-radius: 0 !important;
+  box-shadow:
+    inset 0 0 0 2px var(--hermetic-parchment-light),
+    inset 0 0 0 3.5px var(--hermetic-ink-umber),
+    3px 4px 0 rgba(22, 16, 12, 0.88) !important;
+  color: var(--hermetic-ink-black) !important;
+  font-family: Georgia, 'Times New Roman', serif !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 1.8px !important;
+  line-height: 1.05 !important;
+  text-shadow: none !important;
+  text-transform: uppercase;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.cult-wordmark:hover {
+  background-color: var(--hermetic-parchment-light) !important;
+  transform: translateY(-1px);
+}
+
+.cult-mark {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 26px !important;
+  height: 26px !important;
+  font-size: 20px !important;
+  color: var(--hermetic-ink-black) !important;
+  background: none !important;
+  border: 1.5px solid var(--hermetic-ink-black);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--hermetic-rule-brass);
+  line-height: 1;
+}
+
+/* Center Resource Ledger — Copperplate Treatise Strip */
+.resources-hud-card {
+  position: relative !important;
+  top: 0 !important;
+  left: auto !important;
+  transform: none !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.resources-hud-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  justify-content: center !important;
+  flex-wrap: wrap;
+  gap: 8px !important;
+}
+
+.resource-item {
+  position: relative;
+  display: grid !important;
+  grid-template-columns: 28px auto !important;
+  grid-template-rows: 22px 15px !important;
+  gap: 0 8px !important;
+  min-width: 132px !important;
+  padding: 5px 12px 5px 9px !important;
+  background-color: var(--hermetic-parchment) !important;
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(22, 16, 12, 0.04) 0px,
+      rgba(22, 16, 12, 0.04) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    linear-gradient(180deg, #e5d4b4 0%, #cbb286 100%) !important;
+  border: 2px solid var(--hermetic-ink-black) !important;
+  border-image: none !important;
+  border-radius: 0 !important;
+  box-shadow:
+    inset 0 0 0 2px var(--hermetic-parchment-light),
+    inset 0 0 0 3.5px var(--hermetic-ink-umber),
+    3px 4px 0 rgba(22, 16, 12, 0.88) !important;
+}
+
+.resource-item .res-name {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 0 !important;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--hermetic-rule-brass);
+  background: rgba(22, 16, 12, 0.08);
+}
+
+.resource-item .res-name::before {
+  content: '';
+  display: block;
+  width: 22px !important;
+  height: 22px !important;
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  filter: sepia(0.55) contrast(1.35) brightness(0.65);
+}
+
+.resource-item-gnose .res-name::before {
+  background-image: url('/assets/hud/book.svg');
+}
+
+.resource-item .res-num,
+#faith-counter,
+#followers-counter,
+#fervor-counter-hud,
+#relic-counter-hud,
+#gnose-counter-hud {
+  font: 25px/0.92 var(--font-game) !important;
+  color: var(--hermetic-ink-black) !important;
+  text-shadow: 0 1px 0 rgba(255, 245, 224, 0.65) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.resource-item-fervor .res-num,
+#fervor-counter-hud {
+  color: var(--hermetic-crimson-ink) !important;
+}
+
+.resource-item-relic .res-num,
+#relic-counter-hud {
+  color: var(--hermetic-relic-ink) !important;
+}
+
+.resource-item-gnose .res-num,
+#gnose-counter-hud {
+  color: var(--hermetic-gnose-ink) !important;
+}
+
+.resource-item .res-rate,
+#faith-per-sec-counter,
+#fervor-rate-counter-hud,
+#relic-rate-counter-hud,
+#gnose-mult-counter-hud {
+  grid-column: 2;
+  font: 15px/1 var(--font-game) !important;
+  color: var(--hermetic-ink-sepia) !important;
+  text-shadow: none !important;
+}
+
+/* Right Group HUD Buttons — Etched Copperplate Stamps */
+.top-right-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.top-right-group .icon-btn-gold,
+.panel-toggle-btn {
+  width: 42px !important;
+  height: 42px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: var(--hermetic-parchment) !important;
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(22, 16, 12, 0.045) 0px,
+      rgba(22, 16, 12, 0.045) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    linear-gradient(180deg, #e5d4b4 0%, #cbb286 100%) !important;
+  border: 2px solid var(--hermetic-ink-black) !important;
+  border-image: none !important;
+  border-radius: 0 !important;
+  box-shadow:
+    inset 0 0 0 2px var(--hermetic-parchment-light),
+    inset 0 0 0 3.5px var(--hermetic-ink-umber),
+    3px 4px 0 rgba(22, 16, 12, 0.88) !important;
+  color: var(--hermetic-ink-black) !important;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+
+/* Restore crisp inline SVG linework icons for Achievements, Music & Settings */
+.top-right-group .icon-btn-gold::before {
+  display: none !important;
+  content: none !important;
+}
+
+.top-right-group .icon-btn-gold svg {
+  visibility: visible !important;
+  position: static !important;
+  width: 20px !important;
+  height: 20px !important;
+  stroke: currentColor !important;
+  color: inherit !important;
+}
+
+.top-right-group .icon-btn-gold:hover {
+  background-color: var(--hermetic-ink-soot) !important;
+  background-image: none !important;
+  color: var(--hermetic-parchment-light) !important;
+  box-shadow:
+    inset 0 0 0 2px var(--hermetic-rule-brass),
+    3px 4px 0 rgba(10, 7, 5, 0.92) !important;
+  transform: translateY(-1px);
+}
+
+.top-right-group .icon-btn-gold:active {
+  transform: translateY(1px);
+}
+
+#music-quick-btn.muted {
+  opacity: 0.72;
+}
+
+/* ===================================================
+   DODECA-CARDS — HERMETIC TREATISE PLATES & CARTOUCHES
+   No blur/glassmorphism; double-rule soot & parchment plates
+   =================================================== */
+
 .dodeca-card {
   position: absolute;
   z-index: 5;
-  background: rgba(20, 15, 12, 0.90);
-  backdrop-filter: blur(8px);
-  border: 4px solid #5a422d;
-  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.95), inset 0 0 25px rgba(0, 0, 0, 0.6);
-  border-radius: 6px;
+  background-color: var(--hermetic-parchment);
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(22, 16, 12, 0.032) 0px,
+      rgba(22, 16, 12, 0.032) 1px,
+      transparent 1px,
+      transparent 5px
+    ),
+    linear-gradient(180deg, #e2d0ae 0%, #cfb68a 100%);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 2.5px solid var(--hermetic-ink-black);
+  box-shadow:
+    inset 0 0 0 2px var(--hermetic-parchment-light),
+    inset 0 0 0 4px var(--hermetic-rule-brass),
+    6px 8px 0 rgba(18, 13, 9, 0.9),
+    0 18px 36px rgba(0, 0, 0, 0.65);
+  border-radius: 0;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  transition: box-shadow 0.25s ease, filter 0.25s ease, border-color 0.25s ease;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
   user-select: text;
+  color: var(--hermetic-ink-black);
 }
 
 .dodeca-card.focused-glow {
-  box-shadow: 0 0 45px rgba(220, 180, 110, 0.7), 0 14px 40px rgba(0, 0, 0, 0.95);
-  border-color: #c49850;
-  filter: brightness(1.08);
+  border-color: var(--hermetic-ink-black);
+  box-shadow:
+    inset 0 0 0 2px var(--hermetic-parchment-light),
+    inset 0 0 0 4px var(--hermetic-ink-black),
+    0 0 0 3px var(--hermetic-gold-ochre),
+    8px 10px 0 rgba(14, 10, 7, 0.95);
 }
 
-/* Card Header - Gothic Architectural Lintel */
+/* Card Header — Copperplate Soot-Ink Architectural Lintel */
 .dodeca-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background: #18110d;
-  background: linear-gradient(90deg, #18110d 0%, #281a13 100%);
-  border-bottom: 2px solid #5a422d;
+  background-color: var(--hermetic-ink-black);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgba(216, 195, 158, 0.05) 0px,
+      rgba(216, 195, 158, 0.05) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    linear-gradient(180deg, #241b14 0%, #150f0b 100%);
+  border-bottom: 2px solid var(--hermetic-rule-brass);
+  box-shadow: inset 0 -1px 0 var(--hermetic-ink-black);
   cursor: grab;
   user-select: none;
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
+  border-radius: 0;
 }
 
 .dodeca-card-header:active {
@@ -100,29 +427,31 @@
 
 .dodeca-card-icon {
   font-size: 16px;
-  color: #f7d99a;
+  color: var(--hermetic-parchment);
   line-height: 1;
 }
 
 .dodeca-card-title {
   font-family: var(--font-game);
-  font-size: 19px;
+  font-size: 20px;
   line-height: 1;
-  color: #f7d99a;
-  letter-spacing: 1px;
+  color: var(--hermetic-parchment-light);
+  letter-spacing: 1.2px;
   margin: 0;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 #090604;
 }
 
 .dodeca-card-tag {
   font-family: var(--font-game);
-  font-size: 10px;
-  color: #c49850;
-  background: rgba(0, 0, 0, 0.4);
+  font-size: 12px;
+  color: var(--hermetic-ink-black);
+  background: var(--hermetic-parchment-mid);
   padding: 1px 6px;
-  border-radius: 2px;
-  border: 1px solid rgba(196, 152, 80, 0.3);
+  border-radius: 0;
+  border: 1px solid var(--hermetic-rule-brass);
   text-transform: uppercase;
+  letter-spacing: 0.6px;
 }
 
 .dodeca-card-actions {
@@ -132,16 +461,16 @@
 }
 
 .dodeca-card-btn-toggle {
-  background: #2e1f16;
-  border: 1px solid #6b4e33;
-  color: #d1b894;
+  background: var(--hermetic-parchment-mid);
+  border: 1.5px solid var(--hermetic-rule-brass);
+  color: var(--hermetic-ink-black);
   cursor: pointer;
   width: 22px;
   height: 22px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 3px;
+  border-radius: 0;
   font-size: 14px;
   font-weight: bold;
   line-height: 1;
@@ -149,19 +478,64 @@
 }
 
 .dodeca-card-btn-toggle:hover {
-  background: #4a3424;
-  color: #fff;
-  border-color: #9d754c;
+  background: var(--hermetic-parchment-light);
+  color: var(--hermetic-ink-black);
+  border-color: var(--hermetic-ink-light);
 }
 
-/* Card Body */
+/* Card Body — Aged Parchment Treatise Interior */
 .dodeca-card-body {
-  padding: 12px;
+  padding: 13px;
   overflow-y: auto;
   max-height: 580px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  color: var(--hermetic-ink-black);
+}
+
+/* Unify inner elements inside Dodeca-Cards to Copperplate & Parchment ink */
+.dodeca-card-body :is(.cult-action-card, .relic-action-card, .ach-card) {
+  background: rgba(203, 178, 134, 0.55) !important;
+  border: 1px solid var(--hermetic-rule-brass) !important;
+  border-top: 2px solid var(--hermetic-ink-umber) !important;
+  border-bottom: 2px solid var(--hermetic-ink-umber) !important;
+  border-radius: 0 !important;
+  box-shadow: inset 0 0 0 1px rgba(229, 212, 180, 0.5) !important;
+  color: var(--hermetic-ink-black) !important;
+}
+
+.dodeca-card-body .cult-action-card:hover:not(.unaffordable) {
+  background: rgba(229, 212, 180, 0.85) !important;
+  border-color: var(--hermetic-ink-black) !important;
+}
+
+.dodeca-card-body :is(.btn-follower-action, .btn-incarnation-upgrade, .btn-convert-relics, .btn-buy-relic, .btn-unlock-action, .cult-action-card .card-click-hint) {
+  background-color: var(--hermetic-ink-soot) !important;
+  background-image: linear-gradient(180deg, #2b2018 0%, #18110c 100%) !important;
+  border: 1.5px solid var(--hermetic-ink-black) !important;
+  border-image: none !important;
+  border-radius: 0 !important;
+  box-shadow:
+    inset 0 0 0 1.5px var(--hermetic-rule-brass),
+    2px 3px 0 rgba(22, 16, 12, 0.75) !important;
+  color: var(--hermetic-parchment-light) !important;
+}
+
+.dodeca-card-body :is(.btn-follower-action, .btn-incarnation-upgrade, .btn-convert-relics, .btn-buy-relic, .btn-unlock-action):hover:not(:disabled):not(.locked) {
+  background-color: var(--hermetic-ink-umber) !important;
+  background-image: linear-gradient(180deg, #3d2d20 0%, #241912 100%) !important;
+  color: #fff6e5 !important;
+}
+
+.dodeca-card-body :is(.btn-follower-action:disabled, .btn-convert-max.locked, .btn-incarnation-upgrade:disabled, .btn-convert-relics:disabled, .btn-buy-relic:disabled, .btn-unlock-action:disabled, .cult-action-card.unaffordable .card-click-hint) {
+  background: #9e8968 !important;
+  background-image: none !important;
+  color: #3b2c1f !important;
+  border-color: #6b5439 !important;
+  box-shadow: inset 0 0 0 1px #b8a17d !important;
+  filter: none !important;
+  opacity: 0.82 !important;
 }
 
 /* Collapsed State */
@@ -174,20 +548,13 @@
   min-height: 0 !important;
 }
 
-/* Locked Card Overlay */
+/* Locked Card State - completely invisible until unlocked */
+.dodeca-card.card-locked {
+  display: none !important;
+}
+
 .dodeca-card-locked-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(14, 10, 8, 0.88);
-  backdrop-filter: blur(3px);
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  text-align: center;
-  border-radius: 4px;
+  display: none !important;
 }
 
 .card-lock-seal {
@@ -223,34 +590,99 @@
    Exact integration with architectural landmarks
    =================================================== */
 
-/* 1. DIEGETIC CELESTIAL SPHERE (Floating in broken cosmic dome oculus) */
-#card-altar-sphere {
-  left: 1510px;
-  top: 624px;
+/* 1. DIEGETIC CELESTIAL SPHERE (Centered in cosmic dome oculus, no card/blur/borders) */
+#card-altar-sphere,
+#card-altar-sphere.focused-glow {
+  left: 1490px;
+  top: 615px;
   width: 460px;
   height: 460px;
   background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: none !important;
+  border-radius: 0 !important;
   box-shadow: none !important;
+  filter: none !important;
   pointer-events: none;
   z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #card-altar-sphere .dodeca-card-header,
 #card-altar-sphere .sacred-window-heading,
-#card-altar-sphere .sacred-window-footer {
+#card-altar-sphere .sacred-window-footer,
+#card-altar-sphere .center-frame::before,
+#card-altar-sphere .center-frame::after,
+#card-altar-sphere .sphere-orbit-ring,
+#card-altar-sphere .sphere-aura {
   display: none !important;
+  content: none !important;
 }
 
 #card-altar-sphere .dodeca-card-body {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  pointer-events: none;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#card-altar-sphere .center-frame,
+#card-altar-sphere .center-frame-content,
+#card-altar-sphere .sphere-presentation-area {
+  flex: 1 1 100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
   background: transparent !important;
   border: none !important;
+  border-image: none !important;
+  box-shadow: none !important;
   padding: 0 !important;
+  margin: 0 !important;
   overflow: visible !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
   pointer-events: none;
 }
 
 #card-altar-sphere .sphere-wrapper {
+  pointer-events: auto;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 50% !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#card-altar-sphere .divine-sphere-btn {
+  background: radial-gradient(circle at center, rgba(30, 24, 20, 0.15) 0%, rgba(10, 8, 8, 0.75) 100%), url('/assets/sphere_base.png') center / cover no-repeat !important;
+  width: 170px !important;
+  height: 170px !important;
+  border: none !important;
+  box-shadow: 0 0 32px rgba(0, 0, 0, 0.85), 0 0 24px rgba(196, 152, 80, 0.35) !important;
+  border-radius: 50% !important;
+}
+
+#card-altar-sphere .church-blessing {
   pointer-events: auto;
 }
 
@@ -332,98 +764,332 @@
   max-height: 440px;
 }
 
+/* 9. SANCTUM GNOSTICUM (Upper-Left Chancel Vault) */
+#card-gnose {
+  left: 860px;
+  top: 140px;
+  width: 520px;
+  min-height: 580px;
+}
+
+#card-gnose .dodeca-card-body {
+  max-height: 620px;
+}
+
+.gnose-reset-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: rgba(203, 178, 134, 0.55);
+  border: 1.5px solid var(--hermetic-ink-umber);
+  box-shadow: inset 0 0 0 1px rgba(229, 212, 180, 0.6);
+  border-radius: 0;
+}
+
+.btn-gnose-reset {
+  width: 100%;
+  padding: 10px 14px;
+  font-family: var(--font-game);
+  font-size: 18px;
+  letter-spacing: 0.8px;
+  color: var(--hermetic-parchment-light);
+  background: linear-gradient(180deg, #2b2018 0%, #16100c 100%);
+  border: 2px solid var(--hermetic-ink-black);
+  box-shadow:
+    inset 0 0 0 1.5px var(--hermetic-gold-ochre),
+    2px 3px 0 rgba(22, 16, 12, 0.8);
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-shadow: 1px 1px 0 #090604;
+}
+
+.btn-gnose-reset:hover:not(:disabled) {
+  background: linear-gradient(180deg, #3f2e21 0%, #241912 100%);
+  color: #fff6e5;
+  box-shadow:
+    inset 0 0 0 1.5px var(--hermetic-parchment-light),
+    2px 3px 0 rgba(22, 16, 12, 0.9);
+}
+
+.btn-gnose-reset:disabled {
+  opacity: 0.78;
+  cursor: not-allowed;
+  border-color: #6b5439;
+  background: #9e8968;
+  color: #3b2c1f;
+  box-shadow: inset 0 0 0 1px #b8a17d;
+  text-shadow: none;
+}
+
+.gnose-req-hint {
+  font-size: 14px;
+  color: var(--hermetic-ink-sepia);
+  text-align: center;
+}
+
+.gnose-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.gnose-stat-box {
+  background: rgba(203, 178, 134, 0.5);
+  border: 1px solid var(--hermetic-rule-brass);
+  border-radius: 0;
+  padding: 5px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.gnose-stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--hermetic-ink-sepia);
+  text-transform: uppercase;
+}
+
+.gnose-stat-val {
+  font-family: var(--font-game);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--hermetic-ink-black);
+}
+
+.gnose-toggles-bar,
+.gnose-automation-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--hermetic-rule-brass);
+}
+
+.gnose-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  color: var(--hermetic-ink-black);
+  cursor: pointer;
+}
+
+.gnose-toggle-label input[type='checkbox'] {
+  accent-color: var(--hermetic-ink-soot);
+  cursor: pointer;
+}
+
+.gnose-upgrades-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gnose-tier-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gnose-tier-header {
+  font-family: var(--font-game);
+  font-size: 16px;
+  letter-spacing: 0.8px;
+  color: var(--hermetic-ink-black);
+  border-bottom: 1.5px solid var(--hermetic-ink-umber);
+  padding-bottom: 3px;
+  text-transform: uppercase;
+}
+
+.gnose-tier-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gnose-tree-node {
+  padding: 8px 10px;
+  border: 1px solid var(--hermetic-rule-brass);
+  background: rgba(203, 178, 134, 0.55);
+  transition: all 0.15s ease;
+}
+
+.gnose-tree-node.gnose-node-available {
+  border: 1.5px solid var(--hermetic-ink-black);
+  background: rgba(229, 212, 180, 0.85);
+  box-shadow: inset 0 0 0 1px var(--hermetic-gold-ochre);
+}
+
+.gnose-tree-node.gnose-node-unlocked {
+  border: 1.5px solid var(--hermetic-ink-umber);
+  background: rgba(184, 155, 108, 0.65);
+}
+
+.gnose-tree-node.gnose-node-locked-prereq,
+.gnose-tree-node.gnose-node-unaffordable {
+  opacity: 0.68;
+}
+
+.gnose-node-badge {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 0;
+  white-space: nowrap;
+}
+
+.gnose-node-badge.cost {
+  background: var(--hermetic-ink-soot);
+  border: 1px solid var(--hermetic-rule-brass);
+  color: var(--hermetic-parchment-light);
+}
+
+.gnose-node-badge.unlocked {
+  background: var(--hermetic-parchment-dark);
+  border: 1px solid var(--hermetic-ink-umber);
+  color: var(--hermetic-ink-black);
+}
+
+.gnose-node-badge.locked {
+  background: rgba(94, 70, 49, 0.25);
+  border: 1px solid var(--hermetic-rule-brass);
+  color: var(--hermetic-ink-sepia);
+}
+
+.gnose-node-benefit {
+  font-size: 15px;
+  color: var(--hermetic-ink-sepia);
+}
+
 /* ===================================================
-   FLOATING QUICK NAVIGATION BAR & CONTROLS
+   FLOATING QUICK NAVIGATION BAR & ZOOM CARTOUCHES
+   Engraved Parchment & Soot-Ink Copperplate Ribbons
    =================================================== */
 
 .board-quicknav-bar {
   position: absolute;
-  top: 12px;
+  bottom: 18px;
   left: 50%;
   transform: translateX(-50%);
+  top: auto;
   z-index: 50;
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(20, 15, 12, 0.94);
-  backdrop-filter: blur(8px);
-  border: 3px solid #5a422d;
-  padding: 4px 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75);
-  border-radius: 4px;
-  max-width: 95vw;
+  background-color: var(--hermetic-parchment);
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(22, 16, 12, 0.04) 0px,
+      rgba(22, 16, 12, 0.04) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    linear-gradient(180deg, #e5d4b4 0%, #cbb286 100%);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 2px solid var(--hermetic-ink-black);
+  padding: 5px 8px;
+  box-shadow:
+    inset 0 0 0 2px var(--hermetic-parchment-light),
+    inset 0 0 0 3.5px var(--hermetic-ink-umber),
+    4px 5px 0 rgba(18, 13, 9, 0.9);
+  border-radius: 0;
+  max-width: calc(100vw - 240px);
   overflow-x: auto;
 }
 
 .quicknav-btn {
-  background: #2b1f17;
-  border: 1px solid #5a422d;
-  color: #d1b894;
+  background: rgba(203, 178, 134, 0.65);
+  border: 1.5px solid var(--hermetic-ink-umber);
+  color: var(--hermetic-ink-black);
   font-family: var(--font-game);
-  font-size: 14px;
-  padding: 4px 10px;
-  border-radius: 3px;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  padding: 4px 11px;
+  border-radius: 0;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
+  text-transform: uppercase;
 }
 
 .quicknav-btn:hover {
-  background: #3e2d21;
-  color: #f7d99a;
-  border-color: #8b6b44;
+  background: var(--hermetic-parchment-light);
+  color: var(--hermetic-ink-black);
+  border-color: var(--hermetic-ink-black);
 }
 
 .quicknav-btn.active {
-  background: #503928;
-  color: #fff;
-  border-color: #c49850;
-  box-shadow: 0 0 10px rgba(196, 152, 80, 0.4);
+  background: var(--hermetic-ink-black);
+  color: var(--hermetic-parchment-light);
+  border-color: var(--hermetic-ink-black);
+  box-shadow: inset 0 0 0 1px var(--hermetic-rule-brass);
 }
 
 .board-zoom-controls {
   position: absolute;
-  bottom: 20px;
-  right: 20px;
+  bottom: 18px;
+  right: 22px;
   z-index: 50;
   display: flex;
   align-items: center;
   gap: 4px;
-  background: rgba(20, 15, 12, 0.94);
-  backdrop-filter: blur(8px);
-  border: 3px solid #5a422d;
-  padding: 4px 6px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75);
-  border-radius: 4px;
+  background-color: var(--hermetic-parchment);
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(22, 16, 12, 0.04) 0px,
+      rgba(22, 16, 12, 0.04) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    linear-gradient(180deg, #e5d4b4 0%, #cbb286 100%);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 2px solid var(--hermetic-ink-black);
+  padding: 5px 7px;
+  box-shadow:
+    inset 0 0 0 2px var(--hermetic-parchment-light),
+    inset 0 0 0 3.5px var(--hermetic-ink-umber),
+    4px 5px 0 rgba(18, 13, 9, 0.9);
+  border-radius: 0;
 }
 
 .board-zoom-btn {
-  background: #2b1f17;
-  border: 1px solid #5a422d;
-  color: #d1b894;
-  width: 30px;
-  height: 30px;
+  background: rgba(203, 178, 134, 0.7);
+  border: 1.5px solid var(--hermetic-ink-umber);
+  color: var(--hermetic-ink-black);
+  width: 28px;
+  height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-radius: 3px;
-  transition: all 0.15s ease;
+  border-radius: 0;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .board-zoom-btn:hover {
-  background: #423022;
-  color: #fff;
-  border-color: #9d754c;
+  background: var(--hermetic-ink-black);
+  color: var(--hermetic-parchment-light);
+  border-color: var(--hermetic-ink-black);
 }
 
 .board-zoom-level {
   font-family: var(--font-game);
-  font-size: 14px;
-  color: #f7d99a;
+  font-size: 16px;
+  color: var(--hermetic-ink-black);
   min-width: 44px;
   text-align: center;
   padding: 0 4px;
@@ -431,6 +1097,58 @@
 
 .btn-reset-center {
   margin-left: 2px;
+}
+
+/* ===================================================
+   MODALS, TOOLTIPS & POPUPS — HERMETIC TREATISE PLATES
+   =================================================== */
+
+.cult-tooltip,
+.modal-slide-card,
+.mobile-inspect-sheet,
+.spotlight-balloon,
+.slide-card,
+.intro-modal-card,
+.cult-dialog,
+.ach-popup-toast,
+.ach-popup-square {
+  background-color: var(--hermetic-parchment) !important;
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(22, 16, 12, 0.032) 0px,
+      rgba(22, 16, 12, 0.032) 1px,
+      transparent 1px,
+      transparent 5px
+    ),
+    linear-gradient(180deg, #e5d4b4 0%, #cbb286 100%) !important;
+  border: 2.5px solid var(--hermetic-ink-black) !important;
+  border-image: none !important;
+  border-radius: 0 !important;
+  box-shadow:
+    inset 0 0 0 2px var(--hermetic-parchment-light),
+    inset 0 0 0 4px var(--hermetic-rule-brass),
+    6px 8px 0 rgba(18, 13, 9, 0.92) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.close-btn-gold,
+.close-mobile-sheet-btn,
+.ach-popup-close {
+  background: var(--hermetic-ink-soot) !important;
+  border: 1.5px solid var(--hermetic-ink-black) !important;
+  border-image: none !important;
+  box-shadow: inset 0 0 0 1px var(--hermetic-rule-brass) !important;
+  color: var(--hermetic-parchment-light) !important;
+  border-radius: 0 !important;
+}
+
+.close-btn-gold:hover,
+.close-mobile-sheet-btn:hover,
+.ach-popup-close:hover {
+  background: var(--hermetic-ink-umber) !important;
+  color: #fff6e5 !important;
 }
 
 /* Ensure all tab panes inside Dodeca cards are displayed as open cards */
@@ -450,14 +1168,14 @@
 }
 
 .dodeca-card-body::-webkit-scrollbar-track {
-  background: rgba(14, 10, 8, 0.6);
+  background: rgba(184, 155, 108, 0.45);
 }
 
 .dodeca-card-body::-webkit-scrollbar-thumb {
-  background: #5a422d;
-  border-radius: 3px;
+  background: var(--hermetic-ink-umber);
+  border-radius: 0;
 }
 
 .dodeca-card-body::-webkit-scrollbar-thumb:hover {
-  background: #8b6b44;
+  background: var(--hermetic-ink-black);
 }

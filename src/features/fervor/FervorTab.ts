@@ -61,7 +61,8 @@ export class FervorTab {
       }
 
       const cost = calculateFervorUpgradeCost(upg);
-      const mult = getFervorUpgradeMultiplier(upg, totalFollowers, faith);
+      const fu1Boosted = this.options.gameState.isFu1Boosted();
+      const mult = getFervorUpgradeMultiplier(upg, totalFollowers, faith, fu1Boosted);
       const canAfford = fervor >= cost;
 
       const card = document.createElement('div');
@@ -99,7 +100,7 @@ export class FervorTab {
       });
 
       card.addEventListener('mouseenter', (e: MouseEvent) => {
-        this.options.tooltips.showFervorTooltip(upg, cost, mult, e);
+        this.options.tooltips.showFervorTooltip(upg, cost, mult, e, this.options.gameState.isFu1Boosted());
       });
       card.addEventListener('mousemove', (e: MouseEvent) => {
         this.options.tooltips.position(e);
@@ -114,17 +115,34 @@ export class FervorTab {
 
   public updateButtonStates(): void {
     const fervor = this.options.gameState.fervorPoints;
+    const totalFollowers = this.options.gameState.getTotalFollowersCount();
+    const faith = this.options.gameState.faithPoints;
+    const fu1Boosted = this.options.gameState.isFu1Boosted();
+
     this.options.gameState.fervorUpgrades.forEach((upg) => {
       if (upg.id === 'fu_relics' && !this.options.gameState.isPhoenixRelicUnlocked()) {
         return;
       }
       const cost = calculateFervorUpgradeCost(upg);
+      const mult = getFervorUpgradeMultiplier(upg, totalFollowers, faith, fu1Boosted);
       const card = document.getElementById(`card-${upg.id}`);
       if (card) {
         if (fervor >= cost) {
           card.classList.remove('unaffordable');
         } else {
           card.classList.add('unaffordable');
+        }
+        const multTagEl = card.querySelector('.fervor-mult-tag');
+        if (multTagEl) {
+          multTagEl.textContent = `x${mult.toFixed(2)}`;
+        }
+        const benefitEl = card.querySelector('.card-benefit');
+        if (benefitEl) {
+          benefitEl.textContent = `Nível ${upg.level} • Atualmente x${mult.toFixed(2)}`;
+        }
+        const costSpanEls = card.querySelectorAll('.cost-tag span');
+        if (costSpanEls.length >= 2) {
+          costSpanEls[1].textContent = `${formatNumber(cost)} Fervor`;
         }
       }
     });

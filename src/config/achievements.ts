@@ -352,5 +352,61 @@ export const initialAchievements: Achievement[] = [
       percent: Math.min(100, ((s.maxAscension ?? 0) / 5) * 100),
       label: `${s.maxAscension ?? 0} / Nível 5 de Ascensão`
     })
+  },
+
+  // --- Gnose (True Prestige) Milestones ---
+  {
+    id: 'ach_gnose_first',
+    name: 'O Primeiro Ouroboros',
+    desc: 'Realize sua primeira Ascensão de Gnose, dissolvendo o culto terreno.',
+    lore: 'Você destruiu o próprio templo e descobriu que não estava nas pedras, mas na Mente que as sonhou.',
+    icon: '',
+    unlocked: false,
+    buffText: '+25% em toda a Fé',
+    buffType: 'global_mult',
+    buffVal: 0.25,
+    check: (s) => (s.gnoseResets ?? 0) >= 1,
+    getProgress: (s) => ({
+      current: Math.min(s.gnoseResets ?? 0, 1),
+      target: 1,
+      percent: Math.min(100, ((s.gnoseResets ?? 0) / 1) * 100),
+      label: `${s.gnoseResets ?? 0} / 1 Ascensão de Gnose`
+    })
+  },
+  {
+    id: 'ach_gnose_25',
+    name: 'Adeptus Hermeticus',
+    desc: 'Acumule um total de 25 Gnose ao longo dos seus ciclos.',
+    lore: 'Os mistérios menores se abrem; as tábuas de esmeralda brilham sem segredos diante do seu olhar.',
+    icon: '',
+    unlocked: false,
+    buffText: '+50% Fé/s dos fiéis',
+    buffType: 'fps_mult',
+    buffVal: 0.50,
+    check: (s) => (s.totalGnoseEarned ?? 0) >= 25,
+    getProgress: (s) => ({
+      current: Math.min(s.totalGnoseEarned ?? 0, 25),
+      target: 25,
+      percent: Math.min(100, ((s.totalGnoseEarned ?? 0) / 25) * 100),
+      label: `${s.totalGnoseEarned ?? 0} / 25 Gnose Total`
+    })
+  },
+  {
+    id: 'ach_gnose_500',
+    name: 'Mente Incircunscrita',
+    desc: 'Acumule um total de 500 Gnose ao longo dos seus ciclos.',
+    lore: 'Seu centro está em toda parte; sua circunferência, em lugar nenhum.',
+    icon: '',
+    unlocked: false,
+    buffText: '+100% em toda a Fé',
+    buffType: 'global_mult',
+    buffVal: 1.00,
+    check: (s) => (s.totalGnoseEarned ?? 0) >= 500,
+    getProgress: (s) => ({
+      current: Math.min(s.totalGnoseEarned ?? 0, 500),
+      target: 500,
+      percent: Math.min(100, ((s.totalGnoseEarned ?? 0) / 500) * 100),
+      label: `${s.totalGnoseEarned ?? 0} / 500 Gnose Total`
+    })
   }
 ];

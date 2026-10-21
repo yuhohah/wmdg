@@ -51,5 +51,18 @@ export const initialUnlocks: MechanicUnlock[] = [
     tabId: 'tab-pantheon',
     tabName: 'Panteão',
     prerequisiteId: 'unlock_relics'
+  },
+  {
+    id: 'unlock_gnose',
+    name: 'Selo da Gnose',
+    desc: 'Libera a Ascensão Gnóstica: dissolva seu culto terreno a partir de 1Q de Fé para colher Gnose e desbloquear a Árvore Hermética permanente. Abre a Câmara da Gnose.',
+    lore: 'Acima da matéria e das relíquias dos deuses caídos repousa o Nous puro. Quem dissolve o próprio templo renasce na geometria eterna da Esfera.',
+    symbol: '',
+    cost: 1e15,
+    costCurrency: 'faith',
+    unlocked: false,
+    tabId: 'tab-gnose',
+    tabName: 'Gnose',
+    prerequisiteId: 'unlock_relics'
   }
 ];

@@ -26,3 +26,6 @@ A follower from the Church yard walks to the altar and prays; their request can 
 
 **Crowd level**
 How thick the crowd of silhouettes behind the Church yard is, from 0 (none) to 4: one level per follower threshold reached (50, 250, 1,000 and 10,000), and the top level is the cap however large the cult grows. Derived from the follower count; never saved.
+
+**Gnose**
+The true prestige currency unlocked by the Selo da Gnose (`1e15` Fé). Performing an Ascensão Gnóstica dissolves the earthly cult (Fé, Fiéis, Fervor, Ritos de Fervor, Estágio da Encarnação, Fragmentos, Relíquias, and the earlier Selos unless preserved by Gnose Tree upgrades) in exchange for Gnose (`floor(((Fé / 1e15) ^ 0.15) * mult)`). Total Gnose earned grants a permanent passive multiplier (`1 + TotalGnose^0.85 * 1.5`) so spending Gnose on the 12-node Hermetic Tree never lowers production.

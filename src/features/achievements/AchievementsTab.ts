@@ -22,6 +22,11 @@ export class AchievementsTab {
   private onAchievementUnlocked?: (ach: Achievement) => void;
 
   private achievementsListEl: HTMLElement | null = null;
+  private modalEl: HTMLElement | null = null;
+  private hudBtnEl: HTMLButtonElement | null = null;
+  private closeBtnEl: HTMLButtonElement | null = null;
+  private closeFooterBtnEl: HTMLButtonElement | null = null;
+  private progressEl: HTMLElement | null = null;
 
   constructor(options: AchievementsTabOptions) {
     this.gameState = options.gameState;
@@ -31,10 +36,65 @@ export class AchievementsTab {
     this.onAchievementUnlocked = options.onAchievementUnlocked;
 
     this.initElements();
+    this.bindEvents();
   }
 
   private initElements(): void {
     this.achievementsListEl = document.getElementById('achievements-list');
+    this.modalEl = document.getElementById('achievements-modal');
+    this.hudBtnEl = document.getElementById('achievements-hud-btn') as HTMLButtonElement | null;
+    this.closeBtnEl = document.getElementById('close-achievements-btn') as HTMLButtonElement | null;
+    this.closeFooterBtnEl = document.getElementById('close-achievements-footer-btn') as HTMLButtonElement | null;
+    this.progressEl = document.getElementById('achievements-modal-progress');
+  }
+
+  private bindEvents(): void {
+    this.hudBtnEl?.addEventListener('click', () => this.toggleModal());
+    this.closeBtnEl?.addEventListener('click', () => this.closeModal());
+    this.closeFooterBtnEl?.addEventListener('click', () => this.closeModal());
+
+    this.modalEl?.addEventListener('click', (e) => {
+      if (e.target === this.modalEl) this.closeModal();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.isModalOpen()) {
+        this.closeModal();
+      }
+    });
+  }
+
+  public isModalOpen(): boolean {
+    return !!this.modalEl?.classList.contains('open');
+  }
+
+  public openModal(): void {
+    this.renderList();
+    this.modalEl?.classList.add('open');
+  }
+
+  public closeModal(): void {
+    this.tooltips.hide();
+    this.modalEl?.classList.remove('open');
+  }
+
+  public toggleModal(): void {
+    if (this.isModalOpen()) {
+      this.closeModal();
+    } else {
+      this.openModal();
+    }
+  }
+
+  private updateHeaderCount(): void {
+    const unlockedCount = this.gameState.achievements.filter((a) => a.unlocked).length;
+    const totalCount = this.gameState.achievements.length;
+    if (this.progressEl) {
+      this.progressEl.textContent = `${unlockedCount} / ${totalCount} conquistas desbloqueadas`;
+    }
+    if (this.hudBtnEl) {
+      this.hudBtnEl.title = `Grimório de Conquistas (${unlockedCount}/${totalCount})`;
+    }
   }
 
   public renderList(): void {
@@ -87,6 +147,8 @@ export class AchievementsTab {
 
       this.achievementsListEl!.appendChild(card);
     });
+
+    this.updateHeaderCount();
   }
 
   public updateRealtime(): void {
@@ -128,6 +190,7 @@ export class AchievementsTab {
       }
     }
 
+    this.updateHeaderCount();
     this.tooltips.updateRealtimeProgress(state);
   }
 

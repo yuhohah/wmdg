@@ -18,6 +18,7 @@ import { FollowersTab } from './features/followers/FollowersTab.js';
 import { IncarnationTab } from './features/incarnation/IncarnationTab.js';
 import { FervorTab } from './features/fervor/FervorTab.js';
 import { RelicsTab } from './features/relics/RelicsTab.js';
+import { GnoseTab } from './features/gnose/GnoseTab.js';
 import { PantheonTab } from './features/pantheon/PantheonTab.js';
 import { BossBattleController } from './features/pantheon/BossBattleController.js';
 import { UnlocksTab } from './features/unlocks/UnlocksTab.js';
@@ -55,6 +56,7 @@ class AppManager {
   public incarnationTab: IncarnationTab;
   public fervorTab: FervorTab;
   public relicsTab: RelicsTab;
+  public gnoseTab: GnoseTab;
   public unlocksTab: UnlocksTab;
   public achievementsTab: AchievementsTab;
   public statsTab: StatsTab;
@@ -137,6 +139,33 @@ class AppManager {
       }
     });
 
+    this.gnoseTab = new GnoseTab({
+      gameState: this.gameState,
+      audio: this.audio,
+      tooltips: this.tooltips,
+      notifications: this.notifications,
+      spawnFloatingText: (x, y, t) => this.sphere.spawnFloatingText(x, y, t),
+      onGnoseReset: () => {
+        this.church.rebuild();
+        this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
+        this.incarnationTab.updateUI();
+        this.renderAllLists();
+        this.updateUnlockedTabsVisibility();
+        events.emit(GameEvents.STATE_CHANGED);
+      },
+      onUpgradePurchased: () => {
+        this.updateUnlockedTabsVisibility();
+        this.incarnationTab.updateUI();
+        this.followersTab.updateUI();
+        this.fervorTab.renderList();
+        this.fervorTab.updateButtonStates();
+        this.unlocksTab.renderList();
+        this.relicsTab.updateUI();
+        this.relicsTab.renderList();
+        events.emit(GameEvents.STATE_CHANGED);
+      }
+    });
+
     this.bossBattle = new BossBattleController({
       gameState: this.gameState,
       audio: this.audio,
@@ -175,6 +204,9 @@ class AppManager {
           this.relicsTab.renderList();
         } else if (unlock.id === 'unlock_pantheon') {
           this.pantheonTab.updateUI();
+        } else if (unlock.id === 'unlock_gnose') {
+          this.gnoseTab.updateUI();
+          this.gnoseTab.renderTree();
         }
         events.emit(GameEvents.STATE_CHANGED);
       }
@@ -244,6 +276,7 @@ class AppManager {
     this.incarnationTab.updateUI();
 
     // 6. Setup Listeners, Initial Renders & Loops
+    this.board = new BoardManager();
     this.setupReactiveListeners();
     this.setupSystemEvents();
     this.renderAllLists();
@@ -254,7 +287,6 @@ class AppManager {
     this.statsTab.updateUI();
     this.onboardingGuide.update();
     if (isArtReview) this.procession = new ProcessionScene(this.gameState, (x, y) => this.sphere.grantMiracle(x, y));
-    this.board = new BoardManager();
     this.church = new ChurchScene(
       this.gameState,
       (x, y) => this.sphere.grantMiracle(x, y),
@@ -328,6 +360,8 @@ class AppManager {
       this.relicsTab.updateUI();
     } else if (tabId === 'tab-pantheon') {
       this.pantheonTab.updateUI();
+    } else if (tabId === 'tab-gnose') {
+      this.gnoseTab.updateUI();
     }
   }
 
@@ -336,17 +370,20 @@ class AppManager {
     const ferv = this.gameState.isFervorUpgradesUnlocked();
     const pan = this.gameState.isPantheonUnlocked();
     const rel = this.gameState.isRelicsUnlocked();
+    const gno = this.gameState.isGnoseUnlocked();
 
     this.incarnationTab.setTabVisibility(inc);
     this.fervorTab.setTabVisibility(ferv);
     this.pantheonTab.setTabVisibility(pan);
     this.relicsTab.setTabVisibility(rel);
+    this.gnoseTab.setTabVisibility(gno);
 
     if (this.board) {
       this.board.setCardUnlocked('card-incarnation', inc);
       this.board.setCardUnlocked('card-fervor', ferv);
       this.board.setCardUnlocked('card-pantheon', pan);
       this.board.setCardUnlocked('card-relics', rel);
+      this.board.setCardUnlocked('card-gnose', gno);
     }
   }
 
@@ -357,6 +394,8 @@ class AppManager {
     this.unlocksTab.renderList();
     this.pantheonTab.updateUI();
     this.relicsTab.renderList();
+    this.gnoseTab.renderTree();
+    this.gnoseTab.updateUI();
     this.achievementsTab.renderList();
   }
 
@@ -366,6 +405,9 @@ class AppManager {
     this.unlocksTab.updateButtonStates();
     if (this.gameState.isRelicsUnlocked()) {
       this.relicsTab.updateUI();
+    }
+    if (this.gameState.isGnoseUnlocked()) {
+      this.gnoseTab.updateUI();
     }
 
     // Update mobile navigation notification dots

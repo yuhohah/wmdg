@@ -5,8 +5,7 @@ import { FollowersArena } from '../../ui/followersArena.js';
 import {
   formatNumber,
   calculateCostDiscountMultiplier,
-  calculateMaxAffordableFollowers,
-  calculateIncarnationFollowerMultiplier
+  calculateMaxAffordableFollowers
 } from '../../systems/calculations.js';
 import { getFervorUpgradeMultiplier } from '../../config/fervor.js';
 import { events, GameEvents } from '../../core/EventBus.js';
@@ -97,7 +96,7 @@ export class FollowersTab {
   public buyMaxFollowers(): void {
     const devotee = this.options.gameState.followers[0];
     if (!devotee) return;
-    if (this.options.gameState.getTotalFollowersCount() < 25) return;
+    if (!this.options.gameState.isConvertMaxUnlocked()) return;
 
     const result = this.options.gameState.buyMaxFollowers(0);
     if (result.success && result.count > 0) {
@@ -125,10 +124,7 @@ export class FollowersTab {
       this.options.gameState.fervorUpgrades[3],
       totalCount
     );
-    const incFollowerMult = calculateIncarnationFollowerMultiplier(
-      this.options.gameState.fervorPoints,
-      this.options.gameState.incarnationStage
-    );
+    const incFollowerMult = this.options.gameState.getEffectiveIncarnationFollowerMultiplier();
     const followerOutput = devotee.count * devotee.baseEffect * fervorFollowersMult * incFollowerMult;
 
     if (this.totalCountEl) {
@@ -151,7 +147,7 @@ export class FollowersTab {
       this.btnConvertOneEl.disabled = this.options.gameState.faithPoints < costOne;
     }
 
-    // Max Button Unlock (At 25 faithful)
+    // Max Button Unlock (At 25 faithful or Memória Hermética Gnose upgrade)
     if (
       this.btnConvertMaxEl &&
       this.convertMaxTitleEl &&
@@ -159,7 +155,7 @@ export class FollowersTab {
       this.convertMaxCostLabelEl &&
       this.convertMaxCostValEl
     ) {
-      if (totalCount < 25) {
+      if (!this.options.gameState.isConvertMaxUnlocked()) {
         this.btnConvertMaxEl.classList.add('locked');
         this.btnConvertMaxEl.disabled = true;
         this.convertMaxTitleEl.textContent = 'CONVERTER MÁXIMO';
@@ -204,10 +200,7 @@ export class FollowersTab {
       this.options.gameState.fervorUpgrades[3],
       this.options.gameState.getTotalFollowersCount()
     );
-    const incFollowerMult = calculateIncarnationFollowerMultiplier(
-      this.options.gameState.fervorPoints,
-      this.options.gameState.incarnationStage
-    );
+    const incFollowerMult = this.options.gameState.getEffectiveIncarnationFollowerMultiplier();
     const followerOutput = devotee.count * devotee.baseEffect * fervorFollowersMult * incFollowerMult;
 
     if (this.rateBadgeEl) {

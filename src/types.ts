@@ -43,6 +43,9 @@ export interface GameState {
   totalRelics?: number;
   bossesDefeated?: number;
   maxAscension?: number;
+  gnosePoints?: number;
+  totalGnoseEarned?: number;
+  gnoseResets?: number;
 }
 
 export interface AchievementProgress {
@@ -131,4 +134,29 @@ export interface BossSaveEntry {
 export interface PantheonSaveData {
   bosses: BossSaveEntry[];
   fragments: string[];
+}
+
+// --- Gnose (True Prestige) Types ---
+
+export interface GnoseUpgrade {
+  id: string;
+  name: string;
+  title: string;
+  desc: string;
+  lore: string;
+  icon: string;
+  tier: 1 | 2 | 3 | 4;
+  cost: number;
+  prerequisites: string[];
+  effectText: string;
+}
+
+export interface GnoseSaveData {
+  gnosePoints: number;
+  totalGnoseEarned: number;
+  gnoseResets: number;
+  unlockedUpgrades: string[];
+  confirmReset: boolean;
+  autoFollowersEnabled: boolean;
+  autoFervorEnabled: boolean;
 }

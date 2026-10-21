@@ -215,3 +215,23 @@ export function calculateRelicFaithMultiplier(relicPoints: number, level: number
   // Based on DodecaDragons: (log10(relics + 1) + 1) ^ (level * 1.2)
   return Math.pow(Math.log10(Math.max(0, relicPoints) + 1) + 1, level * 1.2);
 }
+
+export function calculateGnoseToGet(faith: number, gnoseMult: number = 1.0): number {
+  if (faith < 1e15) return 0;
+  return Math.max(1, Math.floor(Math.pow(faith / 1e15, 0.15) * gnoseMult));
+}
+
+export function calculateTotalGnoseMultiplier(totalGnoseEarned: number): number {
+  if (totalGnoseEarned <= 0) return 1.0;
+  return 1 + Math.pow(totalGnoseEarned, 0.85) * 1.5;
+}
+
+export function calculateGnoseFollowersSynergyMultiplier(
+  followersCount: number,
+  hasFollowersSyn: boolean,
+  hasCubicSyn: boolean = false
+): number {
+  if (!hasFollowersSyn || followersCount <= 0) return 1.0;
+  const exp = hasCubicSyn ? 3.0 : 1.5;
+  return 1 + Math.pow(followersCount, exp);
+}
