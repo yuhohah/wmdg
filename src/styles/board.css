@@ -909,6 +909,34 @@
   padding: 12px;
 }
 
+#card-fervor .fervor-upgrade-card .card-header-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+}
+
+#card-fervor .fervor-upgrade-card .card-title-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+#card-fervor .fervor-upgrade-card .card-name {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  font-size: 19px !important;
+}
+
+#card-fervor .fervor-upgrade-card .fervor-mult-tag {
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+}
+
 /* Complete Hover Removal on Card de Fervor and All Its Descendants */
 #card-fervor,
 #card-fervor:hover,

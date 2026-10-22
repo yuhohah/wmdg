@@ -35,7 +35,7 @@ export const initialFervorUpgrades: FervorUpgrade[] = [
   },
   {
     id: 'fu_followers',
-    name: 'Fiéis Aumentam Fé por Segundo',
+    name: 'Fiéis Aumentam Fé/s',
     desc: 'Acende o fervor nos corações dos Fiéis Devotos, multiplicando sua devoção passiva.',
     lore: '<strong>Rito: Coro das Tochas.</strong> Uma voz é uma prece; mil vozes ao redor do fogo são um único pensamento. Quanto mais fiéis, mais cada um rende.',
     icon: '',
@@ -45,7 +45,7 @@ export const initialFervorUpgrades: FervorUpgrade[] = [
   },
   {
     id: 'fu_synergy',
-    name: 'Fé Aumenta Fervor por Segundo',
+    name: 'Fé Aumenta Fervor/s',
     desc: 'Converte a densidade de Fé acumulada em combustível puro para a chama do Fervor.',
     lore: '<strong>Rito: Óleo da Devoção.</strong> A Fé guardada não é desperdício: derramada no fogo, faz o Fervor subir.',
     icon: '',
