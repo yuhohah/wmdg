@@ -43,7 +43,6 @@
   user-select: none;
 }
 
-.fervor-upgrade-card:hover:not(.unaffordable),
 .unlock-action-card:hover:not(.unaffordable):not(.unlocked-card),
 .relic-action-card:hover:not(.unaffordable):not(.maxed) {
   transform: translateY(-2px);
@@ -51,15 +50,9 @@
   box-shadow: 0 6px 18px rgba(234, 179, 8, 0.2);
 }
 
-.fervor-upgrade-card:active:not(.unaffordable),
 .unlock-action-card:active:not(.unaffordable):not(.unlocked-card),
 .relic-action-card:active:not(.unaffordable):not(.maxed) {
   transform: translateY(1px) scale(0.99);
-}
-
-.fervor-upgrade-card:hover:not(.unaffordable) {
-  border-color: var(--border-white);
-  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.1);
 }
 
 .relic-action-card:hover:not(.unaffordable):not(.maxed) {
@@ -628,10 +621,7 @@
   transition: all 0.2s ease;
 }
 
-.fervor-upgrade-card:hover {
-  border-color: var(--border-white);
-  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.08);
-}
+/* .fervor-upgrade-card hover removed */
 
 .fervor-mult-tag {
   font-family: var(--font-mono);
@@ -657,12 +647,7 @@
   border: 1px solid var(--border-mid);
 }
 
-.fervor-upgrade-card:hover:not(.unaffordable) .card-click-hint {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: #ffffff;
-  color: #ffffff;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-}
+/* .fervor-upgrade-card hint hover removed */
 
 .btn-buy-fervor {
   background: linear-gradient(135deg, #18181b 0%, #3f3f46 100%);
