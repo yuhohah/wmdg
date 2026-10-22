@@ -749,13 +749,20 @@
   left: 260px;
   top: 1220px;
   width: 480px;
-  min-height: 540px;
+  height: auto !important;
+  min-height: auto !important;
 }
 
-/* 4. SCRIPTURIUM PORTAL (Passage between Chancel and Nave) — Direct Unlock Button */
+#card-relics .dodeca-card-body {
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 12px;
+}
+
+/* 4. SCRIPTURIUM PORTAL — Direct Unlock Button (Centered directly below the Sacred Sphere) */
 #card-unlocks {
-  left: 960px;
-  top: 920px;
+  left: 1530px;
+  top: 1110px;
   position: absolute;
   z-index: 15;
   display: flex;
@@ -921,9 +928,36 @@
 /* 6. PERPETUAL HEARTH / BRAZIER (VIA CATHEDRALIS) */
 #card-fervor {
   left: 2640px;
-  top: 880px;
-  width: 440px;
-  min-height: 520px;
+  top: 860px;
+  width: 480px;
+  height: auto !important;
+  min-height: auto !important;
+}
+
+#card-fervor .dodeca-card-body {
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 12px;
+}
+
+/* Remove hover effects on fervor card and its elements */
+#card-fervor,
+#card-fervor:hover,
+#card-fervor .cult-action-card,
+#card-fervor .cult-action-card:hover,
+#card-fervor .cult-action-card:hover:not(.unaffordable),
+#card-fervor .card-click-hint,
+#card-fervor .card-click-hint:hover,
+#card-fervor button:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  transition: none !important;
+}
+
+#card-fervor .cult-action-card:hover:not(.unaffordable) {
+  background: rgba(203, 178, 134, 0.55) !important;
+  border-color: var(--hermetic-rule-brass) !important;
 }
 
 /* 7. CELESTIAL OBSERVATORY / TOWER (VIA STELLARUM) */
