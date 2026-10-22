@@ -29,9 +29,9 @@ interface FollowerSpriteSet {
 }
 
 export class FollowersArena {
-  private canvas: HTMLCanvasElement;
+  public canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
-  private walkers: Walker[] = [];
+  public walkers: Walker[] = [];
   private nextId: number = 1;
   private animFrameId: number | null = null;
   private width: number = 380;
@@ -41,7 +41,8 @@ export class FollowersArena {
   private onMiracleClickCallback?: (clientX: number, clientY: number, walker: Walker) => void;
   private miracleSpawnCooldown: number = 300; // ~5s after start
   private isPaused: boolean = false;
-  private sprites: FollowerSpriteSet[] = [];
+  private speedMultiplier: number = 1.0;
+  public sprites: FollowerSpriteSet[] = [];
 
   constructor(canvasId: string = 'followers-walk-canvas') {
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
@@ -50,6 +51,14 @@ export class FollowersArena {
     this.loadSprites();
     this.setupEvents();
     this.startLoop();
+  }
+
+  public setSpeedMultiplier(mult: number): void {
+    this.speedMultiplier = Math.max(0, mult);
+  }
+
+  public getSpeedMultiplier(): number {
+    return this.speedMultiplier;
   }
 
   private loadSprites(): void {
@@ -302,15 +311,18 @@ export class FollowersArena {
     const minY = Math.max(68, this.height * 0.32);
     const maxY = Math.max(minY + 20, this.height - 18);
 
+    const speedScale = Math.min(this.speedMultiplier, 5);
+    const timerStep = Math.max(1, Math.min(10, Math.floor(this.speedMultiplier)));
+
     for (const w of this.walkers) {
-      w.stateTimer -= 1;
-      w.breathTimer += 0.05;
+      w.stateTimer -= timerStep;
+      w.breathTimer += 0.05 * speedScale;
 
       // Update prayer particles
       for (let i = w.prayParticles.length - 1; i >= 0; i--) {
         const p = w.prayParticles[i];
-        p.y += p.vy;
-        p.alpha -= 0.02;
+        p.y += p.vy * speedScale;
+        p.alpha -= 0.02 * speedScale;
         if (p.alpha <= 0) {
           w.prayParticles.splice(i, 1);
         }
@@ -341,13 +353,13 @@ export class FollowersArena {
         const dist = Math.hypot(dx, dy);
 
         if (dist > 3) {
-          const speed = 0.5 + (w.variant % 3) * 0.12;
+          const speed = (0.5 + (w.variant % 3) * 0.12) * speedScale;
           w.vx = (dx / dist) * speed;
           w.vy = (dy / dist) * speed;
           w.x += w.vx;
           w.y += w.vy;
           w.facing = w.vx >= 0 ? 1 : -1;
-          w.walkCycle += 0.16;
+          w.walkCycle += 0.16 * speedScale;
         } else {
           w.state = Math.random() > 0.4 ? 'pray' : 'idle';
           w.prayCycle = 0;
@@ -357,7 +369,7 @@ export class FollowersArena {
           }
         }
       } else if (w.state === 'pray') {
-        w.prayCycle += 0.075;
+        w.prayCycle += 0.075 * speedScale;
         // Emit gentle sparks at deep reverence frames
         const frame = Math.floor(w.prayCycle) % 9;
         if ((frame === 3 || frame === 5) && Math.random() < 0.25) {
@@ -365,12 +377,12 @@ export class FollowersArena {
         }
       } else {
         // Idle
-        w.idleCycle += 0.05;
+        w.idleCycle += 0.05 * speedScale;
       }
 
       // Miracle plea updates
       if (w.isMiraclePlea) {
-        w.miracleTimer = (w.miracleTimer || 0) - 1;
+        w.miracleTimer = (w.miracleTimer || 0) - timerStep;
         w.state = 'pray';
         w.stateTimer = Math.max(20, w.miracleTimer);
         if (Math.random() < 0.15) {
@@ -392,7 +404,7 @@ export class FollowersArena {
     if (this.walkers.length > 0) {
       const hasActiveMiracle = this.walkers.some((w) => w.isMiraclePlea);
       if (!hasActiveMiracle) {
-        this.miracleSpawnCooldown -= 1;
+        this.miracleSpawnCooldown -= timerStep;
         if (this.miracleSpawnCooldown <= 0) {
           this.triggerMiraclePlea();
           this.miracleSpawnCooldown = 2100 + Math.floor(Math.random() * 1800);
@@ -420,7 +432,7 @@ export class FollowersArena {
     const y = Math.round(w.y);
 
     // 1. Soft contact shadow under feet
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.38)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
     ctx.beginPath();
     ctx.ellipse(x, y - 2, 11, 3.5, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -432,16 +444,16 @@ export class FollowersArena {
     let frame = 0;
 
     if (w.state === 'walk') {
-      img = spriteSet.walk;
-      isLoaded = spriteSet.walkLoaded;
+      img = spriteSet?.walk || null;
+      isLoaded = spriteSet?.walkLoaded || false;
       frame = Math.floor(w.walkCycle) % 9;
     } else if (w.state === 'pray') {
-      img = spriteSet.pray;
-      isLoaded = spriteSet.prayLoaded;
+      img = spriteSet?.pray || null;
+      isLoaded = spriteSet?.prayLoaded || false;
       frame = Math.floor(w.prayCycle) % 9;
     } else {
-      img = spriteSet.idle;
-      isLoaded = spriteSet.idleLoaded;
+      img = spriteSet?.idle || null;
+      isLoaded = spriteSet?.idleLoaded || false;
       frame = Math.floor(w.idleCycle) % 9;
     }
 
@@ -451,18 +463,11 @@ export class FollowersArena {
       ctx.imageSmoothingEnabled = false;
       ctx.translate(x, y);
       ctx.scale(w.facing, 1);
-      // Feet line at y=68 in the 72px frame -> anchor at (-32, -68)
       ctx.drawImage(img, frame * 64, 0, 64, 72, -32, -68, 64, 72);
       ctx.restore();
     } else {
-      // Procedural fallback during initial image load
-      ctx.save();
-      ctx.fillStyle = '#c49850';
-      ctx.beginPath();
-      ctx.arc(x, y - 24, 7, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillRect(x - 6, y - 17, 12, 16);
-      ctx.restore();
+      // High-quality procedural devotee rendering with walking and prayer cycles
+      this.renderProceduralCultist(w, x, y);
     }
 
     // 4. Draw prayer particles in absolute arena coordinates
@@ -484,6 +489,106 @@ export class FollowersArena {
     if (w.isMiraclePlea) {
       this.drawMiracleSpeechBubble(w, x, y);
     }
+  }
+
+  private renderProceduralCultist(w: Walker, x: number, y: number): void {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(w.facing, 1);
+
+    // Color palettes for 9 variants
+    const palettes = [
+      { robe: '#334155', cowl: '#1e293b', trim: '#94a3b8', eye: '#e2e8f0' }, // 0
+      { robe: '#27272a', cowl: '#18181b', trim: '#e4e4e7', eye: '#ffffff' }, // 1
+      { robe: '#451a03', cowl: '#291002', trim: '#d97706', eye: '#fef08a' }, // 2
+      { robe: '#172554', cowl: '#0f172a', trim: '#60a5fa', eye: '#93c5fd' }, // 3
+      { robe: '#4c0519', cowl: '#2d030f', trim: '#f43f5e', eye: '#fecdd3' }, // 4
+      { robe: '#064e3b', cowl: '#022c22', trim: '#34d399', eye: '#a7f3d0' }, // 5
+      { robe: '#312e81', cowl: '#1e1b4b', trim: '#a5b4fc', eye: '#e0e7ff' }, // 6
+      { robe: '#713f12', cowl: '#452509', trim: '#fbbf24', eye: '#fef08a' }, // 7
+      { robe: '#1c1917', cowl: '#0c0a09', trim: '#c49850', eye: '#fbbf24' }  // 8
+    ];
+    const pal = palettes[w.variant % palettes.length];
+
+    let bob = 0;
+    let bowY = 0;
+    let bowRot = 0;
+    let legOffset = 0;
+
+    if (w.state === 'walk') {
+      const step = Math.sin(w.walkCycle * 2);
+      legOffset = step * 4;
+      bob = Math.abs(Math.sin(w.walkCycle * 2)) * 2;
+    } else if (w.state === 'pray') {
+      const pFrame = (Math.floor(w.prayCycle) % 9) / 8;
+      const bow = Math.sin(pFrame * Math.PI);
+      bowY = bow * 5;
+      bowRot = bow * 0.22;
+      bob = -bowY;
+    } else {
+      bob = Math.sin(w.idleCycle) * 1;
+    }
+
+    // Feet
+    ctx.fillStyle = '#09090b';
+    ctx.fillRect(-5 + legOffset, -3, 4, 3);
+    ctx.fillRect(1 - legOffset, -3, 4, 3);
+
+    // Robe Body
+    ctx.save();
+    ctx.translate(0, -bob);
+    if (w.state === 'pray') {
+      ctx.rotate(bowRot);
+    }
+
+    ctx.fillStyle = pal.robe;
+    ctx.beginPath();
+    ctx.moveTo(-6, -26);
+    ctx.lineTo(6, -26);
+    ctx.lineTo(9, -3);
+    ctx.lineTo(-9, -3);
+    ctx.closePath();
+    ctx.fill();
+
+    // Robe gold/silver hem/belt trim
+    ctx.strokeStyle = pal.trim;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(-6, -15);
+    ctx.lineTo(6, -15);
+    ctx.stroke();
+
+    // Cowl / Hood
+    ctx.fillStyle = pal.cowl;
+    ctx.beginPath();
+    ctx.arc(0, -32, 7, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Hood peak
+    ctx.beginPath();
+    ctx.moveTo(-5, -34);
+    ctx.lineTo(-9, -38);
+    ctx.lineTo(-2, -36);
+    ctx.closePath();
+    ctx.fill();
+
+    // Face shadow & glowing eye slit
+    ctx.fillStyle = '#09090b';
+    ctx.fillRect(1, -33, 4, 3);
+    ctx.fillStyle = pal.eye;
+    ctx.fillRect(2, -32, 2, 1.5);
+
+    // Hands in prayer
+    if (w.state === 'pray') {
+      ctx.fillStyle = '#d4af37';
+      ctx.beginPath();
+      ctx.arc(5, -18, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
+    ctx.restore();
   }
 
   private drawMiracleSpeechBubble(w: Walker, x: number, y: number): void {

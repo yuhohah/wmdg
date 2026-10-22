@@ -31,6 +31,7 @@ import { ProcessionScene } from './ui/ProcessionScene.js';
 import { ChurchScene } from './ui/ChurchScene.js';
 import { isArtReview } from './ui/artReview.js';
 import { cultDialog } from './ui/CultDialog.js';
+import { TestMenu } from './ui/TestMenu.js';
 
 class AppManager {
   // Core Subsystems
@@ -62,6 +63,7 @@ class AppManager {
   public statsTab: StatsTab;
   public pantheonTab: PantheonTab;
   public bossBattle: BossBattleController;
+  public testMenu!: TestMenu;
 
   // Save & System State
   private lastSaveTime: number = Date.now();
@@ -297,6 +299,9 @@ class AppManager {
 
     // 7. Global Window Helpers
     this.registerGlobalHelpers();
+
+    // 8. Test & Speed Modifiers Menu
+    this.testMenu = new TestMenu(this);
   }
 
   private setupReactiveListeners(): void {

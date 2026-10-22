@@ -47,6 +47,12 @@ export class IncarnationAltar {
     this.titleEl = document.getElementById('incarnation-altar-title');
     this.loreEl = document.getElementById('incarnation-altar-lore');
 
+    if (this.imgEl) {
+      this.imgEl.onerror = () => {
+        if (this.imgEl) this.imgEl.style.display = 'none';
+      };
+    }
+
     if (this.canvas) {
       this.ctx = this.canvas.getContext('2d', { alpha: true });
       this.initCanvas();
@@ -94,6 +100,10 @@ export class IncarnationAltar {
     });
   }
 
+  public getCurrentStage(): number {
+    return this.currentStage;
+  }
+
   public triggerAltarClick(): void {
     this.options.triggerHaptic?.(12);
     this.options.onAltarClick?.();
@@ -101,50 +111,25 @@ export class IncarnationAltar {
     this.pulsePhase = 1.0;
   }
 
-  public setStage(stage: number, skipAnimation: boolean = false): void {
-    const clampedStage = Math.max(1, Math.min(stage, 5));
-    const stageChanged = this.currentStage !== clampedStage;
-    this.currentStage = clampedStage;
-
-    const stageData: IncarnationStage | undefined = INCARNATION_STAGES.find((s) => s.stage === clampedStage);
-
-    if (this.imgEl) {
-      const targetSrc = `/assets/incarnation/stage_${clampedStage}.jpg`;
-      if (!this.imgEl.src.endsWith(targetSrc)) {
-        if (!skipAnimation && stageChanged) {
-          this.imgEl.style.transition = 'opacity 0.4s ease-out, transform 0.4s ease-out';
-          this.imgEl.style.opacity = '0.3';
-          this.imgEl.style.transform = 'scale(0.92)';
-          setTimeout(() => {
-            if (this.imgEl) {
-              this.imgEl.src = targetSrc;
-              this.imgEl.style.opacity = '1';
-              this.imgEl.style.transform = 'scale(1)';
-            }
-          }, 350);
-        } else {
-          this.imgEl.src = targetSrc;
-          this.imgEl.style.opacity = '1';
-          this.imgEl.style.transform = 'scale(1)';
-        }
-      }
-    }
+  public setStage(stageNumber: number, silent: boolean = false): void {
+    this.currentStage = stageNumber;
+    const stageData: IncarnationStage | undefined = INCARNATION_STAGES.find((s) => s.stage === stageNumber);
 
     if (stageData) {
-      if (this.nameEl) {
-        this.nameEl.textContent = `ESTÁGIO ${clampedStage} · ${stageData.name.toUpperCase()}`;
-      }
-      if (this.titleEl) {
-        this.titleEl.textContent = stageData.title;
-      }
-      if (this.loreEl) {
-        this.loreEl.textContent = stageData.desc;
-      }
+      if (this.nameEl) this.nameEl.textContent = `Estágio ${stageData.stage}: ${stageData.name}`;
+      if (this.titleEl) this.titleEl.textContent = stageData.title;
+      if (this.loreEl) this.loreEl.textContent = `"${stageData.lore}"`;
     }
 
-    if (!skipAnimation && stageChanged) {
-      this.flashAlpha = 0.85;
-      this.spawnBurstParticles(35);
+    if (this.imgEl) {
+      this.imgEl.src = `/assets/incarnation/stage_${stageNumber}.jpg`;
+      this.imgEl.alt = stageData ? stageData.name : `Avatar Estágio ${stageNumber}`;
+      this.imgEl.style.display = 'block';
+    }
+
+    if (!silent) {
+      this.pulsePhase = 1.0;
+      this.spawnBurstParticles(25);
     }
   }
 
@@ -268,6 +253,36 @@ export class IncarnationAltar {
     }
 
     ctx.restore();
+
+    // Procedural central divine sphere (rendered if avatar art is hidden/missing or as occult core)
+    const isImgHidden = !this.imgEl || this.imgEl.style.display === 'none';
+    if (isImgHidden) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      const orbRadius = baseRadius * 0.38;
+      const grad = ctx.createRadialGradient(-orbRadius * 0.25, -orbRadius * 0.25, 2, 0, 0, orbRadius);
+      grad.addColorStop(0, '#fffbe8');
+      grad.addColorStop(0.3, '#d8aa50');
+      grad.addColorStop(0.7, '#784618');
+      grad.addColorStop(1, '#1b120c');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(0, 0, orbRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = 'rgba(244, 222, 179, 0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Astrological orbit ring around orb
+      ctx.strokeStyle = 'rgba(216, 191, 141, 0.35)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, orbRadius * 1.25, orbRadius * 0.45, this.rotationAngle * 1.5, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.restore();
+    }
 
     // 2. Click pulse wave if active
     if (this.pulsePhase > 0) {

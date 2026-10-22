@@ -1,0 +1,248 @@
+/* ===================================================
+   TEST & SPEED MODIFIERS MENU (PAINEL DE TESTES)
+   =================================================== */
+
+/* Floating Launcher Button */
+.test-menu-launcher {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #141210;
+  border: 1.5px solid #c49850;
+  border-radius: 20px;
+  padding: 8px 16px;
+  color: #f4deb3;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8), 0 0 10px rgba(196, 152, 80, 0.25);
+  user-select: none;
+}
+
+.test-menu-launcher.boosted {
+  border-color: #fbbf24;
+  background: #241607;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.9), 0 0 14px rgba(251, 191, 36, 0.45);
+}
+
+.test-launcher-icon {
+  font-size: 16px;
+  display: inline-block;
+}
+
+.test-launcher-badge {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+/* Modal Overlay */
+.test-menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 7, 10, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+  padding: 16px;
+}
+
+.test-menu-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Modal Window */
+.test-menu-modal {
+  background: #12100e;
+  border: 2px solid #c49850;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 540px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.9), 0 0 24px rgba(196, 152, 80, 0.25);
+  overflow: hidden;
+  color: #f4deb3;
+}
+
+/* Header */
+.test-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: #1a1612;
+  border-bottom: 1.5px solid #3a2e20;
+}
+
+.test-menu-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.test-menu-icon {
+  font-size: 18px;
+}
+
+.test-menu-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #f4deb3;
+  text-transform: uppercase;
+}
+
+.test-menu-close-btn {
+  background: transparent;
+  border: 1px solid #5a442a;
+  border-radius: 6px;
+  color: #d4af37;
+  font-size: 15px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Body Content */
+.test-menu-body {
+  padding: 16px 18px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Section */
+.test-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.test-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #2a2218;
+  padding-bottom: 6px;
+}
+
+.test-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #c49850;
+  text-transform: uppercase;
+}
+
+.test-current-speed-tag {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  background: #2a1b08;
+  border: 1px solid #fbbf24;
+  border-radius: 4px;
+  color: #fef08a;
+}
+
+/* Speed Button Grid */
+.test-speed-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+@media (min-width: 480px) {
+  .test-speed-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+/* Generic Action Grid */
+.test-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+/* Common Test Buttons */
+.test-btn {
+  background: #1c1814;
+  border: 1px solid #4a3a24;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #d4d4d8;
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.test-speed-btn.active {
+  background: #3b280a;
+  border-color: #fbbf24;
+  color: #fef08a;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.35);
+  font-weight: 700;
+}
+
+.test-speed-btn.test-speed-max {
+  color: #f59e0b;
+}
+
+.test-speed-btn.test-speed-max.active {
+  background: #451a03;
+  border-color: #f59e0b;
+  color: #ffd700;
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.5);
+}
+
+.test-action-btn.test-highlight {
+  border-color: #c49850;
+  color: #fef08a;
+  background: #241d14;
+}
+
+.test-action-btn.test-danger {
+  border-color: #7f1d1d;
+  color: #fca5a5;
+  background: #200d0d;
+}
+
+/* Footer */
+.test-menu-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 18px;
+  background: #16120e;
+  border-top: 1px solid #2a2218;
+  font-size: 11px;
+  color: #a1a1aa;
+}
+
+.test-menu-hint {
+  color: #71717a;
+  font-size: 10px;
+}

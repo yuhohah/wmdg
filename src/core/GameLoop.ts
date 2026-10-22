@@ -6,11 +6,20 @@ export class GameLoop {
   private running: boolean = false;
   private targetFps: number;
   private tickIntervalMs: number;
+  private speedMultiplier: number = 1.0;
   private tickCallbacks: Set<TickCallback> = new Set();
 
   constructor(targetFps: number = 10) {
     this.targetFps = targetFps;
     this.tickIntervalMs = Math.floor(1000 / targetFps);
+  }
+
+  public setSpeedMultiplier(mult: number): void {
+    this.speedMultiplier = Math.max(0, mult);
+  }
+
+  public getSpeedMultiplier(): number {
+    return this.speedMultiplier;
   }
 
   public onTick(cb: TickCallback): () => void {
@@ -33,9 +42,13 @@ export class GameLoop {
 
     this.intervalId = window.setInterval(() => {
       const now = performance.now();
-      // Cap deltaSec to avoid huge simulation jumps on background lag
-      const deltaSec = Math.min(1.0, Math.max(0.001, (now - this.lastTimestamp) / 1000));
+      // Cap raw deltaSec to avoid huge simulation jumps on background lag
+      const rawDeltaSec = Math.min(1.0, Math.max(0.001, (now - this.lastTimestamp) / 1000));
       this.lastTimestamp = now;
+
+      if (this.speedMultiplier === 0) return;
+
+      const deltaSec = rawDeltaSec * this.speedMultiplier;
 
       for (const cb of this.tickCallbacks) {
         try {
