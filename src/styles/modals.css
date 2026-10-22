@@ -74,7 +74,7 @@
   transition: all 0.2s ease;
 }
 
-.close-btn-gold:hover {
+.close-btn-gold-nohover {
   background: rgba(255, 255, 255, 0.08);
   border-color: var(--border-white);
   color: #ffffff;
@@ -139,7 +139,7 @@
   letter-spacing: 0.5px;
 }
 
-.btn-setting-action:hover {
+.btn-setting-action-nohover {
   background: rgba(234, 179, 8, 0.12);
   border-color: var(--gold-accent);
   color: var(--gold-accent);
@@ -159,7 +159,7 @@
   letter-spacing: 0.5px;
 }
 
-.btn-setting-danger:hover {
+.btn-setting-danger-nohover {
   background: rgba(239, 68, 68, 0.3);
   border-color: #ef4444;
   color: #ffffff;
@@ -370,8 +370,8 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.ach-popup-toast:hover,
-.ach-popup-square:hover {
+/* .ach-popup-toast:hover */
+.ach-popup-square-nohover {
   transform: translateY(-2px);
   box-shadow: 0 16px 38px rgba(0, 0, 0, 0.92), 0 0 25px rgba(255, 255, 255, 0.08);
 }
@@ -469,7 +469,7 @@
   user-select: none;
 }
 
-.ach-popup-close:hover {
+.ach-popup-close-nohover {
   opacity: 1;
   color: #ffffff;
   transform: scale(1.15);
@@ -909,7 +909,7 @@
   padding: 4px 6px;
 }
 
-.intro-btn-skip:hover {
+.intro-btn-skip-nohover {
   color: #cbd5e1;
 }
 
@@ -956,7 +956,7 @@
   transition: all 0.15s ease;
 }
 
-.intro-btn-prev:hover {
+.intro-btn-prev-nohover {
   background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
 }
@@ -978,7 +978,7 @@
   transition: all 0.15s ease;
 }
 
-.intro-btn-next:hover {
+.intro-btn-next-nohover {
   background: #fde047;
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
@@ -1202,7 +1202,7 @@
   transition: all 0.2s ease;
 }
 
-.spotlight-balloon-skip:hover {
+.spotlight-balloon-skip-nohover {
   background: rgba(239, 68, 68, 0.3);
   border-color: rgba(239, 68, 68, 0.7);
   color: #ffffff;

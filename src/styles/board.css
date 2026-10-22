@@ -141,10 +141,7 @@
   transition: background-color 0.15s ease, transform 0.15s ease;
 }
 
-.cult-wordmark:hover {
-  background-color: var(--hermetic-parchment-light) !important;
-  transform: translateY(-1px);
-}
+/* .cult-wordmark:hover removed */
 
 .cult-mark {
   display: inline-flex !important;
@@ -469,11 +466,7 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.dodeca-card-btn-toggle:hover {
-  background: var(--hermetic-parchment-light);
-  color: var(--hermetic-ink-black);
-  border-color: var(--hermetic-ink-light);
-}
+/* .dodeca-card-btn-toggle:hover removed */
 
 /* Card Body — Aged Parchment Treatise Interior */
 .dodeca-card-body {
@@ -497,10 +490,7 @@
   color: var(--hermetic-ink-black) !important;
 }
 
-.dodeca-card-body .cult-action-card:hover:not(.unaffordable) {
-  background: rgba(229, 212, 180, 0.85) !important;
-  border-color: var(--hermetic-ink-black) !important;
-}
+/* cult-action-card hover removed */
 
 .dodeca-card-body :is(.btn-follower-action, .btn-incarnation-upgrade, .btn-convert-relics, .btn-buy-relic, .btn-unlock-action, .cult-action-card .card-click-hint) {
   background-color: var(--hermetic-ink-soot) !important;
@@ -707,16 +697,7 @@
   animation: orbitSpin 45s linear infinite;
 }
 
-#card-altar-sphere .divine-sphere-btn:hover,
-.divine-sphere-btn:hover {
-  transform: scale(1.05) !important;
-  filter: brightness(1.12) !important;
-  box-shadow: 
-    0 0 50px rgba(245, 158, 11, 0.75),
-    0 0 100px rgba(217, 119, 6, 0.45),
-    inset -14px -14px 28px rgba(0, 0, 0, 0.95),
-    inset 10px 10px 28px rgba(255, 255, 255, 0.65) !important;
-}
+/* divine-sphere-btn hover removed */
 
 #card-altar-sphere .divine-sphere-btn:active,
 .divine-sphere-btn:active {
@@ -811,19 +792,7 @@
   pointer-events: none;
 }
 
-.btn-unlock-mechanic:hover {
-  transform: translateY(-2px) scale(1.03);
-  filter: brightness(1.15);
-  box-shadow: 
-    0 0 35px rgba(245, 158, 11, 0.6),
-    0 12px 30px rgba(0, 0, 0, 0.85),
-    inset 0 0 20px rgba(245, 158, 11, 0.35);
-}
-
-.btn-unlock-mechanic:active {
-  transform: translateY(1px) scale(0.97);
-  filter: brightness(1.25);
-}
+/* .btn-unlock-mechanic hover removed */
 
 .btn-unlock-mechanic.affordable {
   border-color: #f59e0b;
@@ -1014,12 +983,16 @@
   border-color: var(--hermetic-ink-black) !important;
 }
 
-/* 7. CELESTIAL OBSERVATORY / TOWER (VIA STELLARUM) */
-#card-pantheon {
+/* 7. SANCTUM GNOSTICUM — Câmara da Gnose (Positioned in place of retired Boss Battle/Pantheon) */
+#card-gnose {
   left: 2600px;
   top: 120px;
-  width: 540px;
+  width: 560px;
   min-height: 600px;
+}
+
+#card-gnose .dodeca-card-body {
+  max-height: 620px;
 }
 
 /* 8. APEX / ROOF GALLERY OF TRIUMPHS (FORNIX RUPTUS) */
@@ -1032,18 +1005,6 @@
 
 #card-achievements .dodeca-card-body {
   max-height: 440px;
-}
-
-/* 9. SANCTUM GNOSTICUM (Upper-Left Chancel Vault) */
-#card-gnose {
-  left: 860px;
-  top: 140px;
-  width: 520px;
-  min-height: 580px;
-}
-
-#card-gnose .dodeca-card-body {
-  max-height: 620px;
 }
 
 .gnose-reset-section {
@@ -1552,10 +1513,7 @@
   transition: width 0.12s linear;
 }
 
-.incarnation-altar-container:hover .incarnation-avatar-art {
-  transform: scale(1.03);
-  filter: drop-shadow(0 0 18px rgba(216, 191, 141, 0.45)) contrast(1.1);
-}
+/* incarnation avatar hover removed */
 
 .incarnation-altar-canvas {
   position: absolute;
@@ -1736,4 +1694,124 @@ button:focus,
 .ach-popup-timer-bar {
   height: 2px !important;
   animation: popupTimerProgress 2s linear forwards !important;
+}
+
+
+/* =========================================================================
+   UNIVERSAL GAME-WIDE HOVER KILLER
+   Ensures ZERO hover/active/focus transforms, brightness/filter changes,
+   or box-shadow/border modifications exist anywhere in the game.
+   ========================================================================= */
+*,
+*::before,
+*::after {
+  transition: none !important;
+}
+
+*:hover,
+*:hover::before,
+*:hover::after,
+*:active,
+*:active::before,
+*:active::after {
+  transform: none !important;
+  filter: none !important;
+}
+
+/* Neutralize hover styles on cards, buttons, navs and modals */
+button:hover,
+button:active,
+a:hover,
+a:active,
+[role="button"]:hover,
+[role="button"]:active,
+.dodeca-card:hover,
+.cult-action-card:hover,
+.relic-action-card:hover,
+.ach-card:hover,
+.gnose-tree-node:hover,
+.btn-follower-action:hover,
+.btn-buy-card:hover,
+.btn-convert-primary:hover,
+.btn-convert-max:hover,
+.btn-incarnation-upgrade:hover,
+.btn-convert-relics:hover,
+.btn-buy-relic:hover,
+.btn-unlock-action:hover,
+.btn-unlock-mechanic:hover,
+.btn-gnose-reset:hover,
+.btn-setting-action:hover,
+.btn-setting-danger:hover,
+.quicknav-btn:hover,
+.board-zoom-btn:hover,
+.icon-btn-gold:hover,
+.close-btn-gold:hover,
+.close-mobile-sheet-btn:hover,
+.ach-popup-close:hover,
+.panel-tab-btn:hover,
+.panel-toggle-btn:hover,
+.dodeca-card-btn-toggle:hover,
+.divine-sphere-btn:hover,
+.divine-sphere-btn:active,
+.sphere-wrapper:hover,
+.incarnation-avatar-art:hover,
+.incarnation-altar-container:hover,
+.cult-wordmark:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  outline: none !important;
+}
+
+.dodeca-card:hover {
+  box-shadow:
+    inset 0 0 0 2px var(--hermetic-parchment-light),
+    inset 0 0 0 4px var(--hermetic-rule-brass),
+    6px 8px 0 rgba(18, 13, 9, 0.9),
+    0 18px 36px rgba(0, 0, 0, 0.65) !important;
+  border-color: var(--hermetic-ink-black) !important;
+}
+
+.dodeca-card-body :is(.cult-action-card, .relic-action-card, .ach-card):hover {
+  background: rgba(203, 178, 134, 0.55) !important;
+  border: 1px solid var(--hermetic-rule-brass) !important;
+  border-top: 2px solid var(--hermetic-ink-umber) !important;
+  border-bottom: 2px solid var(--hermetic-ink-umber) !important;
+  box-shadow: inset 0 0 0 1px rgba(229, 212, 180, 0.5) !important;
+  color: var(--hermetic-ink-black) !important;
+}
+
+.dodeca-card-body :is(.btn-follower-action, .btn-incarnation-upgrade, .btn-convert-relics, .btn-buy-relic, .btn-unlock-action, .cult-action-card .card-click-hint, .relic-hint):hover {
+  background-color: var(--hermetic-ink-soot) !important;
+  background-image: linear-gradient(180deg, #2b2018 0%, #18110c 100%) !important;
+  border: 1.5px solid var(--hermetic-ink-black) !important;
+  box-shadow:
+    inset 0 0 0 1.5px var(--hermetic-rule-brass),
+    2px 3px 0 rgba(22, 16, 12, 0.75) !important;
+  color: var(--hermetic-parchment-light) !important;
+}
+
+.quicknav-btn:hover {
+  background: var(--hermetic-parchment) !important;
+  border-color: var(--hermetic-ink-black) !important;
+  box-shadow: 2px 2px 0 rgba(18, 13, 9, 0.75) !important;
+  color: var(--hermetic-ink-black) !important;
+}
+
+.btn-unlock-mechanic:hover {
+  background-color: var(--hermetic-parchment-light) !important;
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(22, 16, 12, 0.04) 0px,
+      rgba(22, 16, 12, 0.04) 1px,
+      transparent 1px,
+      transparent 5px
+    ),
+    linear-gradient(180deg, #ebdabb 0%, #d8c29a 100%) !important;
+  border: 2px solid var(--hermetic-ink-black) !important;
+  box-shadow:
+    inset 0 0 0 1.5px var(--hermetic-rule-brass),
+    4px 5px 0 rgba(18, 13, 9, 0.9) !important;
+  color: var(--hermetic-ink-black) !important;
 }

@@ -20,15 +20,13 @@ describe('Pantheon & Boss Battle System', () => {
     expect(snapshot.maxAscension).toBe(0);
   });
 
-  it('unlocks pantheon when buying unlock_pantheon after relics', () => {
+  it('verifies unlock_pantheon is retired in favor of unlock_gnose', () => {
     const pantheonUnlock = gameState.unlocks.find((u) => u.id === 'unlock_pantheon');
-    expect(pantheonUnlock).toBeDefined();
-    expect(pantheonUnlock?.prerequisiteId).toBe('unlock_relics');
+    expect(pantheonUnlock).toBeUndefined();
 
-    gameState.faithPoints = 50000000;
-    const bought = gameState.buyUnlock(pantheonUnlock!);
-    expect(bought).toBe(true);
-    expect(gameState.isPantheonUnlocked()).toBe(true);
+    const gnoseUnlock = gameState.unlocks.find((u) => u.id === 'unlock_gnose');
+    expect(gnoseUnlock).toBeDefined();
+    expect(gnoseUnlock?.prerequisiteId).toBe('unlock_relics');
   });
 
   it('scales boss HP and relic rewards with ascension', () => {

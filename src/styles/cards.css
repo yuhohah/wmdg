@@ -21,12 +21,7 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
-.cult-action-card:hover {
-  border-color: var(--border-white);
-  background: rgba(14, 20, 36, 0.85);
-  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.08);
-  transform: translateY(-1px);
-}
+/* .cult-action-card:hover disabled */
 
 .cult-action-card.unaffordable {
   opacity: 0.85;
@@ -43,22 +38,7 @@
   user-select: none;
 }
 
-.unlock-action-card:hover:not(.unaffordable):not(.unlocked-card),
-.relic-action-card:hover:not(.unaffordable):not(.maxed) {
-  transform: translateY(-2px);
-  border-color: var(--gold-accent);
-  box-shadow: 0 6px 18px rgba(234, 179, 8, 0.2);
-}
-
-.unlock-action-card:active:not(.unaffordable):not(.unlocked-card),
-.relic-action-card:active:not(.unaffordable):not(.maxed) {
-  transform: translateY(1px) scale(0.99);
-}
-
-.relic-action-card:hover:not(.unaffordable):not(.maxed) {
-  border-color: var(--border-white);
-  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.12);
-}
+/* action cards hover & active removed */
 
 .card-click-prompt {
   display: flex;
@@ -434,7 +414,7 @@
   transition: transform 0.4s ease;
 }
 
-.cult-action-card:hover .card-hero-preview img {
+.cult-action-card-disabled-img-hover {
   transform: scale(1.05);
 }
 
@@ -777,7 +757,7 @@
   opacity: 0.8;
 }
 
-.relic-action-card:hover {
+.relic-action-card-disabled-hover-2 {
   border-color: var(--border-white);
   background: rgba(18, 22, 34, 0.9);
   box-shadow: 0 4px 16px rgba(186, 210, 235, 0.2);
@@ -839,7 +819,7 @@
   border: 1px solid var(--border-mid);
 }
 
-.relic-action-card:hover:not(.unaffordable):not(.maxed) .relic-hint {
+.relic-hint-disabled-hover {
   background: rgba(255, 255, 255, 0.18);
   border-color: #ffffff;
   color: #ffffff;
@@ -958,7 +938,7 @@
   border: 1px solid rgba(251, 191, 36, 0.45);
 }
 
-.unlock-action-card:hover:not(.unaffordable):not(.unlocked-card) .card-click-hint {
+.unlock-hint-disabled-hover {
   background: rgba(251, 191, 36, 0.28);
   border-color: #fbbf24;
   color: #ffffff;

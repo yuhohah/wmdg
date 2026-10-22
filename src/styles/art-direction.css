@@ -187,7 +187,7 @@
 .sphere-satellites-orbit { display:none; }
 .sphere-satellites-orbit:has(.state-unlocked) { display:block; --satellites-orbit-size:220px; --satellite-offset:-110px; --satellite-node-size:30px; }
 .sphere-satellite-node.state-locked { display:none; }
-.sphere-satellite-node.state-unlocked:hover,.sphere-satellite-node.state-unlocked:active { transform:rotate(var(--node-angle)) translateY(-110px); }
+/**/
 .satellite-sprite-view { width:24px; height:24px; background-size:144px 48px; }
 .satellite-sprite-view.frame-0 { background-position:0 -24px; }
 .satellite-sprite-view.frame-1 { background-position:-24px -24px; }
@@ -226,7 +226,7 @@
 @keyframes pilgrim-sway { 0%,100% { transform:translateX(-3px); } 50% { transform:translateX(3px); } }
 @keyframes ritual-bow { 0%,100% { transform:rotate(0); } 50% { transform:rotate(5deg); } }
 @keyframes recruit-arrival { from { opacity:0; transform:translateX(-24px); } to { opacity:1; transform:translateX(0); } }
-@media (hover:hover) and (pointer:fine) { .divine-sphere-btn:hover { filter:brightness(1.15) drop-shadow(0 0 16px #b8874540); } .church-blessing:hover { filter:brightness(1.2); } }
+/* hover removed */
 @media (prefers-reduced-motion:reduce) {
   .world-parallax-track,.prophet-sprite,.procession-member,.procession-member img,.walk-strip,.new-recruit,.church-sphere,.church-follower-sprite img,.church-plea { animation:none!important; }
   .church-blessing-fill { transition:none; }

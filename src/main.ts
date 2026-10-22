@@ -174,7 +174,7 @@ class AppManager {
       audio: this.audio,
       notifications: this.notifications,
       onBattleEnd: () => {
-        this.pantheonTab.updateUI();
+        // pantheonTab retired
         this.sphere.renderSatellites();
         this.updateUnlockedTabsVisibility();
         events.emit(GameEvents.STATE_CHANGED);
@@ -206,7 +206,7 @@ class AppManager {
           this.relicsTab.updateUI();
           this.relicsTab.renderList();
         } else if (unlock.id === 'unlock_pantheon') {
-          this.pantheonTab.updateUI();
+          // pantheonTab retired
         } else if (unlock.id === 'unlock_gnose') {
           this.gnoseTab.updateUI();
           this.gnoseTab.renderTree();
@@ -365,7 +365,7 @@ class AppManager {
     if (tabId === 'tab-relics') {
       this.relicsTab.updateUI();
     } else if (tabId === 'tab-pantheon') {
-      this.pantheonTab.updateUI();
+      // pantheonTab retired
     } else if (tabId === 'tab-gnose') {
       this.gnoseTab.updateUI();
     }
@@ -374,20 +374,19 @@ class AppManager {
   private updateUnlockedTabsVisibility(): void {
     const inc = this.gameState.isIncarnationUnlocked();
     const ferv = this.gameState.isFervorUpgradesUnlocked();
-    const pan = this.gameState.isPantheonUnlocked();
     const rel = this.gameState.isRelicsUnlocked();
     const gno = this.gameState.isGnoseUnlocked();
 
     this.incarnationTab.setTabVisibility(inc);
     this.fervorTab.setTabVisibility(ferv);
-    this.pantheonTab.setTabVisibility(pan);
+    // pantheonTab retired
     this.relicsTab.setTabVisibility(rel);
     this.gnoseTab.setTabVisibility(gno);
 
     if (this.board) {
       this.board.setCardUnlocked('card-incarnation', inc);
       this.board.setCardUnlocked('card-fervor', ferv);
-      this.board.setCardUnlocked('card-pantheon', pan);
+      // card-pantheon retired in favor of card-gnose
       this.board.setCardUnlocked('card-relics', rel);
       this.board.setCardUnlocked('card-gnose', gno);
     }
@@ -398,7 +397,7 @@ class AppManager {
     this.incarnationTab.updateUI();
     this.fervorTab.renderList();
     this.unlocksTab.renderList();
-    this.pantheonTab.updateUI();
+    // pantheonTab retired
     this.relicsTab.renderList();
     this.gnoseTab.renderTree();
     this.gnoseTab.updateUI();

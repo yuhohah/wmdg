@@ -40,19 +40,6 @@ export const initialUnlocks: MechanicUnlock[] = [
     prerequisiteId: 'unlock_fervor_upgrades'
   },
   {
-    id: 'unlock_pantheon',
-    name: 'Selo do Panteão',
-    desc: 'Ao restaurar relíquias ancestrais e quebrar as leis mortais, sua ascensão atrai a fúria dos Deuses Cósmicos que disputam a primazia do éter. Desbloqueia a aba Panteão e a Teomaquia.',
-    lore: 'Os ecos das suas transmutações rasgaram o firmamento estelar. Seis divindades titânicas acordam e exigem a sua ruína ou a sua consagração absoluta.',
-    symbol: '',
-    cost: 50000000,
-    costCurrency: 'faith',
-    unlocked: false,
-    tabId: 'tab-pantheon',
-    tabName: 'Panteão',
-    prerequisiteId: 'unlock_relics'
-  },
-  {
     id: 'unlock_gnose',
     name: 'Selo da Gnose',
     desc: 'Libera a Ascensão Gnóstica: dissolva seu culto terreno a partir de 1Q de Fé para colher Gnose e desbloquear a Árvore Hermética permanente. Abre a Câmara da Gnose.',
