@@ -2,10 +2,26 @@ import type { Achievement } from '../types.js';
 import { DISPLAY_CONFIG } from '../config/display.js';
 
 export class NotificationManager {
-  private container: HTMLElement;
+  private container!: HTMLElement;
+  private shownNotificationKeys: Set<string> = new Set<string>();
 
   constructor(containerId: string = 'achievements-popup-container') {
-    this.container = document.getElementById(containerId)!;
+    if (typeof document !== 'undefined') {
+      this.container = document.getElementById(containerId) as HTMLElement;
+    }
+  }
+
+  public resetHistory(): void {
+    this.shownNotificationKeys.clear();
+  }
+
+  public getNotificationKey(title: string, desc: string, badge: string): string {
+    const cleanTitle = title.trim().toLowerCase();
+    const cleanBadge = badge.trim().toLowerCase();
+    const cleanDesc = desc.trim().toLowerCase();
+    // Normalize dynamic numbers so repeated notifications with changing amounts (e.g. transmute) count as the same notification
+    const normalizedDesc = cleanDesc.replace(/[0-9.,kmbqt+]+/gi, "#");
+    return `${cleanBadge}::${cleanTitle}::${normalizedDesc}`;
   }
 
   private getAchievementFallbackIcon(ach: Achievement): string {
@@ -46,6 +62,10 @@ export class NotificationManager {
   }
 
   public showAchievementPopup(ach: Achievement): void {
+    const key = `ach::${ach.id.trim().toLowerCase()}`;
+    if (this.shownNotificationKeys.has(key)) return;
+    this.shownNotificationKeys.add(key);
+
     const popup = document.createElement('div');
     popup.className = 'ach-popup-toast ach-popup-toast-achievement ach-popup-square';
 
@@ -88,6 +108,10 @@ export class NotificationManager {
     icon: string = '',
     badge: string = 'NOVA MECÂNICA'
   ): void {
+    const key = this.getNotificationKey(title, desc, badge);
+    if (this.shownNotificationKeys.has(key)) return;
+    this.shownNotificationKeys.add(key);
+
     const popup = document.createElement('div');
     const variantClass = this.getToastVariant(title, badge);
     popup.className = `ach-popup-toast ${variantClass} ach-popup-square`;
@@ -138,7 +162,7 @@ export class NotificationManager {
       });
     }
 
-    // Auto-dismiss after 4.8s with smooth exit animation
-    setTimeout(closePopup, 4800);
+    // Auto-dismiss after 2s (visible for exactly 2 seconds)
+    setTimeout(closePopup, 2000);
   }
 }
