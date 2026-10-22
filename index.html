@@ -160,6 +160,7 @@
             <button class="panel-tab-btn" id="tab-btn-incarnation" data-panel="right" data-tab="tab-incarnation"></button>
             <button class="panel-tab-btn" id="tab-btn-fervor" data-panel="right" data-tab="tab-fervor"></button>
             <button class="panel-tab-btn" id="tab-btn-unlocks" data-panel="right" data-tab="tab-unlocks"></button>
+            <div id="tab-unlocks" style="display: none;"></div>
             <button class="panel-tab-btn" id="tab-btn-relics" data-panel="right" data-tab="tab-relics"></button>
             <button class="panel-tab-btn" id="tab-btn-gnose" data-panel="right" data-tab="tab-gnose"></button>
             <button class="panel-tab-btn" id="tab-btn-pantheon" data-panel="right" data-tab="tab-pantheon"></button>
@@ -188,7 +189,7 @@
               <!-- Center Oculus (1720, 845) to Alchemical Crypt Relics (500, 1490) -->
               <line id="ray-relics" x1="1720" y1="845" x2="500" y2="1490" style="display: none;"></line>
               <!-- Center Oculus (1720, 845) to Scriptorium Unlocks (1110, 1150) -->
-              <line id="ray-unlocks" x1="1720" y1="845" x2="1110" y2="1150"></line>
+              <line id="ray-unlocks" x1="1720" y1="845" x2="1120" y2="955"></line>
               <!-- Center Oculus (1720, 845) to Cathedral Nave Followers (2260, 1260) -->
               <line id="ray-followers" x1="1720" y1="845" x2="2260" y2="1260"></line>
               <!-- Center Oculus (1720, 845) to Sacred Hearth Fervor (2860, 1140) -->
@@ -336,29 +337,9 @@
               </div>
             </div>
 
-            <!-- CARD 3: OS SELOS ANTIGOS -->
-            <div id="card-unlocks" class="dodeca-card">
-              <div class="dodeca-card-header">
-                <div class="dodeca-card-title-group">
-                  <span class="dodeca-card-icon">🔓</span>
-                  <h3 class="dodeca-card-title">Os Selos Antigos</h3>
-                  <span class="dodeca-card-tag">Desbloqueios</span>
-                </div>
-              </div>
-              <div class="dodeca-card-body">
-                <div id="tab-unlocks" class="tab-pane active" style="display: block;">
-                  <div class="unlocks-tab-header">
-                    <div class="unlocks-stat-group">
-                      <span class="unlocks-stat-label">OS SELOS</span>
-                      <div class="unlocks-header-title-row">
-                        <span class="unlocks-header-title">Seu poder, selado</span>
-                      </div>
-                      <p class="unlocks-header-desc">Gaste Fé para romper os selos que te prendem.</p>
-                    </div>
-                  </div>
-                  <div class="card-list" id="unlocks-list"></div>
-                </div>
-              </div>
+            <!-- DESBLOQUEIO DE NOVAS MECÂNICAS (BOTÃO DIRETO) -->
+            <div id="card-unlocks" class="board-unlock-anchor">
+              <div id="unlocks-list" class="unlock-btn-container"></div>
             </div>
 
             <!-- CARD 4: FERVOR SAGRADO -->
@@ -635,7 +616,7 @@
           <nav class="board-quicknav-bar" id="board-quicknav-bar" aria-label="Navegação do Culto">
             <button class="quicknav-btn active" data-target="card-altar-sphere"><span>✦</span> <span>Esfera</span></button>
             <button class="quicknav-btn" data-target="card-followers"><span>👥</span> <span>Fiéis</span></button>
-            <button class="quicknav-btn" data-target="card-unlocks"><span>🔓</span> <span>Selos</span></button>
+            <button class="quicknav-btn" data-target="card-unlocks"><span>🔓</span> <span>Desbloqueio</span></button>
             <button class="quicknav-btn" data-target="card-fervor" id="quicknav-fervor" style="display: none;"><span>🔥</span> <span>Fervor</span></button>
             <button class="quicknav-btn" data-target="card-incarnation" id="quicknav-incarnation" style="display: none;"><span>👤</span> <span>Encarnação</span></button>
             <button class="quicknav-btn" data-target="card-relics" id="quicknav-relics" style="display: none;"><span>⚗️</span> <span>Relíquias</span></button>

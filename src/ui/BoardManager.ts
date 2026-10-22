@@ -51,7 +51,7 @@ export class BoardManager {
     this.zoomLevelEl = document.getElementById('board-zoom-level');
 
     // Register all cards on the board
-    const cardElements = document.querySelectorAll<HTMLElement>('.dodeca-card');
+    const cardElements = document.querySelectorAll<HTMLElement>('.dodeca-card, #card-unlocks');
     cardElements.forEach((card) => {
       if (card.id) {
         this.cards.set(card.id, card);

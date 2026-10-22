@@ -1,10 +1,10 @@
-import type { MechanicUnlock } from '../../types.js';
-import { GameStateManager } from '../../core/GameState.js';
-import { AudioManager } from '../../systems/audio.js';
-import { NotificationManager } from '../../systems/notifications.js';
-import { TooltipManager } from '../../ui/tooltips.js';
-import { formatNumber } from '../../systems/calculations.js';
-import { events, GameEvents } from '../../core/EventBus.js';
+import type { MechanicUnlock } from "../../types.js";
+import { GameStateManager } from "../../core/GameState.js";
+import { AudioManager } from "../../systems/audio.js";
+import { NotificationManager } from "../../systems/notifications.js";
+import { TooltipManager } from "../../ui/tooltips.js";
+import { formatNumber } from "../../systems/calculations.js";
+import { events, GameEvents } from "../../core/EventBus.js";
 
 export interface UnlocksTabOptions {
   gameState: GameStateManager;
@@ -34,7 +34,7 @@ export class UnlocksTab {
   }
 
   private initElements(): void {
-    this.unlocksListEl = document.getElementById('unlocks-list');
+    this.unlocksListEl = document.getElementById("unlocks-list");
   }
 
   public getCurrentUnlock(): MechanicUnlock | undefined {
@@ -55,47 +55,59 @@ export class UnlocksTab {
 
   public renderList(): void {
     if (!this.unlocksListEl) return;
-    this.unlocksListEl.innerHTML = '';
+    this.unlocksListEl.innerHTML = "";
 
     const currentUnlock = this.getCurrentUnlock();
+    const cardUnlocksEl = document.getElementById("card-unlocks");
+    const rayEl = document.getElementById("ray-unlocks");
+    const quickBtn = document.querySelector<HTMLElement>('.quicknav-btn[data-target="card-unlocks"]');
 
     if (!currentUnlock) {
-      const completedBanner = document.createElement('div');
-      completedBanner.className = 'unlocks-completed-banner';
-      completedBanner.innerHTML = `
-        <div class="completed-icon">✨</div>
-        <div class="completed-title">TODOS OS SELOS ROMPIDOS</div>
-        <p class="completed-desc">Seu poder foi libertado. Por enquanto.</p>
-      `;
-      this.unlocksListEl.appendChild(completedBanner);
+      if (cardUnlocksEl) cardUnlocksEl.style.display = "none";
+      if (rayEl) rayEl.style.display = "none";
+      if (quickBtn) quickBtn.style.display = "none";
       return;
     }
 
-    const canAfford = this.gameState.faithPoints >= currentUnlock.cost;
-    const card = document.createElement('div');
-    card.className = `cult-action-card unlock-action-card ${canAfford ? '' : 'unaffordable'}`;
-    card.id = `card-${currentUnlock.id}`;
+    if (cardUnlocksEl) cardUnlocksEl.style.display = "flex";
+    if (rayEl) rayEl.style.display = "";
+    if (quickBtn) quickBtn.style.display = "inline-flex";
 
-    card.innerHTML = `
-      <div class="card-header-row" style="margin-bottom: 0; width: 100%; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-        <span class="card-name" style="font-size: 13px; font-weight: 700; ">${currentUnlock.name}</span>
-        <div class="card-click-prompt">
-          <span class="card-click-hint" style="font-size: 11px; padding: 5px 12px; font-weight: 800;">Desbloquear (${formatNumber(currentUnlock.cost)} Fé)</span>
-        </div>
+    const canAfford = this.gameState.faithPoints >= currentUnlock.cost;
+    const btn = document.createElement("button");
+    btn.id = "btn-unlock-single";
+    btn.className = `btn-unlock-mechanic ${canAfford ? "affordable" : "unaffordable"}`;
+    btn.setAttribute("aria-label", `Desbloquear ${currentUnlock.name}`);
+
+    btn.innerHTML = `
+      <div class="unlock-btn-badge">🔓 DESBLOQUEAR NOVA MECÂNICA</div>
+      <div class="unlock-btn-main">
+        <span class="unlock-btn-name">${currentUnlock.name}</span>
+        <span class="unlock-btn-cost">${formatNumber(currentUnlock.cost)} Fé</span>
       </div>
     `;
 
-    card.addEventListener('click', () => {
+    btn.addEventListener("click", () => {
       this.buyUnlock(currentUnlock);
     });
 
-    this.unlocksListEl.appendChild(card);
+    btn.addEventListener("mouseenter", (e: MouseEvent) => {
+      this.tooltips.showUnlockTooltip(currentUnlock, canAfford, e);
+    });
+    btn.addEventListener("mousemove", (e: MouseEvent) => {
+      this.tooltips.position(e);
+    });
+    btn.addEventListener("mouseleave", () => {
+      this.tooltips.hide();
+    });
+
+    this.unlocksListEl.appendChild(btn);
   }
 
   public buyUnlock(unlock: MechanicUnlock): void {
     if (unlock.unlocked) return;
     if (this.gameState.faithPoints < unlock.cost) {
-      this.audio.playTone(180, 'sawtooth', 0.1);
+      this.audio.playTone(180, "sawtooth", 0.1);
       return;
     }
 
@@ -103,26 +115,26 @@ export class UnlocksTab {
     unlock.unlocked = true;
     this.tooltips.hide();
 
-    if (unlock.id === 'unlock_incarnation') {
+    if (unlock.id === "unlock_incarnation") {
       this.notifications.showCustomPopup(
-        'A ESFERA GANHOU CORPO',
-        'A Encarnação desceu ao altar e acendeu o Fervor (+1/s).',
-        '🔥',
-        'NOVA MECÂNICA'
+        "A ESFERA GANHOU CORPO",
+        "A Encarnação desceu ao altar e acendeu o Fervor (+1/s).",
+        "🔥",
+        "NOVA MECÂNICA"
       );
-    } else if (unlock.id === 'unlock_fervor_upgrades') {
+    } else if (unlock.id === "unlock_fervor_upgrades") {
       this.notifications.showCustomPopup(
-        'RITOS DE FERVOR',
-        'As melhorias de Fervor estão liberadas na aba Fervor.',
-        '🕯️',
-        'NOVA MECÂNICA'
+        "RITOS DE FERVOR",
+        "As melhorias de Fervor estão liberadas no card de Fervor.",
+        "🕯️",
+        "NOVA MECÂNICA"
       );
-    } else if (unlock.id === 'unlock_relics') {
+    } else if (unlock.id === "unlock_relics") {
       this.notifications.showCustomPopup(
-        'O RELICÁRIO SE ABRIU',
-        'Transmute sua Fé em Fragmentos e restaure relíquias na aba Relíquias.',
-        '⚱️',
-        'NOVA MECÂNICA'
+        "O RELICÁRIO SE ABRIU",
+        "Transmute sua Fé em Fragmentos e restaure relíquias no card de Relíquias.",
+        "⚱️",
+        "NOVA MECÂNICA"
       );
     }
 
@@ -139,9 +151,10 @@ export class UnlocksTab {
     const currentUnlock = this.getCurrentUnlock();
     if (!currentUnlock) return;
     const canAfford = this.gameState.faithPoints >= currentUnlock.cost;
-    const card = document.getElementById(`card-${currentUnlock.id}`);
-    if (card) {
-      card.classList.toggle('unaffordable', !canAfford);
+    const btn = document.getElementById("btn-unlock-single");
+    if (btn) {
+      btn.classList.toggle("unaffordable", !canAfford);
+      btn.classList.toggle("affordable", canAfford);
     }
   }
 }

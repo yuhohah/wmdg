@@ -81,9 +81,6 @@ export class FervorTab {
           </div>
           <span class="fervor-mult-tag">x${mult.toFixed(2)}</span>
         </div>
-        <div class="card-desc">
-          <div class="card-benefit">Nível ${upg.level} • Atualmente x${mult.toFixed(2)}</div>
-        </div>
         <div class="card-footer-row">
           <div class="cost-tag" style=" font-weight: 800;">
             <span>CUSTO:</span>
@@ -135,10 +132,6 @@ export class FervorTab {
         const multTagEl = card.querySelector('.fervor-mult-tag');
         if (multTagEl) {
           multTagEl.textContent = `x${mult.toFixed(2)}`;
-        }
-        const benefitEl = card.querySelector('.card-benefit');
-        if (benefitEl) {
-          benefitEl.textContent = `Nível ${upg.level} • Atualmente x${mult.toFixed(2)}`;
         }
         const costSpanEls = card.querySelectorAll('.cost-tag span');
         if (costSpanEls.length >= 2) {
