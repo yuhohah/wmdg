@@ -494,60 +494,53 @@
               <div class="dodeca-card-body">
                 <div id="tab-gnose" class="tab-pane active" style="display: block;">
                   <div class="gnose-reset-section">
-                    <button id="btn-gnose-reset" class="btn-gnose-reset" disabled>
-                      Ascender na Gnose → +<span id="gnose-to-get">0</span> Gnose
-                    </button>
-                    <div class="gnose-req-hint" id="gnose-req-hint">Requer 1Q Fé</div>
-
-                    <div class="gnose-stats-grid">
-                      <div class="gnose-stat-box">
-                        <span class="gnose-stat-label">SALDO DE GNOSE</span>
-                        <span id="gnose-balance-val" class="gnose-stat-val">0</span>
-                      </div>
-                      <div class="gnose-stat-box">
-                        <span class="gnose-stat-label">GNOSE TOTAL</span>
-                        <span id="gnose-total-val" class="gnose-stat-val">0</span>
-                      </div>
-                      <div class="gnose-stat-box">
-                        <span class="gnose-stat-label">BÔNUS PASSIVO</span>
-                        <span id="gnose-passive-mult-val" class="gnose-stat-val">×1</span>
-                      </div>
-                      <div class="gnose-stat-box">
-                        <span class="gnose-stat-label">ASCENSÕES</span>
-                        <span id="gnose-resets-val" class="gnose-stat-val">0</span>
+                    <div class="gnose-top-bar">
+                      <button id="btn-gnose-reset" class="btn-gnose-reset" disabled>
+                        Ascender → +<span id="gnose-to-get">0</span> Gnose
+                      </button>
+                      <div class="gnose-stats-grid">
+                        <div class="gnose-stat-box">
+                          <span class="gnose-stat-label">SALDO</span>
+                          <span id="gnose-balance-val" class="gnose-stat-val">0</span>
+                        </div>
+                        <div class="gnose-stat-box">
+                          <span class="gnose-stat-label">TOTAL</span>
+                          <span id="gnose-total-val" class="gnose-stat-val">0</span>
+                        </div>
+                        <div class="gnose-stat-box">
+                          <span class="gnose-stat-label">BÔNUS</span>
+                          <span id="gnose-passive-mult-val" class="gnose-stat-val">×1</span>
+                        </div>
+                        <div class="gnose-stat-box">
+                          <span class="gnose-stat-label">ASCENSÕES</span>
+                          <span id="gnose-resets-val" class="gnose-stat-val">0</span>
+                        </div>
                       </div>
                     </div>
 
-                    <div class="gnose-toggles-bar">
-                      <label class="gnose-toggle-label">
-                        <input type="checkbox" id="gnose-confirm-toggle" checked />
-                        <span>Confirmar resets de Gnose</span>
-                      </label>
+                    <div class="gnose-controls-row">
+                      <span class="gnose-req-hint" id="gnose-req-hint">Requer 1Q Fé</span>
+                      <div class="gnose-toggles-group">
+                        <label class="gnose-toggle-label">
+                          <input type="checkbox" id="gnose-confirm-toggle" checked />
+                          <span>Confirmar</span>
+                        </label>
+                        <div class="gnose-automation-panel" id="gnose-automation-panel" style="display: none;">
+                          <label class="gnose-toggle-label" id="gnose-auto-followers-wrap" style="display: none;">
+                            <input type="checkbox" id="gnose-auto-followers-toggle" checked />
+                            <span>Auto-Fiéis</span>
+                          </label>
+                          <label class="gnose-toggle-label" id="gnose-auto-fervor-wrap" style="display: none;">
+                            <input type="checkbox" id="gnose-auto-fervor-toggle" checked />
+                            <span>Auto-Fervor</span>
+                          </label>
+                          <label class="gnose-toggle-label" id="gnose-auto-relics-wrap" style="display: none;">
+                            <input type="checkbox" id="gnose-auto-relics-toggle" checked />
+                            <span>Auto-Relíquias</span>
+                          </label>
+                        </div>
+                      </div>
                     </div>
-
-                    <div class="gnose-automation-panel" id="gnose-automation-panel" style="display: none;">
-                      <label class="gnose-toggle-label" id="gnose-auto-followers-wrap" style="display: none;">
-                        <input type="checkbox" id="gnose-auto-followers-toggle" checked />
-                        <span>Auto-Converter Fiéis</span>
-                      </label>
-                      <label class="gnose-toggle-label" id="gnose-auto-fervor-wrap" style="display: none;">
-                        <input type="checkbox" id="gnose-auto-fervor-toggle" checked />
-                        <span>Auto-Ritos de Fervor</span>
-                      </label>
-                      <label class="gnose-toggle-label" id="gnose-auto-relics-wrap" style="display: none;">
-                        <input type="checkbox" id="gnose-auto-relics-toggle" checked />
-                        <span>Auto-Transmutar</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <!-- Tier Navigation / Quick Filter Bar -->
-                  <div class="gnose-filter-bar" id="gnose-filter-bar">
-                    <button class="gnose-filter-btn active" data-tier="all">Todos (20)</button>
-                    <button class="gnose-filter-btn" data-tier="1">I. Despertar (5)</button>
-                    <button class="gnose-filter-btn" data-tier="2">II. Sinergia (5)</button>
-                    <button class="gnose-filter-btn" data-tier="3">III. Evoluções (5)</button>
-                    <button class="gnose-filter-btn" data-tier="4">IV. Apoteose (5)</button>
                   </div>
 
                   <!-- Multi-Column Hermetic Gnose Constellation Grid -->

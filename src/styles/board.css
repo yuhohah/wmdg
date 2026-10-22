@@ -1013,16 +1013,17 @@
 
 /* 7. SANCTUM GNOSTICUM — Câmara da Gnose (Positioned in place of retired Boss Battle/Pantheon) */
 #card-gnose {
-  left: 2540px;
+  left: 2460px;
   top: 100px;
-  width: 700px;
-  min-height: 660px;
+  width: 820px;
+  height: auto !important;
+  min-height: auto !important;
 }
 
 #card-gnose .dodeca-card-body {
-  max-height: 720px;
-  overflow-y: auto !important;
-  padding: 12px;
+  max-height: none !important;
+  overflow: hidden !important;
+  padding: 8px 10px !important;
 }
 
 /* 8. APEX / ROOF GALLERY OF TRIUMPHS (FORNIX RUPTUS) */
@@ -1040,30 +1041,38 @@
 .gnose-reset-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px;
+  gap: 5px;
+  padding: 6px 8px;
+  margin-bottom: 6px;
   background: rgba(203, 178, 134, 0.55);
   border: 1.5px solid var(--hermetic-ink-umber);
   box-shadow: inset 0 0 0 1px rgba(229, 212, 180, 0.6);
   border-radius: 0;
 }
 
+.gnose-top-bar {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
 .btn-gnose-reset {
-  width: 100%;
-  padding: 10px 14px;
+  flex: 0 0 245px;
+  padding: 5px 10px;
   font-family: var(--font-game);
-  font-size: 18px;
-  letter-spacing: 0.8px;
+  font-size: 15px;
+  letter-spacing: 0.4px;
   color: var(--hermetic-parchment-light);
   background: linear-gradient(180deg, #2b2018 0%, #16100c 100%);
-  border: 2px solid var(--hermetic-ink-black);
+  border: 1.5px solid var(--hermetic-ink-black);
   box-shadow:
-    inset 0 0 0 1.5px var(--hermetic-gold-ochre),
-    2px 3px 0 rgba(22, 16, 12, 0.8);
+    inset 0 0 0 1px var(--hermetic-gold-ochre),
+    1px 2px 0 rgba(22, 16, 12, 0.8);
   border-radius: 0;
   cursor: pointer;
   transition: all 0.15s ease;
   text-shadow: 1px 1px 0 #090604;
+  white-space: nowrap;
 }
 
 /* .btn-gnose-reset hover disabled */
@@ -1078,114 +1087,97 @@
   text-shadow: none;
 }
 
-.gnose-req-hint {
-  font-size: 14px;
-  color: var(--hermetic-ink-sepia);
-  text-align: center;
-}
-
 .gnose-stats-grid {
+  flex: 1 1 auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  gap: 5px;
 }
 
 .gnose-stat-box {
   background: rgba(203, 178, 134, 0.5);
   border: 1px solid var(--hermetic-rule-brass);
   border-radius: 0;
-  padding: 5px 6px;
+  padding: 2px 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  justify-content: center;
+  gap: 0;
 }
 
 .gnose-stat-label {
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   color: var(--hermetic-ink-sepia);
   text-transform: uppercase;
+  line-height: 1.1;
 }
 
 .gnose-stat-val {
   font-family: var(--font-game);
-  font-size: 18px;
+  font-size: 14px;
+  line-height: 1.1;
   font-weight: 700;
   color: var(--hermetic-ink-black);
 }
 
-.gnose-toggles-bar,
-.gnose-automation-panel {
+.gnose-controls-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
-  padding-top: 6px;
+  padding-top: 4px;
   border-top: 1px dashed var(--hermetic-rule-brass);
+}
+
+.gnose-req-hint {
+  font-size: 11.5px;
+  line-height: 1.1;
+  color: var(--hermetic-ink-sepia);
+  white-space: nowrap;
+}
+
+.gnose-toggles-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gnose-automation-panel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .gnose-toggle-label {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 15px;
+  gap: 4px;
+  font-size: 11.5px;
   color: var(--hermetic-ink-black);
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .gnose-toggle-label input[type='checkbox'] {
   accent-color: var(--hermetic-ink-soot);
   cursor: pointer;
-}
-
-.gnose-filter-bar {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin: 10px 0 12px;
-  padding: 4px;
-  background: rgba(184, 155, 108, 0.35);
-  border: 1.5px solid var(--hermetic-ink-umber);
-  box-shadow: inset 0 0 0 1px rgba(229, 212, 180, 0.6);
-}
-
-.gnose-filter-btn {
-  flex: 1 1 auto;
-  padding: 6px 4px;
-  font-family: var(--font-game);
-  font-size: 15px;
-  line-height: 1;
-  text-align: center;
-  white-space: nowrap;
-  background: rgba(229, 212, 180, 0.55);
-  border: 1px solid var(--hermetic-rule-brass);
-  color: var(--hermetic-ink-sepia);
-  cursor: pointer;
-  border-radius: 0;
-  transition: background 0.15s ease, color 0.15s ease;
-  transform: none !important;
-}
-
-.gnose-filter-btn.active {
-  background: var(--hermetic-ink-soot) !important;
-  color: var(--hermetic-parchment-light) !important;
-  border-color: var(--hermetic-gold-ochre) !important;
-  box-shadow: inset 0 0 0 1.5px var(--hermetic-rule-brass) !important;
+  margin: 0;
 }
 
 .gnose-upgrades-tree {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 6px;
 }
 
 .gnose-tier-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 3px;
 }
 
 .gnose-tier-header {
@@ -1193,11 +1185,11 @@
   align-items: center;
   justify-content: space-between;
   font-family: var(--font-game);
-  font-size: 16px;
-  letter-spacing: 0.8px;
+  font-size: 13px;
+  letter-spacing: 0.5px;
   color: var(--hermetic-ink-black);
-  border-bottom: 1.5px solid var(--hermetic-ink-umber);
-  padding-bottom: 4px;
+  border-bottom: 1px solid var(--hermetic-ink-umber);
+  padding-bottom: 1px;
   text-transform: uppercase;
 }
 
@@ -1206,22 +1198,23 @@
 }
 
 .gnose-tier-progress {
-  font-size: 13px;
+  font-size: 11px;
   color: var(--hermetic-ink-sepia);
 }
 
 .gnose-tier-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
 }
 
 .gnose-tree-node {
   display: flex !important;
   flex-direction: column !important;
   justify-content: space-between !important;
-  padding: 8px 10px !important;
-  min-height: 120px !important;
+  padding: 4px 6px !important;
+  min-height: 70px !important;
+  min-width: 0 !important;
   box-sizing: border-box !important;
   border: 1.5px solid var(--hermetic-rule-brass) !important;
   background: rgba(203, 178, 134, 0.55) !important;
@@ -1250,37 +1243,45 @@
 
 .gnose-node-top {
   display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  margin-bottom: 4px;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 2px;
+  min-width: 0;
 }
 
 .gnose-node-symbol {
-  font-size: 18px;
+  font-size: 14px;
   line-height: 1;
   flex-shrink: 0;
 }
 
 .gnose-node-title {
   font-family: var(--font-game);
-  font-size: 16px;
+  font-size: 13.5px;
   font-weight: 700;
-  line-height: 1.12;
+  line-height: 1.05;
   color: var(--hermetic-ink-black);
   margin: 0;
-  white-space: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .gnose-node-body {
   flex: 1 1 auto;
-  margin-bottom: 6px;
+  margin-bottom: 3px;
+  min-width: 0;
 }
 
 .gnose-node-effect {
-  font-size: 13px;
-  line-height: 1.22;
+  font-size: 11px;
+  line-height: 1.15;
   color: var(--hermetic-ink-sepia);
   margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .gnose-node-footer {
@@ -1288,16 +1289,19 @@
   align-items: center;
   justify-content: flex-end;
   margin-top: auto;
-  padding-top: 4px;
+  padding-top: 3px;
   border-top: 1px dashed rgba(94, 70, 49, 0.35);
 }
 
 .gnose-node-badge {
-  font-size: 12px;
+  font-size: 10.5px;
   font-weight: 700;
-  padding: 2px 6px;
+  padding: 1px 4px;
   border-radius: 0;
   white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .gnose-node-badge.cost {
@@ -1316,7 +1320,6 @@
   background: rgba(94, 70, 49, 0.25);
   border: 1px solid var(--hermetic-rule-brass);
   color: var(--hermetic-ink-sepia);
-  font-size: 11px;
 }
 
 /* ===================================================

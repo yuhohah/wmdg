@@ -42,9 +42,7 @@ export class GnoseTab {
   private autoRelicsWrapEl: HTMLElement | null = null;
   private autoRelicsToggleEl: HTMLInputElement | null = null;
 
-  private filterBarEl: HTMLElement | null = null;
   private treeContainerEl: HTMLElement | null = null;
-  private currentFilterTier: 'all' | 1 | 2 | 3 | 4 = 'all';
 
   constructor(options: GnoseTabOptions) {
     this.options = options;
@@ -74,7 +72,6 @@ export class GnoseTab {
     this.autoRelicsWrapEl = document.getElementById('gnose-auto-relics-wrap');
     this.autoRelicsToggleEl = document.getElementById('gnose-auto-relics-toggle') as HTMLInputElement | null;
 
-    this.filterBarEl = document.getElementById('gnose-filter-bar');
     this.treeContainerEl = document.getElementById('gnose-upgrades-tree');
   }
 
@@ -98,23 +95,6 @@ export class GnoseTab {
     this.autoRelicsToggleEl?.addEventListener('change', () => {
       this.options.gameState.autoRelicsEnabled = !!this.autoRelicsToggleEl?.checked;
     });
-
-    if (this.filterBarEl) {
-      const filterBtns = this.filterBarEl.querySelectorAll<HTMLButtonElement>('.gnose-filter-btn');
-      filterBtns.forEach((btn) => {
-        btn.addEventListener('click', () => {
-          filterBtns.forEach((b) => b.classList.remove('active'));
-          btn.classList.add('active');
-          const tierAttr = btn.getAttribute('data-tier');
-          if (tierAttr === 'all') {
-            this.currentFilterTier = 'all';
-          } else {
-            this.currentFilterTier = parseInt(tierAttr || '1', 10) as 1 | 2 | 3 | 4;
-          }
-          this.renderTree();
-        });
-      });
-    }
   }
 
   public async handleResetClick(): Promise<void> {
@@ -200,8 +180,7 @@ export class GnoseTab {
     if (!this.treeContainerEl) return;
     this.treeContainerEl.innerHTML = '';
 
-    const tiersToRender: Array<1 | 2 | 3 | 4> =
-      this.currentFilterTier === 'all' ? [1, 2, 3, 4] : [this.currentFilterTier];
+    const tiersToRender: Array<1 | 2 | 3 | 4> = [1, 2, 3, 4];
 
     tiersToRender.forEach((tier) => {
       const tierSection = document.createElement('div');
@@ -213,7 +192,7 @@ export class GnoseTab {
       const unlockedCount = tierUpgrades.filter((u) => this.options.gameState.hasGnoseUpgrade(u.id)).length;
       tierHeader.innerHTML = `
         <span class="gnose-tier-title">${GNOSE_TIER_LABELS[tier]}</span>
-        <span class="gnose-tier-progress">${unlockedCount} / ${tierUpgrades.length} ASSIMILADOS</span>
+        <span class="gnose-tier-progress">${unlockedCount}/${tierUpgrades.length}</span>
       `;
       tierSection.appendChild(tierHeader);
 
@@ -245,7 +224,7 @@ export class GnoseTab {
         const statusBadge = isUnlocked
           ? `<span class="gnose-node-badge unlocked">ASSIMILADO</span>`
           : !prereqsMet
-            ? `<span class="gnose-node-badge locked">REQUER: ${prereqNames.join(', ')}</span>`
+            ? `<span class="gnose-node-badge locked">🔒 ${formatNumber(upg.cost)} Gnose</span>`
             : `<span class="gnose-node-badge cost">${formatNumber(upg.cost)} Gnose</span>`;
 
         nodeEl.innerHTML = `
