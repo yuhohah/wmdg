@@ -159,4 +159,5 @@ export interface GnoseSaveData {
   confirmReset: boolean;
   autoFollowersEnabled: boolean;
   autoFervorEnabled: boolean;
+  autoRelicsEnabled?: boolean;
 }

@@ -15,12 +15,12 @@ describe('Gnose (True Prestige) System', () => {
     gameState = new GameStateManager();
   });
 
-  it('initializes with locked gnose and 12 tree nodes across 4 tiers', () => {
+  it('initializes with locked gnose and 20 tree nodes across 4 tiers', () => {
     expect(gameState.isGnoseUnlocked()).toBe(false);
     expect(gameState.gnosePoints).toBe(0);
     expect(gameState.totalGnoseEarned).toBe(0);
     expect(gameState.gnoseResets).toBe(0);
-    expect(GNOSE_UPGRADES.length).toBe(12);
+    expect(GNOSE_UPGRADES.length).toBe(20);
   });
 
   it('unlocks Selo da Gnose at 1e15 Fé with unlock_relics prerequisite', () => {

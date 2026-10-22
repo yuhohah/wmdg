@@ -76,6 +76,7 @@ export class GameStateManager {
   public confirmGnoseReset: boolean = true;
   public autoFollowersEnabled: boolean = true;
   public autoFervorEnabled: boolean = true;
+  public autoRelicsEnabled: boolean = true;
   private gnoseAutoAccumulatorSec: number = 0;
 
   // Onboarding & Intro Sequence
@@ -105,6 +106,7 @@ export class GameStateManager {
     this.confirmGnoseReset = true;
     this.autoFollowersEnabled = true;
     this.autoFervorEnabled = true;
+    this.autoRelicsEnabled = true;
     this.gnoseAutoAccumulatorSec = 0;
 
     this.followers = initialFollowers.map((item) => ({ ...item }));
@@ -196,6 +198,9 @@ export class GameStateManager {
     if (this.hasGnoseUpgrade('gn_gnose_mult')) {
       mult *= 2.5;
     }
+    if (this.hasGnoseUpgrade('gn_omniscience')) {
+      mult *= 2.0;
+    }
     if (this.hasGnoseUpgrade('gn_apotheosis')) {
       mult *= 2.0;
     }
@@ -210,7 +215,11 @@ export class GameStateManager {
   }
 
   public getTotalGnosePassiveMultiplier(): number {
-    return calculateTotalGnoseMultiplier(this.totalGnoseEarned);
+    let mult = calculateTotalGnoseMultiplier(this.totalGnoseEarned);
+    if (this.hasGnoseUpgrade('gn_omniscience')) {
+      mult *= 1.5;
+    }
+    return mult;
   }
 
   public getGnoseFollowersSynergyMultiplier(): number {
@@ -257,6 +266,9 @@ export class GameStateManager {
     if (this.hasGnoseUpgrade('gn_init_fervor')) {
       mult *= 3.0;
     }
+    if (this.hasGnoseUpgrade('gn_alchemical_mind')) {
+      mult *= 4.0;
+    }
     return mult;
   }
 
@@ -295,6 +307,13 @@ export class GameStateManager {
     if (this.hasGnoseUpgrade('gn_apotheosis')) {
       globalBuff *= 100.0;
     }
+    if (this.hasGnoseUpgrade('gn_dilatacao')) {
+      globalBuff *= 2.0;
+    }
+    if (this.hasGnoseUpgrade('gn_relic_resonance')) {
+      const activeRelics = this.relicUpgrades.filter((r) => r.level > 0).length;
+      globalBuff *= (1 + activeRelics * 0.5);
+    }
     globalBuff *= this.getTotalGnosePassiveMultiplier();
     globalBuff *= this.getGnoseFollowersSynergyMultiplier();
 
@@ -312,6 +331,12 @@ export class GameStateManager {
     }
     if (this.hasFragment('fragment_solinvictus')) {
       fpc *= 5.0;
+    }
+    if (this.hasGnoseUpgrade('gn_click_power')) {
+      fpc *= 10.0;
+    }
+    if (this.hasGnoseUpgrade('gn_dilatacao')) {
+      fpc *= 2.0;
     }
 
     return fpc;
@@ -337,6 +362,13 @@ export class GameStateManager {
     }
     if (this.hasGnoseUpgrade('gn_apotheosis')) {
       globalBuff *= 100.0;
+    }
+    if (this.hasGnoseUpgrade('gn_dilatacao')) {
+      globalBuff *= 2.0;
+    }
+    if (this.hasGnoseUpgrade('gn_relic_resonance')) {
+      const activeRelics = this.relicUpgrades.filter((r) => r.level > 0).length;
+      globalBuff *= (1 + activeRelics * 0.5);
     }
     globalBuff *= this.getTotalGnosePassiveMultiplier();
     globalBuff *= this.getGnoseFollowersSynergyMultiplier();
@@ -379,6 +411,16 @@ export class GameStateManager {
     if (this.hasGnoseUpgrade('gn_init_fervor')) {
       prodMult *= 5.0;
     }
+    if (this.hasGnoseUpgrade('gn_dilatacao')) {
+      prodMult *= 2.0;
+    }
+    if (this.hasGnoseUpgrade('gn_altar_resonance')) {
+      prodMult *= this.getEffectiveIncarnationFollowerMultiplier();
+    }
+    if (this.hasGnoseUpgrade('gn_relic_resonance')) {
+      const activeRelics = this.relicUpgrades.filter((r) => r.level > 0).length;
+      prodMult *= (1 + activeRelics * 0.5);
+    }
     if (this.hasGnoseUpgrade('gn_apotheosis')) {
       prodMult *= 100.0;
     }
@@ -387,6 +429,9 @@ export class GameStateManager {
     let synergyMult = getFervorUpgradeMultiplier(this.fervorUpgrades[4], 0, this.faithPoints);
     if (this.relicUpgrades[2].level >= 1) {
       synergyMult *= 1.5;
+    }
+    if (this.hasGnoseUpgrade('gn_synergy_boost')) {
+      synergyMult *= 5.0;
     }
 
     return calculateFervorRate(BASE_FERVOR_RATE, prodMult, synergyMult);
@@ -405,6 +450,9 @@ export class GameStateManager {
     }
     if (this.hasGnoseUpgrade('gn_keep_relics')) {
       autoGen += toGet * 0.25;
+    }
+    if (this.hasGnoseUpgrade('gn_auto_relics') && this.autoRelicsEnabled) {
+      autoGen += toGet * 1.0;
     }
     return Math.max(1.0, extraPerSec) + autoGen;
   }
@@ -772,7 +820,8 @@ export class GameStateManager {
         unlockedUpgrades: Array.from(this.unlockedGnoseUpgrades),
         confirmReset: this.confirmGnoseReset,
         autoFollowersEnabled: this.autoFollowersEnabled,
-        autoFervorEnabled: this.autoFervorEnabled
+        autoFervorEnabled: this.autoFervorEnabled,
+        autoRelicsEnabled: this.autoRelicsEnabled
       }
     };
   }
@@ -876,6 +925,7 @@ export class GameStateManager {
       this.confirmGnoseReset = typeof save.gnose.confirmReset === 'boolean' ? save.gnose.confirmReset : true;
       this.autoFollowersEnabled = typeof save.gnose.autoFollowersEnabled === 'boolean' ? save.gnose.autoFollowersEnabled : true;
       this.autoFervorEnabled = typeof save.gnose.autoFervorEnabled === 'boolean' ? save.gnose.autoFervorEnabled : true;
+      this.autoRelicsEnabled = typeof save.gnose.autoRelicsEnabled === 'boolean' ? save.gnose.autoRelicsEnabled : true;
     } else {
       this.gnosePoints = 0;
       this.totalGnoseEarned = 0;

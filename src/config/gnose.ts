@@ -48,6 +48,30 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     prerequisites: ['gn_init_faith'],
     effectText: '5× Fervor/s e 3× Ganho de Fragmentos'
   },
+  {
+    id: 'gn_click_power',
+    name: 'Pulso Cósmico',
+    title: 'Ressonância Manual',
+    desc: 'Multiplica o ganho de Fé por clique na Esfera por 10×.',
+    lore: 'Cada batida do coração do Profeta reverbera nas engrenagens secretas da Esfera celeste.',
+    icon: '⚡',
+    tier: 1,
+    cost: 3,
+    prerequisites: ['gn_init_faith'],
+    effectText: '10× Fé por Clique na Esfera'
+  },
+  {
+    id: 'gn_dilatacao',
+    name: 'Dilatação Hermética',
+    title: 'Tempo Litúrgico',
+    desc: 'Acelera a geração de Fé e Fervor em +100% (2×) imediatamente.',
+    lore: 'Para os iniciados na Gnose, o fluxo temporal curva-se diante da urgência da verdade divina.',
+    icon: '⏳',
+    tier: 1,
+    cost: 3,
+    prerequisites: ['gn_init_faith'],
+    effectText: '+100% (2×) Fé/s e Fervor/s'
+  },
 
   // --- TIER 2: PERSISTÊNCIA & SINERGIA ---
   {
@@ -86,8 +110,32 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     prerequisites: ['gn_init_fervor'],
     effectText: 'Bênção da Encarnação ativa permanentemente'
   },
+  {
+    id: 'gn_altar_resonance',
+    name: 'Altar Ressonante',
+    title: 'Fervor da Encarnação',
+    desc: 'O multiplicador da Encarnação Sagrada também potencializa diretamente a taxa de Fervor por segundo.',
+    lore: 'A luz que irradia do avatar santificado alimenta o braseiro perpétuo com o calor de mil sóis.',
+    icon: '✨',
+    tier: 2,
+    cost: 7,
+    prerequisites: ['gn_bencao_eterna'],
+    effectText: 'Encarnação multiplica Fervor/s'
+  },
+  {
+    id: 'gn_alchemical_mind',
+    name: 'Transmutação Áurea',
+    title: 'Mente Alquímica',
+    desc: 'Multiplica por 4× o ganho de Fragmentos Alquímicos nas Transmutações.',
+    lore: 'O chumbo da matéria impura dissolve-se instantaneamente na prata viva do pensamento gnóstico.',
+    icon: '⚗️',
+    tier: 2,
+    cost: 9,
+    prerequisites: ['gn_keep_relics'],
+    effectText: '4× Fragmentos em Transmutações'
+  },
 
-  // --- TIER 3: EVOLUÇÕES DE FÓRMULA DODECADRAGONS ---
+  // --- TIER 3: EVOLUÇÕES HERMÉTICAS ---
   {
     id: 'gn_followers_cubic',
     name: 'Coro Cúbico',
@@ -124,6 +172,30 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     prerequisites: ['gn_bencao_eterna'],
     effectText: '2,5× Gnose obtida e 3× efeito da Encarnação'
   },
+  {
+    id: 'gn_synergy_boost',
+    name: 'Forja Cósmica',
+    title: 'Ardor Triunfante',
+    desc: 'Multiplica em 5× o efeito do 5º Rito de Fervor ("Fé Aumenta Fervor/s").',
+    lore: 'A Fé depositada no abismo do cosmos retorna como uma torrente incontrolável de fogo estelar.',
+    icon: '🌌',
+    tier: 3,
+    cost: 35,
+    prerequisites: ['gn_fu1_boost'],
+    effectText: '5× efeito do 5º Rito de Fervor'
+  },
+  {
+    id: 'gn_relic_resonance',
+    name: 'Harmonia Planetária',
+    title: 'Música das Esferas',
+    desc: 'Cada Relíquia única com nível maior que 0 concede +50% de Fé/s e +50% de Fervor/s global.',
+    lore: 'Cada artefato sagrado vibra em consonância com as órbitas dos planetas, amplificando o louvor cósmico.',
+    icon: '🪐',
+    tier: 3,
+    cost: 35,
+    prerequisites: ['gn_keep_relics'],
+    effectText: '+50% Fé/s e Fervor/s por Relíquia ativa'
+  },
 
   // --- TIER 4: AUTOMAÇÃO & APOTEOSE ---
   {
@@ -151,6 +223,30 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     effectText: 'Auto-compra Ritos de Fervor/s sem gastar Fervor'
   },
   {
+    id: 'gn_auto_relics',
+    name: 'Transmutação Espontânea',
+    title: 'O Cadinho Vivo',
+    desc: 'Gera automaticamente +100% da Transmutação Alquímica a cada segundo, sem gastar Fé.',
+    lore: 'A matéria se transubstancia espontaneamente em ouro celestial sem a necessidade de intervenção mortal.',
+    icon: '💠',
+    tier: 4,
+    cost: 120,
+    prerequisites: ['gn_relic_resonance'],
+    effectText: '+100% Transmutação/s contínua'
+  },
+  {
+    id: 'gn_omniscience',
+    name: 'Olho do Infinito',
+    title: 'Visão Panóptica',
+    desc: 'Dobra (2×) o ganho de Gnose em resets e amplia o bônus passivo de toda Gnose em +50%.',
+    lore: 'Aquele que tudo vê não apenas compreende o universo: ele se torna a própria mente que o concebe.',
+    icon: '🔮',
+    tier: 4,
+    cost: 180,
+    prerequisites: ['gn_gnose_mult'],
+    effectText: '2× Gnose em resets e +50% bônus passivo'
+  },
+  {
     id: 'gn_apotheosis',
     name: 'Gnosis Suprema',
     title: 'A Circunferência Infinita',
@@ -158,7 +254,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'O centro está em toda parte; a circunferência, em lugar nenhum. A Esfera recorda sua plenitude anterior à criação.',
     icon: '👑',
     tier: 4,
-    cost: 250,
+    cost: 300,
     prerequisites: ['gn_auto_followers', 'gn_auto_fervor', 'gn_gnose_mult'],
     effectText: '100× Fé/Fervor, 2× Gnose e Estágios IV–V barateados'
   }

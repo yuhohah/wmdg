@@ -39,8 +39,12 @@ export class GnoseTab {
   private autoFollowersToggleEl: HTMLInputElement | null = null;
   private autoFervorWrapEl: HTMLElement | null = null;
   private autoFervorToggleEl: HTMLInputElement | null = null;
+  private autoRelicsWrapEl: HTMLElement | null = null;
+  private autoRelicsToggleEl: HTMLInputElement | null = null;
 
+  private filterBarEl: HTMLElement | null = null;
   private treeContainerEl: HTMLElement | null = null;
+  private currentFilterTier: 'all' | 1 | 2 | 3 | 4 = 'all';
 
   constructor(options: GnoseTabOptions) {
     this.options = options;
@@ -67,7 +71,10 @@ export class GnoseTab {
     this.autoFollowersToggleEl = document.getElementById('gnose-auto-followers-toggle') as HTMLInputElement | null;
     this.autoFervorWrapEl = document.getElementById('gnose-auto-fervor-wrap');
     this.autoFervorToggleEl = document.getElementById('gnose-auto-fervor-toggle') as HTMLInputElement | null;
+    this.autoRelicsWrapEl = document.getElementById('gnose-auto-relics-wrap');
+    this.autoRelicsToggleEl = document.getElementById('gnose-auto-relics-toggle') as HTMLInputElement | null;
 
+    this.filterBarEl = document.getElementById('gnose-filter-bar');
     this.treeContainerEl = document.getElementById('gnose-upgrades-tree');
   }
 
@@ -87,6 +94,27 @@ export class GnoseTab {
     this.autoFervorToggleEl?.addEventListener('change', () => {
       this.options.gameState.autoFervorEnabled = !!this.autoFervorToggleEl?.checked;
     });
+
+    this.autoRelicsToggleEl?.addEventListener('change', () => {
+      this.options.gameState.autoRelicsEnabled = !!this.autoRelicsToggleEl?.checked;
+    });
+
+    if (this.filterBarEl) {
+      const filterBtns = this.filterBarEl.querySelectorAll<HTMLButtonElement>('.gnose-filter-btn');
+      filterBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          filterBtns.forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          const tierAttr = btn.getAttribute('data-tier');
+          if (tierAttr === 'all') {
+            this.currentFilterTier = 'all';
+          } else {
+            this.currentFilterTier = parseInt(tierAttr || '1', 10) as 1 | 2 | 3 | 4;
+          }
+          this.renderTree();
+        });
+      });
+    }
   }
 
   public async handleResetClick(): Promise<void> {
@@ -172,21 +200,26 @@ export class GnoseTab {
     if (!this.treeContainerEl) return;
     this.treeContainerEl.innerHTML = '';
 
-    const tiers: Array<1 | 2 | 3 | 4> = [1, 2, 3, 4];
+    const tiersToRender: Array<1 | 2 | 3 | 4> =
+      this.currentFilterTier === 'all' ? [1, 2, 3, 4] : [this.currentFilterTier];
 
-    tiers.forEach((tier) => {
+    tiersToRender.forEach((tier) => {
       const tierSection = document.createElement('div');
       tierSection.className = 'gnose-tier-section';
 
       const tierHeader = document.createElement('div');
       tierHeader.className = 'gnose-tier-header';
-      tierHeader.textContent = GNOSE_TIER_LABELS[tier];
+      const tierUpgrades = GNOSE_UPGRADES.filter((u) => u.tier === tier);
+      const unlockedCount = tierUpgrades.filter((u) => this.options.gameState.hasGnoseUpgrade(u.id)).length;
+      tierHeader.innerHTML = `
+        <span class="gnose-tier-title">${GNOSE_TIER_LABELS[tier]}</span>
+        <span class="gnose-tier-progress">${unlockedCount} / ${tierUpgrades.length} ASSIMILADOS</span>
+      `;
       tierSection.appendChild(tierHeader);
 
       const tierGrid = document.createElement('div');
       tierGrid.className = 'gnose-tier-grid';
 
-      const tierUpgrades = GNOSE_UPGRADES.filter((u) => u.tier === tier);
       tierUpgrades.forEach((upg) => {
         const isUnlocked = this.options.gameState.hasGnoseUpgrade(upg.id);
         const prereqsMet = upg.prerequisites.every((reqId) => this.options.gameState.hasGnoseUpgrade(reqId));
@@ -206,7 +239,7 @@ export class GnoseTab {
         nodeEl.id = `card-${upg.id}`;
 
         const symbolHtml = DISPLAY_CONFIG.showEmojisAndSymbols
-          ? `<span class="card-symbol gnose-node-symbol">${upg.icon}</span>`
+          ? `<span class="gnose-node-symbol">${upg.icon}</span>`
           : '';
 
         const statusBadge = isUnlocked
@@ -216,15 +249,15 @@ export class GnoseTab {
             : `<span class="gnose-node-badge cost">${formatNumber(upg.cost)} Gnose</span>`;
 
         nodeEl.innerHTML = `
-          <div class="card-header-row">
-            <div class="card-title-group">
-              ${symbolHtml}
-              <span class="card-name">${upg.name}</span>
-            </div>
-            ${statusBadge}
+          <div class="gnose-node-top">
+            ${symbolHtml}
+            <span class="gnose-node-title">${upg.name}</span>
           </div>
-          <div class="card-desc">
-            <div class="gnose-node-benefit">${upg.effectText}</div>
+          <div class="gnose-node-body">
+            <p class="gnose-node-effect">${upg.effectText}</p>
+          </div>
+          <div class="gnose-node-footer">
+            ${statusBadge}
           </div>
         `;
 
@@ -292,8 +325,11 @@ export class GnoseTab {
 
     const hasAutoFollowers = gs.hasGnoseUpgrade('gn_auto_followers');
     const hasAutoFervor = gs.hasGnoseUpgrade('gn_auto_fervor');
+    const hasAutoRelics = gs.hasGnoseUpgrade('gn_auto_relics');
+
     if (this.automationPanelEl) {
-      this.automationPanelEl.style.display = hasAutoFollowers || hasAutoFervor ? 'flex' : 'none';
+      this.automationPanelEl.style.display =
+        hasAutoFollowers || hasAutoFervor || hasAutoRelics ? 'flex' : 'none';
     }
     if (this.autoFollowersWrapEl) {
       this.autoFollowersWrapEl.style.display = hasAutoFollowers ? 'flex' : 'none';
@@ -306,6 +342,12 @@ export class GnoseTab {
     }
     if (this.autoFervorToggleEl) {
       this.autoFervorToggleEl.checked = gs.autoFervorEnabled;
+    }
+    if (this.autoRelicsWrapEl) {
+      this.autoRelicsWrapEl.style.display = hasAutoRelics ? 'flex' : 'none';
+    }
+    if (this.autoRelicsToggleEl) {
+      this.autoRelicsToggleEl.checked = gs.autoRelicsEnabled;
     }
 
     this.updateNodeStates();
