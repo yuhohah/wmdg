@@ -116,6 +116,7 @@ class AppManager {
       audio: this.audio,
       triggerHaptic: (p) => this.triggerHaptic(p),
       notifications: this.notifications,
+      spawnFloatingText: (x, y, t) => this.sphere.spawnFloatingText(x, y, t),
       onIncarnationEvolved: () => events.emit(GameEvents.STATE_CHANGED)
     });
 

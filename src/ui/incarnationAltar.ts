@@ -1,7 +1,7 @@
 import { INCARNATION_STAGES, IncarnationStage } from '../config/incarnation.js';
 
 export interface IncarnationAltarOptions {
-  onAltarClick?: () => void;
+  onAltarClick?: (e?: MouseEvent) => void;
   triggerHaptic?: (pattern: number | number[]) => void;
 }
 
@@ -65,7 +65,7 @@ export class IncarnationAltar {
     if (!this.canvas) return;
     const rect = this.canvas.getBoundingClientRect();
     this.width = rect.width > 50 ? rect.width : 400;
-    this.height = rect.height > 50 ? rect.height : 240;
+    this.height = rect.height > 50 ? rect.height : 440;
     this.dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     this.canvas.width = Math.floor(this.width * this.dpr);
@@ -95,8 +95,8 @@ export class IncarnationAltar {
   }
 
   private setupEvents(): void {
-    this.container?.addEventListener('click', () => {
-      this.triggerAltarClick();
+    this.container?.addEventListener('click', (e: MouseEvent) => {
+      this.triggerAltarClick(e);
     });
   }
 
@@ -104,9 +104,9 @@ export class IncarnationAltar {
     return this.currentStage;
   }
 
-  public triggerAltarClick(): void {
+  public triggerAltarClick(e?: MouseEvent): void {
     this.options.triggerHaptic?.(12);
-    this.options.onAltarClick?.();
+    this.options.onAltarClick?.(e);
     this.spawnBurstParticles(15);
     this.pulsePhase = 1.0;
   }

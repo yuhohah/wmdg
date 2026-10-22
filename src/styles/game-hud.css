@@ -213,7 +213,7 @@ html,body { background:#211a18; }
 .sacred-window-heading p { font:16px var(--font-game); color:#a48b6c; margin:0; }
 .sphere-wrapper { background:repeating-conic-gradient(from 0deg,#927248 0deg 2deg,transparent 2deg 30deg); border:5px double #8b6b44; border-radius:50%; box-shadow:0 0 0 6px #241b17,0 0 0 8px #664b31; width:160px; height:160px; position:relative; }
 .divine-sphere-btn {
-  background: radial-gradient(circle at center, rgba(30, 24, 20, 0.2) 0%, rgba(10, 8, 8, 0.8) 100%), url('/assets/sphere_base.png') center / cover no-repeat;
+  background: radial-gradient(circle at 35% 30%, #fffbe8 0%, #fed7aa 15%, #f59e0b 35%, #b45309 60%, #451a03 85%, #180902 100%);
   width: 134px;
   height: 134px;
   border-radius: 50%;

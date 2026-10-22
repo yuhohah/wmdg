@@ -661,25 +661,79 @@
   justify-content: center !important;
 }
 
-#card-altar-sphere .divine-sphere-btn {
-  background: radial-gradient(circle at center, rgba(30, 24, 20, 0.15) 0%, rgba(10, 8, 8, 0.75) 100%), url('/assets/sphere_base.png') center / cover no-repeat !important;
-  width: 170px !important;
-  height: 170px !important;
-  border: none !important;
-  box-shadow: 0 0 32px rgba(0, 0, 0, 0.85), 0 0 24px rgba(196, 152, 80, 0.35) !important;
+#card-altar-sphere .divine-sphere-btn,
+.divine-sphere-btn {
+  width: 190px !important;
+  height: 190px !important;
   border-radius: 50% !important;
+  background: radial-gradient(circle at 35% 30%, #fffbe8 0%, #fed7aa 15%, #f59e0b 35%, #b45309 60%, #451a03 85%, #180902 100%) !important;
+  border: 2.5px solid rgba(245, 218, 140, 0.85) !important;
+  box-shadow: 
+    0 0 35px rgba(245, 158, 11, 0.55),
+    0 0 80px rgba(180, 83, 9, 0.35),
+    inset -14px -14px 28px rgba(0, 0, 0, 0.95),
+    inset 8px 8px 24px rgba(255, 255, 255, 0.55) !important;
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  overflow: hidden !important;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, filter 0.2s ease !important;
+}
+
+#card-altar-sphere .divine-sphere-btn::before,
+.divine-sphere-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: 
+    radial-gradient(circle at 50% 50%, transparent 55%, rgba(20, 8, 2, 0.7) 95%),
+    repeating-linear-gradient(0deg, transparent, transparent 16px, rgba(255, 230, 160, 0.12) 17px, transparent 18px),
+    repeating-linear-gradient(90deg, transparent, transparent 16px, rgba(255, 230, 160, 0.12) 17px, transparent 18px);
+  pointer-events: none;
+}
+
+#card-altar-sphere .divine-sphere-btn::after,
+.divine-sphere-btn::after {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(255, 235, 170, 0.5);
+  box-shadow: inset 0 0 20px rgba(245, 158, 11, 0.35);
+  pointer-events: none;
+  animation: orbitSpin 45s linear infinite;
+}
+
+#card-altar-sphere .divine-sphere-btn:hover,
+.divine-sphere-btn:hover {
+  transform: scale(1.05) !important;
+  filter: brightness(1.12) !important;
+  box-shadow: 
+    0 0 50px rgba(245, 158, 11, 0.75),
+    0 0 100px rgba(217, 119, 6, 0.45),
+    inset -14px -14px 28px rgba(0, 0, 0, 0.95),
+    inset 10px 10px 28px rgba(255, 255, 255, 0.65) !important;
+}
+
+#card-altar-sphere .divine-sphere-btn:active,
+.divine-sphere-btn:active {
+  transform: scale(0.95) !important;
+  filter: brightness(1.25) !important;
 }
 
 #card-altar-sphere .church-blessing {
-  pointer-events: auto;
+  display: none !important;
 }
 
 /* 2. HIGH ALTAR SANCTUARY (DOMUS SAPIENTIAE - Left Chancel) */
 #card-incarnation {
   left: 240px;
-  top: 400px;
-  width: 520px;
-  min-height: 680px;
+  top: 360px;
+  width: 580px;
+  min-height: 820px;
 }
 
 /* 3. ALCHEMICAL CRYPT (CRYPTA ALCHYMICA - Lower Left Vault) */
@@ -701,25 +755,26 @@
 /* 5. CATHEDRAL COURTYARD & DEVOTEES (NAVE CATHEDRALIS / COLONNATA) */
 #card-followers {
   left: 1980px;
-  top: 920px;
-  width: 560px;
-  min-height: 680px;
+  top: 860px;
+  width: 580px;
+  min-height: 780px;
 }
 
 #card-followers .followers-arena-container {
   width: 100%;
-  margin: 12px 0 0 0;
-  border-radius: 4px;
+  height: 440px;
+  margin: 10px 0 12px 0;
+  border-radius: 6px;
   overflow: hidden;
   position: relative;
   background: transparent !important;
-  border: 1px dashed rgba(196, 152, 80, 0.35);
-  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.5);
+  border: 1.5px solid rgba(196, 152, 80, 0.45);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.7);
 }
 
 #card-followers .followers-walk-canvas {
   width: 100%;
-  height: 240px;
+  height: 440px;
   display: block;
   background: transparent !important;
 }
@@ -1171,7 +1226,7 @@
 .incarnation-altar-viewport {
   position: relative;
   width: 100%;
-  height: 250px;
+  height: 440px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1180,12 +1235,81 @@
 }
 
 .incarnation-avatar-art {
-  max-width: 90%;
-  max-height: 90%;
-  object-fit: contain;
-  filter: drop-shadow(0 0 12px rgba(216, 191, 141, 0.25)) contrast(1.05);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: drop-shadow(0 0 16px rgba(216, 191, 141, 0.25)) contrast(1.05);
   transition: transform 0.35s ease, filter 0.35s ease;
   z-index: 1;
+}
+
+/* Bênção 2x da Encarnação */
+.incarnation-blessing-panel {
+  width: 100%;
+  margin: 8px 0 12px 0;
+  padding: 8px 12px;
+  background: rgba(18, 14, 11, 0.9);
+  border: 1.5px solid rgba(140, 106, 54, 0.5);
+  border-radius: 4px;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  box-sizing: border-box;
+}
+
+.incarnation-blessing-panel.active {
+  border-color: rgba(245, 158, 11, 0.85);
+  box-shadow: inset 0 0 16px rgba(245, 158, 11, 0.25), 0 0 14px rgba(245, 158, 11, 0.35);
+}
+
+.incarnation-blessing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-game);
+}
+
+.incarnation-blessing-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #c9a874;
+}
+
+.incarnation-blessing-panel.active .incarnation-blessing-title {
+  color: #ffdf78;
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+}
+
+.incarnation-blessing-status {
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  color: #a89078;
+}
+
+.incarnation-blessing-panel.active .incarnation-blessing-status {
+  color: #fff0b3;
+  font-weight: bold;
+}
+
+.incarnation-blessing-track {
+  width: 100%;
+  height: 10px;
+  background: rgba(10, 8, 7, 0.95);
+  border: 1px solid rgba(140, 106, 54, 0.4);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.incarnation-blessing-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #b45309 0%, #f59e0b 50%, #fef08a 100%);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.7);
+  transition: width 0.12s linear;
 }
 
 .incarnation-altar-container:hover .incarnation-avatar-art {

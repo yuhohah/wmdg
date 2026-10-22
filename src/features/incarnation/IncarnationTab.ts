@@ -1,21 +1,23 @@
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { NotificationManager } from '../../systems/notifications.js';
-import { INCARNATION_STAGES } from '../../config/incarnation.js';
+import { INCARNATION_STAGES, BLESSING_SECONDS_PER_PRESS } from '../../config/incarnation.js';
 import { formatNumber } from '../../systems/calculations.js';
 import { IncarnationAltar } from '../../ui/incarnationAltar.js';
+import { events, GameEvents } from '../../core/EventBus.js';
 
 export interface IncarnationTabOptions {
   gameState: GameStateManager;
   audio: AudioManager;
   triggerHaptic: (pattern: number | number[]) => void;
   notifications: NotificationManager;
+  spawnFloatingText?: (x: number, y: number, text: string) => void;
   onIncarnationEvolved?: (newStage: number) => void;
 }
 
 export class IncarnationTab {
   private options: IncarnationTabOptions;
-  private altar: IncarnationAltar | null = null;
+  public altar: IncarnationAltar | null = null;
 
   // DOM Elements
   private tabBtnIncarnationEl: HTMLElement | null = null;
@@ -28,6 +30,11 @@ export class IncarnationTab {
   private upgradeBenefitEl: HTMLElement | null = null;
   private upgradeCostValEl: HTMLElement | null = null;
 
+  // Blessing 2x Elements
+  private blessingPanelEl: HTMLElement | null = null;
+  private blessingStatusEl: HTMLElement | null = null;
+  private blessingFillEl: HTMLElement | null = null;
+
   constructor(options: IncarnationTabOptions) {
     this.options = options;
     this.initElements();
@@ -39,8 +46,8 @@ export class IncarnationTab {
     if (altarContainer) {
       this.altar = new IncarnationAltar('incarnation-altar-container', {
         triggerHaptic: this.options.triggerHaptic,
-        onAltarClick: () => {
-          this.options.audio.playTone(520, 'sine', 0.1);
+        onAltarClick: (e?: MouseEvent) => {
+          this.handleAltarClick(e);
         }
       });
       this.altar.setStage(this.options.gameState.incarnationStage, true);
@@ -55,12 +62,55 @@ export class IncarnationTab {
     this.upgradeTitleEl = document.getElementById('incarnation-upgrade-title');
     this.upgradeBenefitEl = document.getElementById('incarnation-upgrade-benefit');
     this.upgradeCostValEl = document.getElementById('incarnation-cost-val');
+
+    this.blessingPanelEl = document.getElementById('incarnation-blessing-panel');
+    this.blessingStatusEl = document.getElementById('incarnation-blessing-status');
+    this.blessingFillEl = document.getElementById('incarnation-blessing-fill');
   }
 
   private bindEvents(): void {
     this.btnUpgradeEl?.addEventListener('click', () => {
       this.upgradeIncarnation();
     });
+  }
+
+  public handleAltarClick(e?: MouseEvent): void {
+    this.options.audio.playTone(660, 'sine', 0.12);
+    this.options.triggerHaptic(12);
+
+    this.options.gameState.addIncarnationBoost(BLESSING_SECONDS_PER_PRESS);
+    events.emit(GameEvents.STATE_CHANGED);
+
+    let clientX = e?.clientX;
+    let clientY = e?.clientY;
+    if (!clientX || !clientY) {
+      const rect = document.getElementById('incarnation-altar-container')?.getBoundingClientRect();
+      clientX = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+      clientY = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
+    }
+
+    if (this.options.spawnFloatingText) {
+      this.options.spawnFloatingText(clientX, clientY, `+${BLESSING_SECONDS_PER_PRESS}s BÊNÇÃO 2X!`);
+    }
+
+    this.updateBlessingBar();
+  }
+
+  public updateBlessingBar(): void {
+    if (!this.blessingFillEl || !this.blessingStatusEl) return;
+    const boostSec = this.options.gameState.incarnationBoostTimer;
+    const maxCap = this.options.gameState.getMaxIncarnationBoost();
+    const percent = Math.min(100, Math.max(0, (boostSec / maxCap) * 100));
+
+    this.blessingFillEl.style.width = `${percent.toFixed(1)}%`;
+
+    if (boostSec > 0) {
+      this.blessingStatusEl.textContent = `✦ 2× FÉ ATIVO · ${Math.ceil(boostSec)}s / ${maxCap}s`;
+      this.blessingPanelEl?.classList.add('active');
+    } else {
+      this.blessingStatusEl.textContent = 'INATIVA (Clique no Altar para +2s)';
+      this.blessingPanelEl?.classList.remove('active');
+    }
   }
 
   public upgradeIncarnation(): void {
@@ -128,6 +178,8 @@ export class IncarnationTab {
         this.btnUpgradeEl.disabled = true;
       }
     }
+
+    this.updateBlessingBar();
   }
 
   public updateUpgradeButtonState(): void {
@@ -145,6 +197,7 @@ export class IncarnationTab {
       this.rateBadgeEl.textContent = `x${incFollowerMult.toFixed(2)}`;
     }
     this.updateUpgradeButtonState();
+    this.updateBlessingBar();
   }
 
   public setTabVisibility(unlocked: boolean): void {
