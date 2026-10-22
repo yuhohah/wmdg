@@ -94,15 +94,7 @@ export class FervorTab {
         this.buyUpgrade(upg);
       });
 
-      card.addEventListener('mouseenter', (e: MouseEvent) => {
-        this.options.tooltips.showFervorTooltip(upg, cost, mult, e, this.options.gameState.isFu1Boosted());
-      });
-      card.addEventListener('mousemove', (e: MouseEvent) => {
-        this.options.tooltips.position(e);
-      });
-      card.addEventListener('mouseleave', () => {
-        this.options.tooltips.hide();
-      });
+
 
       this.listEl!.appendChild(card);
     });

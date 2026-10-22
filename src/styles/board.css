@@ -1918,3 +1918,13 @@
     4px 5px 0 rgba(18, 13, 9, 0.9) !important;
   color: var(--hermetic-ink-black) !important;
 }
+
+
+/* Ensure hover tooltip popup is permanently hidden */
+#cult-tooltip,
+.cult-tooltip {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}

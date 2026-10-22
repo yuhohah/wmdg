@@ -85,7 +85,6 @@ export class TestMenu {
     const launcher = document.createElement('button');
     launcher.id = 'test-menu-launcher';
     launcher.className = 'test-menu-launcher';
-    launcher.title = 'Abrir Menu de Testes (Atalho: T ou F2)';
     launcher.innerHTML = `<span class="test-launcher-icon">🛠️</span> <span class="test-launcher-badge">⚡ 1x</span>`;
     launcher.addEventListener('click', (e) => {
       e.stopPropagation();

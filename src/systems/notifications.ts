@@ -90,7 +90,7 @@ export class NotificationManager {
       <div class="ach-popup-content">
         <div class="ach-popup-header-row">
           <span class="ach-popup-badge">CONQUISTA DESBLOQUEADA</span>
-          <button type="button" class="ach-popup-close" aria-label="Fechar" title="Fechar">&times;</button>
+          <button type="button" class="ach-popup-close" aria-label="Fechar">&times;</button>
         </div>
         <div class="ach-popup-title">${ach.name}</div>
         <div class="ach-popup-desc">${ach.desc}</div>
@@ -130,7 +130,7 @@ export class NotificationManager {
       <div class="ach-popup-content">
         <div class="ach-popup-header-row">
           <span class="ach-popup-badge">${badge}</span>
-          <button type="button" class="ach-popup-close" aria-label="Fechar" title="Fechar">&times;</button>
+          <button type="button" class="ach-popup-close" aria-label="Fechar">&times;</button>
         </div>
         <div class="ach-popup-title">${title}</div>
         <div class="ach-popup-desc">${desc}</div>

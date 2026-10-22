@@ -9,7 +9,6 @@ export class TooltipManager {
   private mobileSheet: HTMLElement | null = null;
   private mobileBackdrop: HTMLElement | null = null;
   private mobileSheetContent: HTMLElement | null = null;
-  private mobileSheetTitle: HTMLElement | null = null;
   private closeSheetBtn: HTMLElement | null = null;
 
   constructor(tooltipId: string = 'cult-tooltip') {
@@ -17,7 +16,6 @@ export class TooltipManager {
     this.mobileSheet = document.getElementById('mobile-inspect-sheet');
     this.mobileBackdrop = document.getElementById('mobile-sheet-backdrop');
     this.mobileSheetContent = document.getElementById('mobile-sheet-content');
-    this.mobileSheetTitle = document.getElementById('mobile-sheet-title');
     this.closeSheetBtn = document.getElementById('close-mobile-sheet-btn');
 
     if (this.closeSheetBtn) {
@@ -42,16 +40,10 @@ export class TooltipManager {
     if (this.mobileBackdrop) this.mobileBackdrop.classList.remove('open');
   }
 
-  private render(html: string, title: string, e: MouseEvent): void {
-    if (this.isMobileMode() && this.mobileSheet && this.mobileSheetContent) {
-      if (this.mobileSheetTitle) this.mobileSheetTitle.textContent = title;
-      this.mobileSheetContent.innerHTML = html;
-      this.openMobileSheet();
+  private render(_html: string, _title: string, _e: MouseEvent): void {
+    // Hover tooltips disabled globally per user request
+    if (this.tooltipEl) {
       this.tooltipEl.style.display = 'none';
-    } else {
-      this.tooltipEl.innerHTML = html;
-      this.tooltipEl.style.display = 'flex';
-      this.position(e);
     }
   }
 

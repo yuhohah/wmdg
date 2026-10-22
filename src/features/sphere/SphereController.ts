@@ -172,11 +172,9 @@ export class SphereController {
       if (isUnlocked) {
         node.classList.remove('state-locked');
         node.classList.add('state-unlocked');
-        node.setAttribute('title', `Deus Rival ${this.getRomanNumeral(idx + 1)} (Desperto)`);
       } else {
         node.classList.remove('state-unlocked');
         node.classList.add('state-locked');
-        node.setAttribute('title', `Deus Rival ${this.getRomanNumeral(idx + 1)} (Adormecido)`);
       }
     });
   }
@@ -194,8 +192,4 @@ export class SphereController {
     }, 850);
   }
 
-  private getRomanNumeral(num: number): string {
-    const romans = ['I', 'II', 'III', 'IV', 'V', 'VI'];
-    return romans[num - 1] || `${num}`;
-  }
 }

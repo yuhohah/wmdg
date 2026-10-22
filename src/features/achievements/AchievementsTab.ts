@@ -93,7 +93,6 @@ export class AchievementsTab {
       this.progressEl.textContent = `${unlockedCount} / ${totalCount} conquistas desbloqueadas`;
     }
     if (this.hudBtnEl) {
-      this.hudBtnEl.title = `Grimório de Conquistas (${unlockedCount}/${totalCount})`;
     }
   }
 
@@ -135,15 +134,7 @@ export class AchievementsTab {
         ` : ''}
       `;
 
-      card.addEventListener('mouseenter', (e: MouseEvent) => {
-        this.tooltips.showAchievementTooltip(ach, this.gameState.getSnapshot(), e);
-      });
-      card.addEventListener('mousemove', (e: MouseEvent) => {
-        this.tooltips.position(e);
-      });
-      card.addEventListener('mouseleave', () => {
-        this.tooltips.hide();
-      });
+
 
       this.achievementsListEl!.appendChild(card);
     });

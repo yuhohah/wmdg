@@ -169,13 +169,6 @@ export class GnoseTab {
     }
   }
 
-  private getPrerequisiteNames(upg: GnoseUpgrade): string[] {
-    return upg.prerequisites.map((reqId) => {
-      const found = GNOSE_UPGRADES.find((u) => u.id === reqId);
-      return found ? found.name : reqId;
-    });
-  }
-
   public renderTree(): void {
     if (!this.treeContainerEl) return;
     this.treeContainerEl.innerHTML = '';
@@ -203,7 +196,6 @@ export class GnoseTab {
         const isUnlocked = this.options.gameState.hasGnoseUpgrade(upg.id);
         const prereqsMet = upg.prerequisites.every((reqId) => this.options.gameState.hasGnoseUpgrade(reqId));
         const canAfford = this.options.gameState.gnosePoints >= upg.cost;
-        const prereqNames = this.getPrerequisiteNames(upg);
 
         const stateClass = isUnlocked
           ? 'gnose-node-unlocked'
@@ -244,18 +236,7 @@ export class GnoseTab {
           this.buyUpgrade(upg);
         });
 
-        nodeEl.addEventListener('mouseenter', (e: MouseEvent) => {
-          const unlockedNow = this.options.gameState.hasGnoseUpgrade(upg.id);
-          const prereqsNow = upg.prerequisites.every((r) => this.options.gameState.hasGnoseUpgrade(r));
-          const affordNow = this.options.gameState.gnosePoints >= upg.cost;
-          this.options.tooltips.showGnoseTooltip(upg, unlockedNow, prereqsNow, affordNow, prereqNames, e);
-        });
-        nodeEl.addEventListener('mousemove', (e: MouseEvent) => {
-          this.options.tooltips.position(e);
-        });
-        nodeEl.addEventListener('mouseleave', () => {
-          this.options.tooltips.hide();
-        });
+
 
         tierGrid.appendChild(nodeEl);
       });

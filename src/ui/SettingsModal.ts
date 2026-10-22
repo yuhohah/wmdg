@@ -213,9 +213,6 @@ export class SettingsModal {
     }
     if (this.musicQuickBtnEl) {
       this.musicQuickBtnEl.classList.toggle('muted', !isEnabled);
-      this.musicQuickBtnEl.title = isEnabled
-        ? 'Trilha Sonora: Ativa (Clique para silenciar)'
-        : 'Trilha Sonora: Silenciada (Clique para tocar)';
     }
   }
 

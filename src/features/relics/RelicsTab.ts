@@ -140,15 +140,7 @@ export class RelicsTab {
         this.buyRelicUpgrade(relic);
       });
 
-      card.addEventListener('mouseenter', (e: MouseEvent) => {
-        this.options.tooltips.showRelicTooltip(relic, this.options.gameState.relicPoints, e);
-      });
-      card.addEventListener('mousemove', (e: MouseEvent) => {
-        this.options.tooltips.position(e);
-      });
-      card.addEventListener('mouseleave', () => {
-        this.options.tooltips.hide();
-      });
+
 
       this.relicUpgradesListEl!.appendChild(card);
     });

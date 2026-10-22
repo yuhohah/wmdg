@@ -91,15 +91,7 @@ export class UnlocksTab {
       this.buyUnlock(currentUnlock);
     });
 
-    btn.addEventListener("mouseenter", (e: MouseEvent) => {
-      this.tooltips.showUnlockTooltip(currentUnlock, canAfford, e);
-    });
-    btn.addEventListener("mousemove", (e: MouseEvent) => {
-      this.tooltips.position(e);
-    });
-    btn.addEventListener("mouseleave", () => {
-      this.tooltips.hide();
-    });
+
 
     this.unlocksListEl.appendChild(btn);
   }
