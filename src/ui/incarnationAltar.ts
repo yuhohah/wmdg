@@ -65,7 +65,7 @@ export class IncarnationAltar {
     if (!this.canvas) return;
     const rect = this.canvas.getBoundingClientRect();
     this.width = rect.width > 50 ? rect.width : 400;
-    this.height = rect.height > 50 ? rect.height : 440;
+    this.height = rect.height > 50 ? rect.height : 270;
     this.dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     this.canvas.width = Math.floor(this.width * this.dpr);
@@ -259,7 +259,7 @@ export class IncarnationAltar {
     if (isImgHidden) {
       ctx.save();
       ctx.translate(cx, cy);
-      const orbRadius = baseRadius * 0.38;
+      const orbRadius = baseRadius * 0.46;
       const grad = ctx.createRadialGradient(-orbRadius * 0.25, -orbRadius * 0.25, 2, 0, 0, orbRadius);
       grad.addColorStop(0, '#fffbe8');
       grad.addColorStop(0.3, '#d8aa50');

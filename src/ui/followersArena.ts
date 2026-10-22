@@ -127,7 +127,7 @@ export class FollowersArena {
         this.ctx.scale(this.dpr, this.dpr);
 
         const pad = 24;
-        const minY = Math.max(68, this.height * 0.32);
+        const minY = Math.max(28, this.height * 0.12);
         const maxY = Math.max(minY + 20, this.height - 18);
         for (const w of this.walkers) {
           w.x = Math.max(pad, Math.min(this.width - pad, w.x));
@@ -261,7 +261,7 @@ export class FollowersArena {
 
   private addWalker(atEdge: boolean = false): Walker {
     const pad = 24;
-    const minY = Math.max(68, this.height * 0.32);
+    const minY = Math.max(28, this.height * 0.12);
     const maxY = Math.max(minY + 20, this.height - 18);
     let x = pad + Math.random() * Math.max(10, this.width - pad * 2);
     let y = minY + Math.random() * (maxY - minY);
@@ -308,7 +308,7 @@ export class FollowersArena {
 
   private update(): void {
     const pad = 24;
-    const minY = Math.max(68, this.height * 0.32);
+    const minY = Math.max(28, this.height * 0.12);
     const maxY = Math.max(minY + 20, this.height - 18);
 
     const speedScale = Math.min(this.speedMultiplier, 5);

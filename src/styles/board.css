@@ -731,9 +731,17 @@
 /* 2. HIGH ALTAR SANCTUARY (DOMUS SAPIENTIAE - Left Chancel) */
 #card-incarnation {
   left: 240px;
-  top: 360px;
-  width: 580px;
-  min-height: 820px;
+  top: 400px;
+  width: 480px;
+  height: auto !important;
+  min-height: auto !important;
+}
+
+#card-incarnation .dodeca-card-body {
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 12px;
+  gap: 8px;
 }
 
 /* 3. ALCHEMICAL CRYPT (CRYPTA ALCHYMICA - Lower Left Vault) */
@@ -755,26 +763,34 @@
 /* 5. CATHEDRAL COURTYARD & DEVOTEES (NAVE CATHEDRALIS / COLONNATA) */
 #card-followers {
   left: 1980px;
-  top: 860px;
-  width: 580px;
-  min-height: 780px;
+  top: 900px;
+  width: 480px;
+  height: auto !important;
+  min-height: auto !important;
+}
+
+#card-followers .dodeca-card-body {
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 12px;
+  gap: 8px;
 }
 
 #card-followers .followers-arena-container {
   width: 100%;
-  height: 440px;
-  margin: 10px 0 12px 0;
-  border-radius: 6px;
+  height: 270px;
+  margin: 6px 0 8px 0;
+  border-radius: 4px;
   overflow: hidden;
   position: relative;
   background: transparent !important;
   border: 1.5px solid rgba(196, 152, 80, 0.45);
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.7);
+  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.7);
 }
 
 #card-followers .followers-walk-canvas {
   width: 100%;
-  height: 440px;
+  height: 270px;
   display: block;
   background: transparent !important;
 }
@@ -1223,10 +1239,23 @@
   user-select: none;
 }
 
+.incarnation-altar-container {
+  width: 100%;
+  margin: 6px 0 8px 0;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  background: radial-gradient(circle at 50% 50%, rgba(20, 16, 14, 0.95), rgba(8, 7, 6, 0.98));
+  border: 1.5px solid rgba(196, 152, 80, 0.45);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  user-select: none;
+}
+
 .incarnation-altar-viewport {
   position: relative;
   width: 100%;
-  height: 440px;
+  height: 270px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1246,7 +1275,7 @@
 /* Bênção 2x da Encarnação */
 .incarnation-blessing-panel {
   width: 100%;
-  margin: 8px 0 12px 0;
+  margin: 4px 0 8px 0;
   padding: 8px 12px;
   background: rgba(18, 14, 11, 0.9);
   border: 1.5px solid rgba(140, 106, 54, 0.5);
@@ -1344,33 +1373,44 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 12px;
+  padding: 6px 10px;
   background: rgba(18, 14, 12, 0.92);
   border-top: 1px solid rgba(196, 152, 80, 0.3);
   z-index: 3;
   position: relative;
+  min-height: 38px;
+  box-sizing: border-box;
 }
 
 .incarnation-altar-info {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
 }
 
 .incarnation-altar-hint {
   font-family: var(--font-game, 'Cult Pixel', monospace);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.5px;
   color: #e5d4b4;
   text-shadow: 1px 1px 2px #000;
+  line-height: 1.2;
 }
 
 .incarnation-altar-subhint {
   font-family: var(--font-game, 'Cult Pixel', monospace);
-  font-size: 12px;
+  font-size: 11px;
   color: #a18454;
   letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.incarnation-altar-lore {
+  font-size: 11px;
+  color: #c49850;
+  font-style: italic;
+  opacity: 0.85;
 }
 
 .incarnation-altar-lore {
