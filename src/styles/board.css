@@ -1589,56 +1589,6 @@
   font-style: italic;
 }
 
-/* ===================================================
-   UNIVERSAL BUTTON HOVER REMOVAL
-   =================================================== */
-button,
-button:hover,
-button:active,
-button:focus,
-.btn-follower-action,
-.btn-follower-action:hover,
-.btn-buy-card,
-.btn-buy-card:hover,
-.btn-convert-primary,
-.btn-convert-primary:hover,
-.btn-convert-max,
-.btn-convert-max:hover,
-.btn-incarnation-upgrade,
-.btn-incarnation-upgrade:hover,
-.btn-convert-relics,
-.btn-convert-relics:hover,
-.btn-buy-relic,
-.btn-buy-relic:hover,
-.btn-unlock-action,
-.btn-unlock-action:hover,
-.btn-gnose-reset,
-.btn-gnose-reset:hover,
-.btn-setting-action,
-.btn-setting-action:hover,
-.btn-setting-danger,
-.btn-setting-danger:hover,
-.quicknav-btn,
-.quicknav-btn:hover,
-.board-zoom-btn,
-.board-zoom-btn:hover,
-.icon-btn-gold,
-.icon-btn-gold:hover,
-.close-btn-gold,
-.close-btn-gold:hover,
-.close-mobile-sheet-btn,
-.close-mobile-sheet-btn:hover,
-.ach-popup-close,
-.ach-popup-close:hover,
-.panel-tab-btn,
-.panel-tab-btn:hover,
-.panel-toggle-btn,
-.panel-toggle-btn:hover {
-  transform: none !important;
-  transition: none !important;
-}
-
-
 /* Compact Notification Toasts (270px, 2s auto-dismiss) */
 .achievements-popup-container {
   top: 14px !important;
@@ -1696,73 +1646,97 @@ button:focus,
   animation: popupTimerProgress 2s linear forwards !important;
 }
 
-
 /* =========================================================================
-   UNIVERSAL GAME-WIDE HOVER KILLER
-   Ensures ZERO hover/active/focus transforms, brightness/filter changes,
-   or box-shadow/border modifications exist anywhere in the game.
+   STABLE HOVER NEUTRALIZATION
+   Eliminates all hover movement, jitter, scaling, and glow on cards, buttons,
+   and interactive elements, while PRESERVING essential structural layout
+   transforms (board camera, centering, patio followers alignment, etc.).
    ========================================================================= */
-*,
-*::before,
-*::after {
-  transition: none !important;
-}
 
-*:hover,
-*:hover::before,
-*:hover::after,
-*:active,
-*:active::before,
-*:active::after {
-  transform: none !important;
-  filter: none !important;
-}
-
-/* Neutralize hover styles on cards, buttons, navs and modals */
-button:hover,
-button:active,
-a:hover,
-a:active,
-[role="button"]:hover,
-[role="button"]:active,
+/* Neutralize transform, filter, and transition on interactive elements on hover/active */
 .dodeca-card:hover,
 .cult-action-card:hover,
+.cult-action-card:active,
+.fervor-upgrade-card:hover,
+.fervor-upgrade-card:active,
 .relic-action-card:hover,
+.relic-action-card:active,
 .ach-card:hover,
+.ach-card:active,
 .gnose-tree-node:hover,
+.gnose-tree-node:active,
 .btn-follower-action:hover,
+.btn-follower-action:active,
 .btn-buy-card:hover,
+.btn-buy-card:active,
 .btn-convert-primary:hover,
+.btn-convert-primary:active,
 .btn-convert-max:hover,
+.btn-convert-max:active,
 .btn-incarnation-upgrade:hover,
+.btn-incarnation-upgrade:active,
 .btn-convert-relics:hover,
+.btn-convert-relics:active,
 .btn-buy-relic:hover,
+.btn-buy-relic:active,
 .btn-unlock-action:hover,
+.btn-unlock-action:active,
 .btn-unlock-mechanic:hover,
+.btn-unlock-mechanic:active,
 .btn-gnose-reset:hover,
+.btn-gnose-reset:active,
 .btn-setting-action:hover,
+.btn-setting-action:active,
 .btn-setting-danger:hover,
+.btn-setting-danger:active,
 .quicknav-btn:hover,
+.quicknav-btn:active,
 .board-zoom-btn:hover,
+.board-zoom-btn:active,
 .icon-btn-gold:hover,
+.icon-btn-gold:active,
 .close-btn-gold:hover,
+.close-btn-gold:active,
 .close-mobile-sheet-btn:hover,
+.close-mobile-sheet-btn:active,
 .ach-popup-close:hover,
+.ach-popup-close:active,
 .panel-tab-btn:hover,
+.panel-tab-btn:active,
 .panel-toggle-btn:hover,
+.panel-toggle-btn:active,
 .dodeca-card-btn-toggle:hover,
+.dodeca-card-btn-toggle:active,
 .divine-sphere-btn:hover,
 .divine-sphere-btn:active,
 .sphere-wrapper:hover,
+.sphere-wrapper:active,
 .incarnation-avatar-art:hover,
+.incarnation-avatar-art:active,
 .incarnation-altar-container:hover,
-.cult-wordmark:hover {
+.incarnation-altar-container:active,
+.cult-wordmark:hover,
+.cult-wordmark:active {
   transform: none !important;
-  box-shadow: none !important;
   filter: none !important;
-  outline: none !important;
+  transition: none !important;
 }
 
+/* Ensure patio blessing button preserves its centering transform on hover */
+.church-blessing,
+.church-blessing:hover,
+.church-blessing:active {
+  transform: translateX(-50%) !important;
+  filter: none !important;
+  box-shadow: 0 2px #1a120c !important;
+}
+
+/* Ensure patio followers preserve their sprite anchoring */
+.church-follower {
+  transform: translate(-50%, -94.4%) !important;
+}
+
+/* Keep card appearance identical on hover (no border or shadow pop) */
 .dodeca-card:hover {
   box-shadow:
     inset 0 0 0 2px var(--hermetic-parchment-light),

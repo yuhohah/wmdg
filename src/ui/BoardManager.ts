@@ -234,7 +234,7 @@ export class BoardManager {
 
   private applyTransform(): void {
     if (!this.worldEl) return;
-    this.worldEl.style.transform = `translate3d(${this.panX}px, ${this.panY}px, 0) scale(${this.zoom})`;
+    this.worldEl.style.setProperty('transform', `translate3d(${this.panX}px, ${this.panY}px, 0) scale(${this.zoom})`, 'important');
   }
 
   private updateZoomIndicator(): void {
