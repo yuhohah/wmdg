@@ -4,7 +4,8 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   server: {
     port: 5173,
-    host: true
+    host: true,
+    allowedHosts: true
   },
   test: {
     include: ['src/**/*.test.ts']

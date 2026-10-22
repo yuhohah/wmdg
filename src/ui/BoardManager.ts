@@ -1,11 +1,3 @@
-export interface CardCoords {
-  id: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
 export class BoardManager {
   private viewportEl: HTMLElement | null = null;
   private worldEl: HTMLElement | null = null;
@@ -213,20 +205,6 @@ export class BoardManager {
 
     this.viewportEl.addEventListener('pointerup', endPointer);
     this.viewportEl.addEventListener('pointercancel', endPointer);
-
-    // 5. Card Header Collapse / Expand Buttons
-    document.querySelectorAll<HTMLButtonElement>('.dodeca-card-btn-toggle').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const card = btn.closest('.dodeca-card');
-        if (card) {
-          card.classList.toggle('collapsed');
-          const isCollapsed = card.classList.contains('collapsed');
-          btn.innerHTML = isCollapsed ? '&#9633;' : '&minus;';
-          btn.title = isCollapsed ? 'Expandir Card' : 'Recolher Card';
-        }
-      });
-    });
 
     // 6. Quick Navigation Buttons
     this.quickNavBtns.forEach((btn, targetId) => {

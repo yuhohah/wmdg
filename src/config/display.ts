@@ -15,7 +15,3 @@ export const DISPLAY_CONFIG: DisplayConfig = {
 export function loadDisplayConfig(): DisplayConfig {
   return DISPLAY_CONFIG;
 }
-
-export function saveDisplayConfig(): void {
-  // Config is fixed with emojis disabled
-}

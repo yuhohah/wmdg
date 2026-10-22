@@ -211,13 +211,7 @@
   transition: transform 0.4s ease;
 }
 
-.icon-btn-gold:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--border-white);
-  color: #ffffff;
-  transform: translateY(-2px);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-}
+/* icon-btn-gold hover disabled */
 
 #settings-btn:hover svg {
   transform: rotate(90deg);

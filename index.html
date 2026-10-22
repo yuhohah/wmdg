@@ -206,9 +206,6 @@
                   <h3 class="dodeca-card-title">Altar da Esfera</h3>
                   <span class="dodeca-card-tag">Relicário</span>
                 </div>
-                <div class="dodeca-card-actions">
-                  <button type="button" class="dodeca-card-btn-toggle" title="Recolher Card">&minus;</button>
-                </div>
               </div>
               <div class="dodeca-card-body">
                 <section id="panel-center" class="center-frame" style="width: 100%; border: none; background: transparent; padding: 0;">
@@ -287,9 +284,6 @@
                   <h3 class="dodeca-card-title">Pátio dos Fiéis</h3>
                   <span class="dodeca-card-tag">Congregação</span>
                 </div>
-                <div class="dodeca-card-actions">
-                  <button type="button" class="dodeca-card-btn-toggle" title="Recolher Card">&minus;</button>
-                </div>
               </div>
               <div class="dodeca-card-body">
                 <div id="tab-followers" class="tab-pane active" style="display: block;">
@@ -349,9 +343,6 @@
                   <h3 class="dodeca-card-title">Os Selos Antigos</h3>
                   <span class="dodeca-card-tag">Desbloqueios</span>
                 </div>
-                <div class="dodeca-card-actions">
-                  <button type="button" class="dodeca-card-btn-toggle" title="Recolher Card">&minus;</button>
-                </div>
               </div>
               <div class="dodeca-card-body">
                 <div id="tab-unlocks" class="tab-pane active" style="display: block;">
@@ -376,9 +367,6 @@
                   <span class="dodeca-card-icon">🔥</span>
                   <h3 class="dodeca-card-title">Fervor Sagrado</h3>
                   <span class="dodeca-card-tag">Chama</span>
-                </div>
-                <div class="dodeca-card-actions">
-                  <button type="button" class="dodeca-card-btn-toggle" title="Recolher Card">&minus;</button>
                 </div>
               </div>
               <div class="dodeca-card-body">
@@ -417,13 +405,11 @@
                   <h3 class="dodeca-card-title">Encarnação Sagrada</h3>
                   <span class="dodeca-card-tag">Ascensão</span>
                 </div>
-                <div class="dodeca-card-actions">
-                  <button type="button" class="dodeca-card-btn-toggle" title="Recolher Card">&minus;</button>
-                </div>
               </div>
               <div class="dodeca-card-body">
                 <div id="tab-incarnation" class="tab-pane active" style="display: block;">
                   <div class="incarnation-tab-header">
+
                     <div class="incarnation-stat-group">
                       <span class="incarnation-stat-label">ENCARNAÇÃO SAGRADA</span>
                       <div class="incarnation-stat-row">
@@ -433,10 +419,27 @@
                     <div class="incarnation-mult-wrapper" style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
                       <span class="incarnation-mult-sublabel" style="font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #a1a1aa; text-transform: uppercase;">MULTIPLICADOR DOS FIÉIS</span>
                       <div class="incarnation-rate-badge" id="incarnation-rate-badge" title="Multiplicador: 1 + log10(1 + Fervor / 150) × 1,5 × Estágio">x1.00</div>
+                  </div>
                     </div>
                   </div>
 
                   <!-- Upgrade Action Card -->
+                  <!-- Altar da Encarnação da Esfera (Evolving Avatar Altar) -->
+                  <div class="incarnation-altar-container" id="incarnation-altar-container">
+                    <div class="incarnation-altar-viewport">
+                      <img id="incarnation-avatar-art" class="incarnation-avatar-art" src="/assets/incarnation/stage_1.jpg" alt="Encarnação da Esfera" />
+                      <canvas id="incarnation-altar-canvas" class="incarnation-altar-canvas" width="400" height="240"></canvas>
+                      <div class="incarnation-altar-aura"></div>
+                    </div>
+                    <div class="incarnation-altar-overlay">
+                      <div class="incarnation-altar-info">
+                        <span class="incarnation-altar-hint" id="incarnation-altar-name">ESTÁGIO 1 · AVATAR NEÓFITO</span>
+                        <span class="incarnation-altar-subhint" id="incarnation-altar-title">A Centelha Primordial</span>
+                      </div>
+                      <span class="incarnation-altar-lore" id="incarnation-altar-lore">Toque para canalizar o fervor celestial</span>
+                    </div>
+                  </div>
+
                   <div class="incarnation-controls">
                     <button id="btn-upgrade-incarnation" class="btn-follower-action btn-incarnation-upgrade">
                       <div class="btn-action-main">
@@ -467,9 +470,6 @@
                   <span class="dodeca-card-icon">⚗️</span>
                   <h3 class="dodeca-card-title">Opus Magnum</h3>
                   <span class="dodeca-card-tag">Transmutação</span>
-                </div>
-                <div class="dodeca-card-actions">
-                  <button type="button" class="dodeca-card-btn-toggle" title="Recolher Card">&minus;</button>
                 </div>
               </div>
               <div class="dodeca-card-body">
@@ -520,9 +520,6 @@
                   <h3 class="dodeca-card-title">Teomaquia Cósmica</h3>
                   <span class="dodeca-card-tag">Panteão</span>
                 </div>
-                <div class="dodeca-card-actions">
-                  <button type="button" class="dodeca-card-btn-toggle" title="Recolher Card">&minus;</button>
-                </div>
               </div>
               <div class="dodeca-card-body">
                 <div id="tab-pantheon" class="tab-pane active" style="display: block;">
@@ -559,9 +556,6 @@
                   <span class="dodeca-card-icon">👁️</span>
                   <h3 class="dodeca-card-title">Câmara da Gnose</h3>
                   <span class="dodeca-card-tag">Prestígio</span>
-                </div>
-                <div class="dodeca-card-actions">
-                  <button type="button" class="dodeca-card-btn-toggle" title="Recolher Card">&minus;</button>
                 </div>
               </div>
               <div class="dodeca-card-body">

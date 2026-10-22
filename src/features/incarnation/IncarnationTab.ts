@@ -3,6 +3,7 @@ import { AudioManager } from '../../systems/audio.js';
 import { NotificationManager } from '../../systems/notifications.js';
 import { INCARNATION_STAGES } from '../../config/incarnation.js';
 import { formatNumber } from '../../systems/calculations.js';
+import { IncarnationAltar } from '../../ui/incarnationAltar.js';
 
 export interface IncarnationTabOptions {
   gameState: GameStateManager;
@@ -14,6 +15,7 @@ export interface IncarnationTabOptions {
 
 export class IncarnationTab {
   private options: IncarnationTabOptions;
+  private altar: IncarnationAltar | null = null;
 
   // DOM Elements
   private tabBtnIncarnationEl: HTMLElement | null = null;
@@ -33,6 +35,17 @@ export class IncarnationTab {
   }
 
   private initElements(): void {
+    const altarContainer = document.getElementById('incarnation-altar-container');
+    if (altarContainer) {
+      this.altar = new IncarnationAltar('incarnation-altar-container', {
+        triggerHaptic: this.options.triggerHaptic,
+        onAltarClick: () => {
+          this.options.audio.playTone(520, 'sine', 0.1);
+        }
+      });
+      this.altar.setStage(this.options.gameState.incarnationStage, true);
+    }
+
     this.tabBtnIncarnationEl = document.getElementById('tab-btn-incarnation');
     this.stageBadgeEl = document.getElementById('incarnation-stage-badge');
     this.titleEl = document.getElementById('incarnation-title');
@@ -58,6 +71,7 @@ export class IncarnationTab {
     if (success) {
       this.options.triggerHaptic([20, 30, 40]);
       this.options.audio.playChime();
+      this.altar?.evolveToStage(nextStage.stage);
       this.options.notifications.showCustomPopup(
         'A ENCARNAÇÃO RENASCE',
         `A Encarnação renasceu como ${nextStage.name}! Fervor/s multiplicado por ${formatNumber(nextStage.multiplier)}x.`,
@@ -73,6 +87,8 @@ export class IncarnationTab {
     const stage = this.options.gameState.incarnationStage;
     const currentStage = INCARNATION_STAGES.find((s) => s.stage === stage);
     const nextStage = INCARNATION_STAGES.find((s) => s.stage === stage + 1);
+
+    this.altar?.setStage(stage);
 
     if (this.stageBadgeEl) {
       const stageName = currentStage ? currentStage.name.toUpperCase() : `ESTÁGIO ${stage}`;

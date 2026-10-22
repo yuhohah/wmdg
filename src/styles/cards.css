@@ -192,12 +192,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-.btn-buy-card:hover:not(:disabled) {
-  transform: scale(1.03);
-  background: linear-gradient(135deg, #27272a 0%, #52525b 100%);
-  border-color: var(--border-white);
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-}
+/* .btn-buy-card hover disabled */
 
 .btn-buy-card:disabled {
   background: rgba(30, 36, 48, 0.6);
@@ -282,8 +277,8 @@
   flex: 1 1 0;
   min-height: 200px;
   height: auto;
-  background-color: #0d1117;
-  background-image: radial-gradient(circle at center, rgba(13, 17, 23, 0.15) 0%, rgba(5, 7, 12, 0.6) 100%), url('/assets/patio_fieis_bg.jpg');
+  background-color: transparent !important;
+  background-image: none !important;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -387,12 +382,7 @@
   border-color: var(--border-light);
 }
 
-.btn-convert-primary:hover:not(:disabled) {
-  border-color: #ffffff;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.05) 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 0 14px rgba(255, 255, 255, 0.15);
-}
+/* .btn-convert-primary hover disabled */
 
 .btn-convert-primary:disabled {
   opacity: 0.55;
@@ -427,12 +417,7 @@
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%);
 }
 
-.btn-convert-max:not(.locked):hover:not(:disabled) {
-  border-color: #ffffff;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 0 14px rgba(255, 255, 255, 0.12);
-}
+/* .btn-convert-max hover disabled */
 
 .btn-convert-max:not(.locked):disabled {
   opacity: 0.55;
@@ -547,11 +532,7 @@
   transition: all 0.2s ease;
 }
 
-.btn-incarnation-upgrade:hover:not(:disabled) {
-  border-color: var(--border-white);
-  box-shadow: 0 0 14px rgba(255, 255, 255, 0.15);
-  transform: translateY(-1px);
-}
+/* .btn-incarnation-upgrade hover disabled */
 
 .btn-incarnation-upgrade:disabled {
   opacity: 0.55;
@@ -731,12 +712,7 @@
   text-align: center;
 }
 
-.btn-convert-relics:hover:not(:disabled) {
-  transform: translateY(-2px);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 100%);
-  border-color: #ffffff;
-  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15);
-}
+/* .btn-convert-relics hover disabled */
 
 .btn-convert-relics:disabled {
   background: rgba(20, 24, 34, 0.6);
@@ -900,12 +876,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-.btn-buy-relic:hover:not(:disabled) {
-  transform: scale(1.03);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.06) 100%);
-  border-color: #ffffff;
-  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.15);
-}
+/* .btn-buy-relic hover disabled */
 
 .btn-buy-relic:disabled:not(.maxed-btn) {
   background: rgba(30, 36, 48, 0.6);
@@ -1078,13 +1049,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-.btn-unlock-action:hover:not(:disabled) {
-  transform: scale(1.03);
-  background: linear-gradient(135deg, #ca8a04 0%, #eab308 100%);
-  border-color: #fef08a;
-  color: #000000;
-  box-shadow: 0 4px 14px rgba(234, 179, 8, 0.3);
-}
+/* .btn-unlock-action hover disabled */
 
 .btn-unlock-action:disabled:not(.unlocked-btn) {
   background: rgba(30, 36, 48, 0.6);

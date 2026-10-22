@@ -59,11 +59,11 @@
 /* Monumental 16th-Century Architectural Woodcut Cathedral Backdrop */
 .board-celestial-backdrop {
   position: absolute;
-  inset: 0;
+  inset: -12px;
   background: url('/assets/hermetic_cathedral_board_bg.jpg') top left / 100% 100% no-repeat;
-  opacity: 0.97;
+  opacity: 0.90;
   pointer-events: none;
-  filter: contrast(1.12) brightness(0.93);
+  filter: blur(4px) contrast(0.80) brightness(0.88);
 }
 
 /* Astrological Constellation Lines SVG - Etched Soot & Sepia Geometry */
@@ -330,15 +330,7 @@
   color: inherit !important;
 }
 
-.top-right-group .icon-btn-gold:hover {
-  background-color: var(--hermetic-ink-soot) !important;
-  background-image: none !important;
-  color: var(--hermetic-parchment-light) !important;
-  box-shadow:
-    inset 0 0 0 2px var(--hermetic-rule-brass),
-    3px 4px 0 rgba(10, 7, 5, 0.92) !important;
-  transform: translateY(-1px);
-}
+/* .icon-btn-gold hover disabled */
 
 .top-right-group .icon-btn-gold:active {
   transform: translateY(1px);
@@ -522,11 +514,7 @@
   color: var(--hermetic-parchment-light) !important;
 }
 
-.dodeca-card-body :is(.btn-follower-action, .btn-incarnation-upgrade, .btn-convert-relics, .btn-buy-relic, .btn-unlock-action):hover:not(:disabled):not(.locked) {
-  background-color: var(--hermetic-ink-umber) !important;
-  background-image: linear-gradient(180deg, #3d2d20 0%, #241912 100%) !important;
-  color: #fff6e5 !important;
-}
+/* card body button hover disabled */
 
 .dodeca-card-body :is(.btn-follower-action:disabled, .btn-convert-max.locked, .btn-incarnation-upgrade:disabled, .btn-convert-relics:disabled, .btn-buy-relic:disabled, .btn-unlock-action:disabled, .cult-action-card.unaffordable .card-click-hint) {
   background: #9e8968 !important;
@@ -688,10 +676,10 @@
 
 /* 2. HIGH ALTAR SANCTUARY (DOMUS SAPIENTIAE - Left Chancel) */
 #card-incarnation {
-  left: 260px;
-  top: 440px;
-  width: 460px;
-  min-height: 480px;
+  left: 240px;
+  top: 400px;
+  width: 520px;
+  min-height: 680px;
 }
 
 /* 3. ALCHEMICAL CRYPT (CRYPTA ALCHYMICA - Lower Left Vault) */
@@ -805,13 +793,7 @@
   text-shadow: 1px 1px 0 #090604;
 }
 
-.btn-gnose-reset:hover:not(:disabled) {
-  background: linear-gradient(180deg, #3f2e21 0%, #241912 100%);
-  color: #fff6e5;
-  box-shadow:
-    inset 0 0 0 1.5px var(--hermetic-parchment-light),
-    2px 3px 0 rgba(22, 16, 12, 0.9);
-}
+/* .btn-gnose-reset hover disabled */
 
 .btn-gnose-reset:disabled {
   opacity: 0.78;
@@ -1024,11 +1006,7 @@
   text-transform: uppercase;
 }
 
-.quicknav-btn:hover {
-  background: var(--hermetic-parchment-light);
-  color: var(--hermetic-ink-black);
-  border-color: var(--hermetic-ink-black);
-}
+/* .quicknav-btn hover disabled */
 
 .quicknav-btn.active {
   background: var(--hermetic-ink-black);
@@ -1080,11 +1058,7 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.board-zoom-btn:hover {
-  background: var(--hermetic-ink-black);
-  color: var(--hermetic-parchment-light);
-  border-color: var(--hermetic-ink-black);
-}
+/* .board-zoom-btn hover disabled */
 
 .board-zoom-level {
   font-family: var(--font-game);
@@ -1144,12 +1118,7 @@
   border-radius: 0 !important;
 }
 
-.close-btn-gold:hover,
-.close-mobile-sheet-btn:hover,
-.ach-popup-close:hover {
-  background: var(--hermetic-ink-umber) !important;
-  color: #fff6e5 !important;
-}
+/* close btns hover disabled */
 
 /* Ensure all tab panes inside Dodeca cards are displayed as open cards */
 .dodeca-card .tab-pane {
@@ -1178,4 +1147,160 @@
 
 .dodeca-card-body::-webkit-scrollbar-thumb:hover {
   background: var(--hermetic-ink-black);
+}
+
+
+/* ===================================================
+   ALTAR DA ENCARNAÇÃO DA ESFERA (Evolving Avatar Altar)
+   Matches the Pátio dos Fiéis layout & Hermetic Art Style
+   =================================================== */
+
+.incarnation-altar-container {
+  width: 100%;
+  margin: 12px 0 10px 0;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  background: radial-gradient(circle at 50% 50%, rgba(20, 16, 14, 0.95), rgba(8, 7, 6, 0.98));
+  border: 1px dashed rgba(196, 152, 80, 0.45);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  user-select: none;
+}
+
+.incarnation-altar-viewport {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #0d0b09;
+}
+
+.incarnation-avatar-art {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px rgba(216, 191, 141, 0.25)) contrast(1.05);
+  transition: transform 0.35s ease, filter 0.35s ease;
+  z-index: 1;
+}
+
+.incarnation-altar-container:hover .incarnation-avatar-art {
+  transform: scale(1.03);
+  filter: drop-shadow(0 0 18px rgba(216, 191, 141, 0.45)) contrast(1.1);
+}
+
+.incarnation-altar-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.incarnation-altar-aura {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(216, 191, 141, 0.08) 0%, transparent 70%);
+  animation: altar-aura-pulse 4s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes altar-aura-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.96); }
+  50% { opacity: 0.85; transform: scale(1.04); }
+}
+
+.incarnation-altar-overlay {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: rgba(18, 14, 12, 0.92);
+  border-top: 1px solid rgba(196, 152, 80, 0.3);
+  z-index: 3;
+  position: relative;
+}
+
+.incarnation-altar-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.incarnation-altar-hint {
+  font-family: var(--font-game, 'Cult Pixel', monospace);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #e5d4b4;
+  text-shadow: 1px 1px 2px #000;
+}
+
+.incarnation-altar-subhint {
+  font-family: var(--font-game, 'Cult Pixel', monospace);
+  font-size: 12px;
+  color: #a18454;
+  letter-spacing: 0.5px;
+}
+
+.incarnation-altar-lore {
+  font-family: var(--font-game, 'Cult Pixel', monospace);
+  font-size: 12px;
+  color: #887456;
+  font-style: italic;
+}
+
+/* ===================================================
+   UNIVERSAL BUTTON HOVER REMOVAL
+   =================================================== */
+button,
+button:hover,
+button:active,
+button:focus,
+.btn-follower-action,
+.btn-follower-action:hover,
+.btn-buy-card,
+.btn-buy-card:hover,
+.btn-convert-primary,
+.btn-convert-primary:hover,
+.btn-convert-max,
+.btn-convert-max:hover,
+.btn-incarnation-upgrade,
+.btn-incarnation-upgrade:hover,
+.btn-convert-relics,
+.btn-convert-relics:hover,
+.btn-buy-relic,
+.btn-buy-relic:hover,
+.btn-unlock-action,
+.btn-unlock-action:hover,
+.btn-gnose-reset,
+.btn-gnose-reset:hover,
+.btn-setting-action,
+.btn-setting-action:hover,
+.btn-setting-danger,
+.btn-setting-danger:hover,
+.quicknav-btn,
+.quicknav-btn:hover,
+.board-zoom-btn,
+.board-zoom-btn:hover,
+.icon-btn-gold,
+.icon-btn-gold:hover,
+.close-btn-gold,
+.close-btn-gold:hover,
+.close-mobile-sheet-btn,
+.close-mobile-sheet-btn:hover,
+.ach-popup-close,
+.ach-popup-close:hover,
+.panel-tab-btn,
+.panel-tab-btn:hover,
+.panel-toggle-btn,
+.panel-toggle-btn:hover {
+  transform: none !important;
+  transition: none !important;
 }

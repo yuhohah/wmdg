@@ -33,7 +33,7 @@ body,button,input,textarea { font-family:var(--font-game); }
 .spotlight-tracker-bar-bg { height:8px; background:#a98b5c; border:1px solid #8d6c40; border-radius:0; }
 .spotlight-tracker-bar-fill { background:#8c6a36; border-radius:0; box-shadow:none; }
 .btn-incarnation-upgrade { border:7px solid transparent; border-image:var(--wood-frame) 8 / 7px / 0 stretch; border-radius:0; background:#775132; box-shadow:0 3px #3b281d; }
-.btn-incarnation-upgrade:hover:not(:disabled) { transform:none; border-color:transparent; box-shadow:0 3px #3b281d; background:#88563c; }
+/* btn-incarnation-upgrade hover disabled */
 .btn-incarnation-upgrade:disabled { opacity:1; background:#8b7d64; }
 .btn-incarnation-upgrade::before { background-image:url('/assets/hud/fervor.svg'); }
 .relics-status-info,.relics-balance-text,.relics-extra-rate-text { font:18px var(--font-game); color:var(--ink-muted); }
@@ -61,7 +61,7 @@ body,button,input,textarea { font-family:var(--font-game); }
 .btn-setting-danger { background:#814a39; }
 .btn-convert-relics { width:100%; font-size:20px!important; }
 .btn-convert-relics #relics-to-get { font:24px var(--font-game); color:#eed3f2; }
-.btn-setting-action:hover,.btn-setting-danger:hover,.btn-convert-relics:hover:not(:disabled),.intro-btn-next:hover,.intro-btn-prev:hover,.intro-btn-skip:hover,.btn-slide-play:hover { border-color:transparent; color:#ffe0a3; background:#895b3b; box-shadow:0 2px #3b281d; transform:none; }
+/* settings & dialog hover disabled */
 .btn-convert-relics:disabled,.btn-buy-relic:disabled,.btn-unlock-action:disabled,.intro-btn-prev:disabled { background:#8b7d64; color:#e4d7bb; opacity:1; }
 .close-btn-gold,.close-mobile-sheet-btn,.ach-popup-close { background:#775132; border:4px solid transparent; border-image:var(--wood-frame) 8 / 4px / 0 stretch; color:#ffe0a3; border-radius:0; font:24px var(--font-game); }
 .save-data-textarea { background:#ede0be; border:2px solid #a18454; border-radius:0; color:var(--ink); font:17px/1.2 var(--font-game); }
@@ -118,7 +118,7 @@ input[type=range]::-moz-range-thumb { width:12px; height:18px; border:2px solid 
 .intro-dot { border-radius:0; background:#a18454; }
 .intro-dot.active,.intro-dot.completed { background:#6e4b2d; box-shadow:none; }
 .panel-expand-strip { background:#4e3427; border:6px solid transparent; border-image:var(--wood-frame) 8 / 6px / 0 stretch; border-radius:0; color:#f2d297; }
-.panel-toggle-btn:hover { transform:none; background:#775132; border-color:transparent; }
+/* panel-toggle-btn hover disabled */
 .cult-dialog { margin:auto; padding:20px; width:min(500px,90vw); }
 .cult-dialog::backdrop { background:#17110dd9; }
 .cult-dialog h2 { font:30px var(--font-game); margin-bottom:12px; }
