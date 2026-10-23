@@ -22,6 +22,9 @@ export class ProgressionSimulator {
     let gnoseResets = 0;
     let maxWaitSec = 0;
 
+    // Tempo de reação médio definido por perfil (Active: 3s, Casual: 5s, AFK: 0s / acumulação por lote)
+    const reactionDelaySec = archetype === 'active' ? 3.0 : archetype === 'casual' ? 5.0 : 0.0;
+
     const recordedMilestones = new Set<string>();
 
     const recordMilestone = (id: string, name: string, details?: string) => {
@@ -41,9 +44,9 @@ export class ProgressionSimulator {
     };
 
     // 1. Kickstart Early Game: Click until 1st Follower (20 Faith)
-    let earlyClicksNeeded = 20;
-    let clickSpeed = archetype === 'active' ? 5 : archetype === 'casual' ? 2 : 1; // clicks/sec
-    let earlyTime = earlyClicksNeeded / clickSpeed;
+    const earlyClicksNeeded = 20;
+    const clickSpeed = archetype === 'active' ? 5 : archetype === 'casual' ? 2 : 1; // clicks/sec
+    const earlyTime = earlyClicksNeeded / clickSpeed;
     gameTimeSec += earlyTime;
     for (let c = 0; c < earlyClicksNeeded; c++) {
       gs.addClick();
@@ -51,7 +54,6 @@ export class ProgressionSimulator {
     gs.buyOneFollower(0);
     recordMilestone('first_follower', '1º Fiel Devoto', 'Início da geração passiva (+1 Fé/s)');
 
-    // Early active boost: Active player clicks occasionally while waiting for 200 Faith
     const MAX_STEPS = 40000;
     let stepCount = 0;
 
@@ -242,7 +244,8 @@ export class ProgressionSimulator {
       });
 
       const chosen = candidates[0];
-      const waitTime = Math.max(0.1, chosen.timeToAffordSec);
+      // O tempo de espera total é o tempo para acumular o recurso + o tempo de reação humana até clicar
+      const waitTime = Math.max(0.1, chosen.timeToAffordSec) + (chosen.timeToAffordSec > 0 ? reactionDelaySec : 0);
 
       // Dead Zone Detection
       if (waitTime > deadZoneThreshold) {

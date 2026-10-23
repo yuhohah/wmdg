@@ -13,7 +13,7 @@ flowchart LR
     A[Estado Atual: Fé, Fervor, Relíquias] --> B[Mapeamento de Ações Candidatas]
     B --> C[Cálculo de Payback & Tempo até Ação]
     C --> D[Detecção de Dead Zones > Limiar]
-    D --> E[Salto Temporal deltaT & Tick Exato]
+    D --> E[Salto Temporal deltaT + Tempo de Reação]
     E --> F[Execução da Ação & Registro de Marcos]
     F -->|Meta Não Atingida| A
     F -->|1º Upgrade de Gnose| G[Emissão de Relatório]
@@ -27,17 +27,19 @@ flowchart LR
 
 ## 2. Parâmetros dos Perfis Comportamentais (Arquétipos)
 
-Para avaliar o balanceamento do jogo sob diferentes estilos de jogadores, o modelo define 3 arquétipos fundamentais com valores explícitos de **cliques por segundo (CPS)**, **tempo de reação/decisão** e **manutenção de buffs ativos**.
+Para avaliar o balanceamento do jogo sob diferentes estilos de jogadores, o modelo define 3 arquétipos fundamentais com valores explícitos de **cliques por segundo (CPS)**, **tempo de reação/decisão humano** e **manutenção de buffs ativos**.
 
 | Parâmetro | Devoto Fervoroso (Ativo) | Devoto Regular (Casual/Híbrido) | Ocioso Puro (AFK) |
 |---|---|---|---|
 | **Cadência de Cliques Inicial (CPS)** | **5.0 cliques/s** (200ms por clique) | **2.0 cliques/s** (500ms por clique) | **1.0 clique/s** (1000ms por clique) |
 | **Tempo até 1º Fiel (20 Fé)** | **4.0 segundos** | **10.0 segundos** | **20.0 segundos** |
 | **Comportamento Pós-Primeiro Fiel** | Mantém cliques estratégicos e ativos | Cessa cliques na Esfera, foca em compras | **Zero cliques na Esfera** (100% passivo) |
-| **Tempo Médio de Reação à Compra** | **0.1s a 0.5s** (imediato assim que acessível) | **1.0s a 3.0s** (ciclos curtos de atenção) | **Analítico por Lote** (acumula recursos) |
+| **Tempo Médio de Reação à Compra** | **3.0 segundos** (atenção focada) | **5.0 segundos** (atenção dispersa/híbrida) | **0.0 segundos** (analítico por lote de espera) |
 | **Manutenção da Bênção do Avatar (2x Fé)** | **100% ativa** (renova a cada 60s) | Ocasional / Inconstante | **Nunca ativada** (0s de bênção manual) |
 | **Frequência de Checagem do Jogo** | Contínua (tempo real na tela) | Sessões intercaladas com pausas de 5-15m | Sessões espaçadas de 30m a 2h |
 | **Estratégia de Compra** | Greedy por menor ROI / Tempo de Retorno | Híbrida (Desbloqueios + mais baratos) | Compra em lote quando há saldo elevado |
+
+> **Nota sobre o Tempo de Reação**: Quando um upgrade se torna acessível ($\text{tempoNecessário} > 0$), o jogador humano não clica no milissegundo exato em que a moeda atinge o valor da compra. O simulador adiciona o tempo de reação humano ($3.0\text{s}$ para Ativo e $5.0\text{s}$ para Casual) ao tempo de acumulação do recurso, tornando a projeção realista.
 
 ---
 
@@ -45,7 +47,9 @@ Para avaliar o balanceamento do jogo sob diferentes estilos de jogadores, o mode
 
 A cada etapa da simulação, o motor avalia todas as opções disponíveis no catálogo do jogo e monta uma lista de ações candidatas ponderadas por prioridade:
 
-$$\text{tempoNecessário} = \max\left(0, \frac{\text{Custo} - \text{Saldo Atual}}{\text{Taxa de Geração por Segundo}}\right)$$
+$$\text{tempoParaAcumular} = \max\left(0, \frac{\text{Custo} - \text{Saldo Atual}}{\text{Taxa de Geração por Segundo}}\right)$$
+
+$$\text{tempoEsperaTotal} = \text{tempoParaAcumular} + (\text{tempoParaAcumular} > 0 \ ? \ \text{tempoReação} : 0)$$
 
 ### Hierarquia de Prioridades (Ordem de Execução):
 1. **Prioridade 1 — Desbloqueio de Mecânicas (Selos Sagrados)**:
@@ -105,7 +109,28 @@ O resultado de cada arquétipo recebe uma pontuação diagnóstica sintética ba
 
 ---
 
-## 7. Como Executar e Auditar
+## 7. Acoplamento com as Fórmulas do Jogo (FAQ)
+
+### "Quando eu alterar alguma fórmula do jogo, eu preciso alterar o simulador?"
+
+**Na imensa maioria das vezes, NÃO!** 
+O simulador foi desenhado com arquitetura de acoplamento direto via `GameStateManager`:
+
+1. **Alterações Automáticas (Zero manutenção no benchmark)**:
+   - Se você alterar constantes e fórmulas em `src/systems/calculations.ts` (ex: expoente de fé, logaritmo de relíquias, fórmula de gnose).
+   - Se você alterar os custos de fé, fervor, relíquias ou bônus nos arquivos `src/config/followers.ts`, `src/config/fervor.ts`, `src/config/incarnation.ts`, `src/config/relics.ts`, `src/config/gnose.ts`, `src/config/unlocks.ts`.
+   - Se você alterar multiplicadores e taxas em `GameState.ts` (`getFaithPerSecond()`, `getFervorRatePerSecond()`, etc.).
+   
+   👉 **O benchmark recalcula tudo automaticamente** no próximo `npm run benchmark`, refletindo instantaneamente as novas curvas e novos tempos!
+
+2. **Quando VOCÊ PRECISA alterar o simulador**:
+   - **Adição de uma mecânica ou moeda inteiramente nova** (ex: se criar um sistema de "Almas", "Pactos" ou "Templos" com sua própria moeda e aba).
+   - **Mudança na regra de vitória/marco final** (ex: se o objetivo final deixar de ser comprar o 1º upgrade de Gnose e passar a ser completar o Pantheon ou atingir 10 resets).
+   - **Mudança de pré-requisitos lógicos estruturais** (ex: se um upgrade passar a exigir um mini-game interativo específico).
+
+---
+
+## 8. Como Executar e Auditar
 
 ### No Terminal:
 ```bash
