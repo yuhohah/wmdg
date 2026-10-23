@@ -1,4 +1,6 @@
 import { INCARNATION_STAGES } from '../config/incarnation.js';
+import { ProgressionSimulator } from '../benchmark/ProgressionSimulator.js';
+import { formatHtmlReport } from '../benchmark/reporters.js';
 
 export class TestMenu {
   private game: any;
@@ -13,6 +15,10 @@ export class TestMenu {
     this.game = game;
     this.initDOM();
     this.setupEvents();
+  }
+
+  public getCurrentSpeed(): number {
+    return this.currentSpeed;
   }
 
   public setSpeed(speed: number): void {
@@ -38,22 +44,23 @@ export class TestMenu {
     });
 
     if (this.speedLabelEl) {
-      this.speedLabelEl.textContent = speed === 0 ? 'Pausado (0x)' : `${speed}x`;
-    }
-
-    if (this.launcherBtn) {
-      const tag = speed === 0 ? '⏸️ 0x' : `⚡ ${speed}x`;
-      this.launcherBtn.innerHTML = `<span class="test-launcher-icon">🛠️</span> <span class="test-launcher-badge">${tag}</span>`;
-      if (speed > 1) {
-        this.launcherBtn.classList.add('boosted');
+      this.speedLabelEl.textContent = `${speed}x`;
+      if (speed === 0) {
+        this.speedLabelEl.style.color = '#ef4444';
+      } else if (speed > 1) {
+        this.speedLabelEl.style.color = '#f59e0b';
       } else {
-        this.launcherBtn.classList.remove('boosted');
+        this.speedLabelEl.style.color = '#10b981';
       }
     }
-  }
 
-  public getSpeed(): number {
-    return this.currentSpeed;
+    // Update floating launcher badge
+    if (this.launcherBtn) {
+      const badge = this.launcherBtn.querySelector('.test-launcher-badge');
+      if (badge) {
+        badge.textContent = `⚡ ${speed}x`;
+      }
+    }
   }
 
   public toggle(): void {
@@ -153,6 +160,19 @@ export class TestMenu {
               <button class="test-btn test-action-btn test-danger" data-action="reset-progress">Resetar Todo o Progresso</button>
             </div>
           </div>
+
+          <!-- SEÇÃO 4: BENCHMARK ANALÍTICO DEFINITIVO -->
+          <div class="test-section">
+            <div class="test-section-header">
+              <span class="test-section-title">📊 MEDIÇÃO DEFINITIVA DE PROGRESSÃO</span>
+            </div>
+            <div class="test-grid">
+              <button id="run-benchmark-btn" class="test-btn test-action-btn test-highlight" data-action="run-progression-benchmark" style="grid-column: 1 / -1; background: linear-gradient(135deg, #b45309, #d97706); color: #fff; font-weight: bold; padding: 10px;">
+                ⚡ Simular Curva de Progressão (Ativo vs Casual vs AFK)
+              </button>
+            </div>
+            <div id="benchmark-results-container" style="display: none; margin-top: 10px; max-height: 280px; overflow-y: auto; background: rgba(0,0,0,0.5); padding: 10px; border: 1px solid #d97706; border-radius: 6px;"></div>
+          </div>
         </div>
 
         <div class="test-menu-footer">
@@ -223,6 +243,27 @@ export class TestMenu {
     if (!gs) return;
 
     switch (action) {
+      case 'run-progression-benchmark': {
+        const container = this.overlayEl?.querySelector<HTMLElement>('#benchmark-results-container');
+        const btn = this.overlayEl?.querySelector<HTMLButtonElement>('#run-benchmark-btn');
+        if (container) {
+          container.style.display = 'block';
+          container.innerHTML = '<div style="color: #fbbf24; text-align: center; padding: 12px;">⏳ Calculando simulação hiper-rápida (Ativo, Casual, AFK)...</div>';
+          if (btn) btn.disabled = true;
+
+          setTimeout(() => {
+            try {
+              const report = ProgressionSimulator.runFullBenchmark();
+              container.innerHTML = formatHtmlReport(report);
+            } catch (err) {
+              container.innerHTML = `<div style="color: #ef4444;">Erro ao rodar benchmark: ${String(err)}</div>`;
+            } finally {
+              if (btn) btn.disabled = false;
+            }
+          }, 20);
+        }
+        return;
+      }
       case 'add-faith-100k':
         gs.faithPoints += 100000;
         gs.totalFaithAccumulated += 100000;
