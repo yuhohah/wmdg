@@ -20,10 +20,19 @@ export class ProgressionSimulator {
     let gameTimeSec = 0;
     let relicResets = 0;
     let gnoseResets = 0;
+    let miraclesCaught = 0;
     let maxWaitSec = 0;
 
     // Tempo de reação médio definido por perfil (Active: 3s, Casual: 5s, AFK: 0s / acumulação por lote)
     const reactionDelaySec = archetype === 'active' ? 3.0 : archetype === 'casual' ? 5.0 : 0.0;
+
+    // Cadência e taxa de coleta de Milagres:
+    // No jogo, milagres surgem a cada 35 a 65s (média ~50s) com fiéis no pátio.
+    // Ativo (sempre na tela) coleta ~95% dos milagres surgidos.
+    // Casual (híbrido com pausas) coleta ~40% dos milagres surgidos.
+    // AFK (ausente) coleta 0% dos milagres.
+    const miracleCatchRate = archetype === 'active' ? 0.95 : archetype === 'casual' ? 0.40 : 0.0;
+    let timeSinceLastMiracleSpawnSec = 0;
 
     const recordedMilestones = new Set<string>();
 
@@ -263,6 +272,27 @@ export class ProgressionSimulator {
         maxWaitSec = waitTime;
       }
 
+      // Simulação de Milagres durante o período decorrido (waitTime):
+      // Apenas ocorre se o jogador possuir pelo menos 1 fiel no pátio e taxa de captura > 0
+      if (miracleCatchRate > 0 && gs.followers[0] && gs.followers[0].count > 0) {
+        timeSinceLastMiracleSpawnSec += waitTime;
+        const avgMiracleIntervalSec = 50; // spawn cooldown médio de ~3000 frames a 60fps = 50s
+        while (timeSinceLastMiracleSpawnSec >= avgMiracleIntervalSec) {
+          timeSinceLastMiracleSpawnSec -= avgMiracleIntervalSec;
+          // Testa probabilidade de captura do perfil
+          if (Math.random() < miracleCatchRate) {
+            // Fórmula oficial de SphereController: 30x fps + 10% fé atual (min 30 ou 15x click)
+            const currentFps = gs.getFaithPerSecond();
+            const minReward = Math.max(30, gs.getFaithPerClick() * 15);
+            const calculated = Math.floor(30 * currentFps + 0.10 * gs.faithPoints);
+            const finalReward = Math.max(minReward, calculated);
+            gs.faithPoints += finalReward;
+            gs.totalFaithAccumulated += finalReward;
+            miraclesCaught++;
+          }
+        }
+      }
+
       // Fast-forward time
       gameTimeSec += waitTime;
       gs.tick(waitTime);
@@ -303,6 +333,7 @@ export class ProgressionSimulator {
       milestones,
       relicResets,
       gnoseResets,
+      miraclesCaught,
       deadZones,
       maxWaitSec,
       formattedMaxWait: formatDuration(maxWaitSec),

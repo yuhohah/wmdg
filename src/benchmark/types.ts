@@ -29,6 +29,7 @@ export interface ArchetypeBenchmarkResult {
   milestones: MilestoneRecord[];
   relicResets: number;
   gnoseResets: number;
+  miraclesCaught: number;
   deadZones: DeadZone[];
   maxWaitSec: number;
   formattedMaxWait: string;

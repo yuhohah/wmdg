@@ -72,6 +72,9 @@ export function formatTerminalReport(report: BenchmarkReport): string {
     `  ${'TEMPO TOTAL ATÉ 1º UPGRADE GNOSE'.padEnd(34)} | ${active.formattedTotalTime.padEnd(16)} | ${casual.formattedTotalTime.padEnd(16)} | ${afk.formattedTotalTime.padEnd(16)}`
   );
   lines.push(
+    `  ${'Milagres Coletados dos Fiéis'.padEnd(34)} | ${String(active.miraclesCaught).padEnd(16)} | ${String(casual.miraclesCaught).padEnd(16)} | ${String(afk.miraclesCaught).padEnd(16)}`
+  );
+  lines.push(
     `  ${'Resets de Relíquia Feitos'.padEnd(34)} | ${String(active.relicResets).padEnd(16)} | ${String(casual.relicResets).padEnd(16)} | ${String(afk.relicResets).padEnd(16)}`
   );
   lines.push(
@@ -155,6 +158,12 @@ export function formatHtmlReport(report: BenchmarkReport): string {
             <td style="padding: 6px 8px; border: 1px solid #78350f; color: #67e8f9;">${active.formattedTotalTime}</td>
             <td style="padding: 6px 8px; border: 1px solid #78350f; color: #a5b4fc;">${casual.formattedTotalTime}</td>
             <td style="padding: 6px 8px; border: 1px solid #78350f; color: #f472b6;">${afk.formattedTotalTime}</td>
+          </tr>
+          <tr>
+            <td style="padding: 4px 8px; border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1;">Milagres dos Fiéis</td>
+            <td style="padding: 4px 8px; border: 1px solid rgba(255,255,255,0.1); color: #67e8f9;">${active.miraclesCaught}</td>
+            <td style="padding: 4px 8px; border: 1px solid rgba(255,255,255,0.1); color: #a5b4fc;">${casual.miraclesCaught}</td>
+            <td style="padding: 4px 8px; border: 1px solid rgba(255,255,255,0.1); color: #f472b6;">${afk.miraclesCaught}</td>
           </tr>
           <tr>
             <td style="padding: 4px 8px; border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1;">Resets de Relíquia</td>
