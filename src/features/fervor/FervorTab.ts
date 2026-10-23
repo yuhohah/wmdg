@@ -1,6 +1,5 @@
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
-import { TooltipManager } from '../../ui/tooltips.js';
 import { FervorUpgrade } from '../../types.js';
 import { DISPLAY_CONFIG } from '../../config/display.js';
 import { getFervorUpgradeMultiplier } from '../../config/fervor.js';
@@ -9,7 +8,6 @@ import { calculateFervorUpgradeCost, formatNumber } from '../../systems/calculat
 export interface FervorTabOptions {
   gameState: GameStateManager;
   audio: AudioManager;
-  tooltips: TooltipManager;
   triggerHaptic: (pattern: number | number[]) => void;
   onUpgradePurchased?: () => void;
 }
@@ -17,7 +15,6 @@ export interface FervorTabOptions {
 export class FervorTab {
   private options: FervorTabOptions;
 
-  private tabBtnFervorEl: HTMLElement | null = null;
   private listEl: HTMLElement | null = null;
   private hudDividerEl: HTMLElement | null = null;
   private hudItemEl: HTMLElement | null = null;
@@ -28,7 +25,6 @@ export class FervorTab {
   }
 
   private initElements(): void {
-    this.tabBtnFervorEl = document.getElementById('tab-btn-fervor');
     this.listEl = document.getElementById('fervor-upgrades-list');
     this.hudDividerEl = document.getElementById('hud-fervor-divider');
     this.hudItemEl = document.getElementById('hud-fervor-item');
@@ -39,7 +35,6 @@ export class FervorTab {
     if (success) {
       this.options.triggerHaptic(15);
       this.options.audio.playTone(720, 'sine', 0.18);
-      this.options.tooltips.hide();
       this.renderList();
       this.options.onUpgradePurchased?.();
     } else {
@@ -56,8 +51,6 @@ export class FervorTab {
     const fervor = this.options.gameState.fervorPoints;
 
     this.options.gameState.fervorUpgrades.forEach((upg) => {
-// All possible upgrades displayed
-
       const cost = calculateFervorUpgradeCost(upg);
       const fu1Boosted = this.options.gameState.isFu1Boosted();
       const mult = getFervorUpgradeMultiplier(upg, totalFollowers, faith, fu1Boosted);
@@ -80,7 +73,7 @@ export class FervorTab {
           <span class="fervor-mult-tag">x${mult.toFixed(2)}</span>
         </div>
         <div class="card-footer-row">
-          <div class="cost-tag" style=" font-weight: 800;">
+          <div class="cost-tag" style="font-weight: 800;">
             <span>CUSTO:</span>
             <span>${formatNumber(cost)} Fervor</span>
           </div>
@@ -94,8 +87,6 @@ export class FervorTab {
         this.buyUpgrade(upg);
       });
 
-
-
       this.listEl!.appendChild(card);
     });
   }
@@ -107,7 +98,6 @@ export class FervorTab {
     const fu1Boosted = this.options.gameState.isFu1Boosted();
 
     this.options.gameState.fervorUpgrades.forEach((upg) => {
-// All possible upgrades displayed
       const cost = calculateFervorUpgradeCost(upg);
       const mult = getFervorUpgradeMultiplier(upg, totalFollowers, faith, fu1Boosted);
       const card = document.getElementById(`card-${upg.id}`);
@@ -129,10 +119,7 @@ export class FervorTab {
     });
   }
 
-  public setTabVisibility(unlocked: boolean): void {
-    if (this.tabBtnFervorEl) {
-      this.tabBtnFervorEl.style.display = unlocked ? 'flex' : 'none';
-    }
+  public setHudVisibility(unlocked: boolean): void {
     if (this.hudDividerEl) {
       this.hudDividerEl.style.display = unlocked ? 'block' : 'none';
     }

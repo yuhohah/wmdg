@@ -1,16 +1,11 @@
 // --- App Manager for Cult of the Sphere (Modular Orchestrator) ---
 
-import { INCARNATION_STAGES } from './config/incarnation.js';
-import { calculateFervorUpgradeCost } from './systems/calculations.js';
 import { AudioManager } from './systems/audio.js';
 import { NotificationManager } from './systems/notifications.js';
-import { TooltipManager } from './ui/tooltips.js';
-import { loadDisplayConfig } from './config/display.js';
 import { SaveSystem, type SaveData } from './systems/saveSystem.js';
 import { SettingsModal } from './ui/SettingsModal.js';
 import { SaveDataModal } from './ui/SaveDataModal.js';
 import { HUDController } from './ui/HUDController.js';
-import { NavigationManager } from './ui/NavigationManager.js';
 import { GameStateManager } from './core/GameState.js';
 import { GameLoop } from './core/GameLoop.js';
 import { events, GameEvents } from './core/EventBus.js';
@@ -19,17 +14,12 @@ import { IncarnationTab } from './features/incarnation/IncarnationTab.js';
 import { FervorTab } from './features/fervor/FervorTab.js';
 import { RelicsTab } from './features/relics/RelicsTab.js';
 import { GnoseTab } from './features/gnose/GnoseTab.js';
-import { PantheonTab } from './features/pantheon/PantheonTab.js';
-import { BossBattleController } from './features/pantheon/BossBattleController.js';
 import { UnlocksTab } from './features/unlocks/UnlocksTab.js';
 import { AchievementsTab } from './features/achievements/AchievementsTab.js';
 import { StatsTab } from './features/stats/StatsTab.js';
 import { SphereController } from './features/sphere/SphereController.js';
 import { OnboardingGuide } from './ui/OnboardingGuide.js';
 import { BoardManager } from './ui/BoardManager.js';
-import { ProcessionScene } from './ui/ProcessionScene.js';
-import { ChurchScene } from './ui/ChurchScene.js';
-import { isArtReview } from './ui/artReview.js';
 import { cultDialog } from './ui/CultDialog.js';
 import { TestMenu } from './ui/TestMenu.js';
 
@@ -37,20 +27,16 @@ class AppManager {
   // Core Subsystems
   public audio: AudioManager;
   public notifications: NotificationManager;
-  public tooltips: TooltipManager;
   public gameState: GameStateManager = new GameStateManager();
   public gameLoop: GameLoop = new GameLoop(10);
 
   // UI Controllers
   public hud: HUDController;
   public sphere: SphereController;
-  public nav: NavigationManager;
   public settingsModal: SettingsModal;
   public saveDataModal: SaveDataModal;
   public onboardingGuide: OnboardingGuide;
-  public church: ChurchScene;
   public board: BoardManager;
-  public procession: ProcessionScene | null = null;
 
   // Feature Tabs
   public followersTab: FollowersTab;
@@ -61,8 +47,6 @@ class AppManager {
   public unlocksTab: UnlocksTab;
   public achievementsTab: AchievementsTab;
   public statsTab: StatsTab;
-  public pantheonTab: PantheonTab;
-  public bossBattle: BossBattleController;
   public testMenu!: TestMenu;
 
   // Save & System State
@@ -74,7 +58,6 @@ class AppManager {
     // 1. Instantiate Core Subsystems
     this.audio = new AudioManager();
     this.notifications = new NotificationManager('achievements-popup-container');
-    this.tooltips = new TooltipManager('cult-tooltip');
 
     // 2. Instantiate UI & Sphere Controllers
     this.hud = new HUDController({
@@ -88,23 +71,10 @@ class AppManager {
       triggerHaptic: (pattern) => this.triggerHaptic(pattern)
     });
 
-    this.nav = new NavigationManager({
-      audio: this.audio,
-      triggerHaptic: (pattern) => this.triggerHaptic(pattern),
-      onTabSwitched: (_panel, tabId) => this.handleTabSwitched(tabId),
-      onScreenSwitched: (screen) => {
-        if (screen === 'gameplay') {
-          this.followersTab.resize();
-          this.onboardingGuide.update();
-        }
-      }
-    });
-
     // 3. Instantiate Feature Tabs
     this.followersTab = new FollowersTab({
       gameState: this.gameState,
       audio: this.audio,
-      tooltips: this.tooltips,
       triggerHaptic: (p) => this.triggerHaptic(p),
       spawnFloatingText: (x, y, t) => this.sphere.spawnFloatingText(x, y, t),
       onFollowersChanged: () => events.emit(GameEvents.STATE_CHANGED),
@@ -123,7 +93,6 @@ class AppManager {
     this.fervorTab = new FervorTab({
       gameState: this.gameState,
       audio: this.audio,
-      tooltips: this.tooltips,
       triggerHaptic: (p) => this.triggerHaptic(p),
       onUpgradePurchased: () => events.emit(GameEvents.STATE_CHANGED)
     });
@@ -131,7 +100,6 @@ class AppManager {
     this.relicsTab = new RelicsTab({
       gameState: this.gameState,
       audio: this.audio,
-      tooltips: this.tooltips,
       notifications: this.notifications,
       spawnFloatingText: (x, y, t) => this.sphere.spawnFloatingText(x, y, t),
       onRelicsTransmuted: () => events.emit(GameEvents.STATE_CHANGED),
@@ -145,49 +113,15 @@ class AppManager {
     this.gnoseTab = new GnoseTab({
       gameState: this.gameState,
       audio: this.audio,
-      tooltips: this.tooltips,
       notifications: this.notifications,
       spawnFloatingText: (x, y, t) => this.sphere.spawnFloatingText(x, y, t),
       onGnoseReset: () => {
-        this.church.rebuild();
         this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
         this.incarnationTab.updateUI();
-        this.renderAllLists();
-        this.updateUnlockedTabsVisibility();
-        events.emit(GameEvents.STATE_CHANGED);
+        this.refreshAllUI();
       },
       onUpgradePurchased: () => {
-        this.updateUnlockedTabsVisibility();
-        this.incarnationTab.updateUI();
-        this.followersTab.updateUI();
-        this.fervorTab.renderList();
-        this.fervorTab.updateButtonStates();
-        this.unlocksTab.renderList();
-        this.relicsTab.updateUI();
-        this.relicsTab.renderList();
-        events.emit(GameEvents.STATE_CHANGED);
-      }
-    });
-
-    this.bossBattle = new BossBattleController({
-      gameState: this.gameState,
-      audio: this.audio,
-      notifications: this.notifications,
-      onBattleEnd: () => {
-        // pantheonTab retired
-        this.sphere.renderSatellites();
-        this.updateUnlockedTabsVisibility();
-        events.emit(GameEvents.STATE_CHANGED);
-      }
-    });
-
-    this.pantheonTab = new PantheonTab({
-      gameState: this.gameState,
-      audio: this.audio,
-      tooltips: this.tooltips,
-      notifications: this.notifications,
-      onInitiateBattle: (bossId) => {
-        this.bossBattle.startBattle(bossId);
+        this.refreshAllUI();
       }
     });
 
@@ -195,31 +129,15 @@ class AppManager {
       gameState: this.gameState,
       audio: this.audio,
       notifications: this.notifications,
-      tooltips: this.tooltips,
-      onUnlockPurchased: (unlock) => {
-        this.updateUnlockedTabsVisibility();
-        if (unlock.id === 'unlock_incarnation') {
-          this.incarnationTab.updateUI();
-        } else if (unlock.id === 'unlock_fervor_upgrades') {
-          this.fervorTab.renderList();
-        } else if (unlock.id === 'unlock_relics') {
-          this.relicsTab.updateUI();
-          this.relicsTab.renderList();
-        } else if (unlock.id === 'unlock_pantheon') {
-          // pantheonTab retired
-        } else if (unlock.id === 'unlock_gnose') {
-          this.gnoseTab.updateUI();
-          this.gnoseTab.renderTree();
-        }
-        events.emit(GameEvents.STATE_CHANGED);
+      onUnlockPurchased: () => {
+        this.refreshAllUI();
       }
     });
 
     this.achievementsTab = new AchievementsTab({
       gameState: this.gameState,
       audio: this.audio,
-      notifications: this.notifications,
-      tooltips: this.tooltips
+      notifications: this.notifications
     });
 
     this.statsTab = new StatsTab({
@@ -230,21 +148,20 @@ class AppManager {
     this.saveDataModal = new SaveDataModal({
       onExport: () => SaveSystem.exportSave(this.gameState.buildSaveData()),
       onImport: async (raw) => {
-        if (isArtReview) return null;
         const imported = SaveSystem.importSave(raw);
         if (!imported) return false;
 
-        const ok = await cultDialog('Restaurar o culto', 'Deseja substituir o progresso atual pelos dados importados?', 'Restaurar', 'Cancelar');
+        const ok = await cultDialog(
+          'Restaurar o culto',
+          'Deseja substituir o progresso atual pelos dados importados?',
+          'Restaurar',
+          'Cancelar'
+        );
         if (ok) {
           SaveSystem.save(imported);
           this.applySaveData(imported);
-          // An imported save is a load, not progress: redraw the church without replaying its transitions.
-          this.church.rebuild();
           this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
-          this.incarnationTab.updateUI();
-          this.renderAllLists();
-          this.updateUnlockedTabsVisibility();
-          events.emit(GameEvents.STATE_CHANGED);
+          this.refreshAllUI();
           return true;
         }
         return null;
@@ -255,7 +172,6 @@ class AppManager {
     this.onboardingGuide = new OnboardingGuide({
       gameState: this.gameState,
       notifications: this.notifications,
-      nav: this.nav,
       audio: this.audio
     });
 
@@ -266,12 +182,12 @@ class AppManager {
       onExportSave: () => this.saveDataModal.openExport(),
       onImportSave: () => this.saveDataModal.openImport(),
       onResetSave: () => this.confirmHardReset(),
-      onToggleHaptics: (enabled) => { this.isHapticsEnabled = enabled; },
+      onToggleHaptics: (enabled) => {
+        this.isHapticsEnabled = enabled;
+      },
       isHapticsEnabled: () => this.isHapticsEnabled,
       onTriggerHaptic: (pattern) => this.triggerHaptic(pattern)
     });
-
-    loadDisplayConfig();
 
     // 5. Load Progress & Sync Views
     this.loadProgress();
@@ -280,6 +196,7 @@ class AppManager {
 
     // 6. Setup Listeners, Initial Renders & Loops
     this.board = new BoardManager();
+    this.bindStartScreen();
     this.setupReactiveListeners();
     this.setupSystemEvents();
     this.renderAllLists();
@@ -289,20 +206,29 @@ class AppManager {
     this.hud.update();
     this.statsTab.updateUI();
     this.onboardingGuide.update();
-    if (isArtReview) this.procession = new ProcessionScene(this.gameState, (x, y) => this.sphere.grantMiracle(x, y));
-    this.church = new ChurchScene(
-      this.gameState,
-      (x, y) => this.sphere.grantMiracle(x, y),
-      (x, y) => this.sphere.invokeBlessing(x, y),
-      (notice, tag) => this.notifications.showCustomPopup(notice.title, notice.desc, notice.icon, tag)
-    );
-    if (isArtReview) this.nav.switchScreen('gameplay');
 
-    // 7. Global Window Helpers
+    // 7. Global Window Helpers & Test Menu
     this.registerGlobalHelpers();
-
-    // 8. Test & Speed Modifiers Menu
     this.testMenu = new TestMenu(this);
+  }
+
+  private bindStartScreen(): void {
+    const playBtn = document.getElementById('play-btn');
+    const startScreen = document.getElementById('start-screen');
+    const gameplayScreen = document.getElementById('gameplay-screen');
+
+    playBtn?.addEventListener('click', () => {
+      this.audio.init();
+      this.audio.playMusic();
+      this.audio.playTone(440, 'sine', 0.1);
+      startScreen?.classList.remove('active');
+      gameplayScreen?.classList.add('active');
+      requestAnimationFrame(() => {
+        this.followersTab.resize();
+        this.incarnationTab.altar?.resize();
+        this.onboardingGuide.update();
+      });
+    });
   }
 
   private setupReactiveListeners(): void {
@@ -343,61 +269,42 @@ class AppManager {
         this.followersTab.pause();
       } else {
         this.gameLoop.resume();
-        if (window.innerWidth > 860 || this.nav.getMobileView() === 'left') {
-          this.followersTab.resume();
-        }
+        this.followersTab.resume();
       }
     });
   }
 
-  private handleTabSwitched(tabId: string): void {
-    if (tabId === 'tab-followers') {
-      this.followersTab.updateUI();
-      this.followersTab.resume();
-      requestAnimationFrame(() => this.followersTab.resize());
-    } else if (tabId === 'tab-incarnation') {
-      this.incarnationTab.updateUI();
-      this.followersTab.pause();
-    } else {
-      this.followersTab.pause();
-    }
-
-    if (tabId === 'tab-relics') {
-      this.relicsTab.updateUI();
-    } else if (tabId === 'tab-pantheon') {
-      // pantheonTab retired
-    } else if (tabId === 'tab-gnose') {
-      this.gnoseTab.updateUI();
-    }
+  public refreshAllUI(): void {
+    this.updateUnlockedTabsVisibility();
+    this.renderAllLists();
+    this.hud.update();
+    this.statsTab.updateUI();
+    events.emit(GameEvents.STATE_CHANGED);
   }
 
-  private updateUnlockedTabsVisibility(): void {
+  public updateUnlockedTabsVisibility(): void {
     const inc = this.gameState.isIncarnationUnlocked();
     const ferv = this.gameState.isFervorUpgradesUnlocked();
     const rel = this.gameState.isRelicsUnlocked();
     const gno = this.gameState.isGnoseUnlocked();
 
-    this.incarnationTab.setTabVisibility(inc);
-    this.fervorTab.setTabVisibility(ferv);
-    // pantheonTab retired
-    this.relicsTab.setTabVisibility(rel);
-    this.gnoseTab.setTabVisibility(gno);
+    this.fervorTab.setHudVisibility(ferv);
+    this.relicsTab.setHudVisibility(rel);
+    this.gnoseTab.setHudVisibility(gno);
 
     if (this.board) {
       this.board.setCardUnlocked('card-incarnation', inc);
       this.board.setCardUnlocked('card-fervor', ferv);
-      // card-pantheon retired in favor of card-gnose
       this.board.setCardUnlocked('card-relics', rel);
       this.board.setCardUnlocked('card-gnose', gno);
     }
   }
 
-  private renderAllLists(): void {
+  public renderAllLists(): void {
     this.followersTab.updateUI();
     this.incarnationTab.updateUI();
     this.fervorTab.renderList();
     this.unlocksTab.renderList();
-    // pantheonTab retired
     this.relicsTab.renderList();
     this.gnoseTab.renderTree();
     this.gnoseTab.updateUI();
@@ -414,32 +321,11 @@ class AppManager {
     if (this.gameState.isGnoseUnlocked()) {
       this.gnoseTab.updateUI();
     }
-
-    // Update mobile navigation notification dots
-    const devotee = this.gameState.followers[0];
-    const canBuyDevotee = devotee ? this.gameState.faithPoints >= this.gameState.getItemCost(devotee) : false;
-    const canBuyFervor = this.gameState.isFervorUpgradesUnlocked() && this.gameState.fervorUpgrades.some(u => {
-      if (u.id === 'fu_relics' && !this.gameState.isPhoenixRelicUnlocked()) {
-        return false;
-      }
-      return this.gameState.fervorPoints >= calculateFervorUpgradeCost(u);
-    });
-    const nextIncStage = INCARNATION_STAGES.find(s => s.stage === this.gameState.incarnationStage + 1);
-    const canEvolveInc = this.gameState.isIncarnationUnlocked() && nextIncStage ? this.gameState.faithPoints >= nextIncStage.cost : false;
-    const hasDevoteesAlert = canBuyDevotee || canBuyFervor || canEvolveInc;
-
-    const canBuyUnlock = this.unlocksTab.hasAvailableUnlock();
-    const canBuyRelic = this.gameState.isRelicsUnlocked() && this.gameState.relicUpgrades.some(r => r.level < r.maxLevel && this.gameState.relicPoints >= r.cost);
-    const hasUnlocksAlert = canBuyUnlock || canBuyRelic;
-
-    this.nav.updateBadges(hasDevoteesAlert, hasUnlocksAlert);
   }
 
   private startPassiveFaithLoop(): void {
-    if (isArtReview) return;
     this.gameLoop.onTick((deltaSec) => {
       this.gameState.tick(deltaSec);
-      this.bossBattle.tick(deltaSec);
       events.emit(GameEvents.GAME_TICK, deltaSec);
     });
     this.gameLoop.start();
@@ -459,11 +345,9 @@ class AppManager {
 
   private applySaveData(save: SaveData): void {
     this.gameState.applySaveData(save);
-    this.sphere.renderSatellites();
   }
 
   private saveProgress(): boolean {
-    if (isArtReview) return false;
     if (this.isResetting) return false;
     const data = this.gameState.buildSaveData();
     const success = SaveSystem.save(data);
@@ -475,24 +359,10 @@ class AppManager {
   }
 
   private loadProgress(): boolean {
-    if (isArtReview) {
-      this.gameState.faithPoints = 12480;
-      this.gameState.followers[0].count = 36;
-      this.gameState.hasSeenIntro = true;
-      if (new URLSearchParams(window.location.search).has('all-tabs')) {
-        this.gameState.unlocks.forEach(unlock => { unlock.unlocked = true; });
-        this.gameState.fervorPoints = 1250;
-        this.gameState.relicPoints = 150;
-      }
-      const snapshot = this.gameState.getSnapshot();
-      this.gameState.achievements.forEach(achievement => { achievement.unlocked = achievement.check(snapshot); });
-      return false;
-    }
     const data = SaveSystem.load();
     if (data) {
       this.applySaveData(data);
       this.lastSaveTime = data.timestamp || Date.now();
-      console.log('Cult of the Sphere - Progresso carregado com sucesso do LocalStorage.');
       return true;
     }
     return false;
@@ -502,16 +372,30 @@ class AppManager {
     const success = this.saveProgress();
     if (success) {
       this.audio.playTone(660, 'sine', 0.1);
-      this.notifications.showCustomPopup('Culto Salvo', 'Seu progresso sagrado foi gravado com sucesso.', '💾', 'REGISTRO SAGRADO');
+      this.notifications.showCustomPopup(
+        'Culto Salvo',
+        'Seu progresso sagrado foi gravado com sucesso.',
+        '💾',
+        'REGISTRO SAGRADO'
+      );
       this.settingsModal.updateSaveStatus();
     } else {
-      this.notifications.showCustomPopup('Erro ao Salvar', 'Não foi possível gravar no armazenamento do navegador.', '⚠️', 'ALERTA');
+      this.notifications.showCustomPopup(
+        'Erro ao Salvar',
+        'Não foi possível gravar no armazenamento do navegador.',
+        '⚠️',
+        'ALERTA'
+      );
     }
   }
 
   private async confirmHardReset(): Promise<void> {
-    if (isArtReview) return;
-    const ok = await cultDialog('Reiniciar o culto', 'Deseja realmente reiniciar o culto do zero? Todo o progresso sagrado, fiéis e relíquias serão perdidos permanentemente.', 'Reiniciar', 'Cancelar');
+    const ok = await cultDialog(
+      'Reiniciar o culto',
+      'Deseja realmente reiniciar o culto do zero? Todo o progresso sagrado, fiéis e relíquias serão perdidos permanentemente.',
+      'Reiniciar',
+      'Cancelar'
+    );
     if (ok) {
       this.isResetting = true;
       SaveSystem.resetSave();
@@ -528,14 +412,6 @@ class AppManager {
 
   private registerGlobalHelpers(): void {
     (window as any).cultGame = this;
-    (window as any).unlockSphereSatellite = (index: number) => this.sphere.unlockSatellite(index);
-    (window as any).lockSphereSatellite = (index: number) => this.sphere.lockSatellite(index);
-    (window as any).unlockAllSphereSatellites = () => {
-      for (let i = 0; i < 6; i++) this.sphere.unlockSatellite(i);
-    };
-    (window as any).lockAllSphereSatellites = () => {
-      for (let i = 0; i < 6; i++) this.sphere.lockSatellite(i);
-    };
     (window as any).triggerMiraclePlea = () => this.followersTab.triggerMiraclePlea();
   }
 }
@@ -543,5 +419,4 @@ class AppManager {
 // Bootstrap Application
 window.addEventListener('DOMContentLoaded', () => {
   new AppManager();
-  console.log('Cult of the Sphere - Arquitetura Modular Inicializada.');
 });

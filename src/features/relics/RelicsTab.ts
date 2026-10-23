@@ -1,6 +1,5 @@
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
-import { TooltipManager } from '../../ui/tooltips.js';
 import { NotificationManager } from '../../systems/notifications.js';
 import { RelicUpgrade } from '../../types.js';
 import { DISPLAY_CONFIG } from '../../config/display.js';
@@ -9,7 +8,6 @@ import { formatNumber } from '../../systems/calculations.js';
 export interface RelicsTabOptions {
   gameState: GameStateManager;
   audio: AudioManager;
-  tooltips: TooltipManager;
   notifications: NotificationManager;
   spawnFloatingText: (x: number, y: number, text: string) => void;
   onRelicsTransmuted?: () => void;
@@ -19,7 +17,6 @@ export interface RelicsTabOptions {
 export class RelicsTab {
   private options: RelicsTabOptions;
 
-  private tabBtnRelicsEl: HTMLElement | null = null;
   private hudDividerEl: HTMLElement | null = null;
   private hudItemEl: HTMLElement | null = null;
   private btnConvertRelicsEl: HTMLButtonElement | null = null;
@@ -37,7 +34,6 @@ export class RelicsTab {
   }
 
   private initElements(): void {
-    this.tabBtnRelicsEl = document.getElementById('tab-btn-relics');
     this.hudDividerEl = document.getElementById('hud-relic-divider');
     this.hudItemEl = document.getElementById('hud-relic-item');
     this.btnConvertRelicsEl = document.getElementById('btn-convert-relics') as HTMLButtonElement | null;
@@ -80,7 +76,6 @@ export class RelicsTab {
     const success = this.options.gameState.buyRelicUpgrade(relic);
     if (success) {
       this.options.audio.playTone(740, 'triangle', 0.2);
-      this.options.tooltips.hide();
       this.updateUI();
       this.renderList();
       this.options.onUpgradePurchased?.();
@@ -140,8 +135,6 @@ export class RelicsTab {
         this.buyRelicUpgrade(relic);
       });
 
-
-
       this.relicUpgradesListEl!.appendChild(card);
     });
   }
@@ -197,10 +190,7 @@ export class RelicsTab {
     });
   }
 
-  public setTabVisibility(unlocked: boolean): void {
-    if (this.tabBtnRelicsEl) {
-      this.tabBtnRelicsEl.style.display = unlocked ? 'flex' : 'none';
-    }
+  public setHudVisibility(unlocked: boolean): void {
     if (this.hudDividerEl) {
       this.hudDividerEl.style.display = unlocked ? 'block' : 'none';
     }

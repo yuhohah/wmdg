@@ -1,12 +1,10 @@
 import { GameStateManager } from '../core/GameState.js';
 import { NotificationManager } from '../systems/notifications.js';
-import { NavigationManager } from './NavigationManager.js';
 import { AudioManager } from '../systems/audio.js';
 
 export interface OnboardingGuideOptions {
   gameState: GameStateManager;
   notifications: NotificationManager;
-  nav?: NavigationManager;
   audio?: AudioManager;
 }
 
@@ -15,7 +13,6 @@ export type SpotlightStep = 'sphere' | 'buy_follower' | 'complete';
 export class OnboardingGuide {
   private gameState: GameStateManager;
   private notifications: NotificationManager;
-  private nav?: NavigationManager;
   private audio?: AudioManager;
 
   // DOM Elements
@@ -47,7 +44,6 @@ export class OnboardingGuide {
   constructor(options: OnboardingGuideOptions) {
     this.gameState = options.gameState;
     this.notifications = options.notifications;
-    this.nav = options.nav;
     this.audio = options.audio;
 
     const devotee = this.gameState.followers[0];
@@ -112,13 +108,9 @@ export class OnboardingGuide {
     this.audio?.playTone(260, 'sawtooth', 0.05);
     if (this.balloonEl) {
       this.balloonEl.classList.remove('nudge-bounce');
-      void this.balloonEl.offsetWidth; // trigger reflow
+      void this.balloonEl.offsetWidth;
       this.balloonEl.classList.add('nudge-bounce');
     }
-  }
-
-  public setNavigation(nav: NavigationManager): void {
-    this.nav = nav;
   }
 
   public dismiss(): void {
@@ -126,12 +118,6 @@ export class OnboardingGuide {
     this.gameState.hasSeenIntro = true;
     document.getElementById('btn-convert-one')?.classList.remove('pulse-guide');
     this.hideOverlay();
-  }
-
-  public restartTour(): void {
-    this.isDismissed = false;
-    this.hasCelebrated = false;
-    this.update();
   }
 
   private hideOverlay(): void {
@@ -189,13 +175,6 @@ export class OnboardingGuide {
       this.currentStep = 'sphere';
     } else {
       this.currentStep = 'buy_follower';
-      // Ensure left panel is open on desktop & visible on mobile
-      if (this.nav) {
-        this.nav.togglePanel('left', true);
-        if (window.innerWidth <= 860) {
-          this.nav.setMobileView('left');
-        }
-      }
     }
 
     // Toggle glowing pulse on the convert button when in step 2
@@ -209,11 +188,10 @@ export class OnboardingGuide {
     this.renderStepContent(faith, targetFaith);
     this.updatePosition();
 
-    // If step just transitioned to buy_follower, schedule follow-up adjustments as panels slide open
+    // If step just transitioned to buy_follower, schedule follow-up adjustments
     if (prevStep !== this.currentStep && this.currentStep === 'buy_follower') {
       setTimeout(() => this.updatePosition(), 100);
       setTimeout(() => this.updatePosition(), 250);
-      setTimeout(() => this.updatePosition(), 450);
     }
   }
 
@@ -266,7 +244,7 @@ export class OnboardingGuide {
 
       const targetEl = this.currentStep === 'sphere'
         ? (document.getElementById('divine-sphere-btn') || document.getElementById('divine-sphere-container'))
-        : (document.getElementById('btn-convert-one') || document.getElementById('panel-left'));
+        : (document.getElementById('btn-convert-one') || document.getElementById('card-followers'));
 
       if (!targetEl) {
         return;
@@ -343,7 +321,6 @@ export class OnboardingGuide {
         const targetCenterY = spotTop + spotHeight / 2;
 
         if (this.currentStep === 'sphere') {
-          // Centered horizontally above sphere if space allows
           const spaceAbove = spotTop;
           if (spaceAbove >= balloonH + 20) {
             bTop = spotTop - balloonH - 16;
@@ -354,7 +331,6 @@ export class OnboardingGuide {
           }
           bLeft = Math.max(14, Math.min(vw - balloonW - 14, targetCenterX - balloonW / 2));
         } else {
-          // For convert button: on desktop try placing on right side; otherwise above or below
           const spaceRight = vw - spotRight;
           if (vw > 860 && spaceRight >= balloonW + 24) {
             bLeft = spotRight + 18;
@@ -376,7 +352,6 @@ export class OnboardingGuide {
         this.balloonEl.style.top = `${bTop}px`;
         this.balloonEl.style.left = `${bLeft}px`;
 
-        // Update Arrow class and dynamic alignment toward target focal point
         if (this.arrowEl) {
           this.arrowEl.className = `spotlight-balloon-arrow ${arrowDir}`;
           if (arrowDir === 'arrow-bottom' || arrowDir === 'arrow-top') {

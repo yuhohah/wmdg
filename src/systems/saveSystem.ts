@@ -1,6 +1,6 @@
 // --- Save System for Cult of the Sphere ---
 
-import type { PantheonSaveData, GnoseSaveData } from '../types.js';
+import type { GnoseSaveData } from '../types.js';
 
 export interface SaveData {
   version: number;
@@ -17,13 +17,10 @@ export interface SaveData {
     hasSeenIntro?: boolean;
   };
   followers: Array<{ id: string; count: number }>;
-  monuments?: Array<{ id: string; count: number }>;
   fervorUpgrades: Array<{ id: string; level: number }>;
   relicUpgrades: Array<{ id: string; level: number }>;
   unlocks: string[];
   achievements: string[];
-  sphereSatellites?: boolean[];
-  pantheon?: PantheonSaveData;
   gnose?: GnoseSaveData;
 }
 

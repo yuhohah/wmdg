@@ -1,6 +1,5 @@
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
-import { TooltipManager } from '../../ui/tooltips.js';
 import { NotificationManager } from '../../systems/notifications.js';
 import { GNOSE_UPGRADES, GNOSE_TIER_LABELS, GNOSE_MIN_FAITH_REQ } from '../../config/gnose.js';
 import { DISPLAY_CONFIG } from '../../config/display.js';
@@ -11,7 +10,6 @@ import type { GnoseUpgrade } from '../../types.js';
 export interface GnoseTabOptions {
   gameState: GameStateManager;
   audio: AudioManager;
-  tooltips: TooltipManager;
   notifications: NotificationManager;
   spawnFloatingText: (x: number, y: number, text: string) => void;
   onGnoseReset?: () => void;
@@ -21,7 +19,6 @@ export interface GnoseTabOptions {
 export class GnoseTab {
   private options: GnoseTabOptions;
 
-  private tabBtnGnoseEl: HTMLElement | null = null;
   private hudDividerEl: HTMLElement | null = null;
   private hudItemEl: HTMLElement | null = null;
 
@@ -51,7 +48,6 @@ export class GnoseTab {
   }
 
   private initElements(): void {
-    this.tabBtnGnoseEl = document.getElementById('tab-btn-gnose');
     this.hudDividerEl = document.getElementById('hud-gnose-divider');
     this.hudItemEl = document.getElementById('hud-gnose-item');
 
@@ -154,7 +150,6 @@ export class GnoseTab {
     const success = this.options.gameState.buyGnoseUpgrade(upg.id);
     if (success) {
       this.options.audio.playTone(820, 'triangle', 0.22);
-      this.options.tooltips.hide();
       this.options.notifications.showCustomPopup(
         upg.name,
         upg.effectText,
@@ -235,8 +230,6 @@ export class GnoseTab {
         nodeEl.addEventListener('click', () => {
           this.buyUpgrade(upg);
         });
-
-
 
         tierGrid.appendChild(nodeEl);
       });
@@ -342,10 +335,7 @@ export class GnoseTab {
     });
   }
 
-  public setTabVisibility(unlocked: boolean): void {
-    if (this.tabBtnGnoseEl) {
-      this.tabBtnGnoseEl.style.display = unlocked ? 'flex' : 'none';
-    }
+  public setHudVisibility(unlocked: boolean): void {
     if (this.hudDividerEl) {
       this.hudDividerEl.style.display = unlocked ? 'block' : 'none';
     }

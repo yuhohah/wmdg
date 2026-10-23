@@ -21,7 +21,6 @@ export class IncarnationAltar {
   private container: HTMLElement | null;
   private canvas: HTMLCanvasElement | null;
   private ctx: CanvasRenderingContext2D | null = null;
-  private imgEl: HTMLImageElement | null = null;
   private nameEl: HTMLElement | null = null;
   private titleEl: HTMLElement | null = null;
   private loreEl: HTMLElement | null = null;
@@ -42,16 +41,9 @@ export class IncarnationAltar {
     this.options = options;
     this.container = document.getElementById(containerId);
     this.canvas = document.getElementById('incarnation-altar-canvas') as HTMLCanvasElement | null;
-    this.imgEl = document.getElementById('incarnation-avatar-art') as HTMLImageElement | null;
     this.nameEl = document.getElementById('incarnation-altar-name');
     this.titleEl = document.getElementById('incarnation-altar-title');
     this.loreEl = document.getElementById('incarnation-altar-lore');
-
-    if (this.imgEl) {
-      this.imgEl.onerror = () => {
-        if (this.imgEl) this.imgEl.style.display = 'none';
-      };
-    }
 
     if (this.canvas) {
       this.ctx = this.canvas.getContext('2d', { alpha: true });
@@ -119,12 +111,6 @@ export class IncarnationAltar {
       if (this.nameEl) this.nameEl.textContent = `Estágio ${stageData.stage}: ${stageData.name}`;
       if (this.titleEl) this.titleEl.textContent = stageData.title;
       if (this.loreEl) this.loreEl.textContent = `"${stageData.lore}"`;
-    }
-
-    if (this.imgEl) {
-      this.imgEl.src = `/assets/incarnation/stage_${stageNumber}.jpg`;
-      this.imgEl.alt = stageData ? stageData.name : `Avatar Estágio ${stageNumber}`;
-      this.imgEl.style.display = 'block';
     }
 
     if (!silent) {
@@ -254,35 +240,32 @@ export class IncarnationAltar {
 
     ctx.restore();
 
-    // Procedural central divine sphere (rendered if avatar art is hidden/missing or as occult core)
-    const isImgHidden = !this.imgEl || this.imgEl.style.display === 'none';
-    if (isImgHidden) {
-      ctx.save();
-      ctx.translate(cx, cy);
-      const orbRadius = baseRadius * 0.46;
-      const grad = ctx.createRadialGradient(-orbRadius * 0.25, -orbRadius * 0.25, 2, 0, 0, orbRadius);
-      grad.addColorStop(0, '#fffbe8');
-      grad.addColorStop(0.3, '#d8aa50');
-      grad.addColorStop(0.7, '#784618');
-      grad.addColorStop(1, '#1b120c');
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(0, 0, orbRadius, 0, Math.PI * 2);
-      ctx.fill();
+    // Procedural central divine sphere
+    ctx.save();
+    ctx.translate(cx, cy);
+    const orbRadius = baseRadius * 0.46;
+    const grad = ctx.createRadialGradient(-orbRadius * 0.25, -orbRadius * 0.25, 2, 0, 0, orbRadius);
+    grad.addColorStop(0, '#fffbe8');
+    grad.addColorStop(0.3, '#d8aa50');
+    grad.addColorStop(0.7, '#784618');
+    grad.addColorStop(1, '#1b120c');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(0, 0, orbRadius, 0, Math.PI * 2);
+    ctx.fill();
 
-      ctx.strokeStyle = 'rgba(244, 222, 179, 0.5)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+    ctx.strokeStyle = 'rgba(244, 222, 179, 0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
 
-      // Astrological orbit ring around orb
-      ctx.strokeStyle = 'rgba(216, 191, 141, 0.35)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, orbRadius * 1.25, orbRadius * 0.45, this.rotationAngle * 1.5, 0, Math.PI * 2);
-      ctx.stroke();
+    // Astrological orbit ring around orb
+    ctx.strokeStyle = 'rgba(216, 191, 141, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, orbRadius * 1.25, orbRadius * 0.45, this.rotationAngle * 1.5, 0, Math.PI * 2);
+    ctx.stroke();
 
-      ctx.restore();
-    }
+    ctx.restore();
 
     // 2. Click pulse wave if active
     if (this.pulsePhase > 0) {

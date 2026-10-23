@@ -1,6 +1,4 @@
-export interface TestMenuOptions {
-  onSpeedChange?: (speed: number) => void;
-}
+import { INCARNATION_STAGES } from '../config/incarnation.js';
 
 export class TestMenu {
   private game: any;
@@ -205,7 +203,6 @@ export class TestMenu {
 
   private setupEvents(): void {
     window.addEventListener('keydown', (e: KeyboardEvent) => {
-      // Toggle with 'T' (when not focusing an input) or 'F2'
       const target = e.target as HTMLElement;
       const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA');
 
@@ -248,9 +245,11 @@ export class TestMenu {
         break;
       case 'add-gnose-10':
         gs.gnosePoints += 10;
+        gs.totalGnoseEarned += 10;
         break;
       case 'add-gnose-50':
         gs.gnosePoints += 50;
+        gs.totalGnoseEarned += 50;
         break;
       case 'add-followers-10':
         if (gs.followers && gs.followers[0]) {
@@ -265,27 +264,20 @@ export class TestMenu {
         }
         break;
       case 'unlock-all':
-        if (gs.mechanicUnlocks) {
-          gs.mechanicUnlocks.forEach((u: any) => {
+        if (gs.unlocks) {
+          gs.unlocks.forEach((u: any) => {
             u.unlocked = true;
           });
         }
         break;
       case 'advance-incarnation':
-        if (typeof gs.getIncarnationStage === 'function') {
-          const cur = gs.getIncarnationStage();
-          if (cur < 5) {
-            gs.advanceIncarnationStage();
-            if (this.game.incarnationTab?.altar) {
-              this.game.incarnationTab.altar.evolveToStage(cur + 1);
-            }
-          }
+        if (gs.incarnationStage < INCARNATION_STAGES.length) {
+          gs.incarnationStage++;
+          this.game.incarnationTab?.altar?.evolveToStage(gs.incarnationStage);
         }
         break;
       case 'trigger-miracle':
-        if (this.game.followersTab?.arena) {
-          this.game.followersTab.arena.triggerMiraclePlea();
-        }
+        this.game.followersTab?.triggerMiraclePlea();
         break;
       case 'reset-progress':
         if (confirm('Deseja realmente resetar todos os dados de progresso e save?')) {
@@ -295,23 +287,6 @@ export class TestMenu {
         return;
     }
 
-    // Refresh UI
-    this.refreshAllTabs();
-  }
-
-  private refreshAllTabs(): void {
-    try {
-      this.game.hud?.updateUI();
-      this.game.followersTab?.updateUI();
-      this.game.incarnationTab?.updateUI();
-      this.game.fervorTab?.updateUI();
-      this.game.relicsTab?.updateUI();
-      this.game.gnoseTab?.updateUI();
-      this.game.unlocksTab?.updateUI();
-      this.game.statsTab?.updateUI();
-      this.game.achievementsTab?.updateUI();
-    } catch (err) {
-      console.warn('Erro ao atualizar UI pós-ação de teste:', err);
-    }
+    this.game.refreshAllUI?.();
   }
 }

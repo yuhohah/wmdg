@@ -41,8 +41,6 @@ export interface GameState {
   fervor: number;
   relics?: number;
   totalRelics?: number;
-  bossesDefeated?: number;
-  maxAscension?: number;
   gnosePoints?: number;
   totalGnoseEarned?: number;
   gnoseResets?: number;
@@ -93,47 +91,6 @@ export interface RelicUpgrade {
   level: number;
   maxLevel: number;
   effectText: (level: number, relicPoints?: number) => string;
-}
-
-// --- Pantheon / Boss Battle Types ---
-
-export interface DivineFragment {
-  id: string;
-  name: string;
-  title: string;
-  desc: string;
-  lore: string;
-  icon: string;
-  effectText: string;
-}
-
-export interface BossGodConfig {
-  id: string;
-  name: string;
-  title: string;
-  subtitle: string;
-  lore: string;
-  satelliteIndex: number;
-  unlockFaithReq: number;
-  baseHp: number;
-  hpMultiplierPerAscension: number;
-  timeLimitSec: number;
-  baseRelicReward: number;
-  relicRewardPerAscension: number;
-  fragmentId: string;
-  artThemeColor: string;
-  auraClass: string;
-}
-
-export interface BossSaveEntry {
-  id: string;
-  defeated: boolean;
-  ascensionLevel: number;
-}
-
-export interface PantheonSaveData {
-  bosses: BossSaveEntry[];
-  fragments: string[];
 }
 
 // --- Gnose (True Prestige) Types ---

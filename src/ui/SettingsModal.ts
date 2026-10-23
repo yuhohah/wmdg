@@ -17,7 +17,6 @@ export class SettingsModal {
   private closeBtn: HTMLButtonElement | null = null;
   private closeFooterBtn: HTMLButtonElement | null = null;
   private settingsBtn: HTMLButtonElement | null = null;
-  private btnNavSettings: HTMLButtonElement | null = null;
 
   // Audio Controls
   private volumeSliderEl: HTMLInputElement | null = null;
@@ -52,7 +51,6 @@ export class SettingsModal {
     this.closeBtn = document.getElementById('close-settings-btn') as HTMLButtonElement | null;
     this.closeFooterBtn = document.getElementById('close-settings-footer-btn') as HTMLButtonElement | null;
     this.settingsBtn = document.getElementById('settings-btn') as HTMLButtonElement | null;
-    this.btnNavSettings = document.getElementById('btn-mobile-nav-settings') as HTMLButtonElement | null;
 
     this.volumeSliderEl = document.getElementById('volume-slider') as HTMLInputElement | null;
     this.musicToggleEl = document.getElementById('music-toggle') as HTMLInputElement | null;
@@ -73,11 +71,6 @@ export class SettingsModal {
   private bindEvents(): void {
     // Open/Close triggers
     this.settingsBtn?.addEventListener('click', () => this.toggle());
-
-    this.btnNavSettings?.addEventListener('click', () => {
-      this.options.onTriggerHaptic?.(8);
-      this.toggle();
-    });
 
     this.closeBtn?.addEventListener('click', () => this.close());
     this.closeFooterBtn?.addEventListener('click', () => this.close());

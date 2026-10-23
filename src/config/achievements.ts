@@ -277,7 +277,6 @@ export const initialAchievements: Achievement[] = [
     })
   },
 
-
   // --- Production Rate Milestones ---
   {
     id: 'ach_fps_100',
@@ -295,62 +294,6 @@ export const initialAchievements: Achievement[] = [
       target: 100,
       percent: Math.min(100, (s.fps / 100) * 100),
       label: `${Math.floor(s.fps)} / 100 Fé/s`
-    })
-  },
-
-  // --- Teomaquia / Boss Battles Milestones ---
-  {
-    id: 'ach_boss_first',
-    name: 'Deicida Novato',
-    desc: 'Derrube seu primeiro deus rival na Guerra do Panteão.',
-    lore: 'O sangue dourado de uma divindade morta escorre pelos pilares do templo. As estrelas tremem.',
-    icon: '',
-    unlocked: false,
-    buffText: '+15% de Fé por Clique',
-    buffType: 'fpc_mult',
-    buffVal: 0.15,
-    check: (s) => (s.bossesDefeated ?? 0) >= 1,
-    getProgress: (s) => ({
-      current: Math.min(s.bossesDefeated ?? 0, 1),
-      target: 1,
-      percent: Math.min(100, ((s.bossesDefeated ?? 0) / 1) * 100),
-      label: `${s.bossesDefeated ?? 0} / 1 Deus Derrotado`
-    })
-  },
-  {
-    id: 'ach_boss_all',
-    name: 'Devorador de Deuses',
-    desc: "Derrote todos os 6 Deuses Cósmicos do Panteão da Esfera.",
-    lore: 'Os seis tronos rivais estão vazios. A Esfera agora reina incontestável sobre o firmamento e as estrelas.',
-    icon: '',
-    unlocked: false,
-    buffText: '+50% em toda a Fé',
-    buffType: 'global_mult',
-    buffVal: 0.50,
-    check: (s) => (s.bossesDefeated ?? 0) >= 6,
-    getProgress: (s) => ({
-      current: Math.min(s.bossesDefeated ?? 0, 6),
-      target: 6,
-      percent: Math.min(100, ((s.bossesDefeated ?? 0) / 6) * 100),
-      label: `${s.bossesDefeated ?? 0} / 6 Deuses Derrotados`
-    })
-  },
-  {
-    id: 'ach_boss_ascension_5',
-    name: 'Supremacia Cósmica',
-    desc: 'Alcance o Nível 5 de Ascensão contra qualquer divindade cósmica.',
-    lore: 'Não basta vencê-los uma vez; você os subjugou repetidamente em formas cada vez mais aterrorizantes.',
-    icon: '',
-    unlocked: false,
-    buffText: '+25% Fé/s dos fiéis',
-    buffType: 'fps_mult',
-    buffVal: 0.25,
-    check: (s) => (s.maxAscension ?? 0) >= 5,
-    getProgress: (s) => ({
-      current: Math.min(s.maxAscension ?? 0, 5),
-      target: 5,
-      percent: Math.min(100, ((s.maxAscension ?? 0) / 5) * 100),
-      label: `${s.maxAscension ?? 0} / Nível 5 de Ascensão`
     })
   },
 

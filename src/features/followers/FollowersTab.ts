@@ -1,6 +1,5 @@
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
-import { TooltipManager } from '../../ui/tooltips.js';
 import { FollowersArena } from '../../ui/followersArena.js';
 import {
   formatNumber,
@@ -8,12 +7,10 @@ import {
   calculateMaxAffordableFollowers
 } from '../../systems/calculations.js';
 import { getFervorUpgradeMultiplier } from '../../config/fervor.js';
-import { events, GameEvents } from '../../core/EventBus.js';
 
 export interface FollowersTabOptions {
   gameState: GameStateManager;
   audio: AudioManager;
-  tooltips: TooltipManager;
   triggerHaptic: (pattern: number | number[]) => void;
   spawnFloatingText: (x: number, y: number, text: string) => void;
   onFollowersChanged?: () => void;
@@ -22,7 +19,7 @@ export interface FollowersTabOptions {
 
 export class FollowersTab {
   private options: FollowersTabOptions;
-  private arena: FollowersArena | null = null;
+  public arena: FollowersArena | null = null;
 
   private totalCountEl: HTMLElement | null = null;
   private rateBadgeEl: HTMLElement | null = null;
@@ -229,11 +226,7 @@ export class FollowersTab {
     this.arena?.syncFollowerCount(count);
   }
 
-  public onFollowersAdded(count: number): void {
-    this.arena?.onFollowersAdded(count);
-  }
-
   public triggerMiraclePlea(): void {
-    events.emit(GameEvents.MIRACLE_PLEA);
+    this.arena?.triggerMiraclePlea();
   }
 }

@@ -105,23 +105,3 @@ export function getFervorUpgradeMultiplier(
       return 1.0;
   }
 }
-
-export function getFervorUpgradeFormula(upg: FervorUpgrade, fu1Boosted: boolean = false): string {
-  switch (upg.id) {
-    case 'fu_prod':
-      return fu1Boosted ? '3.5^(Nível^0.7)' : '2^(Nível^0.6)';
-    case 'fu_effect':
-      return '1.25^(Nível^0.8)';
-    case 'fu_click':
-      return '(Nível^2.6 × 4) + 1';
-    case 'fu_followers':
-      return '((Nível^1.5 × Fiéis) / 50) + 1';
-    case 'fu_synergy':
-      return '((Nível^1.5 × log10(Fé + 1)) / 5) + 1';
-    case 'fu_relics':
-      return '3^(Nível^0.6)';
-    default:
-      return '1.0';
-  }
-}
-

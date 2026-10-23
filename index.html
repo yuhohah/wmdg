@@ -18,7 +18,7 @@
 
 <body>
   <div id="app">
-    <!-- Background Pixel Art Landscape & Overlay -->
+    <!-- Background Landscape & Overlay -->
     <div class="bg-landscape-layer"></div>
     <div class="bg-overlay-gradient"></div>
 
@@ -111,16 +111,14 @@
         </div>
       </header>
 
-      <!-- START SCREEN CONTENT (Slide Overview Theme) -->
+      <!-- START SCREEN CONTENT -->
       <main id="start-screen" class="main-content screen active">
         <div class="slide-card">
           <div class="slide-card-header">
             <h1 class="slide-title">CULT OF THE SPHERE</h1>
           </div>
 
-          <div class="start-sphere-emblem">
-            <img src="/assets/sphere_base.png" alt="A Entidade Divina" class="start-sphere-img" onerror="this.style.display='none'">
-          </div>
+          <div class="start-sphere-emblem"></div>
 
           <div class="play-btn-container">
             <button id="play-btn" class="btn-slide-play">
@@ -133,45 +131,8 @@
         </div>
       </main>
 
-      <!-- GAMEPLAY SCREEN: 50/50 ERGONOMIC SPLIT LAYOUT -->
-            <!-- GAMEPLAY SCREEN: DODECADRAGONS PANNABLE & ZOOMABLE CARD BOARD -->
+      <!-- GAMEPLAY SCREEN: DODECADRAGONS PANNABLE & ZOOMABLE CARD BOARD -->
       <main id="gameplay-screen" class="main-content screen">
-
-        <!-- Hidden legacy / art-review elements for 100% backward & test compatibility -->
-        <div id="legacy-hidden-compat" style="display: none;" aria-hidden="true">
-                                <button type="button" class="church-blessing" id="church-blessing" aria-label="Invocar a Bênção: +2 segundos de Fé em dobro" hidden><span class="church-blessing-fill"></span><span class="church-blessing-label" id="church-blessing-label">✦ 2× · 0s</span></button>
-          <div id="church-world">
-            <div class="church-backdrop"></div>
-            <div id="church-stage">
-              <img id="church-background" alt="">
-              <canvas id="church-crowd"></canvas>
-              <div id="church-followers"></div>
-              <div id="church-sphere"><canvas width="64" height="64"></canvas></div>
-              <div id="church-protagonist"><div class="protagonist-viewport"><img id="church-protagonist-strip" src="/assets/church/protagonist/look-0-idle.png" alt="" onerror="this.style.display='none'"></div></div>
-            </div>
-            <div class="world-veil"></div>
-            <div class="ritual-sigil">◉</div>
-          </div>
-          <section class="procession-world" id="procession-world" hidden></section>
-          <div class="art-review-controls" id="art-review-controls" hidden></div>
-          <div id="panel-left" class="side-panel side-panel-left"></div>
-          <aside id="panel-right" class="side-panel side-panel-right">
-            <button class="panel-tab-btn" id="tab-btn-followers" data-panel="right" data-tab="tab-followers"></button>
-            <button class="panel-tab-btn" id="tab-btn-incarnation" data-panel="right" data-tab="tab-incarnation"></button>
-            <button class="panel-tab-btn" id="tab-btn-fervor" data-panel="right" data-tab="tab-fervor"></button>
-            <button class="panel-tab-btn" id="tab-btn-unlocks" data-panel="right" data-tab="tab-unlocks"></button>
-            <div id="tab-unlocks" style="display: none;"></div>
-            <button class="panel-tab-btn" id="tab-btn-relics" data-panel="right" data-tab="tab-relics"></button>
-            <button class="panel-tab-btn" id="tab-btn-gnose" data-panel="right" data-tab="tab-gnose"></button>
-            <button class="panel-tab-btn" id="tab-btn-pantheon" data-panel="right" data-tab="tab-pantheon"></button>
-            <button class="panel-tab-btn" id="tab-btn-achievements" data-panel="right" data-tab="tab-achievements"></button>
-          </aside>
-          <button id="toggle-left-btn"></button>
-          <button id="toggle-right-btn"></button>
-          <button id="expand-left-btn"></button>
-          <button id="expand-right-btn"></button>
-          <div class="gameplay-split-container gameplay-3frame-container"></div>
-        </div>
 
         <!-- DODECADRAGONS 2D CANVAS VIEWPORT -->
         <div id="dodeca-board-viewport" class="dodeca-board-viewport">
@@ -188,7 +149,7 @@
               <line id="ray-incarnation" x1="1720" y1="845" x2="490" y2="680" style="display: none;"></line>
               <!-- Center Oculus (1720, 845) to Alchemical Crypt Relics (500, 1490) -->
               <line id="ray-relics" x1="1720" y1="845" x2="500" y2="1490" style="display: none;"></line>
-              <!-- Center Oculus (1720, 845) to Scriptorium Unlocks (1110, 1150) -->
+              <!-- Center Oculus (1720, 845) to Scriptorium Unlocks (1700, 1110) -->
               <line id="ray-unlocks" x1="1700" y1="850" x2="1700" y2="1110"></line>
               <!-- Center Oculus (1720, 845) to Cathedral Nave Followers (2260, 1260) -->
               <line id="ray-followers" x1="1720" y1="845" x2="2260" y2="1260"></line>
@@ -218,35 +179,8 @@
                         <div class="sphere-orbit-ring ring-2"></div>
                         <div class="sphere-aura"></div>
 
-                        <!-- 6 Round Satellite Figures Orbiting the Sphere -->
-                        <div class="sphere-satellites-orbit" id="sphere-satellites-orbit">
-                          <div class="sphere-satellite-node state-locked" data-node-index="0" style="--node-angle: 0deg;">
-                            <div class="satellite-node-inner"><div class="satellite-sprite-view frame-0"></div><span class="satellite-roman">I</span><div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
-                          </div>
-                          <div class="sphere-satellite-node state-locked" data-node-index="1" style="--node-angle: 60deg;">
-                            <div class="satellite-node-inner"><div class="satellite-sprite-view frame-1"></div><span class="satellite-roman">II</span><div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
-                          </div>
-                          <div class="sphere-satellite-node state-locked" data-node-index="2" style="--node-angle: 120deg;">
-                            <div class="satellite-node-inner"><div class="satellite-sprite-view frame-2"></div><span class="satellite-roman">III</span><div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
-                          </div>
-                          <div class="sphere-satellite-node state-locked" data-node-index="3" style="--node-angle: 180deg;">
-                            <div class="satellite-node-inner"><div class="satellite-sprite-view frame-3"></div><span class="satellite-roman">IV</span><div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
-                          </div>
-                          <div class="sphere-satellite-node state-locked" data-node-index="4" style="--node-angle: 240deg;">
-                            <div class="satellite-node-inner"><div class="satellite-sprite-view frame-4"></div><span class="satellite-roman">V</span><div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
-                          </div>
-                          <div class="sphere-satellite-node state-locked" data-node-index="5" style="--node-angle: 300deg;">
-                            <div class="satellite-node-inner"><div class="satellite-sprite-view frame-5"></div><span class="satellite-roman">VI</span><div class="satellite-lock-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div></div>
-                          </div>
-                        </div>
-
-                        <div id="divine-sphere-btn" class="divine-sphere-btn" role="button" aria-label="Tocar a Esfera">
-                          <canvas class="sphere-pixel-art" width="64" height="64" aria-hidden="true"></canvas>
-                        </div>
-
-<!-- Boss battle retired -->
+                        <div id="divine-sphere-btn" class="divine-sphere-btn" role="button" aria-label="Tocar a Esfera"></div>
                       </div>
-
                     </div>
                   </div>
                   <div class="sacred-window-footer"><span>CANALIZAR FÉ</span><p>Clique na Esfera</p></div>
@@ -350,7 +284,7 @@
                 <div class="card-lock-seal">
                   <svg class="card-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                   <span class="card-lock-title">SELO DO FERVOR</span>
-                  <span class="card-lock-desc">Rompa o Selo do Fervor no card de Selos Antigos para ascender a chama.</span>
+                  <span class="card-lock-desc">Rompa o Selo do Fervor para ascender a chama.</span>
                 </div>
               </div>
             </div>
@@ -367,7 +301,6 @@
               <div class="dodeca-card-body">
                 <div id="tab-incarnation" class="tab-pane active" style="display: block;">
                   <div class="incarnation-tab-header">
-
                     <div class="incarnation-stat-group">
                       <span class="incarnation-stat-label">ENCARNAÇÃO SAGRADA</span>
                       <div class="incarnation-stat-row">
@@ -380,11 +313,9 @@
                     </div>
                   </div>
 
-                  <!-- Upgrade Action Card -->
                   <!-- Altar da Encarnação da Esfera (Evolving Avatar Altar) -->
                   <div class="incarnation-altar-container" id="incarnation-altar-container">
                     <div class="incarnation-altar-viewport">
-                      <img id="incarnation-avatar-art" class="incarnation-avatar-art" src="/assets/incarnation/stage_1.jpg" alt="Encarnação da Esfera" onerror="this.style.display='none'" />
                       <canvas id="incarnation-altar-canvas" class="incarnation-altar-canvas" width="400" height="240"></canvas>
                       <div class="incarnation-altar-aura"></div>
                     </div>
@@ -443,13 +374,12 @@
               <div class="dodeca-card-body">
                 <div id="tab-relics" class="tab-pane active" style="display: block;">
                   <div class="relic-monument-banner">
-                    <img src="/assets/monument_relic.jpg" alt="Monumento Alquímico" class="relic-monument-img" onerror="this.style.display='none'">
                     <div class="relic-monument-caption">
                       <span class="relic-monument-title">OPUS MAGNUM</span>
                       <span class="relic-monument-desc">As Above, So Below — Transmutações Alquímicas</span>
                     </div>
                   </div>
-                  <!-- Conversion Section (Based on DodecaDragons Alchemy) -->
+                  <!-- Conversion Section -->
                   <div class="relics-convert-section">
                     <button id="btn-convert-relics" class="btn-convert-relics" disabled>
                       Transmutar toda a Fé → +<span id="relics-to-get">0</span> Fragmentos
@@ -479,8 +409,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- Card Pantheon retired in favor of Gnose -->
 
             <!-- CARD 9: CÂMARA DA GNOSE (TRUE PRESTIGE LAYER) -->
             <div id="card-gnose" class="dodeca-card card-locked" style="display: none;">
@@ -567,7 +495,6 @@
             <button class="quicknav-btn" data-target="card-incarnation" id="quicknav-incarnation" style="display: none;"><span>👤</span> <span>Encarnação</span></button>
             <button class="quicknav-btn" data-target="card-relics" id="quicknav-relics" style="display: none;"><span>⚗️</span> <span>Relíquias</span></button>
             <button class="quicknav-btn" data-target="card-gnose" id="quicknav-gnose" style="display: none;"><span>👁️</span> <span>Gnose</span></button>
-            <!-- quicknav pantheon retired -->
           </nav>
 
           <!-- FLOATING ZOOM CONTROLS (BOTTOM RIGHT) -->
@@ -587,53 +514,6 @@
         </div>
       </main>
 
-      <!-- Mobile Bottom Navigation Bar (Visible on screens <= 860px) -->
-      <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Navegação Principal Mobile">
-        <button class="mobile-nav-btn active" id="btn-mobile-nav-devotees" data-view="sphere" aria-label="Culto e Esfera">
-          <svg class="mobile-nav-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="9"></circle>
-            <circle cx="12" cy="12" r="4"></circle>
-          </svg>
-          <span class="mobile-nav-label">Esfera</span>
-          <span class="mobile-nav-badge" id="badge-nav-devotees" style="display: none;"></span>
-        </button>
-
-        <button class="mobile-nav-btn" id="btn-mobile-nav-unlocks" data-view="right" aria-label="Melhorias e Mistérios">
-          <svg class="mobile-nav-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
-          <span class="mobile-nav-label">Melhorias</span>
-          <span class="mobile-nav-badge" id="badge-nav-unlocks" style="display: none;"></span>
-        </button>
-
-        <button class="mobile-nav-btn" id="btn-mobile-nav-settings" data-view="settings" aria-label="Configurações">
-          <svg class="mobile-nav-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-          <span class="mobile-nav-label">Opções</span>
-        </button>
-      </nav>
-
-    </div>
-
-    <!-- Dynamic Hover Inspection Tooltip Container -->
-    <div id="cult-tooltip" class="cult-tooltip" style="display: none;"></div>
-
-    <!-- Mobile Inspection Bottom Sheet -->
-    <div id="mobile-sheet-backdrop" class="mobile-sheet-backdrop"></div>
-    <div id="mobile-inspect-sheet" class="mobile-inspect-sheet" role="dialog" aria-modal="true" aria-label="Detalhes do Item">
-      <div class="mobile-sheet-drag-handle"></div>
-      <div class="mobile-sheet-header">
-        <h4 id="mobile-sheet-title" class="mobile-sheet-title">Detalhes</h4>
-        <button id="close-mobile-sheet-btn" class="close-mobile-sheet-btn" aria-label="Fechar Detalhes">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-      <div id="mobile-sheet-content" class="mobile-sheet-content custom-scrollbar"></div>
     </div>
 
     <!-- Achievement Notifications Container -->

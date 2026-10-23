@@ -19,15 +19,6 @@ export interface Walker {
   miracleTimer?: number;
 }
 
-interface FollowerSpriteSet {
-  walk: HTMLImageElement;
-  pray: HTMLImageElement;
-  idle: HTMLImageElement;
-  walkLoaded: boolean;
-  prayLoaded: boolean;
-  idleLoaded: boolean;
-}
-
 export class FollowersArena {
   public canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -42,13 +33,11 @@ export class FollowersArena {
   private miracleSpawnCooldown: number = 300; // ~5s after start
   private isPaused: boolean = false;
   private speedMultiplier: number = 1.0;
-  public sprites: FollowerSpriteSet[] = [];
 
   constructor(canvasId: string = 'followers-walk-canvas') {
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     this.ctx = this.canvas.getContext('2d', { alpha: true })!;
     this.initCanvas();
-    this.loadSprites();
     this.setupEvents();
     this.startLoop();
   }
@@ -59,40 +48,6 @@ export class FollowersArena {
 
   public getSpeedMultiplier(): number {
     return this.speedMultiplier;
-  }
-
-  private loadSprites(): void {
-    for (let i = 0; i <= 8; i++) {
-      const walk = new Image();
-      walk.src = `/assets/procession/walk/follower-${i}-walk.png`;
-
-      const pray = new Image();
-      pray.src = `/assets/church/followers/follower-${i}-pray.png`;
-
-      const idle = new Image();
-      idle.src = `/assets/church/followers/follower-${i}-idle.png`;
-
-      const spriteSet: FollowerSpriteSet = {
-        walk,
-        pray,
-        idle,
-        walkLoaded: false,
-        prayLoaded: false,
-        idleLoaded: false
-      };
-
-      walk.onload = () => {
-        spriteSet.walkLoaded = true;
-      };
-      pray.onload = () => {
-        spriteSet.prayLoaded = true;
-      };
-      idle.onload = () => {
-        spriteSet.idleLoaded = true;
-      };
-
-      this.sprites.push(spriteSet);
-    }
   }
 
   public setOnClickCallback(cb: (x: number, y: number) => void): void {
@@ -415,7 +370,6 @@ export class FollowersArena {
 
   private draw(): void {
     const ctx = this.ctx;
-    // Pure transparent clear
     ctx.clearRect(0, 0, this.width, this.height);
 
     // Sort walkers by Y position for proper isometric depth rendering
@@ -437,40 +391,10 @@ export class FollowersArena {
     ctx.ellipse(x, y - 2, 11, 3.5, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // 2. Determine frame & sprite
-    const spriteSet = this.sprites[w.variant % this.sprites.length];
-    let img: HTMLImageElement | null = null;
-    let isLoaded = false;
-    let frame = 0;
+    // 2. Procedural devotee rendering with walking and prayer cycles
+    this.renderProceduralCultist(w, x, y);
 
-    if (w.state === 'walk') {
-      img = spriteSet?.walk || null;
-      isLoaded = spriteSet?.walkLoaded || false;
-      frame = Math.floor(w.walkCycle) % 9;
-    } else if (w.state === 'pray') {
-      img = spriteSet?.pray || null;
-      isLoaded = spriteSet?.prayLoaded || false;
-      frame = Math.floor(w.prayCycle) % 9;
-    } else {
-      img = spriteSet?.idle || null;
-      isLoaded = spriteSet?.idleLoaded || false;
-      frame = Math.floor(w.idleCycle) % 9;
-    }
-
-    // 3. Draw devotee sprite (64x72 per frame, feet at y=68)
-    if (img && isLoaded) {
-      ctx.save();
-      ctx.imageSmoothingEnabled = false;
-      ctx.translate(x, y);
-      ctx.scale(w.facing, 1);
-      ctx.drawImage(img, frame * 64, 0, 64, 72, -32, -68, 64, 72);
-      ctx.restore();
-    } else {
-      // High-quality procedural devotee rendering with walking and prayer cycles
-      this.renderProceduralCultist(w, x, y);
-    }
-
-    // 4. Draw prayer particles in absolute arena coordinates
+    // 3. Draw prayer particles in absolute arena coordinates
     if (w.prayParticles.length > 0) {
       for (const p of w.prayParticles) {
         ctx.fillStyle = `rgba(251, 191, 36, ${p.alpha * 0.9})`;
@@ -485,7 +409,7 @@ export class FollowersArena {
       }
     }
 
-    // 5. Draw miracle plea speech bubble if requesting miracle
+    // 4. Draw miracle plea speech bubble if requesting miracle
     if (w.isMiraclePlea) {
       this.drawMiracleSpeechBubble(w, x, y);
     }

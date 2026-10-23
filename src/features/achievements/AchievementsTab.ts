@@ -2,7 +2,6 @@ import type { Achievement } from '../../types.js';
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { NotificationManager } from '../../systems/notifications.js';
-import { TooltipManager } from '../../ui/tooltips.js';
 import { DISPLAY_CONFIG } from '../../config/display.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 
@@ -10,7 +9,6 @@ export interface AchievementsTabOptions {
   gameState: GameStateManager;
   audio: AudioManager;
   notifications: NotificationManager;
-  tooltips: TooltipManager;
   onAchievementUnlocked?: (ach: Achievement) => void;
 }
 
@@ -18,7 +16,6 @@ export class AchievementsTab {
   private gameState: GameStateManager;
   private audio: AudioManager;
   private notifications: NotificationManager;
-  private tooltips: TooltipManager;
   private onAchievementUnlocked?: (ach: Achievement) => void;
 
   private achievementsListEl: HTMLElement | null = null;
@@ -32,7 +29,6 @@ export class AchievementsTab {
     this.gameState = options.gameState;
     this.audio = options.audio;
     this.notifications = options.notifications;
-    this.tooltips = options.tooltips;
     this.onAchievementUnlocked = options.onAchievementUnlocked;
 
     this.initElements();
@@ -74,7 +70,6 @@ export class AchievementsTab {
   }
 
   public closeModal(): void {
-    this.tooltips.hide();
     this.modalEl?.classList.remove('open');
   }
 
@@ -91,8 +86,6 @@ export class AchievementsTab {
     const totalCount = this.gameState.achievements.length;
     if (this.progressEl) {
       this.progressEl.textContent = `${unlockedCount} / ${totalCount} conquistas desbloqueadas`;
-    }
-    if (this.hudBtnEl) {
     }
   }
 
@@ -133,8 +126,6 @@ export class AchievementsTab {
           </div>
         ` : ''}
       `;
-
-
 
       this.achievementsListEl!.appendChild(card);
     });
@@ -182,7 +173,6 @@ export class AchievementsTab {
     }
 
     this.updateHeaderCount();
-    this.tooltips.updateRealtimeProgress(state);
   }
 
   public checkAchievements(): Achievement[] {

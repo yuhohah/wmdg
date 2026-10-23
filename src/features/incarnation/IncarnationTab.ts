@@ -20,7 +20,6 @@ export class IncarnationTab {
   public altar: IncarnationAltar | null = null;
 
   // DOM Elements
-  private tabBtnIncarnationEl: HTMLElement | null = null;
   private stageBadgeEl: HTMLElement | null = null;
   private titleEl: HTMLElement | null = null;
   private descSubEl: HTMLElement | null = null;
@@ -53,7 +52,6 @@ export class IncarnationTab {
       this.altar.setStage(this.options.gameState.incarnationStage, true);
     }
 
-    this.tabBtnIncarnationEl = document.getElementById('tab-btn-incarnation');
     this.stageBadgeEl = document.getElementById('incarnation-stage-badge');
     this.titleEl = document.getElementById('incarnation-title');
     this.descSubEl = document.getElementById('incarnation-desc-sub');
@@ -198,11 +196,5 @@ export class IncarnationTab {
     }
     this.updateUpgradeButtonState();
     this.updateBlessingBar();
-  }
-
-  public setTabVisibility(unlocked: boolean): void {
-    if (this.tabBtnIncarnationEl) {
-      this.tabBtnIncarnationEl.style.display = unlocked ? 'flex' : 'none';
-    }
   }
 }

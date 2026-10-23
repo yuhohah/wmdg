@@ -42,7 +42,7 @@ describe('Gnose (True Prestige) System', () => {
     expect(calculateGnoseToGet(1e25, 2.5)).toBe(Math.floor(Math.pow(1e10, 0.15) * 2.5));
   });
 
-  it('performs hard DodecaDragons reset by default, re-locking earlier Selos while keeping Pantheon & Achievements', () => {
+  it('performs hard DodecaDragons reset by default, re-locking earlier Selos while keeping Achievements', () => {
     // Unlock everything and build progress
     gameState.unlocks.forEach((u) => {
       u.unlocked = true;
@@ -56,7 +56,6 @@ describe('Gnose (True Prestige) System', () => {
     gameState.bestRelicsToGet = 250;
     gameState.relicUpgrades[0].level = 12;
     gameState.achievements[0].unlocked = true;
-    gameState.recordBossDefeat('boss_morvath');
 
     const result = gameState.performGnoseReset();
     expect(result.success).toBe(true);
@@ -83,7 +82,6 @@ describe('Gnose (True Prestige) System', () => {
     // Persistent systems remain unlocked
     expect(gameState.isGnoseUnlocked()).toBe(true);
     expect(gameState.achievements[0].unlocked).toBe(true);
-    expect(gameState.hasFragment('fragment_morvath')).toBe(true);
   });
 
   it('scales passive multiplier with Total Gnose Earned so spending Gnose never reduces production', () => {
@@ -186,6 +184,5 @@ describe('Gnose (True Prestige) System', () => {
     expect(restored.hasGnoseUpgrade('gn_memoria_selos')).toBe(true);
     expect(restored.confirmGnoseReset).toBe(false);
     expect(restored.autoFollowersEnabled).toBe(false);
-    expect(restored.isGnoseUnlocked()).toBe(true);
   });
 });

@@ -2,9 +2,7 @@ import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { NotificationManager } from '../../systems/notifications.js';
 import { formatNumber } from '../../systems/calculations.js';
-import { BLESSING_SECONDS_PER_PRESS } from '../../config/incarnation.js';
 import { events, GameEvents } from '../../core/EventBus.js';
-import { paintPixelSphere } from '../../ui/pixelSphere.js';
 
 export interface SphereControllerOptions {
   gameState: GameStateManager;
@@ -20,7 +18,6 @@ export class SphereController {
   private triggerHaptic: (pattern: number | number[]) => void;
 
   private divineSphereBtn: HTMLElement | null = null;
-  private satelliteNodes: NodeListOf<HTMLElement> | null = null;
 
   constructor(options: SphereControllerOptions) {
     this.gameState = options.gameState;
@@ -30,35 +27,15 @@ export class SphereController {
 
     this.initElements();
     this.bindEvents();
-    this.renderSatellites();
   }
 
   private initElements(): void {
     this.divineSphereBtn = document.getElementById('divine-sphere-btn');
-    const sphereArt = this.divineSphereBtn?.querySelector<HTMLCanvasElement>('canvas');
-    if (sphereArt) paintPixelSphere(sphereArt);
-    this.satelliteNodes = document.querySelectorAll<HTMLElement>('.sphere-satellite-node');
   }
 
   private bindEvents(): void {
     this.divineSphereBtn?.addEventListener('click', (e: MouseEvent) => {
       this.onSphereClicked(e);
-    });
-
-    this.satelliteNodes?.forEach((node) => {
-      const idxStr = node.getAttribute('data-node-index');
-      const idx = idxStr ? parseInt(idxStr, 10) : 0;
-      node.addEventListener('click', (e: MouseEvent) => {
-        e.stopPropagation();
-        if (this.isSatelliteUnlocked(idx)) {
-          this.onSatelliteClicked(idx, e);
-        } else {
-          this.audio.playTone(220, 'sine', 0.08);
-          const clientX = e.clientX || window.innerWidth / 2;
-          const clientY = e.clientY || window.innerHeight / 2;
-          this.spawnFloatingText(clientX, clientY, 'ADORMECIDO');
-        }
-      });
     });
   }
 
@@ -85,21 +62,6 @@ export class SphereController {
     }
     const label = isCrit ? `✦ CRÍTICO! +${formatNumber(fpc)} FÉ` : `+${formatNumber(fpc)} FÉ`;
     this.spawnFloatingText(x, y, label);
-  }
-
-  public onSatelliteClicked(idx: number, e: MouseEvent): void {
-    this.triggerHaptic(12);
-    this.onSphereClicked(e);
-    this.audio.playTone(740 + idx * 45, 'triangle', 0.12);
-  }
-
-  public invokeBlessing(clientX: number, clientY: number): void {
-    this.audio.init();
-    this.triggerHaptic(12);
-    this.audio.playTone(660, 'sine', 0.12);
-    this.gameState.addIncarnationBoost(BLESSING_SECONDS_PER_PRESS);
-    this.spawnFloatingText(clientX, clientY, `+${BLESSING_SECONDS_PER_PRESS}s BÊNÇÃO 2X!`);
-    events.emit(GameEvents.STATE_CHANGED);
   }
 
   public grantMiracle(clientX: number, clientY: number): number {
@@ -140,45 +102,6 @@ export class SphereController {
     return finalReward;
   }
 
-  public unlockSatellite(index: number): void {
-    if (index >= 0 && index < 6) {
-      this.gameState.sphereSatellitesUnlocked[index] = true;
-      this.renderSatellites();
-      this.audio.playTone(880, 'sine', 0.25);
-      events.emit(GameEvents.STATE_CHANGED);
-    }
-  }
-
-  public lockSatellite(index: number): void {
-    if (index >= 0 && index < 6) {
-      this.gameState.sphereSatellitesUnlocked[index] = false;
-      this.renderSatellites();
-      events.emit(GameEvents.STATE_CHANGED);
-    }
-  }
-
-  public isSatelliteUnlocked(index: number): boolean {
-    return !!this.gameState.sphereSatellitesUnlocked[index];
-  }
-
-  public renderSatellites(): void {
-    if (!this.satelliteNodes) {
-      this.satelliteNodes = document.querySelectorAll<HTMLElement>('.sphere-satellite-node');
-    }
-    this.satelliteNodes?.forEach((node) => {
-      const idxStr = node.getAttribute('data-node-index');
-      const idx = idxStr ? parseInt(idxStr, 10) : 0;
-      const isUnlocked = !!this.gameState.sphereSatellitesUnlocked[idx];
-      if (isUnlocked) {
-        node.classList.remove('state-locked');
-        node.classList.add('state-unlocked');
-      } else {
-        node.classList.remove('state-unlocked');
-        node.classList.add('state-locked');
-      }
-    });
-  }
-
   public spawnFloatingText(x: number, y: number, text: string): void {
     const floatEl = document.createElement('div');
     floatEl.className = 'floating-faith-num';
@@ -191,5 +114,4 @@ export class SphereController {
       floatEl.remove();
     }, 850);
   }
-
 }
