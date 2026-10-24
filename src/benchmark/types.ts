@@ -30,6 +30,8 @@ export interface ArchetypeBenchmarkResult {
   relicResets: number;
   gnoseResets: number;
   miraclesCaught: number;
+  bossesDefeated: number;
+  gnoseUpgradesBought: number;
   deadZones: DeadZone[];
   maxWaitSec: number;
   formattedMaxWait: string;

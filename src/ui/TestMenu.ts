@@ -1,6 +1,7 @@
 import { INCARNATION_STAGES } from '../config/incarnation.js';
 import { ProgressionSimulator } from '../benchmark/ProgressionSimulator.js';
 import { formatHtmlReport } from '../benchmark/reporters.js';
+import { SaveSystem } from '../systems/saveSystem.js';
 
 export class TestMenu {
   private game: any;
@@ -322,6 +323,8 @@ export class TestMenu {
         break;
       case 'reset-progress':
         if (confirm('Deseja realmente resetar todos os dados de progresso e save?')) {
+          this.game.isResetting = true;
+          SaveSystem.resetSave();
           localStorage.clear();
           window.location.reload();
         }

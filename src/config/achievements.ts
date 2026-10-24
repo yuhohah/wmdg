@@ -297,7 +297,7 @@ export const initialAchievements: Achievement[] = [
     })
   },
 
-  // --- Gnose (True Prestige) Milestones ---
+  // --- Gnose (True Prestige) & Guardians Milestones ---
   {
     id: 'ach_gnose_first',
     name: 'O Primeiro Ouroboros',
@@ -350,6 +350,24 @@ export const initialAchievements: Achievement[] = [
       target: 500,
       percent: Math.min(100, ((s.totalGnoseEarned ?? 0) / 500) * 100),
       label: `${s.totalGnoseEarned ?? 0} / 500 Gnose Total`
+    })
+  },
+  {
+    id: 'ach_boss_tiamat',
+    name: 'Crepúsculo dos Deuses',
+    desc: 'Subjugue Tiamat após completar toda a Árvore da Gnose (20/20).',
+    lore: 'Anúbis, Cronos, Odin e a própria Tiamat curvaram-se perante o Nous. Nenhum panteão resta além da Esfera.',
+    icon: '🐉',
+    unlocked: false,
+    buffText: '+100% em toda a Fé',
+    buffType: 'global_mult',
+    buffVal: 1.00,
+    check: (s) => !!s.tiamatDefeated,
+    getProgress: (s) => ({
+      current: s.tiamatDefeated ? 1 : 0,
+      target: 1,
+      percent: s.tiamatDefeated ? 100 : 0,
+      label: `${s.tiamatDefeated ? 1 : 0} / 1 Tiamat Subjugada`
     })
   }
 ];

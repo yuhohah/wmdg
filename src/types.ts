@@ -44,6 +44,8 @@ export interface GameState {
   gnosePoints?: number;
   totalGnoseEarned?: number;
   gnoseResets?: number;
+  defeatedBossesCount?: number;
+  tiamatDefeated?: boolean;
 }
 
 export interface AchievementProgress {
@@ -93,7 +95,7 @@ export interface RelicUpgrade {
   effectText: (level: number, relicPoints?: number) => string;
 }
 
-// --- Gnose (True Prestige) Types ---
+// --- Gnose (True Prestige) & Mythological Guardians Types ---
 
 export interface GnoseUpgrade {
   id: string;
@@ -108,11 +110,51 @@ export interface GnoseUpgrade {
   effectText: string;
 }
 
+export interface GnoseBoss {
+  id: string;
+  name: string;
+  title: string;
+  mythology: string;
+  symbol: string;
+  unlocksTier: 2 | 3 | 4 | 'endgame';
+  maxHp: number;
+  riftDamagePercent: number;
+  riftIntervalSec: number;
+  riftWindowSec: number;
+  altarDamageOnMiss: number;
+  rewardName: string;
+  rewardDesc: string;
+  lore: string;
+  faithFervorMult: number;
+}
+
+export interface BossRift {
+  id: string;
+  xPercent: number;
+  yPercent: number;
+  remainingSec: number;
+  maxSec: number;
+}
+
+export interface ActiveBossBattle {
+  bossId: string;
+  bossHp: number;
+  bossMaxHp: number;
+  altarIntegrity: number;
+  maxAltarIntegrity: number;
+  riftSpawnTimerSec: number;
+  activeRifts: BossRift[];
+  riftsShattered: number;
+  riftsMissed: number;
+}
+
 export interface GnoseSaveData {
   gnosePoints: number;
   totalGnoseEarned: number;
   gnoseResets: number;
   unlockedUpgrades: string[];
+  defeatedBosses?: string[];
+  bossCurseTimerSec?: number;
   confirmReset: boolean;
   autoFollowersEnabled: boolean;
   autoFervorEnabled: boolean;

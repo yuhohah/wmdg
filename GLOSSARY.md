@@ -1,31 +1,32 @@
 # Glossary
 
-**O Escolhido**
-The protagonist before the Selo da Encarnação is unlocked: a white-robed, brown-haired youth with praying hands, standing in front of the church. Protagonist look 0.
+**A Esfera**
+The central deity and playable entity in *Cult of the Sphere*: a Hermetic sphere whose center is everywhere and whose circumference is nowhere. Clicking the Esfera inside the central Relicário (`Altar da Esfera`) channels **Fé** directly from mortal minds.
 
-**O Profeta**
-The protagonist from Encarnação stage I onward (that is, once the Selo da Encarnação is unlocked). Each Encarnação stage (1–5) gives O Profeta its own look: robes and hood build up step by step, stage IV (Eclipse) is the hooded red prophet and stage V (Solar) is its radiant version.
+**Fiel Devoto**
+The cult's base generator of passive **Fé** (`+1 Fé/s` base before multipliers). Up to 35 active devotees are visibly rendered walking and praying in the `Pátio dos Fiéis` (`FollowersArena`). Recruiting 25 devotees (or unlocking `Memória Hermética` in the Gnose tree) unlocks the **Converter Máximo** button.
 
-**Church tier**
-How restored the church is on the main screen, from 0 to 3: 0 is the ruin, 1 follows the Selo da Encarnação (rubble cleared, makeshift altar, the Esfera moves to the altar), 2 the Selo do Fervor (roof, walls and candles) and 3 the Selo das Relíquias (full restoration). Selos count in order, so a later Selo cannot skip an earlier one. Derived from game state; never saved.
+**Pedido de Milagre (Miracle Plea)**
+Periodically (~35–65 s when at least one devotee is in the courtyard), a devotee in the `Pátio dos Fiéis` enters a prayer state with a glowing golden speech bubble for 15 s. Clicking the bubble grants a miracle worth $\max(30, 15 \times \text{Fé por Clique}, \lfloor 30 \times \text{Fé/s} + 10\% \text{Fé Atual} \rfloor)$.
 
-**Detail**
-A small prop that appears at the church between Church tiers as the follower count grows: torches, pews, a garden, a cult banner and a statue of the Esfera. Each unlocks at its own follower threshold and stays once unlocked; unlocking one plays a short transition and a notification. Derived from game state; never saved.
+**Selos Sagrados**
+The four sequential mechanic unlocks purchased with **Fé** via the central `Desbloqueio` portal:
+1. **Selo da Encarnação** (`200 Fé`): Ignites **Fervor** (`+1/s` base) and opens the `Encarnação Sagrada` card.
+2. **Selo do Fervor** (`5.000 Fé`): Opens the `Fervor Sagrado` card with the **Ritos de Fervor**.
+3. **Selo das Relíquias** (`20M Fé`): Opens the `Opus Magnum` (`Relíquias`) card and starts passive **Fragmentos** generation.
+4. **Selo da Gnose** (`1Q` / `1e15 Fé`): Opens the `Câmara da Gnose` (`True Prestige`) card.
 
-**Bênção**
-The button hanging under the clickable Esfera in the Relicário, shown once the Selo da Encarnação is broken. Each press (click, Enter or Space) adds 2 s of doubled Fé, up to 60 s stored; the stored time drains in real time and the button fills to show how much is left.
+**Encarnação Sagrada (Avatar)**
+The divine manifestation on the `Altar da Encarnação` (`IncarnationAltar`), evolving across 5 stages (`Avatar Neófito`, `Avatar Consagrado`, `Avatar Ancestral`, `Avatar do Eclipse`, `Avatar Solar`). Advancing stages multiplies **Fervor/s** (`1× → 100× → 10.000× → 10⁸× → 10¹⁵×`) and scales the follower multiplier (`1 + log10(1 + Fervor / 150) × 1.5 × Estágio`).
 
-**Church yard**
-The ground in front of the church door where converted followers stand. The Crowd gathers behind it and the Details line its front.
+**Bênção 2× Fé**
+Activated by clicking the `Altar da Encarnação` inside the `Encarnação Sagrada` card. Each click adds `+2 s` of doubled **Fé/s** (`2×`), up to `60 s` stored (`BLESSING_MAX_SECONDS`). Unlocking `Vigília Perpétua` (`gn_bencao_eterna`) in the Gnose tree keeps the 2× Blessing permanently active at maximum charge.
 
-**Follower spot**
-One of the 12 fixed places in the Church yard. Followers fill the spots in a set order, one per follower, up to 12. Followers beyond 12 are not drawn one by one; from 50 followers a crowd of silhouettes gathers behind the yard (see Crowd level).
+**Fervor & Ritos de Fervor**
+The secondary resource generated once the `Selo da Encarnação` is broken. Accumulated **Fervor** passively multiplies all **Fé** (`(log10(Fervor / 10 + 1) × 2 + 1) × efeito`) and feeds the `Encarnação` follower multiplier. Spent on 6 **Ritos de Fervor** (`fu_prod`, `fu_effect`, `fu_click`, `fu_followers`, `fu_synergy`, and `fu_relics` once `Pena Solar de Fênix` is restored).
 
-**Miracle request**
-A follower from the Church yard walks to the altar and prays; their request can then be clicked for 15 s to grant a miracle. Granted or expired, they walk back to their Follower spot. A new request comes after a random wait of about 35–65 s.
+**Fragmentos & Relíquias (Opus Magnum)**
+The first prestige layer, unlocked by the `Selo das Relíquias`. Performing a **Transmutação** resets current **Fé** (with a 3 s cooldown) in exchange for `floor(log2(Fé + 1) × bônus)` **Fragmentos**, plus passive generation (`max(1, floor(melhorTransmutação / 10))` Fragmentos/s and percentage bonuses from `Anel Divino de Draupnir`, `Cripta Eterna`, and `Transmutação Espontânea`). Fragmentos restore 6 mythological **Relíquias**.
 
-**Crowd level**
-How thick the crowd of silhouettes behind the Church yard is, from 0 (none) to 4: one level per follower threshold reached (50, 250, 1,000 and 10,000), and the top level is the cap however large the cult grows. Derived from the follower count; never saved.
-
-**Gnose**
-The true prestige currency unlocked by the Selo da Gnose (`1e15` Fé). Performing an Ascensão Gnóstica dissolves the earthly cult (Fé, Fiéis, Fervor, Ritos de Fervor, Estágio da Encarnação, Fragmentos, Relíquias, and the earlier Selos unless preserved by Gnose Tree upgrades) in exchange for Gnose (`floor(((Fé / 1e15) ^ 0.15) * mult)`). Total Gnose earned grants a permanent passive multiplier (`1 + TotalGnose^0.85 * 1.5`) so spending Gnose on the 12-node Hermetic Tree never lowers production.
+**Gnose & Árvore Hermética**
+The true prestige currency unlocked by the `Selo da Gnose` (`1e15` Fé). Performing an **Ascensão Gnóstica** dissolves the earthly cult (Fé, Fiéis, Fervor, Ritos de Fervor, Estágio da Encarnação, Fragmentos, Relíquias, and the earlier Selos unless preserved by `Memória Hermética` or `Cripta Eterna`) in exchange for **Gnose** (`floor(((Fé / 1e15) ^ 0.15) * mult)`). Total Gnose earned grants a permanent passive multiplier (`1 + TotalGnose^0.85 * 1.5`) so spending Gnose on the **20-node Hermetic Tree** across 4 tiers (`I. Despertar Gnóstico`, `II. Persistência & Sinergia`, `III. Evoluções Herméticas`, `IV. Automação & Apoteose`) never lowers production.

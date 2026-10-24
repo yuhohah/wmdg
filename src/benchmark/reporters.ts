@@ -35,7 +35,7 @@ export function formatTerminalReport(report: BenchmarkReport): string {
   lines.push('');
   lines.push(divider);
   lines.push('  RELATÓRIO DE PROGRESSÃO DEFINITIVO — CULT OF THE SPHERE');
-  lines.push('  Curva de Upgrades, Zonas Mortas (Dead Zones) e Tempo Ocioso por Arquétipo');
+  lines.push('  Curva Completa: 1º Fiel → Árvore da Gnose (20/20) → Guardiões → Chefe Final (Tiamat)');
   lines.push(divider);
 
   // Header Table
@@ -54,7 +54,12 @@ export function formatTerminalReport(report: BenchmarkReport): string {
     { id: 'first_relic_reset', name: '1ª Transmutação Relíquias' },
     { id: 'unlock_gnose', name: 'Selo da Gnose (1Q)' },
     { id: 'first_gnose_reset', name: '1º Despertar Gnóstico' },
-    { id: 'first_gnose_upgrade', name: '1º Upgrade da Gnose' }
+    { id: 'first_gnose_upgrade', name: '1º Upgrade da Gnose' },
+    { id: 'boss_anubis', name: 'Guardião 1: Anúbis (Tier II)' },
+    { id: 'boss_cronos', name: 'Guardião 2: Cronos (Tier III)' },
+    { id: 'boss_odin', name: 'Guardião 3: Odin (Tier IV)' },
+    { id: 'gnose_tree_complete', name: 'Árvore da Gnose (20/20)' },
+    { id: 'boss_tiamat', name: 'Chefe Final: Tiamat (Endgame)' }
   ];
 
   for (const m of allMilestoneIds) {
@@ -69,7 +74,16 @@ export function formatTerminalReport(report: BenchmarkReport): string {
 
   lines.push(thinDivider);
   lines.push(
-    `  ${'TEMPO TOTAL ATÉ 1º UPGRADE GNOSE'.padEnd(34)} | ${active.formattedTotalTime.padEnd(16)} | ${casual.formattedTotalTime.padEnd(16)} | ${afk.formattedTotalTime.padEnd(16)}`
+    `  ${'TEMPO TOTAL ATÉ CHEFE FINAL'.padEnd(34)} | ${active.formattedTotalTime.padEnd(16)} | ${casual.formattedTotalTime.padEnd(16)} | ${afk.formattedTotalTime.padEnd(16)}`
+  );
+  lines.push(
+    `  ${'Nós da Gnose Assimilados'.padEnd(34)} | ${`${active.gnoseUpgradesBought}/20`.padEnd(16)} | ${`${casual.gnoseUpgradesBought}/20`.padEnd(16)} | ${`${afk.gnoseUpgradesBought}/20`.padEnd(16)}`
+  );
+  lines.push(
+    `  ${'Chefes Mitológicos Subjugados'.padEnd(34)} | ${`${active.bossesDefeated}/4`.padEnd(16)} | ${`${casual.bossesDefeated}/4`.padEnd(16)} | ${`${afk.bossesDefeated}/4`.padEnd(16)}`
+  );
+  lines.push(
+    `  ${'Ascensões de Gnose Feitas'.padEnd(34)} | ${String(active.gnoseResets).padEnd(16)} | ${String(casual.gnoseResets).padEnd(16)} | ${String(afk.gnoseResets).padEnd(16)}`
   );
   lines.push(
     `  ${'Milagres Coletados dos Fiéis'.padEnd(34)} | ${String(active.miraclesCaught).padEnd(16)} | ${String(casual.miraclesCaught).padEnd(16)} | ${String(afk.miraclesCaught).padEnd(16)}`
@@ -123,13 +137,18 @@ export function formatHtmlReport(report: BenchmarkReport): string {
     { id: 'first_relic_reset', name: '1ª Transmutação Relíquias' },
     { id: 'unlock_gnose', name: 'Selo da Gnose' },
     { id: 'first_gnose_reset', name: '1º Despertar Gnóstico' },
-    { id: 'first_gnose_upgrade', name: '1º Upgrade da Gnose' }
+    { id: 'first_gnose_upgrade', name: '1º Upgrade da Gnose' },
+    { id: 'boss_anubis', name: 'Guardião 1: Anúbis (Tier II)' },
+    { id: 'boss_cronos', name: 'Guardião 2: Cronos (Tier III)' },
+    { id: 'boss_odin', name: 'Guardião 3: Odin (Tier IV)' },
+    { id: 'gnose_tree_complete', name: 'Árvore da Gnose (20/20)' },
+    { id: 'boss_tiamat', name: 'Chefe Final: Tiamat (Endgame)' }
   ];
 
   return `
     <div style="font-family: monospace; font-size: 13px; color: #f8fafc; line-height: 1.5;">
       <h3 style="color: #fbbf24; margin: 0 0 10px; font-size: 16px; border-bottom: 1px solid #d97706; padding-bottom: 6px;">
-        ⚙️ Relatório de Progressão e Balanceamento (Simulação Analítica)
+        ⚙️ Relatório de Progressão e Balanceamento (Até o Chefe Final: Tiamat)
       </h3>
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 14px; text-align: left;">
         <thead>
@@ -154,10 +173,22 @@ export function formatHtmlReport(report: BenchmarkReport): string {
             )
             .join('')}
           <tr style="background: rgba(255,255,255,0.05); font-weight: bold;">
-            <td style="padding: 6px 8px; border: 1px solid #78350f; color: #fbbf24;">TEMPO TOTAL GNOSE</td>
+            <td style="padding: 6px 8px; border: 1px solid #78350f; color: #fbbf24;">TEMPO TOTAL ATÉ TIAMAT</td>
             <td style="padding: 6px 8px; border: 1px solid #78350f; color: #67e8f9;">${active.formattedTotalTime}</td>
             <td style="padding: 6px 8px; border: 1px solid #78350f; color: #a5b4fc;">${casual.formattedTotalTime}</td>
             <td style="padding: 6px 8px; border: 1px solid #78350f; color: #f472b6;">${afk.formattedTotalTime}</td>
+          </tr>
+          <tr>
+            <td style="padding: 4px 8px; border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1;">Chefes Subjugados</td>
+            <td style="padding: 4px 8px; border: 1px solid rgba(255,255,255,0.1); color: #67e8f9;">${active.bossesDefeated}/4</td>
+            <td style="padding: 4px 8px; border: 1px solid rgba(255,255,255,0.1); color: #a5b4fc;">${casual.bossesDefeated}/4</td>
+            <td style="padding: 4px 8px; border: 1px solid rgba(255,255,255,0.1); color: #f472b6;">${afk.bossesDefeated}/4</td>
+          </tr>
+          <tr>
+            <td style="padding: 4px 8px; border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1;">Ascensões de Gnose</td>
+            <td style="padding: 4px 8px; border: 1px solid rgba(255,255,255,0.1); color: #67e8f9;">${active.gnoseResets}</td>
+            <td style="padding: 4px 8px; border: 1px solid rgba(255,255,255,0.1); color: #a5b4fc;">${casual.gnoseResets}</td>
+            <td style="padding: 4px 8px; border: 1px solid rgba(255,255,255,0.1); color: #f472b6;">${afk.gnoseResets}</td>
           </tr>
           <tr>
             <td style="padding: 4px 8px; border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1;">Milagres dos Fiéis</td>

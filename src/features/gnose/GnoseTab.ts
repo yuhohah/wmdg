@@ -5,6 +5,7 @@ import { GNOSE_UPGRADES, GNOSE_TIER_LABELS, GNOSE_MIN_FAITH_REQ } from '../../co
 import { DISPLAY_CONFIG } from '../../config/display.js';
 import { formatNumber } from '../../systems/calculations.js';
 import { cultDialog } from '../../ui/CultDialog.js';
+import { BossBattleModal } from './BossBattleModal.js';
 import type { GnoseUpgrade } from '../../types.js';
 
 export interface GnoseTabOptions {
@@ -18,6 +19,7 @@ export interface GnoseTabOptions {
 
 export class GnoseTab {
   private options: GnoseTabOptions;
+  public bossBattleModal: BossBattleModal;
 
   private hudDividerEl: HTMLElement | null = null;
   private hudItemEl: HTMLElement | null = null;
@@ -43,6 +45,17 @@ export class GnoseTab {
 
   constructor(options: GnoseTabOptions) {
     this.options = options;
+    this.bossBattleModal = new BossBattleModal({
+      gameState: options.gameState,
+      audio: options.audio,
+      notifications: options.notifications,
+      spawnFloatingText: options.spawnFloatingText,
+      onBattleEnded: () => {
+        this.renderTree();
+        this.updateUI();
+        this.options.onUpgradePurchased?.(GNOSE_UPGRADES[0]);
+      }
+    });
     this.initElements();
     this.bindEvents();
   }
@@ -147,7 +160,18 @@ export class GnoseTab {
   }
 
   public buyUpgrade(upg: GnoseUpgrade): void {
-    const success = this.options.gameState.buyGnoseUpgrade(upg.id);
+    const gs = this.options.gameState;
+    if (!gs.isGnoseTierUnlocked(upg.tier)) {
+      const guardian = gs.getBossForTier(upg.tier as 2 | 3 | 4);
+      if (guardian && gs.canChallengeBoss(guardian.id)) {
+        this.bossBattleModal.openForBoss(guardian.id);
+        return;
+      }
+      this.options.audio.playTone(180, 'sawtooth', 0.1);
+      return;
+    }
+
+    const success = gs.buyGnoseUpgrade(upg.id);
     if (success) {
       this.options.audio.playTone(820, 'triangle', 0.22);
       this.options.notifications.showCustomPopup(
@@ -168,6 +192,19 @@ export class GnoseTab {
     if (!this.treeContainerEl) return;
     this.treeContainerEl.innerHTML = '';
 
+    const gs = this.options.gameState;
+
+    // Active curse banner (if player recently failed a boss trial)
+    const curseBanner = document.createElement('div');
+    curseBanner.id = 'gnose-curse-banner';
+    curseBanner.className = 'gnose-curse-banner';
+    curseBanner.style.display = gs.bossCurseTimerSec > 0 ? 'flex' : 'none';
+    curseBanner.innerHTML = `
+      <span>⚠️ <strong>Maldição dos Deuses Antigos:</strong> -25% Fé/s e Fervor/s</span>
+      <span id="gnose-curse-timer-val">${Math.ceil(gs.bossCurseTimerSec)}s</span>
+    `;
+    this.treeContainerEl.appendChild(curseBanner);
+
     const tiersToRender: Array<1 | 2 | 3 | 4> = [1, 2, 3, 4];
 
     tiersToRender.forEach((tier) => {
@@ -177,20 +214,58 @@ export class GnoseTab {
       const tierHeader = document.createElement('div');
       tierHeader.className = 'gnose-tier-header';
       const tierUpgrades = GNOSE_UPGRADES.filter((u) => u.tier === tier);
-      const unlockedCount = tierUpgrades.filter((u) => this.options.gameState.hasGnoseUpgrade(u.id)).length;
+      const unlockedCount = tierUpgrades.filter((u) => gs.hasGnoseUpgrade(u.id)).length;
+
+      let guardianBadgeHtml = '';
+      if (tier === 2 || tier === 3 || tier === 4) {
+        const guardian = gs.getBossForTier(tier);
+        if (guardian) {
+          const isTierOpen = gs.isGnoseTierUnlocked(tier);
+          const canChallenge = gs.canChallengeBoss(guardian.id);
+          if (isTierOpen) {
+            guardianBadgeHtml = `
+              <span class="gnose-guardian-badge defeated">
+                ${guardian.symbol} ${guardian.name}: SUBJUGADO (×${guardian.faithFervorMult} Fé/Fervor)
+              </span>
+            `;
+          } else {
+            guardianBadgeHtml = `
+              <button type="button" class="btn-challenge-guardian ${canChallenge ? 'ready' : 'locked'}" data-boss-id="${guardian.id}" ${canChallenge ? '' : 'disabled'}>
+                ⚔️ Desafiar ${guardian.name} (${guardian.mythology}) — Destravar Tier
+              </button>
+            `;
+          }
+        }
+      }
+
       tierHeader.innerHTML = `
         <span class="gnose-tier-title">${GNOSE_TIER_LABELS[tier]}</span>
-        <span class="gnose-tier-progress">${unlockedCount}/${tierUpgrades.length}</span>
+        <div class="gnose-tier-right">
+          ${guardianBadgeHtml}
+          <span class="gnose-tier-progress">${unlockedCount}/${tierUpgrades.length}</span>
+        </div>
       `;
+
+      const challengeBtn = tierHeader.querySelector<HTMLButtonElement>('.btn-challenge-guardian');
+      challengeBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const bossId = challengeBtn.getAttribute('data-boss-id');
+        if (bossId) {
+          this.bossBattleModal.openForBoss(bossId);
+        }
+      });
+
       tierSection.appendChild(tierHeader);
 
       const tierGrid = document.createElement('div');
       tierGrid.className = 'gnose-tier-grid';
 
+      const isTierUnlocked = gs.isGnoseTierUnlocked(tier);
+
       tierUpgrades.forEach((upg) => {
-        const isUnlocked = this.options.gameState.hasGnoseUpgrade(upg.id);
-        const prereqsMet = upg.prerequisites.every((reqId) => this.options.gameState.hasGnoseUpgrade(reqId));
-        const canAfford = this.options.gameState.gnosePoints >= upg.cost;
+        const isUnlocked = gs.hasGnoseUpgrade(upg.id);
+        const prereqsMet = isTierUnlocked && upg.prerequisites.every((reqId) => gs.hasGnoseUpgrade(reqId));
+        const canAfford = gs.gnosePoints >= upg.cost;
 
         const stateClass = isUnlocked
           ? 'gnose-node-unlocked'
@@ -210,9 +285,11 @@ export class GnoseTab {
 
         const statusBadge = isUnlocked
           ? `<span class="gnose-node-badge unlocked">ASSIMILADO</span>`
-          : !prereqsMet
-            ? `<span class="gnose-node-badge locked">🔒 ${formatNumber(upg.cost)} Gnose</span>`
-            : `<span class="gnose-node-badge cost">${formatNumber(upg.cost)} Gnose</span>`;
+          : !isTierUnlocked
+            ? `<span class="gnose-node-badge locked">⚔️ Guardião (${formatNumber(upg.cost)} Gnose)</span>`
+            : !prereqsMet
+              ? `<span class="gnose-node-badge locked">🔒 ${formatNumber(upg.cost)} Gnose</span>`
+              : `<span class="gnose-node-badge cost">${formatNumber(upg.cost)} Gnose</span>`;
 
         nodeEl.innerHTML = `
           <div class="gnose-node-top">
@@ -237,6 +314,41 @@ export class GnoseTab {
       tierSection.appendChild(tierGrid);
       this.treeContainerEl!.appendChild(tierSection);
     });
+
+    // ENDGAME BOSS FOOTER: TIAMAT (unlocked after 20/20 Gnose nodes)
+    const tiamat = gs.getBossForTier('endgame');
+    if (tiamat) {
+      const totalUnlockedNodes = GNOSE_UPGRADES.filter((u) => gs.hasGnoseUpgrade(u.id)).length;
+      const isTiamatDefeated = gs.isBossDefeated(tiamat.id);
+      const canChallengeTiamat = gs.canChallengeBoss(tiamat.id);
+
+      const endgameBar = document.createElement('div');
+      endgameBar.className = `gnose-endgame-boss-bar ${isTiamatDefeated ? 'defeated' : canChallengeTiamat ? 'ready' : 'locked'}`;
+      endgameBar.id = 'gnose-endgame-boss-bar';
+
+      const actionHtml = isTiamatDefeated
+        ? `<span class="gnose-guardian-badge defeated">👑 CREPÚSCULO DOS DEUSES CONCLUÍDO (×10 Fé & Fervor)</span>`
+        : canChallengeTiamat
+          ? `<button type="button" id="btn-challenge-tiamat" class="btn-challenge-guardian endgame-ready">🐉 Desafiar ${tiamat.name} (${tiamat.title})</button>`
+          : `<span class="gnose-endgame-lock-hint">🔒 Assimile toda a Árvore da Gnose (${totalUnlockedNodes}/${GNOSE_UPGRADES.length}) para desafiar ${tiamat.name}</span>`;
+
+      endgameBar.innerHTML = `
+        <div class="gnose-endgame-info">
+          <span class="gnose-endgame-title">${tiamat.symbol} APOTEOSE FINAL: ${tiamat.name.toUpperCase()} — ${tiamat.mythology.toUpperCase()}</span>
+          <span class="gnose-endgame-desc">${tiamat.rewardDesc}</span>
+        </div>
+        <div class="gnose-endgame-action">
+          ${actionHtml}
+        </div>
+      `;
+
+      const tiamatBtn = endgameBar.querySelector<HTMLButtonElement>('#btn-challenge-tiamat');
+      tiamatBtn?.addEventListener('click', () => {
+        this.bossBattleModal.openForBoss(tiamat.id);
+      });
+
+      this.treeContainerEl.appendChild(endgameBar);
+    }
   }
 
   public updateUI(): void {
@@ -303,6 +415,21 @@ export class GnoseTab {
       this.autoRelicsToggleEl.checked = gs.autoRelicsEnabled;
     }
 
+    // Update curse banner countdown
+    const curseBanner = document.getElementById('gnose-curse-banner');
+    const curseTimerVal = document.getElementById('gnose-curse-timer-val');
+    if (curseBanner) {
+      curseBanner.style.display = gs.bossCurseTimerSec > 0 ? 'flex' : 'none';
+    }
+    if (curseTimerVal && gs.bossCurseTimerSec > 0) {
+      curseTimerVal.textContent = `${Math.ceil(gs.bossCurseTimerSec)}s`;
+    }
+
+    // Update active boss battle modal if open
+    if (gs.activeBossBattle) {
+      this.bossBattleModal.updateUI();
+    }
+
     this.updateNodeStates();
   }
 
@@ -313,7 +440,8 @@ export class GnoseTab {
       if (!nodeEl) return;
 
       const isUnlocked = gs.hasGnoseUpgrade(upg.id);
-      const prereqsMet = upg.prerequisites.every((reqId) => gs.hasGnoseUpgrade(reqId));
+      const isTierUnlocked = gs.isGnoseTierUnlocked(upg.tier);
+      const prereqsMet = isTierUnlocked && upg.prerequisites.every((reqId) => gs.hasGnoseUpgrade(reqId));
       const canAfford = gs.gnosePoints >= upg.cost;
 
       nodeEl.classList.remove(

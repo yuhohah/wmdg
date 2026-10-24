@@ -6,15 +6,15 @@ Este documento descreve detalhadamente o funcionamento interno, premissas matem�
 
 ## 1. Visão Geral da Arquitetura do Simulador
 
-O benchmark opera sob o paradigma de **Salto Temporal por Evento (Event-Jumping / Fast-Forward)**. Ao invés de processar o laço de jogo tick a tick (o que exigiria bilhões de iterações para simular horas de jogo), o motor calcula analiticamente o tempo exato necessário para que a próxima ação válida se torne viável e salta o estado para esse ponto no tempo com 100% de precisão matemática.
+O benchmark opera sob o paradigma de **Salto Temporal por Evento (Event-Jumping / Fast-Forward)**. Ao invés de processar o laço de jogo tick a tick (o que exigiria bilhões de iterações para simular horas de jogo), o motor calcula analiticamente o tempo exato necessário para que a próxima ação válida se torne viável e avança o estado para esse ponto no tempo em fatias determinísticas de até $50\text{s}$ com 100% de precisão matemática e reprodutibilidade.
 
 ```mermaid
 flowchart LR
-    A[Estado Atual: Fé, Fervor, Relíquias] --> B[Mapeamento de Ações Candidatas]
+    A[Estado Atual: Fé, Fervor, Relíquias, Conquistas] --> B[Mapeamento de Ações Candidatas]
     B --> C[Cálculo de Payback & Tempo até Ação]
     C --> D[Detecção de Dead Zones > Limiar]
     D --> E[Salto Temporal deltaT + Tempo de Reação]
-    E --> F[Coleta de Milagres Periódicos]
+    E --> F[Cliques Estratégicos & Coleta Determinística de Milagres]
     F --> G[Execução da Ação & Registro de Marcos]
     G -->|Meta Não Atingida| A
     G -->|1º Upgrade de Gnose| H[Emissão de Relatório]
@@ -22,7 +22,7 @@ flowchart LR
 
 ### Premissas Fundamentais:
 1. **Sem Ganhos Offline com Aba Fechada**: O simulador replica o comportamento de um jogador com o jogo aberto na aba (foreground/background da janela ativa).
-2. **Respeito Estrito às Fórmulas Canônicas**: O simulador importa diretamente o `GameStateManager` e as funções matemáticas de `src/systems/calculations.ts`.
+2. **Respeito Estrito às Fórmulas Canônicas**: O simulador importa diretamente o `GameStateManager` (incluindo verificação automática de todas as **19 Conquistas** a cada passo via `checkAchievements()`) e as funções matemáticas de `src/systems/calculations.ts`.
 
 ---
 
@@ -34,18 +34,18 @@ Para avaliar o balanceamento do jogo sob diferentes estilos de jogadores, o mode
 |---|---|---|---|
 | **Cadência de Cliques Inicial (CPS)** | **5.0 cliques/s** (200ms por clique) | **2.0 cliques/s** (500ms por clique) | **1.0 clique/s** (1000ms por clique) |
 | **Tempo até 1º Fiel (20 Fé)** | **4.0 segundos** | **10.0 segundos** | **20.0 segundos** |
-| **Comportamento Pós-Primeiro Fiel** | Mantém cliques estratégicos e ativos | Cessa cliques na Esfera, foca em compras | **Zero cliques na Esfera** (100% passivo) |
+| **Comportamento Pós-Primeiro Fiel** | Mantém cliques estratégicos (**2.0 cliques/s**) | Cessa cliques na Esfera, foca em compras | **Zero cliques na Esfera** (100% passivo) |
 | **Tempo Médio de Reação à Compra** | **3.0 segundos** (atenção focada) | **5.0 segundos** (atenção dispersa/híbrida) | **0.0 segundos** (analítico por lote de espera) |
-| **Captura de Milagres dos Fiéis** | **~95% dos milagres** capturados | **~40% dos milagres** capturados | **0% dos milagres** (ignora o pátio) |
+| **Captura de Milagres dos Fiéis** | **95% dos milagres** capturados | **40% dos milagres** capturados | **0% dos milagres** (ignora o pátio) |
 | **Frequência de Spawn de Milagres** | A cada ~35s–65s (média 50s com fiéis) | A cada ~35s–65s (média 50s com fiéis) | Apenas acumulam sem clique |
-| **Recompensa por Milagre Concedido** | $\max(30, 30 \times \text{Fé/s} + 10\% \text{FéAtual})$ | $\max(30, 30 \times \text{Fé/s} + 10\% \text{FéAtual})$ | Não aplicável |
-| **Manutenção da Bênção do Avatar (2x Fé)** | **100% ativa** (renova a cada 60s) | Ocasional / Inconstante | **Nunca ativada** (0s de bênção manual) |
+| **Recompensa por Milagre Concedido** | $\max(30, 15 \times \text{FPC}, \lfloor 30 \times \text{Fé/s} + 10\% \text{FéAtual} \rfloor)$ | $\max(30, 15 \times \text{FPC}, \lfloor 30 \times \text{Fé/s} + 10\% \text{FéAtual} \rfloor)$ | Não aplicável |
+| **Manutenção da Bênção do Avatar (2x Fé)** | **100% ativa** (mantida em 60s contínuos) | **Ocasional** (+6s de bênção a cada compra) | **Nunca ativada** (0s de bênção manual) |
 | **Frequência de Checagem do Jogo** | Contínua (tempo real na tela) | Sessões intercaladas com pausas de 5-15m | Sessões espaçadas de 30m a 2h |
 | **Estratégia de Compra** | Greedy por menor ROI / Tempo de Retorno | Híbrida (Desbloqueios + mais baratos) | Compra em lote quando há saldo elevado |
 
 > **Nota sobre o Tempo de Reação**: Quando um upgrade se torna acessível ($\text{tempoNecessário} > 0$), o jogador humano não clica no milissegundo exato em que a moeda atinge o valor da compra. O simulador adiciona o tempo de reação humano ($3.0\text{s}$ para Ativo e $5.0\text{s}$ para Casual) ao tempo de acumulação do recurso, tornando a projeção realista.
 
-> **Nota sobre Milagres dos Fiéis**: No pátio de fiéis, devotos geram pedidos de oração periódicos (balões de milagre com vida útil de 15s). Ao serem clicados, eles concedem $30\text{s}$ de produção instantânea de Fé somados a $10\%$ do saldo atual da reserva. O jogador **Ativo** (com a tela sempre aberta e focada) intercepta praticamente todos os milagres (~95%), gerando impulsos substanciais de fé que aceleram marcos intermediários como o Avatar Consagrado e o Selo de Relíquias. O jogador **Casual** captura cerca de 40%, enquanto o jogador **AFK** não clica em nenhum milagre.
+> **Nota sobre Milagres dos Fiéis**: No pátio de fiéis, devotos geram pedidos de oração periódicos (balões de milagre com vida útil de 15s e intervalo médio de 50s). Ao serem clicados, eles concedem $30\text{s}$ de produção instantânea de Fé somados a $10\%$ do saldo atual da reserva (respeitando o piso mínimo de $\max(30, 15 \times \text{Fé por Clique})$). O simulador utiliza um acumulador determinístico de captura ($0.95$ para Ativo, $0.40$ para Casual e $0.0$ para AFK) ao final de cada fatia de simulação de até $50\text{s}$, garantindo reprodutibilidade exata entre execuções.
 
 ---
 
@@ -61,11 +61,11 @@ $$\text{tempoEsperaTotal} = \text{tempoParaAcumular} + (\text{tempoParaAcumular}
 1. **Prioridade 1 — Desbloqueio de Mecânicas (Selos Sagrados)**:
    - Se o próximo Selo sequencial (`unlock_incarnation`, `unlock_fervor_upgrades`, `unlock_relics`, `unlock_gnose`) for atingível em tempo razoável (< 3 minutos), ele recebe prioridade máxima sobre micro-upgrades.
 2. **Prioridade 2 — Estágios da Encarnação (Avatar)**:
-   - Apenas avaliado se for alcançável em menos de 30 minutos de geração contínua, multiplicando drasticamente o Fervor.
+   - Avaliado se for alcançável em menos de 30 minutos de geração contínua, e priorizado sobre compras de fiéis quando estiver a menos de 3 minutos (< 180s) ou já acessível antes de uma Transmutação de Relíquias, multiplicando drasticamente o Fervor/s e os Fiéis.
 3. **Prioridade 3 — Recrutamento de Fiéis Devotos**:
    - Compra via `buyMaxFollowers` se a função Converter Máximo estiver liberada (25 fiéis ou upgrade de Gnose); caso contrário, compra de 1 em 1.
 4. **Prioridade 4 — Ritos de Fervor (Upgrades de Fervor)**:
-   - Ordenados pelo menor tempo de espera em relação à taxa atual de Fervor/s (`fu_prod`, `fu_effect`, `fu_click`, `fu_followers`, `fu_synergy`).
+   - Ordenados pelo menor tempo de espera em relação à taxa atual de Fervor/s (`fu_prod`, `fu_effect`, `fu_click`, `fu_followers`, `fu_synergy`, e `fu_relics` quando a *Pena Solar de Fênix* estiver restaurada).
 5. **Prioridade 5 — Restauração de Relíquias (Upgrades de Fragmentos)**:
    - Compra dos artefatos mitológicos (`relic_cornucopia`, `relic_torch`, `relic_phoenix`, `relic_caduceus`, `relic_draupnir`, `relic_ark`) respeitando os níveis máximos.
 
@@ -74,9 +74,9 @@ $$\text{tempoEsperaTotal} = \text{tempoParaAcumular} + (\text{tempoParaAcumular}
 ## 4. Regras e Gatilhos de Prestígio
 
 ### 4.1. Transmutação de Relíquias (Prestige Secundário)
-O reset de Fé para Fragmentos de Relíquias é disparado quando:
+O reset de Fé para Fragmentos de Relíquias é disparado quando nenhum Estágio de Encarnação está imediatamente comprável e:
 1. O rendimento da Transmutação atual for $\ge 15$ Fragmentos; **E**
-2. O ganho projetado superar o dobro do saldo atual ($P_{\text{ganho}} \ge 1.5 \times P_{\text{atual}}$) ou for a 1ª transmutação ($P_{\text{atual}} = 0$).
+2. O ganho projetado atingir pelo menos $1.5\times$ o saldo atual com piso mínimo de $20$ Fragmentos ($P_{\text{ganho}} \ge \max(20, 1.5 \times P_{\text{atual}})$) ou for a 1ª transmutação ($P_{\text{atual}} = 0$).
 
 Fórmula de ganho:
 $$\text{Fragmentos} = \lfloor \log_2(\text{Fé} + 1) \times \text{MultiplicadorRelíquias} \rfloor$$
@@ -84,7 +84,7 @@ $$\text{Fragmentos} = \lfloor \log_2(\text{Fé} + 1) \times \text{MultiplicadorR
 ### 4.2. Despertar Gnóstico (True Prestige / Reset Supremo)
 O reset de Gnose é disparado assim que o valor acumulado no reset atual for suficiente para adquirir pelo menos **1 upgrade na Câmara da Gnose**:
 $$\text{Gnose Ganha} = \lfloor (\text{Fé} / 10^{15})^{0.15} \times \text{MultGnose} \rfloor \ge 1$$
-Ao atingir $1$ Ponto de Gnose, a simulação executa `performGnoseReset()`, adquire o primeiro upgrade da árvore (*Emanaçāo Primordial - Centelha do Nous*, que concede 5x Fé global e início com 1.000 Fé) e finaliza o ciclo de medição.
+Ao atingir $1$ Ponto de Gnose, a simulação executa `performGnoseReset()`, adquire o primeiro upgrade da árvore (*Emanação Primordial - Centelha do Nous*, que concede 5x Fé global e início com 1.000 Fé) e finaliza o ciclo de medição.
 
 ---
 
@@ -108,10 +108,10 @@ Se qualquer salto temporal superar o limiar da sua respectiva fase, o evento é 
 
 O resultado de cada arquétipo recebe uma pontuação diagnóstica sintética baseada na estabilidade da progressão:
 
-- **Excelente**: 0 Zonas Mortas detectadas, tempo total até Gnose $< 2$ horas e espera máxima entre upgrades $< 5$ minutos.
-- **Balanceado**: 0 Zonas Mortas críticas, tempo total até Gnose $< 3$ dias e espera máxima $< 30$ minutos.
-- **Lento**: Pelo menos 1 Zona Morta pontual detectada ou espera máxima superior a 1 hora.
-- **Gargalo Crítico**: Mais de 3 Zonas Mortas detectadas ou espera ininterrupta sem compras superior a 4 horas.
+- **Excelente**: 0 Zonas Mortas detectadas, tempo total até Gnose $< 2$ horas ($7.200\text{s}$) e espera máxima entre upgrades $< 5$ minutos ($300\text{s}$).
+- **Balanceado**: 0 Zonas Mortas críticas, tempo total até Gnose $< 3$ dias e espera máxima $\le 1$ hora ($3.600\text{s}$).
+- **Lento**: Pelo menos 1 Zona Morta pontual detectada ou espera máxima superior a 1 hora ($3.600\text{s}$).
+- **Gargalo Crítico**: Mais de 3 Zonas Mortas detectadas ou espera ininterrupta sem compras superior a 4 horas ($14.400\text{s}$).
 
 ---
 
@@ -124,14 +124,14 @@ O simulador foi desenhado com arquitetura de acoplamento direto via `GameStateMa
 
 1. **Alterações Automáticas (Zero manutenção no benchmark)**:
    - Se você alterar constantes e fórmulas em `src/systems/calculations.ts` (ex: expoente de fé, logaritmo de relíquias, fórmula de gnose).
-   - Se você alterar os custos de fé, fervor, relíquias ou bônus nos arquivos `src/config/followers.ts`, `src/config/fervor.ts`, `src/config/incarnation.ts`, `src/config/relics.ts`, `src/config/gnose.ts`, `src/config/unlocks.ts`.
+   - Se você alterar os custos de fé, fervor, relíquias ou bônus nos arquivos `src/config/followers.ts`, `src/config/fervor.ts`, `src/config/incarnation.ts`, `src/config/relics.ts`, `src/config/gnose.ts`, `src/config/unlocks.ts`, `src/config/achievements.ts`.
    - Se você alterar multiplicadores e taxas em `GameState.ts` (`getFaithPerSecond()`, `getFervorRatePerSecond()`, etc.).
    
    👉 **O benchmark recalcula tudo automaticamente** no próximo `npm run benchmark`, refletindo instantaneamente as novas curvas e novos tempos!
 
 2. **Quando VOCÊ PRECISA alterar o simulador**:
    - **Adição de uma mecânica ou moeda inteiramente nova** (ex: se criar um sistema de "Almas", "Pactos" ou "Templos" com sua própria moeda e aba).
-   - **Mudança na regra de vitória/marco final** (ex: se o objetivo final deixar de ser comprar o 1º upgrade de Gnose e passar a ser completar o Pantheon ou atingir 10 resets).
+   - **Mudança na regra de vitória/marco final** (ex: se o objetivo final deixar de ser comprar o 1º upgrade de Gnose e passar a ser completar todos os 20 nós da Árvore Hermética).
    - **Mudança de pré-requisitos lógicos estruturais** (ex: se um upgrade passar a exigir um mini-game interativo específico).
 
 ---

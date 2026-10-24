@@ -78,6 +78,7 @@ export class StatsTab {
   }
 
   private getCultTier(totalFaith: number): string {
+    if (this.gameState.isBossDefeated('boss_tiamat')) return 'Crepúsculo dos Deuses';
     if (totalFaith >= 1e50) return 'Mente Única';
     if (totalFaith >= 1e25) return 'Credo Mundial';
     if (totalFaith >= 1e12) return 'Igreja';

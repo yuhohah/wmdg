@@ -87,13 +87,10 @@ export class UnlocksTab {
 
   public buyUnlock(unlock: MechanicUnlock): void {
     if (unlock.unlocked) return;
-    if (this.gameState.faithPoints < unlock.cost) {
+    if (!this.gameState.buyUnlock(unlock)) {
       this.audio.playTone(180, 'sawtooth', 0.1);
       return;
     }
-
-    this.gameState.faithPoints -= unlock.cost;
-    unlock.unlocked = true;
 
     if (unlock.id === 'unlock_incarnation') {
       this.notifications.showCustomPopup(
@@ -114,6 +111,13 @@ export class UnlocksTab {
         'O RELICÁRIO SE ABRIU',
         'Transmute sua Fé em Fragmentos e restaure relíquias no card de Relíquias.',
         '⚱️',
+        'NOVA MECÂNICA'
+      );
+    } else if (unlock.id === 'unlock_gnose') {
+      this.notifications.showCustomPopup(
+        'A CÂMARA DA GNOSE SE ABRIU',
+        'O último selo foi rompido. Dissolva o culto terreno a partir de 1Q Fé para colher Gnose.',
+        '👁️',
         'NOVA MECÂNICA'
       );
     }

@@ -60,7 +60,10 @@
 .board-celestial-backdrop {
   position: absolute;
   inset: -12px;
-  background: url('/assets/hermetic_cathedral_board_bg.jpg') top left / 100% 100% no-repeat;
+  background:
+    radial-gradient(circle at 50% 44%, rgba(200, 157, 84, 0.22) 0%, rgba(125, 96, 62, 0.14) 24%, rgba(34, 25, 19, 0.85) 62%, #16100c 100%),
+    repeating-radial-gradient(circle at 50% 44%, rgba(229, 212, 180, 0.04) 0px, rgba(229, 212, 180, 0.04) 2px, transparent 2px, transparent 48px),
+    linear-gradient(180deg, #221913 0%, #16100c 100%);
   opacity: 0.90;
   pointer-events: none;
   filter: blur(4px) contrast(0.80) brightness(0.88);
@@ -234,7 +237,7 @@
 }
 
 .resource-item-gnose .res-name::before {
-  background-image: url('/assets/hud/book.svg');
+  background-image: var(--icon-book);
 }
 
 .resource-item .res-num,

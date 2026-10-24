@@ -51,7 +51,7 @@ class AppManager {
 
   // Save & System State
   private lastSaveTime: number = Date.now();
-  private isResetting: boolean = false;
+  public isResetting: boolean = false;
   private isHapticsEnabled: boolean = true;
 
   constructor() {

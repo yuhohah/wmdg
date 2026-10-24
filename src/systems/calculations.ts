@@ -184,6 +184,7 @@ export function calculateMaxAffordableFollowers(
     if (item.id === 'f_devotee') {
       nextCost = Math.floor(nextCost * discountMultiplier);
     }
+    if (!Number.isFinite(nextCost)) break;
     nextCost = Math.max(1, nextCost);
 
     if (remainingFaith >= nextCost) {
@@ -223,7 +224,7 @@ export function calculateGnoseToGet(faith: number, gnoseMult: number = 1.0): num
 
 export function calculateTotalGnoseMultiplier(totalGnoseEarned: number): number {
   if (totalGnoseEarned <= 0) return 1.0;
-  return 1 + Math.pow(totalGnoseEarned, 0.85) * 1.5;
+  return 1 + Math.pow(totalGnoseEarned, 0.35) * 1.5;
 }
 
 export function calculateGnoseFollowersSynergyMultiplier(

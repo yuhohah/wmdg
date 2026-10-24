@@ -16,25 +16,25 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     id: 'gn_init_faith',
     name: 'Emanação Primordial',
     title: 'Centelha do Nous',
-    desc: 'Multiplica toda a Fé gerada (clique e passiva) por 5× e inicia cada ciclo de Gnose com 1.000 Fé.',
+    desc: 'Multiplica toda a Fé gerada por 8×, o Fervor/s por 3×, os Fragmentos por 3,5× e inicia cada ciclo de Gnose com 1.000 Fé.',
     lore: 'Mesmo quando o templo retorna ao pó, a primeira centelha do Nous permanece acesa na memória da Esfera.',
     icon: '✦',
     tier: 1,
     cost: 1,
     prerequisites: [],
-    effectText: '5× Fé Global e inicia com 1.000 Fé'
+    effectText: '8× Fé, 3× Fervor/s, 3,5× Fragmentos e 1.000 Fé inicial'
   },
   {
     id: 'gn_memoria_selos',
     name: 'Memória Hermética',
     title: 'Tábuas Inquebráveis',
-    desc: 'Mantém os Selos da Encarnação, Fervor e Relíquias permanentemente rompidos após resets de Gnose e libera Converter Máximo desde 0 fiéis.',
+    desc: 'Mantém os Selos da Encarnação, Fervor e Relíquias permanentemente rompidos após resets de Gnose, libera Converter Máximo desde 0 fiéis e multiplica Fragmentos por 1,5×.',
     lore: 'O que foi gravado na Tábua de Esmeralda não pode ser selado novamente pelos séculos mortais.',
     icon: '📜',
     tier: 1,
     cost: 2,
     prerequisites: ['gn_init_faith'],
-    effectText: 'Mantém Selos abertos e Converter Máx. livre'
+    effectText: 'Mantém Selos abertos, Converter Máx. livre e 1,5× Fragmentos'
   },
   {
     id: 'gn_init_fervor',
@@ -82,7 +82,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Cada mente devota passa a refletir todas as outras como espelhos dispostos no interior de uma esfera perfeita.',
     icon: '👥',
     tier: 2,
-    cost: 5,
+    cost: 10,
     prerequisites: ['gn_memoria_selos'],
     effectText: 'Multiplica Fé por (1 + Fiéis^1.5)'
   },
@@ -94,7 +94,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'As relíquias dos deuses esquecidos foram fundidas ao próprio núcleo da Esfera, tornando-se imunes à dissolução dos ciclos.',
     icon: '🏺',
     tier: 2,
-    cost: 8,
+    cost: 78,
     prerequisites: ['gn_memoria_selos', 'gn_init_fervor'],
     effectText: 'Mantém Relíquias no reset e +25% Transmutação/s'
   },
@@ -106,7 +106,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Quando o Profeta contempla a Gnose, sua prece deixa de ser um sopro passageiro e se torna um estado eterno do ser.',
     icon: '⏳',
     tier: 2,
-    cost: 6,
+    cost: 108,
     prerequisites: ['gn_init_fervor'],
     effectText: 'Bênção da Encarnação ativa permanentemente'
   },
@@ -118,7 +118,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'A luz que irradia do avatar santificado alimenta o braseiro perpétuo com o calor de mil sóis.',
     icon: '✨',
     tier: 2,
-    cost: 7,
+    cost: 118,
     prerequisites: ['gn_bencao_eterna'],
     effectText: 'Encarnação multiplica Fervor/s'
   },
@@ -130,7 +130,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'O chumbo da matéria impura dissolve-se instantaneamente na prata viva do pensamento gnóstico.',
     icon: '⚗️',
     tier: 2,
-    cost: 9,
+    cost: 150,
     prerequisites: ['gn_keep_relics'],
     effectText: '4× Fragmentos em Transmutações'
   },
@@ -144,7 +144,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Três dimensões da mente, três oitavas do cântico: a devoção coletiva cresce ao cubo de cada alma convertida.',
     icon: '💠',
     tier: 3,
-    cost: 20,
+    cost: 170,
     prerequisites: ['gn_followers_syn'],
     effectText: 'Evolui sinergia dos Fiéis para (1 + Fiéis^3)'
   },
@@ -156,7 +156,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'O fogo comum queima a matéria; o Fogo Hermético transmuta a própria lei matemática que rege o ardor do culto.',
     icon: '☀️',
     tier: 3,
-    cost: 25,
+    cost: 3380,
     prerequisites: ['gn_keep_relics'],
     effectText: '1º Rito de Fervor evolui para 3.5^(Nível^0.7)'
   },
@@ -168,7 +168,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Três vezes grande é aquele que enxerga simultaneamente o abismo mortal, o fogo astral e a mente divina.',
     icon: '👁️',
     tier: 3,
-    cost: 30,
+    cost: 1020,
     prerequisites: ['gn_bencao_eterna'],
     effectText: '2,5× Gnose obtida e 3× efeito da Encarnação'
   },
@@ -180,7 +180,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'A Fé depositada no abismo do cosmos retorna como uma torrente incontrolável de fogo estelar.',
     icon: '🌌',
     tier: 3,
-    cost: 35,
+    cost: 8450,
     prerequisites: ['gn_fu1_boost'],
     effectText: '5× efeito do 5º Rito de Fervor'
   },
@@ -192,7 +192,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Cada artefato sagrado vibra em consonância com as órbitas dos planetas, amplificando o louvor cósmico.',
     icon: '🪐',
     tier: 3,
-    cost: 35,
+    cost: 9900,
     prerequisites: ['gn_keep_relics'],
     effectText: '+50% Fé/s e Fervor/s por Relíquia ativa'
   },
@@ -206,7 +206,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Você não precisa mais chamar: as mentes mortais caminham em sonhos até o pátio da catedral por pura gravidade espiritual.',
     icon: '⚙️',
     tier: 4,
-    cost: 75,
+    cost: 32200,
     prerequisites: ['gn_followers_cubic'],
     effectText: 'Auto-converte Fiéis/s sem gastar Fé'
   },
@@ -218,7 +218,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Os altares alimentam a si mesmos em perpétua liturgia, elevando os ritos assim que a chama atinge a ressonância exigida.',
     icon: '🕯️',
     tier: 4,
-    cost: 100,
+    cost: 37800,
     prerequisites: ['gn_fu1_boost'],
     effectText: 'Auto-compra Ritos de Fervor/s sem gastar Fervor'
   },
@@ -230,7 +230,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'A matéria se transubstancia espontaneamente em ouro celestial sem a necessidade de intervenção mortal.',
     icon: '💠',
     tier: 4,
-    cost: 120,
+    cost: 43800,
     prerequisites: ['gn_relic_resonance'],
     effectText: '+100% Transmutação/s contínua'
   },
@@ -242,7 +242,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Aquele que tudo vê não apenas compreende o universo: ele se torna a própria mente que o concebe.',
     icon: '🔮',
     tier: 4,
-    cost: 180,
+    cost: 14700,
     prerequisites: ['gn_gnose_mult'],
     effectText: '2× Gnose em resets e +50% bônus passivo'
   },
@@ -254,7 +254,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'O centro está em toda parte; a circunferência, em lugar nenhum. A Esfera recorda sua plenitude anterior à criação.',
     icon: '👑',
     tier: 4,
-    cost: 300,
+    cost: 45800,
     prerequisites: ['gn_auto_followers', 'gn_auto_fervor', 'gn_gnose_mult'],
     effectText: '100× Fé/Fervor, 2× Gnose e Estágios IV–V barateados'
   }

@@ -49,8 +49,13 @@ export class FervorTab {
     const totalFollowers = this.options.gameState.getTotalFollowersCount();
     const faith = this.options.gameState.faithPoints;
     const fervor = this.options.gameState.fervorPoints;
+    const phoenixUnlocked = this.options.gameState.isPhoenixRelicUnlocked();
 
     this.options.gameState.fervorUpgrades.forEach((upg) => {
+      if (upg.id === 'fu_relics' && !phoenixUnlocked && upg.level === 0) {
+        return;
+      }
+
       const cost = calculateFervorUpgradeCost(upg);
       const fu1Boosted = this.options.gameState.isFu1Boosted();
       const mult = getFervorUpgradeMultiplier(upg, totalFollowers, faith, fu1Boosted);
