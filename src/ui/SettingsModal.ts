@@ -153,9 +153,13 @@ export class SettingsModal {
       if (this.options.audio.isMusicEnabled()) {
         this.options.audio.playMusic();
       }
-      window.removeEventListener('pointerdown', triggerAudioOnGesture);
-      window.removeEventListener('keydown', triggerAudioOnGesture);
+      if (!this.options.audio.isMusicEnabled() || !this.options.audio.isMusicPaused()) {
+        window.removeEventListener('click', triggerAudioOnGesture);
+        window.removeEventListener('pointerdown', triggerAudioOnGesture);
+        window.removeEventListener('keydown', triggerAudioOnGesture);
+      }
     };
+    window.addEventListener('click', triggerAudioOnGesture);
     window.addEventListener('pointerdown', triggerAudioOnGesture);
     window.addEventListener('keydown', triggerAudioOnGesture);
   }

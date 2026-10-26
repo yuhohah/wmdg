@@ -178,7 +178,7 @@ export class BossBattleModal {
 
     if (this.overlayEl) {
       this.overlayEl.style.display = 'flex';
-      this.overlayEl.classList.add('active');
+      this.overlayEl.classList.add('open', 'active');
     }
 
     this.options.audio.playTone(320, 'triangle', 0.25);
@@ -189,7 +189,7 @@ export class BossBattleModal {
   public close(): void {
     if (this.overlayEl) {
       this.overlayEl.style.display = 'none';
-      this.overlayEl.classList.remove('active');
+      this.overlayEl.classList.remove('open', 'active');
     }
     if (this.riftsLayerEl) {
       this.riftsLayerEl.innerHTML = '';

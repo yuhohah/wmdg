@@ -28,7 +28,7 @@ export class IncarnationAltar {
   private currentStage: number = 1;
   private animFrameId: number | null = null;
   private width: number = 380;
-  private height: number = 240;
+  private height: number = 210;
   private dpr: number = 1;
 
   private particles: AltarParticle[] = [];
@@ -55,9 +55,10 @@ export class IncarnationAltar {
 
   private initCanvas(): void {
     if (!this.canvas) return;
-    const rect = this.canvas.getBoundingClientRect();
-    this.width = rect.width > 50 ? rect.width : 400;
-    this.height = rect.height > 50 ? rect.height : 270;
+    const cssW = this.canvas.clientWidth || this.canvas.offsetWidth;
+    const cssH = this.canvas.clientHeight || this.canvas.offsetHeight;
+    this.width = cssW > 50 ? cssW : 400;
+    this.height = cssH > 50 ? cssH : 210;
     this.dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     this.canvas.width = Math.floor(this.width * this.dpr);
@@ -73,11 +74,12 @@ export class IncarnationAltar {
 
   public resize(): void {
     if (!this.canvas || !this.ctx) return;
-    const r = this.canvas.getBoundingClientRect();
-    if (r.width > 30 && r.height > 30) {
-      if (Math.abs(this.width - r.width) > 0.5 || Math.abs(this.height - r.height) > 0.5) {
-        this.width = r.width;
-        this.height = r.height;
+    const cssW = this.canvas.clientWidth || this.canvas.offsetWidth || 400;
+    const cssH = this.canvas.clientHeight || this.canvas.offsetHeight || 210;
+    if (cssW > 30 && cssH > 30) {
+      if (Math.abs(this.width - cssW) > 0.5 || Math.abs(this.height - cssH) > 0.5) {
+        this.width = cssW;
+        this.height = cssH;
         this.canvas.width = Math.floor(this.width * this.dpr);
         this.canvas.height = Math.floor(this.height * this.dpr);
         this.ctx.setTransform(1, 0, 0, 1, 0, 0);

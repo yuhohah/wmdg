@@ -27,6 +27,7 @@
   gap: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
+  height: 100dvh !important;
   overflow: hidden !important;
 }
 
@@ -34,6 +35,7 @@
   position: relative;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   background-color: #16100c;
   cursor: grab;
@@ -88,18 +90,19 @@
 
 .top-hud-bar {
   position: fixed !important;
-  top: 14px !important;
-  left: 22px !important;
-  right: 22px !important;
-  width: calc(100vw - 44px) !important;
+  top: 12px !important;
+  left: 18px !important;
+  right: 18px !important;
+  width: calc(100vw - 36px) !important;
   height: auto !important;
-  min-height: 50px;
+  min-height: 46px;
   padding: 0 !important;
   background: transparent !important;
   border: 0 !important;
   display: flex !important;
   align-items: flex-start !important;
   justify-content: space-between !important;
+  gap: 12px !important;
   pointer-events: none;
   z-index: 60 !important;
 }
@@ -112,6 +115,7 @@
 
 /* Left Emblem Cartouche — Engraved Parchment Plaque */
 .cult-wordmark {
+  flex-shrink: 0;
   display: inline-flex !important;
   align-items: center !important;
   gap: 10px !important;
@@ -144,8 +148,6 @@
   transition: background-color 0.15s ease, transform 0.15s ease;
 }
 
-/* .cult-wordmark:hover removed */
-
 .cult-mark {
   display: inline-flex !important;
   align-items: center;
@@ -167,6 +169,8 @@
   top: 0 !important;
   left: auto !important;
   transform: none !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
   background: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -181,17 +185,17 @@
   align-items: stretch !important;
   justify-content: center !important;
   flex-wrap: wrap;
-  gap: 8px !important;
+  gap: 6px !important;
 }
 
 .resource-item {
   position: relative;
   display: grid !important;
-  grid-template-columns: 28px auto !important;
-  grid-template-rows: 22px 15px !important;
-  gap: 0 8px !important;
-  min-width: 132px !important;
-  padding: 5px 12px 5px 9px !important;
+  grid-template-columns: 26px auto !important;
+  grid-template-rows: 21px 14px !important;
+  gap: 0 7px !important;
+  min-width: 118px !important;
+  padding: 4px 10px 4px 8px !important;
   background-color: var(--hermetic-parchment) !important;
   background-image:
     repeating-linear-gradient(
@@ -214,8 +218,8 @@
 .resource-item .res-name {
   grid-column: 1;
   grid-row: 1 / 3;
-  width: 28px !important;
-  height: 28px !important;
+  width: 26px !important;
+  height: 26px !important;
   font-size: 0 !important;
   align-self: center;
   display: flex;
@@ -228,8 +232,8 @@
 .resource-item .res-name::before {
   content: '';
   display: block;
-  width: 22px !important;
-  height: 22px !important;
+  width: 20px !important;
+  height: 20px !important;
   background-position: center;
   background-size: contain;
   background-repeat: no-repeat;
@@ -246,7 +250,7 @@
 #fervor-counter-hud,
 #relic-counter-hud,
 #gnose-counter-hud {
-  font: 25px/0.92 var(--font-game) !important;
+  font: 22px/0.92 var(--font-game) !important;
   color: var(--hermetic-ink-black) !important;
   text-shadow: 0 1px 0 rgba(255, 245, 224, 0.65) !important;
   font-variant-numeric: tabular-nums;
@@ -273,13 +277,14 @@
 #relic-rate-counter-hud,
 #gnose-mult-counter-hud {
   grid-column: 2;
-  font: 15px/1 var(--font-game) !important;
+  font: 14px/1 var(--font-game) !important;
   color: var(--hermetic-ink-sepia) !important;
   text-shadow: none !important;
 }
 
 /* Right Group HUD Buttons — Etched Copperplate Stamps */
 .top-right-group {
+  flex-shrink: 0;
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
@@ -329,8 +334,6 @@
   stroke: currentColor !important;
   color: inherit !important;
 }
-
-/* .icon-btn-gold hover disabled */
 
 .top-right-group .icon-btn-gold:active {
   transform: translateY(1px);
@@ -469,16 +472,14 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-/* .dodeca-card-btn-toggle:hover removed */
-
 /* Card Body — Aged Parchment Treatise Interior */
 .dodeca-card-body {
-  padding: 13px;
+  padding: 12px;
   overflow-y: auto;
   max-height: 580px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   color: var(--hermetic-ink-black);
 }
 
@@ -493,8 +494,6 @@
   color: var(--hermetic-ink-black) !important;
 }
 
-/* cult-action-card hover removed */
-
 .dodeca-card-body :is(.btn-follower-action, .btn-incarnation-upgrade, .btn-convert-relics, .btn-buy-relic, .btn-unlock-action, .cult-action-card .card-click-hint) {
   background-color: var(--hermetic-ink-soot) !important;
   background-image: linear-gradient(180deg, #2b2018 0%, #18110c 100%) !important;
@@ -506,8 +505,6 @@
     2px 3px 0 rgba(22, 16, 12, 0.75) !important;
   color: var(--hermetic-parchment-light) !important;
 }
-
-/* card body button hover disabled */
 
 .dodeca-card-body :is(.btn-follower-action:disabled, .btn-convert-max.locked, .btn-incarnation-upgrade:disabled, .btn-convert-relics:disabled, .btn-buy-relic:disabled, .btn-unlock-action:disabled, .cult-action-card.unaffordable .card-click-hint) {
   background: #9e8968 !important;
@@ -574,10 +571,10 @@
 /* 1. DIEGETIC CELESTIAL SPHERE (Centered in cosmic dome oculus, no card/blur/borders) */
 #card-altar-sphere,
 #card-altar-sphere.focused-glow {
-  left: 1490px;
-  top: 615px;
-  width: 460px;
-  height: 460px;
+  left: 1540px;
+  top: 610px;
+  width: 360px;
+  height: 360px;
   background: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -644,6 +641,9 @@
 
 #card-altar-sphere .sphere-wrapper {
   pointer-events: auto;
+  width: 190px !important;
+  height: 190px !important;
+  flex-shrink: 0 !important;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
@@ -658,10 +658,12 @@
 .divine-sphere-btn {
   width: 190px !important;
   height: 190px !important;
+  flex-shrink: 0 !important;
+  aspect-ratio: 1 / 1 !important;
   border-radius: 50% !important;
   background: radial-gradient(circle at 35% 30%, #fffbe8 0%, #fed7aa 15%, #f59e0b 35%, #b45309 60%, #451a03 85%, #180902 100%) !important;
   border: 2.5px solid rgba(245, 218, 140, 0.85) !important;
-  box-shadow: 
+  box-shadow:
     0 0 35px rgba(245, 158, 11, 0.55),
     0 0 80px rgba(180, 83, 9, 0.35),
     inset -14px -14px 28px rgba(0, 0, 0, 0.95),
@@ -681,7 +683,7 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: 
+  background:
     radial-gradient(circle at 50% 50%, transparent 55%, rgba(20, 8, 2, 0.7) 95%),
     repeating-linear-gradient(0deg, transparent, transparent 16px, rgba(255, 230, 160, 0.12) 17px, transparent 18px),
     repeating-linear-gradient(90deg, transparent, transparent 16px, rgba(255, 230, 160, 0.12) 17px, transparent 18px);
@@ -700,8 +702,6 @@
   animation: orbitSpin 45s linear infinite;
 }
 
-/* divine-sphere-btn hover removed */
-
 #card-altar-sphere .divine-sphere-btn:active,
 .divine-sphere-btn:active {
   transform: scale(0.95) !important;
@@ -714,8 +714,8 @@
 
 /* 2. HIGH ALTAR SANCTUARY (DOMUS SAPIENTIAE - Left Chancel) */
 #card-incarnation {
-  left: 240px;
-  top: 400px;
+  left: 380px;
+  top: 220px;
   width: 480px;
   height: auto !important;
   min-height: auto !important;
@@ -724,15 +724,15 @@
 #card-incarnation .dodeca-card-body {
   max-height: none !important;
   overflow: visible !important;
-  padding: 12px;
-  gap: 8px;
+  padding: 10px 12px;
+  gap: 6px;
 }
 
 /* 3. ALCHEMICAL CRYPT (CRYPTA ALCHYMICA - Lower Left Vault) */
 #card-relics {
-  left: 260px;
-  top: 1220px;
-  width: 480px;
+  left: 300px;
+  top: 900px;
+  width: 640px;
   height: auto !important;
   min-height: auto !important;
 }
@@ -740,13 +740,115 @@
 #card-relics .dodeca-card-body {
   max-height: none !important;
   overflow: visible !important;
-  padding: 12px;
+  padding: 8px 10px;
+  gap: 6px;
+}
+
+#card-relics .relic-monument-banner {
+  display: none !important;
+}
+
+#card-relics .relics-convert-section {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  padding: 6px 10px !important;
+  margin-bottom: 6px !important;
+}
+
+#card-relics #btn-convert-relics {
+  width: auto !important;
+  flex: 0 0 auto !important;
+  padding: 6px 12px !important;
+  font-size: 15.5px !important;
+  white-space: nowrap !important;
+}
+
+#card-relics .relics-status-info {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 6px 14px !important;
+  font-size: 13.5px !important;
+  margin: 0 !important;
+}
+
+#card-relics .relics-balance-text span,
+#card-relics .relics-extra-rate-text span {
+  font-size: 15px !important;
+}
+
+#card-relics #relic-upgrades-list {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 6px !important;
+  padding-bottom: 2px !important;
+}
+
+#card-relics .relic-action-card {
+  margin: 0 !important;
+  padding: 6px 8px !important;
+  gap: 3px !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+
+#card-relics .relic-action-card .card-header-row {
+  margin-bottom: 1px !important;
+  gap: 4px !important;
+  flex-wrap: nowrap !important;
+}
+
+#card-relics .relic-action-card .card-name {
+  font-size: 15px !important;
+  line-height: 1.1 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+#card-relics .relic-action-card .relic-level-badge {
+  font-size: 11.5px !important;
+  padding: 1px 4px !important;
+  flex-shrink: 0 !important;
+}
+
+#card-relics .relic-action-card .card-desc {
+  margin: 0 !important;
+}
+
+#card-relics .relic-action-card .relic-benefit-text {
+  font-size: 12.5px !important;
+  line-height: 1.15 !important;
+}
+
+#card-relics .relic-action-card .card-footer-row {
+  margin-top: 2px !important;
+  padding-top: 3px !important;
+  gap: 4px !important;
+  flex-wrap: nowrap !important;
+}
+
+#card-relics .relic-action-card .relic-cost-tag,
+#card-relics .relic-action-card .relic-cost-tag * {
+  font-size: 12px !important;
+}
+
+#card-relics .relic-action-card .card-click-hint {
+  font-size: 11px !important;
+  padding: 2px 6px !important;
+  white-space: nowrap !important;
 }
 
 /* 4. SCRIPTURIUM PORTAL — Direct Unlock Button (Centered directly below the Sacred Sphere) */
 #card-unlocks {
-  left: 1530px;
-  top: 1110px;
+  left: 1560px;
+  top: 1030px;
   position: absolute;
   z-index: 15;
   display: flex;
@@ -767,11 +869,11 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
-  padding: 14px 28px;
+  padding: 12px 24px;
   background: radial-gradient(circle at 50% 25%, #2a1e14 0%, #140d09 100%);
   border: 2px solid #c49850;
   border-radius: 8px;
-  box-shadow: 
+  box-shadow:
     0 0 24px rgba(196, 152, 80, 0.35),
     0 8px 24px rgba(0, 0, 0, 0.75),
     inset 0 0 14px rgba(245, 158, 11, 0.2);
@@ -795,11 +897,9 @@
   pointer-events: none;
 }
 
-/* .btn-unlock-mechanic hover removed */
-
 .btn-unlock-mechanic.affordable {
   border-color: #f59e0b;
-  box-shadow: 
+  box-shadow:
     0 0 30px rgba(245, 158, 11, 0.55),
     0 10px 28px rgba(0, 0, 0, 0.8),
     inset 0 0 16px rgba(245, 158, 11, 0.3);
@@ -864,8 +964,8 @@
 
 /* 5. CATHEDRAL COURTYARD & DEVOTEES (NAVE CATHEDRALIS / COLONNATA) */
 #card-followers {
-  left: 1980px;
-  top: 900px;
+  left: 2040px;
+  top: 880px;
   width: 480px;
   height: auto !important;
   min-height: auto !important;
@@ -874,14 +974,14 @@
 #card-followers .dodeca-card-body {
   max-height: none !important;
   overflow: visible !important;
-  padding: 12px;
-  gap: 8px;
+  padding: 10px 12px;
+  gap: 6px;
 }
 
 #card-followers .followers-arena-container {
   width: 100%;
-  height: 270px;
-  margin: 6px 0 8px 0;
+  height: 220px;
+  margin: 4px 0 6px 0;
   border-radius: 4px;
   overflow: hidden;
   position: relative;
@@ -892,15 +992,20 @@
 
 #card-followers .followers-walk-canvas {
   width: 100%;
-  height: 270px;
+  height: 220px;
   display: block;
   background: transparent !important;
 }
 
+#card-followers .followers-controls {
+  margin-top: 6px !important;
+  gap: 8px !important;
+}
+
 /* 6. PERPETUAL HEARTH / BRAZIER (VIA CATHEDRALIS) */
 #card-fervor {
-  left: 2640px;
-  top: 860px;
+  left: 2620px;
+  top: 880px;
   width: 480px;
   height: auto !important;
   min-height: auto !important;
@@ -909,7 +1014,18 @@
 #card-fervor .dodeca-card-body {
   max-height: none !important;
   overflow: visible !important;
-  padding: 12px;
+  padding: 10px 12px;
+}
+
+#card-fervor #fervor-upgrades-list {
+  gap: 6px !important;
+  padding-bottom: 2px !important;
+}
+
+#card-fervor .fervor-upgrade-card {
+  padding: 6px 8px !important;
+  gap: 3px !important;
+  margin: 0 !important;
 }
 
 #card-fervor .fervor-upgrade-card .card-header-row {
@@ -918,6 +1034,7 @@
   justify-content: space-between !important;
   flex-wrap: nowrap !important;
   gap: 8px !important;
+  margin-bottom: 1px !important;
 }
 
 #card-fervor .fervor-upgrade-card .card-title-group {
@@ -932,12 +1049,25 @@
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  font-size: 19px !important;
+  font-size: 16.5px !important;
 }
 
 #card-fervor .fervor-upgrade-card .fervor-mult-tag {
   flex-shrink: 0 !important;
   white-space: nowrap !important;
+  font-size: 12.5px !important;
+  padding: 1px 5px !important;
+}
+
+#card-fervor .fervor-upgrade-card .card-desc {
+  font-size: 13px !important;
+  line-height: 1.15 !important;
+  margin: 0 !important;
+}
+
+#card-fervor .fervor-upgrade-card .card-footer-row {
+  margin-top: 2px !important;
+  padding-top: 3px !important;
 }
 
 /* Complete Hover Removal on Card de Fervor and All Its Descendants */
@@ -1014,11 +1144,11 @@
   border-color: var(--hermetic-ink-black) !important;
 }
 
-/* 7. SANCTUM GNOSTICUM — Câmara da Gnose (Positioned in place of retired Boss Battle/Pantheon) */
+/* 7. SANCTUM GNOSTICUM — Câmara da Gnose */
 #card-gnose {
-  left: 2460px;
-  top: 100px;
-  width: 820px;
+  left: 2340px;
+  top: 110px;
+  width: 780px;
   height: auto !important;
   min-height: auto !important;
 }
@@ -1060,7 +1190,7 @@
 }
 
 .btn-gnose-reset {
-  flex: 0 0 245px;
+  flex: 0 0 230px;
   padding: 5px 10px;
   font-family: var(--font-game);
   font-size: 15px;
@@ -1077,8 +1207,6 @@
   text-shadow: 1px 1px 0 #090604;
   white-space: nowrap;
 }
-
-/* .btn-gnose-reset hover disabled */
 
 .btn-gnose-reset:disabled {
   opacity: 0.78;
@@ -1174,7 +1302,7 @@
 .gnose-upgrades-tree {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .gnose-tier-section {
@@ -1216,7 +1344,7 @@
   flex-direction: column !important;
   justify-content: space-between !important;
   padding: 4px 6px !important;
-  min-height: 70px !important;
+  min-height: 66px !important;
   min-width: 0 !important;
   box-sizing: border-box !important;
   border: 1.5px solid var(--hermetic-rule-brass) !important;
@@ -1260,7 +1388,7 @@
 
 .gnose-node-title {
   font-family: var(--font-game);
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1.05;
   color: var(--hermetic-ink-black);
@@ -1277,7 +1405,7 @@
 }
 
 .gnose-node-effect {
-  font-size: 11px;
+  font-size: 10.5px;
   line-height: 1.15;
   color: var(--hermetic-ink-sepia);
   margin: 0;
@@ -1292,7 +1420,7 @@
   align-items: center;
   justify-content: flex-end;
   margin-top: auto;
-  padding-top: 3px;
+  padding-top: 2px;
   border-top: 1px dashed rgba(94, 70, 49, 0.35);
 }
 
@@ -1331,8 +1459,8 @@
    =================================================== */
 
 .board-quicknav-bar {
-  position: absolute;
-  bottom: 18px;
+  position: fixed;
+  bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
   top: auto;
@@ -1359,7 +1487,7 @@
     inset 0 0 0 3.5px var(--hermetic-ink-umber),
     4px 5px 0 rgba(18, 13, 9, 0.9);
   border-radius: 0;
-  max-width: calc(100vw - 240px);
+  max-width: calc(100vw - 230px);
   overflow-x: auto;
 }
 
@@ -1381,8 +1509,6 @@
   text-transform: uppercase;
 }
 
-/* .quicknav-btn hover disabled */
-
 .quicknav-btn.active {
   background: var(--hermetic-ink-black);
   color: var(--hermetic-parchment-light);
@@ -1391,9 +1517,9 @@
 }
 
 .board-zoom-controls {
-  position: absolute;
-  bottom: 18px;
-  right: 22px;
+  position: fixed;
+  bottom: 16px;
+  right: 18px;
   z-index: 50;
   display: flex;
   align-items: center;
@@ -1432,8 +1558,6 @@
   border-radius: 0;
   transition: background 0.15s ease, color 0.15s ease;
 }
-
-/* .board-zoom-btn hover disabled */
 
 .board-zoom-level {
   font-family: var(--font-game);
@@ -1493,8 +1617,6 @@
   border-radius: 0 !important;
 }
 
-/* close btns hover disabled */
-
 /* Ensure all tab panes inside Dodeca cards are displayed as open cards */
 .dodeca-card .tab-pane {
   display: block !important;
@@ -1524,7 +1646,6 @@
   background: var(--hermetic-ink-black);
 }
 
-
 /* ===================================================
    ALTAR DA ENCARNAÇÃO DA ESFERA (Evolving Avatar Altar)
    Matches the Pátio dos Fiéis layout & Hermetic Art Style
@@ -1532,20 +1653,7 @@
 
 .incarnation-altar-container {
   width: 100%;
-  margin: 12px 0 10px 0;
-  border-radius: 4px;
-  overflow: hidden;
-  position: relative;
-  background: radial-gradient(circle at 50% 50%, rgba(20, 16, 14, 0.95), rgba(8, 7, 6, 0.98));
-  border: 1px dashed rgba(196, 152, 80, 0.45);
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.4);
-  cursor: pointer;
-  user-select: none;
-}
-
-.incarnation-altar-container {
-  width: 100%;
-  margin: 6px 0 8px 0;
+  margin: 4px 0 6px 0;
   border-radius: 4px;
   overflow: hidden;
   position: relative;
@@ -1559,7 +1667,7 @@
 .incarnation-altar-viewport {
   position: relative;
   width: 100%;
-  height: 270px;
+  height: 210px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1579,15 +1687,15 @@
 /* Bênção 2x da Encarnação */
 .incarnation-blessing-panel {
   width: 100%;
-  margin: 4px 0 8px 0;
-  padding: 8px 12px;
+  margin: 2px 0 6px 0;
+  padding: 7px 10px;
   background: rgba(18, 14, 11, 0.9);
   border: 1.5px solid rgba(140, 106, 54, 0.5);
   border-radius: 4px;
   box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
   box-sizing: border-box;
 }
@@ -1645,8 +1753,6 @@
   transition: width 0.12s linear;
 }
 
-/* incarnation avatar hover removed */
-
 .incarnation-altar-canvas {
   position: absolute;
   inset: 0;
@@ -1679,7 +1785,7 @@
   border-top: 1px solid rgba(196, 152, 80, 0.3);
   z-index: 3;
   position: relative;
-  min-height: 38px;
+  min-height: 36px;
   box-sizing: border-box;
 }
 
@@ -1705,13 +1811,6 @@
   color: #a18454;
   letter-spacing: 0.5px;
   line-height: 1.2;
-}
-
-.incarnation-altar-lore {
-  font-size: 11px;
-  color: #c49850;
-  font-style: italic;
-  opacity: 0.85;
 }
 
 .incarnation-altar-lore {
@@ -1785,7 +1884,6 @@
    transforms (board camera, centering, patio followers alignment, etc.).
    ========================================================================= */
 
-/* Neutralize transform, filter, and transition on interactive elements on hover/active */
 .dodeca-card:hover,
 .cult-action-card:hover,
 .cult-action-card:active,
@@ -1922,7 +2020,6 @@
   color: var(--hermetic-ink-black) !important;
 }
 
-
 /* Ensure hover tooltip popup is permanently hidden */
 #cult-tooltip,
 .cult-tooltip {
@@ -1930,4 +2027,517 @@
   visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
+}
+
+/* =========================================================================
+   RESPONSIVE DESKTOP & MOBILE LAYOUT OVERRIDES (DODECA-BOARD ARCHITECTURE)
+   Ensures zero overlap on Desktop (1024px-1920px+) and Mobile (360px-860px)
+   ========================================================================= */
+
+/* Hide resource counters & achievements button while on Start Screen */
+.ui-container:has(#start-screen.active) .resources-hud-card,
+.ui-container:has(#start-screen.active) #achievements-hud-btn,
+.ui-container:has(#start-screen.active) .cult-wordmark {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+@media (max-width: 1180px) and (min-width: 861px) {
+  .cult-wordmark span:not(.cult-mark) {
+    display: none !important;
+  }
+  .cult-wordmark {
+    padding: 6px 8px !important;
+  }
+  .resource-item {
+    min-width: 104px !important;
+    padding: 4px 8px 4px 6px !important;
+  }
+}
+
+@media (max-width: 860px) {
+  #gameplay-screen {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
+  .dodeca-board-viewport {
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+  }
+
+  /* 1. Compact Mobile Top HUD Bar — Fits all resources + action buttons cleanly */
+  .top-hud-bar {
+    top: calc(6px + env(safe-area-inset-top, 0px)) !important;
+    left: 6px !important;
+    right: 6px !important;
+    width: calc(100vw - 12px) !important;
+    min-height: 0 !important;
+    gap: 5px !important;
+    align-items: flex-start !important;
+  }
+
+  .cult-wordmark {
+    display: none !important;
+  }
+
+  .resources-hud-card {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .resources-hud-row {
+    justify-content: flex-start !important;
+    gap: 4px !important;
+  }
+
+  .resource-item {
+    flex: 1 1 auto !important;
+    grid-template-columns: 16px auto !important;
+    grid-template-rows: 14px 10px !important;
+    gap: 0 4px !important;
+    min-width: 66px !important;
+    max-width: 120px !important;
+    padding: 2px 5px 2px 4px !important;
+    border-width: 1.5px !important;
+    box-shadow:
+      inset 0 0 0 1px var(--hermetic-parchment-light),
+      2px 2px 0 rgba(22, 16, 12, 0.85) !important;
+  }
+
+  .resource-item .res-name {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .resource-item .res-name::before {
+    width: 13px !important;
+    height: 13px !important;
+  }
+
+  .resource-item .res-num,
+  #faith-counter,
+  #followers-counter,
+  #fervor-counter-hud,
+  #relic-counter-hud,
+  #gnose-counter-hud {
+    font: 14.5px/0.95 var(--font-game) !important;
+  }
+
+  .resource-item .res-rate,
+  #faith-per-sec-counter,
+  #fervor-rate-counter-hud,
+  #relic-rate-counter-hud,
+  #gnose-mult-counter-hud {
+    font: 10px/1 var(--font-game) !important;
+  }
+
+  .top-right-group {
+    gap: 4px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .top-right-group .icon-btn-gold {
+    width: 32px !important;
+    height: 32px !important;
+    border-width: 1.5px !important;
+    box-shadow:
+      inset 0 0 0 1px var(--hermetic-parchment-light),
+      2px 2px 0 rgba(22, 16, 12, 0.85) !important;
+  }
+
+  .top-right-group .icon-btn-gold svg {
+    width: 15px !important;
+    height: 15px !important;
+  }
+
+  /* 2. Mobile-Native Card Widths & Internal Scrollable Bodies (100% Scale on Phone!) */
+  #card-followers,
+  #card-fervor,
+  #card-incarnation,
+  #card-relics,
+  #card-gnose,
+  #card-achievements {
+    width: min(400px, calc(100vw - 16px)) !important;
+    max-width: calc(100vw - 16px) !important;
+    height: auto !important;
+  }
+
+  .dodeca-card-header {
+    padding: 6px 10px !important;
+  }
+
+  .dodeca-card-title {
+    font-size: 18px !important;
+    letter-spacing: 0.8px !important;
+  }
+
+  .dodeca-card-tag {
+    font-size: 11px !important;
+    padding: 1px 5px !important;
+  }
+
+  #card-followers .dodeca-card-body,
+  #card-fervor .dodeca-card-body,
+  #card-incarnation .dodeca-card-body,
+  #card-relics .dodeca-card-body,
+  #card-gnose .dodeca-card-body,
+  #card-achievements .dodeca-card-body {
+    max-height: calc(100dvh - 220px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+    padding: 8px 10px !important;
+    gap: 6px !important;
+  }
+
+  /* Bring Unlock Seal closer below the Sphere on Mobile so both fit at ~100% zoom */
+  #card-unlocks {
+    top: 915px !important;
+    left: 1560px !important;
+  }
+
+  .btn-unlock-mechanic {
+    min-width: 280px !important;
+    max-width: 340px !important;
+    padding: 10px 16px !important;
+  }
+
+  /* Card 2: Pátio dos Fiéis Mobile Polish */
+  #card-followers .followers-arena-container,
+  #card-followers .followers-walk-canvas {
+    height: 155px !important;
+  }
+
+  .btn-follower-action {
+    padding: 7px 10px !important;
+    gap: 6px !important;
+  }
+
+  .btn-action-title {
+    font-size: 14.5px !important;
+  }
+
+  .btn-action-benefit {
+    font-size: 11.5px !important;
+  }
+
+  .btn-action-cost {
+    font-size: 12.5px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Card 4: Fervor Sagrado Mobile Polish */
+  #card-fervor .fervor-upgrade-card .card-name {
+    font-size: 15px !important;
+  }
+
+  #card-fervor .fervor-upgrade-card .card-desc {
+    font-size: 12px !important;
+    white-space: normal !important;
+  }
+
+  /* Card 5: Encarnação Sagrada Mobile Polish */
+  .incarnation-altar-viewport {
+    height: 148px !important;
+  }
+
+  .incarnation-altar-overlay {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 2px !important;
+    padding: 5px 8px !important;
+  }
+
+  .incarnation-altar-hint {
+    font-size: 12.5px !important;
+  }
+
+  .incarnation-altar-lore {
+    font-size: 11px !important;
+  }
+
+  .incarnation-blessing-header {
+    flex-wrap: wrap !important;
+    gap: 2px 6px !important;
+  }
+
+  .incarnation-blessing-status {
+    font-size: 11px !important;
+  }
+
+  /* Card 6: Opus Magnum (Relíquias) Mobile Single-Column Layout */
+  #card-relics .relics-convert-section {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+    padding: 8px !important;
+  }
+
+  #card-relics #btn-convert-relics {
+    width: 100% !important;
+    white-space: normal !important;
+    text-align: center !important;
+    justify-content: center !important;
+    font-size: 14.5px !important;
+    padding: 7px 10px !important;
+  }
+
+  #card-relics .relics-status-info {
+    justify-content: space-between !important;
+    font-size: 12.5px !important;
+    gap: 4px 10px !important;
+  }
+
+  #card-relics #relic-upgrades-list {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+  }
+
+  /* Card 9: Câmara da Gnose Mobile 2-Column Readable Layout */
+  .gnose-top-bar {
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+
+  .btn-gnose-reset {
+    flex: none !important;
+    width: 100% !important;
+    padding: 7px 10px !important;
+    font-size: 15px !important;
+  }
+
+  .gnose-stats-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 4px !important;
+  }
+
+  .gnose-stat-label {
+    font-size: 9.5px !important;
+  }
+
+  .gnose-stat-val {
+    font-size: 13.5px !important;
+  }
+
+  .gnose-controls-row {
+    flex-wrap: wrap !important;
+    gap: 4px 8px !important;
+  }
+
+  .gnose-toggles-group,
+  .gnose-automation-panel {
+    flex-wrap: wrap !important;
+    gap: 4px 8px !important;
+  }
+
+  .gnose-tier-header {
+    flex-wrap: wrap !important;
+    gap: 3px 6px !important;
+    font-size: 12px !important;
+  }
+
+  .gnose-tier-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .gnose-tier-grid > .gnose-tree-node:last-child:nth-child(odd) {
+    grid-column: 1 / -1 !important;
+  }
+
+  .gnose-tree-node {
+    padding: 6px 8px !important;
+    min-height: 68px !important;
+  }
+
+  .gnose-node-title {
+    font-size: 13.5px !important;
+    white-space: normal !important;
+    line-height: 1.1 !important;
+  }
+
+  .gnose-node-effect {
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+  }
+
+  .gnose-node-badge {
+    font-size: 11px !important;
+    padding: 2px 6px !important;
+  }
+
+  /* 3. Native-Style Bottom QuickNav Bar (All Tabs Fit on 1 Row Without Horizontal Scroll) */
+  .board-quicknav-bar {
+    position: fixed !important;
+    bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 6px !important;
+    right: 6px !important;
+    transform: none !important;
+    width: calc(100vw - 12px) !important;
+    max-width: none !important;
+    padding: 4px !important;
+    gap: 3px !important;
+    justify-content: stretch !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+    box-shadow:
+      inset 0 0 0 1.5px var(--hermetic-parchment-light),
+      inset 0 0 0 3px var(--hermetic-ink-umber),
+      2px 3px 0 rgba(18, 13, 9, 0.9) !important;
+  }
+
+  .quicknav-btn {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 4px 2px !important;
+    gap: 1px !important;
+    font-size: 11px !important;
+    letter-spacing: 0 !important;
+  }
+
+  .quicknav-btn > span:first-child {
+    font-size: 13px !important;
+    line-height: 1 !important;
+  }
+
+  .quicknav-btn > span:last-child {
+    font-size: 10.5px !important;
+    line-height: 1.05 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .board-zoom-controls {
+    position: fixed !important;
+    bottom: calc(58px + env(safe-area-inset-bottom, 0px)) !important;
+    right: 6px !important;
+    padding: 3px 5px !important;
+    gap: 3px !important;
+    height: 32px !important;
+    box-sizing: border-box !important;
+    box-shadow:
+      inset 0 0 0 1.5px var(--hermetic-parchment-light),
+      inset 0 0 0 3px var(--hermetic-ink-umber),
+      2px 3px 0 rgba(18, 13, 9, 0.9) !important;
+  }
+
+  .board-zoom-btn {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  .board-zoom-level {
+    font-size: 12px !important;
+    min-width: 34px !important;
+    padding: 0 2px !important;
+  }
+
+  /* 4. Start Screen Mobile Polish */
+  #start-screen.active {
+    padding: 48px 12px 24px 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100dvh !important;
+    box-sizing: border-box !important;
+  }
+
+  .slide-card {
+    width: 100% !important;
+    max-width: 400px !important;
+    padding: 20px 16px !important;
+    box-sizing: border-box !important;
+  }
+
+  .slide-title {
+    font-size: clamp(26px, 7vw, 38px) !important;
+    line-height: 1.08 !important;
+  }
+
+  .start-sphere-emblem {
+    width: 112px !important;
+    height: 112px !important;
+    margin: 16px auto !important;
+  }
+
+  /* 5. Modals (Settings, Achievements, Save Data) Mobile Polish */
+  .modal-slide-card {
+    width: calc(100vw - 20px) !important;
+    max-width: 480px !important;
+    max-height: calc(100dvh - 28px) !important;
+    padding: 14px !important;
+    box-sizing: border-box !important;
+  }
+
+  .modal-header {
+    margin-bottom: 10px !important;
+    padding-bottom: 8px !important;
+  }
+
+  .modal-title {
+    font-size: 22px !important;
+  }
+
+  .setting-item {
+    padding: 8px 10px !important;
+    gap: 8px !important;
+  }
+
+  .setting-name {
+    font-size: 16px !important;
+  }
+
+  .setting-desc {
+    font-size: 13px !important;
+  }
+
+  .btn-setting-action,
+  .btn-setting-danger {
+    font-size: 14px !important;
+    padding: 5px 8px !important;
+  }
+
+  .stats-panel-content.settings-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .stat-label {
+    font-size: 12px !important;
+  }
+
+  .stat-val {
+    font-size: 17px !important;
+  }
+
+  /* 6. Spotlight Onboarding Balloon Mobile Polish */
+  .spotlight-balloon-header {
+    padding: 7px 10px !important;
+  }
+
+  .spotlight-balloon-body {
+    padding: 10px 12px !important;
+    gap: 6px !important;
+  }
+
+  .spotlight-balloon-title {
+    font-size: 20px !important;
+  }
+
+  .spotlight-balloon-desc,
+  .spotlight-balloon-action-tip {
+    font-size: 14px !important;
+    line-height: 1.2 !important;
+  }
 }

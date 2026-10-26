@@ -14,6 +14,7 @@ export class AudioManager {
 
   constructor() {
     this.loadPreferences();
+    this.initMusic();
   }
 
   private loadPreferences(): void {
@@ -50,7 +51,7 @@ export class AudioManager {
   }
 
   public init(): void {
-    if (!this.audioCtx) {
+    if (!this.audioCtx && typeof window !== 'undefined') {
       const AudioCtxClass =
         window.AudioContext ||
         (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -61,10 +62,11 @@ export class AudioManager {
     if (this.audioCtx && this.audioCtx.state === 'suspended') {
       this.audioCtx.resume().catch(() => {});
     }
+    this.initMusic();
   }
 
-  public initMusic(src?: string): void {
-    if (!this.bgMusic && src) {
+  public initMusic(src: string = '/assets/soundtrack.mpeg'): void {
+    if (!this.bgMusic && src && typeof Audio !== 'undefined') {
       this.bgMusic = new Audio(src);
       this.bgMusic.loop = true;
       this.bgMusic.preload = 'auto';
@@ -96,6 +98,10 @@ export class AudioManager {
     if (this.bgMusic && !this.bgMusic.paused) {
       this.bgMusic.pause();
     }
+  }
+
+  public isMusicPaused(): boolean {
+    return !this.bgMusic || this.bgMusic.paused;
   }
 
   public toggleMusic(): boolean {

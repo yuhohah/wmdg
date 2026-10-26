@@ -71,8 +71,14 @@ export class BoardManager {
   private bindEvents(): void {
     if (!this.viewportEl || !this.worldEl) return;
 
-    // 1. Mouse Wheel Zoom (centered at mouse coordinates)
+    // 1. Mouse Wheel Zoom (centered at mouse coordinates; allow native scroll inside scrollable card bodies)
     this.viewportEl.addEventListener('wheel', (e: WheelEvent) => {
+      const target = e.target as HTMLElement | null;
+      const cardBody = target?.closest<HTMLElement>('.dodeca-card-body');
+      if (cardBody && cardBody.scrollHeight > cardBody.clientHeight + 2 && !e.ctrlKey) {
+        return;
+      }
+
       e.preventDefault();
       this.isCameraTransitioning = false;
 
@@ -117,17 +123,16 @@ export class BoardManager {
         return;
       }
 
-      // Filter out clicks on interactive buttons, inputs, links, or internal scrollable card bodies
+      // Filter out clicks on interactive controls or scrollable card bodies so taps and vertical touch scrolling work normally
       const target = e.target as HTMLElement;
       const isCardHeader = !!target.closest('.dodeca-card-header');
-      const isCardBody = !!target.closest('.dodeca-card-body');
-      const isInteractive = !!target.closest('button, a, input, select, textarea, canvas, .cost-val, [role="button"]');
+      const cardBody = target.closest<HTMLElement>('.dodeca-card-body');
+      const isScrollableCardBody = !!cardBody && cardBody.scrollHeight > cardBody.clientHeight + 2;
+      const isInteractive = !!target.closest(
+        'button, a, input, select, textarea, canvas, label, [role="button"], .cult-action-card, .relic-action-card, .gnose-tree-node, .incarnation-altar-container, .board-quicknav-bar, .board-zoom-controls'
+      );
 
-      if (isInteractive && !isCardHeader) {
-        return;
-      }
-
-      if (isCardBody && e.button !== 1) {
+      if ((isInteractive || isScrollableCardBody) && !isCardHeader && e.button !== 1) {
         return;
       }
 
@@ -139,9 +144,6 @@ export class BoardManager {
       this.initialPanY = this.panY;
       this.hasMoved = false;
       this.isCameraTransitioning = false;
-
-      this.viewportEl?.classList.add('is-dragging');
-      this.viewportEl?.setPointerCapture(e.pointerId);
     });
 
     // 3. Pointer Move (Dragging / Panning)
@@ -176,9 +178,17 @@ export class BoardManager {
       const deltaX = e.clientX - this.pointerStartX;
       const deltaY = e.clientY - this.pointerStartY;
 
-      if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+      if (!this.hasMoved && (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4)) {
         this.hasMoved = true;
+        this.viewportEl?.classList.add('is-dragging');
+        try {
+          this.viewportEl?.setPointerCapture(e.pointerId);
+        } catch {
+          // ignore if capture unavailable
+        }
       }
+
+      if (!this.hasMoved) return;
 
       this.panX = this.initialPanX + deltaX;
       this.panY = this.initialPanY + deltaY;
@@ -226,9 +236,13 @@ export class BoardManager {
       this.centerOnCard('card-altar-sphere');
     });
 
-    // 8. Window Resize
+    // 8. Window Resize: re-center active card inside safe viewport
     window.addEventListener('resize', () => {
-      this.applyTransform();
+      if (this.currentFocusedCardId) {
+        this.centerOnCard(this.currentFocusedCardId, true);
+      } else {
+        this.applyTransform();
+      }
     });
   }
 
@@ -248,8 +262,8 @@ export class BoardManager {
     this.isCameraTransitioning = false;
 
     const rect = this.viewportEl.getBoundingClientRect();
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
+    const centerX = (rect.width || window.innerWidth) / 2;
+    const centerY = (rect.height || window.innerHeight) / 2;
 
     const worldX = (centerX - this.panX) / this.zoom;
     const worldY = (centerY - this.panY) / this.zoom;
@@ -269,21 +283,57 @@ export class BoardManager {
 
     this.currentFocusedCardId = cardId;
 
-    const cardLeft = card.offsetLeft;
-    const cardTop = card.offsetTop;
-    const cardWidth = card.offsetWidth || 400;
-    const cardHeight = card.offsetHeight || 500;
+    const viewWidth = this.viewportEl.clientWidth || window.innerWidth;
+    const viewHeight = this.viewportEl.clientHeight || window.innerHeight;
+    const isMobile = viewWidth <= 860;
 
-    const cardCenterX = cardLeft + cardWidth / 2;
-    const cardCenterY = cardTop + cardHeight / 2;
+    // Safe viewport margins accounting for Top HUD and Bottom QuickNav + Utility Row
+    const hudEl = document.querySelector<HTMLElement>('.top-hud-bar');
+    const hudRect = hudEl?.getBoundingClientRect();
+    const topSafe = hudRect && hudRect.height > 0
+      ? Math.min(130, Math.round(hudRect.bottom + 8))
+      : (isMobile ? 54 : 76);
 
-    const viewWidth = this.viewportEl.clientWidth;
-    const viewHeight = this.viewportEl.clientHeight;
+    const navEl = document.getElementById('board-quicknav-bar');
+    const navH = navEl && navEl.offsetHeight > 0 ? navEl.offsetHeight : 44;
+    const bottomSafe = isMobile ? navH + 54 : navH + 26;
 
-    const targetZoom = viewWidth < 768 ? 0.75 : 1.0;
+    const sidePad = isMobile ? 8 : 28;
+    const availW = Math.max(200, viewWidth - sidePad * 2);
+    const availH = Math.max(200, viewHeight - topSafe - bottomSafe);
 
-    const targetPanX = viewWidth / 2 - cardCenterX * targetZoom;
-    const targetPanY = viewHeight / 2 - cardCenterY * targetZoom;
+    const style = window.getComputedStyle(card);
+    const cardLeft = card.offsetLeft || parseFloat(style.left) || 1490;
+    const cardTop = card.offsetTop || parseFloat(style.top) || 560;
+    const cardWidth = card.offsetWidth || parseFloat(style.width) || 360;
+    const cardHeight = card.offsetHeight || parseFloat(style.height) || 360;
+
+    let cardCenterX = cardLeft + cardWidth / 2;
+    let cardCenterY = cardTop + cardHeight / 2;
+    let targetZoom = 1.0;
+
+    if (cardId === 'card-altar-sphere') {
+      const unlockCard = this.cards.get('card-unlocks');
+      const unlockVisible = unlockCard && unlockCard.style.display !== 'none';
+      if (unlockVisible) {
+        // Frame both the Sphere and the Unlock Seal button below it
+        cardCenterY = cardTop + cardHeight * 0.62;
+      }
+      targetZoom = isMobile
+        ? Math.max(0.82, Math.min(0.98, availW / 340, availH / 410))
+        : Math.max(0.85, Math.min(1.0, availH / 540));
+    } else {
+      const maxDesiredZoom = 1.0;
+      const fitW = availW / cardWidth;
+      const fitH = availH / cardHeight;
+      targetZoom = Math.max(this.minZoom, Math.min(maxDesiredZoom, fitW, fitH));
+    }
+
+    const safeCenterX = viewWidth / 2;
+    const safeCenterY = topSafe + availH / 2;
+
+    const targetPanX = safeCenterX - cardCenterX * targetZoom;
+    const targetPanY = safeCenterY - cardCenterY * targetZoom;
 
     this.highlightCard(card);
 
@@ -303,7 +353,7 @@ export class BoardManager {
     this.isCameraTransitioning = true;
 
     const startTime = performance.now();
-    const duration = 500;
+    const duration = 450;
     const startPanX = this.panX;
     const startPanY = this.panY;
     const startZoom = this.zoom;
@@ -343,8 +393,8 @@ export class BoardManager {
 
   private updateActiveQuickNav(): void {
     if (!this.viewportEl) return;
-    const viewWidth = this.viewportEl.clientWidth;
-    const viewHeight = this.viewportEl.clientHeight;
+    const viewWidth = this.viewportEl.clientWidth || window.innerWidth;
+    const viewHeight = this.viewportEl.clientHeight || window.innerHeight;
 
     const currentCenterWorldX = (viewWidth / 2 - this.panX) / this.zoom;
     const currentCenterWorldY = (viewHeight / 2 - this.panY) / this.zoom;

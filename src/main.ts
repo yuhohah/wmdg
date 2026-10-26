@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 // --- App Manager for Cult of the Sphere (Modular Orchestrator) ---
 
 import { AudioManager } from './systems/audio.js';
@@ -23,6 +24,19 @@ import { BoardManager } from './ui/BoardManager.js';
 import { cultDialog } from './ui/CultDialog.js';
 import { TestMenu } from './ui/TestMenu.js';
 
+export function isDevMode(): boolean {
+  if (typeof window === 'undefined') return false;
+  return (
+    Boolean(import.meta.env?.DEV) ||
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname === '0.0.0.0' ||
+    window.location.search.includes('test') ||
+    window.location.search.includes('dev') ||
+    localStorage.getItem('cult_dev_mode') === 'true'
+  );
+}
+
 class AppManager {
   // Core Subsystems
   public audio: AudioManager;
@@ -47,7 +61,7 @@ class AppManager {
   public unlocksTab: UnlocksTab;
   public achievementsTab: AchievementsTab;
   public statsTab: StatsTab;
-  public testMenu!: TestMenu;
+  public testMenu?: TestMenu;
 
   // Save & System State
   private lastSaveTime: number = Date.now();
@@ -196,6 +210,9 @@ class AppManager {
 
     // 6. Setup Listeners, Initial Renders & Loops
     this.board = new BoardManager();
+    this.onboardingGuide.setOnFocusCard((cardId, immediate) => {
+      this.board.centerOnCard(cardId, immediate);
+    });
     this.bindStartScreen();
     this.setupReactiveListeners();
     this.setupSystemEvents();
@@ -207,9 +224,11 @@ class AppManager {
     this.statsTab.updateUI();
     this.onboardingGuide.update();
 
-    // 7. Global Window Helpers & Test Menu
+    // 7. Developer-only / Localhost Test Menu & Global Window Helpers
+    if (isDevMode()) {
+      this.testMenu = new TestMenu(this);
+    }
     this.registerGlobalHelpers();
-    this.testMenu = new TestMenu(this);
   }
 
   private bindStartScreen(): void {
@@ -224,6 +243,7 @@ class AppManager {
       startScreen?.classList.remove('active');
       gameplayScreen?.classList.add('active');
       requestAnimationFrame(() => {
+        this.board.centerOnCard('card-altar-sphere', true);
         this.followersTab.resize();
         this.incarnationTab.altar?.resize();
         this.onboardingGuide.update();
@@ -411,12 +431,22 @@ class AppManager {
   }
 
   private registerGlobalHelpers(): void {
-    (window as any).cultGame = this;
-    (window as any).triggerMiraclePlea = () => this.followersTab.triggerMiraclePlea();
+    if (isDevMode()) {
+      (window as any).cultGame = this;
+      (window as any).game = this;
+      (window as any).testMenu = this.testMenu;
+      (window as any).triggerMiraclePlea = () => this.followersTab.triggerMiraclePlea();
+    }
   }
 }
 
 // Bootstrap Application
-window.addEventListener('DOMContentLoaded', () => {
+const startApp = () => {
   new AppManager();
-});
+};
+
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', startApp);
+} else {
+  startApp();
+}

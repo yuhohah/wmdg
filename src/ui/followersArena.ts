@@ -26,7 +26,7 @@ export class FollowersArena {
   private nextId: number = 1;
   private animFrameId: number | null = null;
   private width: number = 380;
-  private height: number = 240;
+  private height: number = 220;
   private dpr: number = 1;
   private onFollowerClickCallback?: (x: number, y: number) => void;
   private onMiracleClickCallback?: (clientX: number, clientY: number, walker: Walker) => void;
@@ -71,11 +71,12 @@ export class FollowersArena {
   }
 
   public resize(): void {
-    const r = this.canvas.getBoundingClientRect();
-    if (r.width > 30 && r.height > 30) {
-      if (Math.abs(this.width - r.width) > 0.5 || Math.abs(this.height - r.height) > 0.5) {
-        this.width = r.width;
-        this.height = r.height;
+    const cssW = this.canvas.clientWidth || this.canvas.offsetWidth || 400;
+    const cssH = this.canvas.clientHeight || this.canvas.offsetHeight || 220;
+    if (cssW > 30 && cssH > 30) {
+      if (Math.abs(this.width - cssW) > 0.5 || Math.abs(this.height - cssH) > 0.5) {
+        this.width = cssW;
+        this.height = cssH;
         this.canvas.width = Math.floor(this.width * this.dpr);
         this.canvas.height = Math.floor(this.height * this.dpr);
         this.ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -96,9 +97,10 @@ export class FollowersArena {
   }
 
   private initCanvas(): void {
-    const rect = this.canvas.getBoundingClientRect();
-    this.width = rect.width > 50 ? rect.width : 400;
-    this.height = rect.height > 50 ? rect.height : 240;
+    const cssW = this.canvas.clientWidth || this.canvas.offsetWidth;
+    const cssH = this.canvas.clientHeight || this.canvas.offsetHeight;
+    this.width = cssW > 50 ? cssW : 400;
+    this.height = cssH > 50 ? cssH : 220;
     this.dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     this.canvas.width = Math.floor(this.width * this.dpr);
@@ -123,8 +125,10 @@ export class FollowersArena {
   private setupEvents(): void {
     this.canvas.addEventListener('click', (e: MouseEvent) => {
       const rect = this.canvas.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
+      const scaleX = rect.width > 0 ? this.width / rect.width : 1;
+      const scaleY = rect.height > 0 ? this.height / rect.height : 1;
+      const clickX = (e.clientX - rect.left) * scaleX;
+      const clickY = (e.clientY - rect.top) * scaleY;
 
       // 1. Check if clicked on a walker requesting a miracle (prioritize miracle bubble)
       let miracleWalker: Walker | null = null;
