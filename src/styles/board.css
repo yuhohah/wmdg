@@ -1,43 +1,14 @@
 /* ===================================================
    DODECADRAGONS-STYLE PANNABLE & ZOOMABLE BOARD
    Diegetic Hermetic Cathedral Architecture & Cosmic Oculus
-   Palette & Linework aligned with dark-hermetic-art skill
-   and /assets/hermetic_cathedral_board_bg.jpg
    =================================================== */
-
-:root {
-  --hermetic-parchment-light: #e5d4b4;
-  --hermetic-parchment: #d8c39e;
-  --hermetic-parchment-mid: #cbb286;
-  --hermetic-parchment-dark: #b89b6c;
-  --hermetic-ink-black: #16100c;
-  --hermetic-ink-soot: #221913;
-  --hermetic-ink-umber: #423022;
-  --hermetic-ink-sepia: #5e4631;
-  --hermetic-rule-brass: #7d603e;
-  --hermetic-gold-ochre: #c89d54;
-  --hermetic-crimson-ink: #7d291b;
-  --hermetic-relic-ink: #493850;
-  --hermetic-gnose-ink: #6b4918;
-}
-
-#gameplay-screen {
-  padding: 0 !important;
-  margin: 0 !important;
-  gap: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  height: 100dvh !important;
-  overflow: hidden !important;
-}
 
 .dodeca-board-viewport {
   position: relative;
   width: 100vw;
-  height: 100vh;
-  height: 100dvh;
+  height: calc(100vh - 44px);
   overflow: hidden;
-  background-color: #16100c;
+  background-color: #0c0a08;
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -58,356 +29,79 @@
   will-change: transform;
 }
 
-/* Monumental 16th-Century Architectural Woodcut Cathedral Backdrop */
+/* Nocturnal Void — engraved star field reaching far past the world in every direction,
+   so zooming out never reveals an edge (two tile sizes keep the repeat from lining up) */
 .board-celestial-backdrop {
   position: absolute;
-  inset: -12px;
-  background:
-    radial-gradient(circle at 50% 44%, rgba(200, 157, 84, 0.22) 0%, rgba(125, 96, 62, 0.14) 24%, rgba(34, 25, 19, 0.85) 62%, #16100c 100%),
-    repeating-radial-gradient(circle at 50% 44%, rgba(229, 212, 180, 0.04) 0px, rgba(229, 212, 180, 0.04) 2px, transparent 2px, transparent 48px),
-    linear-gradient(180deg, #221913 0%, #16100c 100%);
-  opacity: 0.90;
+  inset: -8000px;
+  background-color: #0c0a08;
+  background-image:
+    url('/assets/board/void-stars-b.svg'),
+    url('/assets/board/void-stars-a.svg');
+  background-size: 1730px 1730px, 1200px 1200px;
+  background-repeat: repeat;
   pointer-events: none;
-  filter: blur(4px) contrast(0.80) brightness(0.88);
 }
 
-/* Astrological Constellation Lines SVG - Etched Soot & Sepia Geometry */
+/* Celestial chart engraved around the oculus, centred on the Sphere (1740, 854) */
+.board-celestial-chart {
+  position: absolute;
+  left: 340px;
+  top: -546px;
+  width: 2800px;
+  height: 2800px;
+  background: url('/assets/board/celestial-chart.svg') center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+/* Astrological Constellation Lines SVG */
 .board-constellation-lines {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  stroke: rgba(26, 19, 14, 0.65);
-  stroke-width: 1.75;
-  stroke-dasharray: 7 5;
-  filter: drop-shadow(0 1px 0 rgba(229, 212, 180, 0.55));
+  /* Slightly brighter stroke instead of a drop-shadow filter: a filter on this world-sized SVG
+     had to be re-rendered on every zoom step */
+  stroke: rgba(220, 180, 110, 0.5);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 6;
 }
 
-/* ===================================================
-   TOP HUD BAR — CLASSICAL HERMETIC TREATISE CARTOUCHES
-   Matches the engraved plaques of hermetic_cathedral_board_bg.jpg
-   =================================================== */
-
-.top-hud-bar {
-  position: fixed !important;
-  top: 12px !important;
-  left: 18px !important;
-  right: 18px !important;
-  width: calc(100vw - 36px) !important;
-  height: auto !important;
-  min-height: 46px;
-  padding: 0 !important;
-  background: transparent !important;
-  border: 0 !important;
-  display: flex !important;
-  align-items: flex-start !important;
-  justify-content: space-between !important;
-  gap: 12px !important;
-  pointer-events: none;
-  z-index: 60 !important;
-}
-
-.top-hud-bar button,
-.top-hud-bar a,
-.resources-hud-card {
-  pointer-events: auto;
-}
-
-/* Left Emblem Cartouche — Engraved Parchment Plaque */
-.cult-wordmark {
-  flex-shrink: 0;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-  padding: 7px 14px !important;
-  background-color: var(--hermetic-parchment) !important;
-  background-image:
-    repeating-linear-gradient(
-      -45deg,
-      rgba(22, 16, 12, 0.045) 0px,
-      rgba(22, 16, 12, 0.045) 1px,
-      transparent 1px,
-      transparent 4px
-    ),
-    linear-gradient(180deg, #e5d4b4 0%, #cbb286 100%) !important;
-  border: 2px solid var(--hermetic-ink-black) !important;
-  border-image: none !important;
-  border-radius: 0 !important;
-  box-shadow:
-    inset 0 0 0 2px var(--hermetic-parchment-light),
-    inset 0 0 0 3.5px var(--hermetic-ink-umber),
-    3px 4px 0 rgba(22, 16, 12, 0.88) !important;
-  color: var(--hermetic-ink-black) !important;
-  font-family: Georgia, 'Times New Roman', serif !important;
-  font-size: 13px !important;
-  font-weight: 700 !important;
-  letter-spacing: 1.8px !important;
-  line-height: 1.05 !important;
-  text-shadow: none !important;
-  text-transform: uppercase;
-  transition: background-color 0.15s ease, transform 0.15s ease;
-}
-
-.cult-mark {
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  width: 26px !important;
-  height: 26px !important;
-  font-size: 20px !important;
-  color: var(--hermetic-ink-black) !important;
-  background: none !important;
-  border: 1.5px solid var(--hermetic-ink-black);
-  border-radius: 50%;
-  box-shadow: inset 0 0 0 1.5px var(--hermetic-rule-brass);
-  line-height: 1;
-}
-
-/* Center Resource Ledger — Copperplate Treatise Strip */
-.resources-hud-card {
-  position: relative !important;
-  top: 0 !important;
-  left: auto !important;
-  transform: none !important;
-  flex: 1 1 auto !important;
-  min-width: 0 !important;
-  background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-}
-
-.resources-hud-row {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: stretch !important;
-  justify-content: center !important;
-  flex-wrap: wrap;
-  gap: 6px !important;
-}
-
-.resource-item {
-  position: relative;
-  display: grid !important;
-  grid-template-columns: 26px auto !important;
-  grid-template-rows: 21px 14px !important;
-  gap: 0 7px !important;
-  min-width: 118px !important;
-  padding: 4px 10px 4px 8px !important;
-  background-color: var(--hermetic-parchment) !important;
-  background-image:
-    repeating-linear-gradient(
-      -45deg,
-      rgba(22, 16, 12, 0.04) 0px,
-      rgba(22, 16, 12, 0.04) 1px,
-      transparent 1px,
-      transparent 4px
-    ),
-    linear-gradient(180deg, #e5d4b4 0%, #cbb286 100%) !important;
-  border: 2px solid var(--hermetic-ink-black) !important;
-  border-image: none !important;
-  border-radius: 0 !important;
-  box-shadow:
-    inset 0 0 0 2px var(--hermetic-parchment-light),
-    inset 0 0 0 3.5px var(--hermetic-ink-umber),
-    3px 4px 0 rgba(22, 16, 12, 0.88) !important;
-}
-
-.resource-item .res-name {
-  grid-column: 1;
-  grid-row: 1 / 3;
-  width: 26px !important;
-  height: 26px !important;
-  font-size: 0 !important;
-  align-self: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--hermetic-rule-brass);
-  background: rgba(22, 16, 12, 0.08);
-}
-
-.resource-item .res-name::before {
-  content: '';
-  display: block;
-  width: 20px !important;
-  height: 20px !important;
-  background-position: center;
-  background-size: contain;
-  background-repeat: no-repeat;
-  filter: sepia(0.55) contrast(1.35) brightness(0.65);
-}
-
-.resource-item-gnose .res-name::before {
-  background-image: var(--icon-book);
-}
-
-.resource-item .res-num,
-#faith-counter,
-#followers-counter,
-#fervor-counter-hud,
-#relic-counter-hud,
-#gnose-counter-hud {
-  font: 22px/0.92 var(--font-game) !important;
-  color: var(--hermetic-ink-black) !important;
-  text-shadow: 0 1px 0 rgba(255, 245, 224, 0.65) !important;
-  font-variant-numeric: tabular-nums;
-}
-
-.resource-item-fervor .res-num,
-#fervor-counter-hud {
-  color: var(--hermetic-crimson-ink) !important;
-}
-
-.resource-item-relic .res-num,
-#relic-counter-hud {
-  color: var(--hermetic-relic-ink) !important;
-}
-
-.resource-item-gnose .res-num,
-#gnose-counter-hud {
-  color: var(--hermetic-gnose-ink) !important;
-}
-
-.resource-item .res-rate,
-#faith-per-sec-counter,
-#fervor-rate-counter-hud,
-#relic-rate-counter-hud,
-#gnose-mult-counter-hud {
-  grid-column: 2;
-  font: 14px/1 var(--font-game) !important;
-  color: var(--hermetic-ink-sepia) !important;
-  text-shadow: none !important;
-}
-
-/* Right Group HUD Buttons — Etched Copperplate Stamps */
-.top-right-group {
-  flex-shrink: 0;
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-}
-
-.top-right-group .icon-btn-gold,
-.panel-toggle-btn {
-  width: 42px !important;
-  height: 42px !important;
-  padding: 0 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  background-color: var(--hermetic-parchment) !important;
-  background-image:
-    repeating-linear-gradient(
-      -45deg,
-      rgba(22, 16, 12, 0.045) 0px,
-      rgba(22, 16, 12, 0.045) 1px,
-      transparent 1px,
-      transparent 4px
-    ),
-    linear-gradient(180deg, #e5d4b4 0%, #cbb286 100%) !important;
-  border: 2px solid var(--hermetic-ink-black) !important;
-  border-image: none !important;
-  border-radius: 0 !important;
-  box-shadow:
-    inset 0 0 0 2px var(--hermetic-parchment-light),
-    inset 0 0 0 3.5px var(--hermetic-ink-umber),
-    3px 4px 0 rgba(22, 16, 12, 0.88) !important;
-  color: var(--hermetic-ink-black) !important;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
-}
-
-/* Restore crisp inline SVG linework icons for Achievements, Music & Settings */
-.top-right-group .icon-btn-gold::before {
-  display: none !important;
-  content: none !important;
-}
-
-.top-right-group .icon-btn-gold svg {
-  visibility: visible !important;
-  position: static !important;
-  width: 20px !important;
-  height: 20px !important;
-  stroke: currentColor !important;
-  color: inherit !important;
-}
-
-.top-right-group .icon-btn-gold:active {
-  transform: translateY(1px);
-}
-
-#music-quick-btn.muted {
-  opacity: 0.72;
-}
-
-/* ===================================================
-   DODECA-CARDS — HERMETIC TREATISE PLATES & CARTOUCHES
-   No blur/glassmorphism; double-rule soot & parchment plates
-   =================================================== */
-
+/* Dodeca-style Cards - Semi-Translucent Antique Stone & Parchment Tablets */
 .dodeca-card {
   position: absolute;
   z-index: 5;
-  background-color: var(--hermetic-parchment);
-  background-image:
-    repeating-linear-gradient(
-      -45deg,
-      rgba(22, 16, 12, 0.032) 0px,
-      rgba(22, 16, 12, 0.032) 1px,
-      transparent 1px,
-      transparent 5px
-    ),
-    linear-gradient(180deg, #e2d0ae 0%, #cfb68a 100%);
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: 2.5px solid var(--hermetic-ink-black);
-  box-shadow:
-    inset 0 0 0 2px var(--hermetic-parchment-light),
-    inset 0 0 0 4px var(--hermetic-rule-brass),
-    6px 8px 0 rgba(18, 13, 9, 0.9),
-    0 18px 36px rgba(0, 0, 0, 0.65);
-  border-radius: 0;
+  background: rgba(20, 15, 12, 0.90);
+  backdrop-filter: blur(8px);
+  border: 4px solid #5a422d;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.95), inset 0 0 25px rgba(0, 0, 0, 0.6);
+  border-radius: 6px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: box-shadow 0.25s ease, filter 0.25s ease, border-color 0.25s ease;
   user-select: text;
-  color: var(--hermetic-ink-black);
 }
 
 .dodeca-card.focused-glow {
-  border-color: var(--hermetic-ink-black);
-  box-shadow:
-    inset 0 0 0 2px var(--hermetic-parchment-light),
-    inset 0 0 0 4px var(--hermetic-ink-black),
-    0 0 0 3px var(--hermetic-gold-ochre),
-    8px 10px 0 rgba(14, 10, 7, 0.95);
+  box-shadow: 0 0 45px rgba(220, 180, 110, 0.7), 0 14px 40px rgba(0, 0, 0, 0.95);
+  border-color: #c49850;
+  filter: brightness(1.08);
 }
 
-/* Card Header — Copperplate Soot-Ink Architectural Lintel */
+/* Card Header - Gothic Architectural Lintel */
 .dodeca-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background-color: var(--hermetic-ink-black);
-  background-image:
-    repeating-linear-gradient(
-      45deg,
-      rgba(216, 195, 158, 0.05) 0px,
-      rgba(216, 195, 158, 0.05) 1px,
-      transparent 1px,
-      transparent 4px
-    ),
-    linear-gradient(180deg, #241b14 0%, #150f0b 100%);
-  border-bottom: 2px solid var(--hermetic-rule-brass);
-  box-shadow: inset 0 -1px 0 var(--hermetic-ink-black);
+  background: #18110d;
+  background: linear-gradient(90deg, #18110d 0%, #281a13 100%);
+  border-bottom: 2px solid #5a422d;
   cursor: grab;
   user-select: none;
-  border-radius: 0;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
 }
 
 .dodeca-card-header:active {
@@ -422,31 +116,29 @@
 
 .dodeca-card-icon {
   font-size: 16px;
-  color: var(--hermetic-parchment);
+  color: #f7d99a;
   line-height: 1;
 }
 
 .dodeca-card-title {
   font-family: var(--font-game);
-  font-size: 20px;
+  font-size: 19px;
   line-height: 1;
-  color: var(--hermetic-parchment-light);
-  letter-spacing: 1.2px;
+  color: #f7d99a;
+  letter-spacing: 1px;
   margin: 0;
-  text-transform: uppercase;
-  text-shadow: 1px 1px 0 #090604;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 .dodeca-card-tag {
   font-family: var(--font-game);
-  font-size: 12px;
-  color: var(--hermetic-ink-black);
-  background: var(--hermetic-parchment-mid);
+  font-size: 10px;
+  color: #c49850;
+  background: rgba(0, 0, 0, 0.4);
   padding: 1px 6px;
-  border-radius: 0;
-  border: 1px solid var(--hermetic-rule-brass);
+  border-radius: 2px;
+  border: 1px solid rgba(196, 152, 80, 0.3);
   text-transform: uppercase;
-  letter-spacing: 0.6px;
 }
 
 .dodeca-card-actions {
@@ -456,64 +148,36 @@
 }
 
 .dodeca-card-btn-toggle {
-  background: var(--hermetic-parchment-mid);
-  border: 1.5px solid var(--hermetic-rule-brass);
-  color: var(--hermetic-ink-black);
+  background: #2e1f16;
+  border: 1px solid #6b4e33;
+  color: #d1b894;
   cursor: pointer;
   width: 22px;
   height: 22px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0;
+  border-radius: 3px;
   font-size: 14px;
   font-weight: bold;
   line-height: 1;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-/* Card Body — Aged Parchment Treatise Interior */
+.dodeca-card-btn-toggle:hover {
+  background: #4a3424;
+  color: #fff;
+  border-color: #9d754c;
+}
+
+/* Card Body */
 .dodeca-card-body {
   padding: 12px;
   overflow-y: auto;
   max-height: 580px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  color: var(--hermetic-ink-black);
-}
-
-/* Unify inner elements inside Dodeca-Cards to Copperplate & Parchment ink */
-.dodeca-card-body :is(.cult-action-card, .relic-action-card, .ach-card) {
-  background: rgba(203, 178, 134, 0.55) !important;
-  border: 1px solid var(--hermetic-rule-brass) !important;
-  border-top: 2px solid var(--hermetic-ink-umber) !important;
-  border-bottom: 2px solid var(--hermetic-ink-umber) !important;
-  border-radius: 0 !important;
-  box-shadow: inset 0 0 0 1px rgba(229, 212, 180, 0.5) !important;
-  color: var(--hermetic-ink-black) !important;
-}
-
-.dodeca-card-body :is(.btn-follower-action, .btn-incarnation-upgrade, .btn-convert-relics, .btn-buy-relic, .btn-unlock-action, .cult-action-card .card-click-hint) {
-  background-color: var(--hermetic-ink-soot) !important;
-  background-image: linear-gradient(180deg, #2b2018 0%, #18110c 100%) !important;
-  border: 1.5px solid var(--hermetic-ink-black) !important;
-  border-image: none !important;
-  border-radius: 0 !important;
-  box-shadow:
-    inset 0 0 0 1.5px var(--hermetic-rule-brass),
-    2px 3px 0 rgba(22, 16, 12, 0.75) !important;
-  color: var(--hermetic-parchment-light) !important;
-}
-
-.dodeca-card-body :is(.btn-follower-action:disabled, .btn-convert-max.locked, .btn-incarnation-upgrade:disabled, .btn-convert-relics:disabled, .btn-buy-relic:disabled, .btn-unlock-action:disabled, .cult-action-card.unaffordable .card-click-hint) {
-  background: #9e8968 !important;
-  background-image: none !important;
-  color: #3b2c1f !important;
-  border-color: #6b5439 !important;
-  box-shadow: inset 0 0 0 1px #b8a17d !important;
-  filter: none !important;
-  opacity: 0.82 !important;
+  gap: 10px;
 }
 
 /* Collapsed State */
@@ -526,13 +190,20 @@
   min-height: 0 !important;
 }
 
-/* Locked Card State - completely invisible until unlocked */
-.dodeca-card.card-locked {
-  display: none !important;
-}
-
+/* Locked Card Overlay */
 .dodeca-card-locked-overlay {
-  display: none !important;
+  position: absolute;
+  inset: 0;
+  background: rgba(14, 10, 8, 0.88);
+  backdrop-filter: blur(3px);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  border-radius: 4px;
 }
 
 .card-lock-seal {
@@ -568,595 +239,101 @@
    Exact integration with architectural landmarks
    =================================================== */
 
-/* 1. DIEGETIC CELESTIAL SPHERE (Centered in cosmic dome oculus, no card/blur/borders) */
-#card-altar-sphere,
-#card-altar-sphere.focused-glow {
-  left: 1540px;
-  top: 610px;
-  width: 360px;
-  height: 360px;
+/* 1. DIEGETIC CELESTIAL SPHERE (Floating in broken cosmic dome oculus) */
+#card-altar-sphere {
+  left: 1510px;
+  top: 624px;
+  width: 460px;
+  height: 460px;
   background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
   border: none !important;
-  border-radius: 0 !important;
   box-shadow: none !important;
-  filter: none !important;
   pointer-events: none;
   z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 #card-altar-sphere .dodeca-card-header,
 #card-altar-sphere .sacred-window-heading,
-#card-altar-sphere .sacred-window-footer,
-#card-altar-sphere .center-frame::before,
-#card-altar-sphere .center-frame::after,
-#card-altar-sphere .sphere-orbit-ring,
-#card-altar-sphere .sphere-aura {
+#card-altar-sphere .sacred-window-footer {
   display: none !important;
-  content: none !important;
 }
 
 #card-altar-sphere .dodeca-card-body {
-  width: 100% !important;
-  height: 100% !important;
-  max-height: none !important;
-  background: transparent !important;
-  backdrop-filter: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  overflow: visible !important;
-  pointer-events: none;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-#card-altar-sphere .center-frame,
-#card-altar-sphere .center-frame-content,
-#card-altar-sphere .sphere-presentation-area {
-  flex: 1 1 100% !important;
-  width: 100% !important;
-  height: 100% !important;
-  max-width: none !important;
-  min-width: 0 !important;
   background: transparent !important;
   border: none !important;
-  border-image: none !important;
-  box-shadow: none !important;
   padding: 0 !important;
-  margin: 0 !important;
   overflow: visible !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
   pointer-events: none;
 }
 
 #card-altar-sphere .sphere-wrapper {
   pointer-events: auto;
-  width: 190px !important;
-  height: 190px !important;
-  flex-shrink: 0 !important;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  border-radius: 50% !important;
-  margin: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-#card-altar-sphere .divine-sphere-btn,
-.divine-sphere-btn {
-  width: 190px !important;
-  height: 190px !important;
-  flex-shrink: 0 !important;
-  aspect-ratio: 1 / 1 !important;
-  border-radius: 50% !important;
-  background: radial-gradient(circle at 35% 30%, #fffbe8 0%, #fed7aa 15%, #f59e0b 35%, #b45309 60%, #451a03 85%, #180902 100%) !important;
-  border: 2.5px solid rgba(245, 218, 140, 0.85) !important;
-  box-shadow:
-    0 0 35px rgba(245, 158, 11, 0.55),
-    0 0 80px rgba(180, 83, 9, 0.35),
-    inset -14px -14px 28px rgba(0, 0, 0, 0.95),
-    inset 8px 8px 24px rgba(255, 255, 255, 0.55) !important;
-  position: relative !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  cursor: pointer !important;
-  overflow: hidden !important;
-  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, filter 0.2s ease !important;
-}
-
-#card-altar-sphere .divine-sphere-btn::before,
-.divine-sphere-btn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 50% 50%, transparent 55%, rgba(20, 8, 2, 0.7) 95%),
-    repeating-linear-gradient(0deg, transparent, transparent 16px, rgba(255, 230, 160, 0.12) 17px, transparent 18px),
-    repeating-linear-gradient(90deg, transparent, transparent 16px, rgba(255, 230, 160, 0.12) 17px, transparent 18px);
-  pointer-events: none;
-}
-
-#card-altar-sphere .divine-sphere-btn::after,
-.divine-sphere-btn::after {
-  content: "";
-  position: absolute;
-  inset: 10px;
-  border-radius: 50%;
-  border: 1.5px dashed rgba(255, 235, 170, 0.5);
-  box-shadow: inset 0 0 20px rgba(245, 158, 11, 0.35);
-  pointer-events: none;
-  animation: orbitSpin 45s linear infinite;
-}
-
-#card-altar-sphere .divine-sphere-btn:active,
-.divine-sphere-btn:active {
-  transform: scale(0.95) !important;
-  filter: brightness(1.25) !important;
-}
-
-#card-altar-sphere .church-blessing {
-  display: none !important;
 }
 
 /* 2. HIGH ALTAR SANCTUARY (DOMUS SAPIENTIAE - Left Chancel) */
 #card-incarnation {
-  left: 380px;
-  top: 220px;
-  width: 480px;
-  height: auto !important;
-  min-height: auto !important;
-}
-
-#card-incarnation .dodeca-card-body {
-  max-height: none !important;
-  overflow: visible !important;
-  padding: 10px 12px;
-  gap: 6px;
+  left: 260px;
+  top: 440px;
+  width: 460px;
+  min-height: 480px;
 }
 
 /* 3. ALCHEMICAL CRYPT (CRYPTA ALCHYMICA - Lower Left Vault) */
 #card-relics {
-  left: 300px;
-  top: 900px;
-  width: 640px;
-  height: auto !important;
-  min-height: auto !important;
+  left: 260px;
+  top: 1220px;
+  width: 480px;
+  min-height: 540px;
 }
 
-#card-relics .dodeca-card-body {
-  max-height: none !important;
-  overflow: visible !important;
-  padding: 8px 10px;
-  gap: 6px;
-}
-
-#card-relics .relic-monument-banner {
-  display: none !important;
-}
-
-#card-relics .relics-convert-section {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 10px !important;
-  padding: 6px 10px !important;
-  margin-bottom: 6px !important;
-}
-
-#card-relics #btn-convert-relics {
-  width: auto !important;
-  flex: 0 0 auto !important;
-  padding: 6px 12px !important;
-  font-size: 15.5px !important;
-  white-space: nowrap !important;
-}
-
-#card-relics .relics-status-info {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  flex-wrap: wrap !important;
-  gap: 6px 14px !important;
-  font-size: 13.5px !important;
-  margin: 0 !important;
-}
-
-#card-relics .relics-balance-text span,
-#card-relics .relics-extra-rate-text span {
-  font-size: 15px !important;
-}
-
-#card-relics #relic-upgrades-list {
-  display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 6px !important;
-  padding-bottom: 2px !important;
-}
-
-#card-relics .relic-action-card {
-  margin: 0 !important;
-  padding: 6px 8px !important;
-  gap: 3px !important;
-  min-height: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: space-between !important;
-}
-
-#card-relics .relic-action-card .card-header-row {
-  margin-bottom: 1px !important;
-  gap: 4px !important;
-  flex-wrap: nowrap !important;
-}
-
-#card-relics .relic-action-card .card-name {
-  font-size: 15px !important;
-  line-height: 1.1 !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-#card-relics .relic-action-card .relic-level-badge {
-  font-size: 11.5px !important;
-  padding: 1px 4px !important;
-  flex-shrink: 0 !important;
-}
-
-#card-relics .relic-action-card .card-desc {
-  margin: 0 !important;
-}
-
-#card-relics .relic-action-card .relic-benefit-text {
-  font-size: 12.5px !important;
-  line-height: 1.15 !important;
-}
-
-#card-relics .relic-action-card .card-footer-row {
-  margin-top: 2px !important;
-  padding-top: 3px !important;
-  gap: 4px !important;
-  flex-wrap: nowrap !important;
-}
-
-#card-relics .relic-action-card .relic-cost-tag,
-#card-relics .relic-action-card .relic-cost-tag * {
-  font-size: 12px !important;
-}
-
-#card-relics .relic-action-card .card-click-hint {
-  font-size: 11px !important;
-  padding: 2px 6px !important;
-  white-space: nowrap !important;
-}
-
-/* 4. SCRIPTURIUM PORTAL — Direct Unlock Button (Centered directly below the Sacred Sphere) */
+/* 4. SCRIPTURIUM PORTAL (Passage between Chancel and Nave) */
 #card-unlocks {
-  left: 1560px;
-  top: 1030px;
-  position: absolute;
-  z-index: 15;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.25s ease, opacity 0.25s ease;
-}
-
-.unlock-btn-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-unlock-mechanic {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 12px 24px;
-  background: radial-gradient(circle at 50% 25%, #2a1e14 0%, #140d09 100%);
-  border: 2px solid #c49850;
-  border-radius: 8px;
-  box-shadow:
-    0 0 24px rgba(196, 152, 80, 0.35),
-    0 8px 24px rgba(0, 0, 0, 0.75),
-    inset 0 0 14px rgba(245, 158, 11, 0.2);
-  cursor: pointer;
-  color: #f7e6c4;
-  font-family: var(--font-game, 'Cult Pixel', monospace);
-  min-width: 320px;
-  text-align: center;
-  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, filter 0.2s ease;
-  position: relative;
-  overflow: hidden;
-  user-select: none;
-}
-
-.btn-unlock-mechanic::before {
-  content: "";
-  position: absolute;
-  inset: 3px;
-  border: 1px dashed rgba(245, 158, 11, 0.4);
-  border-radius: 6px;
-  pointer-events: none;
-}
-
-.btn-unlock-mechanic.affordable {
-  border-color: #f59e0b;
-  box-shadow:
-    0 0 30px rgba(245, 158, 11, 0.55),
-    0 10px 28px rgba(0, 0, 0, 0.8),
-    inset 0 0 16px rgba(245, 158, 11, 0.3);
-  animation: unlock-btn-glow 2.4s infinite ease-in-out;
-}
-
-@keyframes unlock-btn-glow {
-  0%, 100% {
-    box-shadow: 0 0 25px rgba(245, 158, 11, 0.45), 0 8px 24px rgba(0, 0, 0, 0.75), inset 0 0 14px rgba(245, 158, 11, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 45px rgba(245, 158, 11, 0.8), 0 12px 32px rgba(0, 0, 0, 0.9), inset 0 0 22px rgba(254, 240, 138, 0.45);
-  }
-}
-
-.btn-unlock-mechanic.unaffordable {
-  opacity: 0.65;
-  filter: grayscale(0.35);
-  cursor: not-allowed;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
-}
-
-.btn-unlock-mechanic.unaffordable:hover {
-  transform: none;
-  filter: grayscale(0.35);
-}
-
-.unlock-btn-badge {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  color: #f59e0b;
-  text-transform: uppercase;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
-}
-
-.unlock-btn-main {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
-.unlock-btn-name {
-  font-size: 16px;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: 0.5px;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
-}
-
-.unlock-btn-cost {
-  font-size: 13px;
-  font-weight: 800;
-  background: rgba(245, 158, 11, 0.22);
-  border: 1.5px solid rgba(245, 158, 11, 0.6);
-  padding: 3px 12px;
-  border-radius: 4px;
-  color: #fde68a;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  left: 880px;
+  top: 880px;
+  width: 460px;
+  min-height: 540px;
 }
 
 /* 5. CATHEDRAL COURTYARD & DEVOTEES (NAVE CATHEDRALIS / COLONNATA) */
 #card-followers {
-  left: 2040px;
-  top: 880px;
-  width: 480px;
-  height: auto !important;
-  min-height: auto !important;
-}
-
-#card-followers .dodeca-card-body {
-  max-height: none !important;
-  overflow: visible !important;
-  padding: 10px 12px;
-  gap: 6px;
+  left: 1980px;
+  top: 920px;
+  width: 560px;
+  min-height: 680px;
 }
 
 #card-followers .followers-arena-container {
   width: 100%;
-  height: 220px;
-  margin: 4px 0 6px 0;
+  margin: 12px 0 0 0;
   border-radius: 4px;
   overflow: hidden;
   position: relative;
   background: transparent !important;
-  border: 1.5px solid rgba(196, 152, 80, 0.45);
-  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.7);
+  border: 1px dashed rgba(196, 152, 80, 0.35);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.5);
 }
 
 #card-followers .followers-walk-canvas {
   width: 100%;
-  height: 220px;
+  height: 240px;
   display: block;
   background: transparent !important;
 }
 
-#card-followers .followers-controls {
-  margin-top: 6px !important;
-  gap: 8px !important;
-}
-
 /* 6. PERPETUAL HEARTH / BRAZIER (VIA CATHEDRALIS) */
 #card-fervor {
-  left: 2620px;
+  left: 2640px;
   top: 880px;
-  width: 480px;
-  height: auto !important;
-  min-height: auto !important;
+  width: 440px;
+  min-height: 520px;
 }
 
-#card-fervor .dodeca-card-body {
-  max-height: none !important;
-  overflow: visible !important;
-  padding: 10px 12px;
-}
-
-#card-fervor #fervor-upgrades-list {
-  gap: 6px !important;
-  padding-bottom: 2px !important;
-}
-
-#card-fervor .fervor-upgrade-card {
-  padding: 6px 8px !important;
-  gap: 3px !important;
-  margin: 0 !important;
-}
-
-#card-fervor .fervor-upgrade-card .card-header-row {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  flex-wrap: nowrap !important;
-  gap: 8px !important;
-  margin-bottom: 1px !important;
-}
-
-#card-fervor .fervor-upgrade-card .card-title-group {
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  min-width: 0 !important;
-  flex: 1 1 auto !important;
-}
-
-#card-fervor .fervor-upgrade-card .card-name {
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  font-size: 16.5px !important;
-}
-
-#card-fervor .fervor-upgrade-card .fervor-mult-tag {
-  flex-shrink: 0 !important;
-  white-space: nowrap !important;
-  font-size: 12.5px !important;
-  padding: 1px 5px !important;
-}
-
-#card-fervor .fervor-upgrade-card .card-desc {
-  font-size: 13px !important;
-  line-height: 1.15 !important;
-  margin: 0 !important;
-}
-
-#card-fervor .fervor-upgrade-card .card-footer-row {
-  margin-top: 2px !important;
-  padding-top: 3px !important;
-}
-
-/* Complete Hover Removal on Card de Fervor and All Its Descendants */
-#card-fervor,
-#card-fervor:hover,
-#card-fervor *,
-#card-fervor *:hover,
-#card-fervor *:active,
-#card-fervor *:focus {
-  transform: none !important;
-  transition: none !important;
-  filter: none !important;
-}
-
-#card-fervor:hover {
-  box-shadow:
-    inset 0 0 0 2px var(--hermetic-parchment-light),
-    inset 0 0 0 4px var(--hermetic-rule-brass),
-    6px 8px 0 rgba(18, 13, 9, 0.9),
-    0 18px 36px rgba(0, 0, 0, 0.65) !important;
-  border-color: var(--hermetic-ink-black) !important;
-}
-
-#card-fervor .dodeca-card-body .cult-action-card,
-#card-fervor .dodeca-card-body .cult-action-card:hover,
-#card-fervor .dodeca-card-body .cult-action-card:hover:not(.unaffordable),
-#card-fervor .fervor-upgrade-card,
-#card-fervor .fervor-upgrade-card:hover,
-#card-fervor .fervor-upgrade-card:hover:not(.unaffordable) {
-  background: rgba(203, 178, 134, 0.55) !important;
-  border: 1px solid var(--hermetic-rule-brass) !important;
-  border-top: 2px solid var(--hermetic-ink-umber) !important;
-  border-bottom: 2px solid var(--hermetic-ink-umber) !important;
-  box-shadow: inset 0 0 0 1px rgba(229, 212, 180, 0.5) !important;
-  color: var(--hermetic-ink-black) !important;
-  transform: none !important;
-}
-
-#card-fervor .cult-action-card .card-click-hint,
-#card-fervor .cult-action-card .card-click-hint:hover,
-#card-fervor .cult-action-card:hover .card-click-hint,
-#card-fervor .fervor-upgrade-card:hover:not(.unaffordable) .card-click-hint,
-#card-fervor .card-click-hint,
-#card-fervor .card-click-hint:hover {
-  background-color: var(--hermetic-ink-soot) !important;
-  background-image: linear-gradient(180deg, #2b2018 0%, #18110c 100%) !important;
-  border: 1.5px solid var(--hermetic-ink-black) !important;
-  border-image: none !important;
-  border-radius: 0 !important;
-  box-shadow:
-    inset 0 0 0 1.5px var(--hermetic-rule-brass),
-    2px 3px 0 rgba(22, 16, 12, 0.75) !important;
-  color: var(--hermetic-parchment-light) !important;
-  transform: none !important;
-  filter: none !important;
-}
-
-#card-fervor .cult-action-card.unaffordable .card-click-hint,
-#card-fervor .cult-action-card.unaffordable .card-click-hint:hover,
-#card-fervor .cult-action-card.unaffordable:hover .card-click-hint {
-  background: #9e8968 !important;
-  background-image: none !important;
-  color: #3b2c1f !important;
-  border-color: #6b5439 !important;
-  box-shadow: inset 0 0 0 1px #b8a17d !important;
-  transform: none !important;
-  filter: none !important;
-}
-
-#card-fervor .dodeca-card-btn-toggle,
-#card-fervor .dodeca-card-btn-toggle:hover {
-  background: var(--hermetic-ink-soot) !important;
-  color: var(--hermetic-parchment-light) !important;
-  border-color: var(--hermetic-ink-black) !important;
-}
-
-/* 7. SANCTUM GNOSTICUM — Câmara da Gnose */
-#card-gnose {
-  left: 2340px;
-  top: 110px;
-  width: 780px;
-  height: auto !important;
-  min-height: auto !important;
-}
-
-#card-gnose .dodeca-card-body {
-  max-height: none !important;
-  overflow: hidden !important;
-  padding: 8px 10px !important;
+/* 7. CELESTIAL OBSERVATORY / TOWER (VIA STELLARUM) */
+#card-pantheon {
+  left: 2600px;
+  top: 120px;
+  width: 540px;
+  min-height: 600px;
 }
 
 /* 8. APEX / ROOF GALLERY OF TRIUMPHS (FORNIX RUPTUS) */
@@ -1171,398 +348,98 @@
   max-height: 440px;
 }
 
-.gnose-reset-section {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding: 6px 8px;
-  margin-bottom: 6px;
-  background: rgba(203, 178, 134, 0.55);
-  border: 1.5px solid var(--hermetic-ink-umber);
-  box-shadow: inset 0 0 0 1px rgba(229, 212, 180, 0.6);
-  border-radius: 0;
-}
-
-.gnose-top-bar {
-  display: flex;
-  align-items: stretch;
-  gap: 8px;
-}
-
-.btn-gnose-reset {
-  flex: 0 0 230px;
-  padding: 5px 10px;
-  font-family: var(--font-game);
-  font-size: 15px;
-  letter-spacing: 0.4px;
-  color: var(--hermetic-parchment-light);
-  background: linear-gradient(180deg, #2b2018 0%, #16100c 100%);
-  border: 1.5px solid var(--hermetic-ink-black);
-  box-shadow:
-    inset 0 0 0 1px var(--hermetic-gold-ochre),
-    1px 2px 0 rgba(22, 16, 12, 0.8);
-  border-radius: 0;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  text-shadow: 1px 1px 0 #090604;
-  white-space: nowrap;
-}
-
-.btn-gnose-reset:disabled {
-  opacity: 0.78;
-  cursor: not-allowed;
-  border-color: #6b5439;
-  background: #9e8968;
-  color: #3b2c1f;
-  box-shadow: inset 0 0 0 1px #b8a17d;
-  text-shadow: none;
-}
-
-.gnose-stats-grid {
-  flex: 1 1 auto;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 5px;
-}
-
-.gnose-stat-box {
-  background: rgba(203, 178, 134, 0.5);
-  border: 1px solid var(--hermetic-rule-brass);
-  border-radius: 0;
-  padding: 2px 4px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-}
-
-.gnose-stat-label {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  color: var(--hermetic-ink-sepia);
-  text-transform: uppercase;
-  line-height: 1.1;
-}
-
-.gnose-stat-val {
-  font-family: var(--font-game);
-  font-size: 14px;
-  line-height: 1.1;
-  font-weight: 700;
-  color: var(--hermetic-ink-black);
-}
-
-.gnose-controls-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: nowrap;
-  gap: 8px;
-  padding-top: 4px;
-  border-top: 1px dashed var(--hermetic-rule-brass);
-}
-
-.gnose-req-hint {
-  font-size: 11.5px;
-  line-height: 1.1;
-  color: var(--hermetic-ink-sepia);
-  white-space: nowrap;
-}
-
-.gnose-toggles-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.gnose-automation-panel {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.gnose-toggle-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11.5px;
-  color: var(--hermetic-ink-black);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.gnose-toggle-label input[type='checkbox'] {
-  accent-color: var(--hermetic-ink-soot);
-  cursor: pointer;
-  margin: 0;
-}
-
-.gnose-upgrades-tree {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.gnose-tier-section {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.gnose-tier-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: var(--font-game);
-  font-size: 13px;
-  letter-spacing: 0.5px;
-  color: var(--hermetic-ink-black);
-  border-bottom: 1px solid var(--hermetic-ink-umber);
-  padding-bottom: 1px;
-  text-transform: uppercase;
-}
-
-.gnose-tier-title {
-  font-weight: 700;
-}
-
-.gnose-tier-progress {
-  font-size: 11px;
-  color: var(--hermetic-ink-sepia);
-}
-
-.gnose-tier-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 5px;
-}
-
-.gnose-tree-node {
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: space-between !important;
-  padding: 4px 6px !important;
-  min-height: 66px !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-  border: 1.5px solid var(--hermetic-rule-brass) !important;
-  background: rgba(203, 178, 134, 0.55) !important;
-  border-radius: 0 !important;
-  cursor: pointer;
-  transform: none !important;
-  transition: border-color 0.15s ease, background 0.15s ease !important;
-}
-
-.gnose-tree-node.gnose-node-available {
-  border: 1.5px solid var(--hermetic-ink-black) !important;
-  background: rgba(229, 212, 180, 0.88) !important;
-  box-shadow: inset 0 0 0 1px var(--hermetic-gold-ochre) !important;
-}
-
-.gnose-tree-node.gnose-node-unlocked {
-  border: 1.5px solid #4a683e !important;
-  background: rgba(184, 195, 168, 0.65) !important;
-  box-shadow: inset 0 0 0 1px rgba(90, 138, 79, 0.4) !important;
-}
-
-.gnose-tree-node.gnose-node-locked-prereq,
-.gnose-tree-node.gnose-node-unaffordable {
-  opacity: 0.68;
-}
-
-.gnose-node-top {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 2px;
-  min-width: 0;
-}
-
-.gnose-node-symbol {
-  font-size: 14px;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.gnose-node-title {
-  font-family: var(--font-game);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.05;
-  color: var(--hermetic-ink-black);
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.gnose-node-body {
-  flex: 1 1 auto;
-  margin-bottom: 3px;
-  min-width: 0;
-}
-
-.gnose-node-effect {
-  font-size: 10.5px;
-  line-height: 1.15;
-  color: var(--hermetic-ink-sepia);
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.gnose-node-footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-top: auto;
-  padding-top: 2px;
-  border-top: 1px dashed rgba(94, 70, 49, 0.35);
-}
-
-.gnose-node-badge {
-  font-size: 10.5px;
-  font-weight: 700;
-  padding: 1px 4px;
-  border-radius: 0;
-  white-space: nowrap;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.gnose-node-badge.cost {
-  background: var(--hermetic-ink-soot);
-  border: 1px solid var(--hermetic-rule-brass);
-  color: var(--hermetic-parchment-light);
-}
-
-.gnose-node-badge.unlocked {
-  background: #2e4a28;
-  border: 1px solid #5a8a4f;
-  color: #d8f5d0;
-}
-
-.gnose-node-badge.locked {
-  background: rgba(94, 70, 49, 0.25);
-  border: 1px solid var(--hermetic-rule-brass);
-  color: var(--hermetic-ink-sepia);
-}
-
 /* ===================================================
-   FLOATING QUICK NAVIGATION BAR & ZOOM CARTOUCHES
-   Engraved Parchment & Soot-Ink Copperplate Ribbons
+   FLOATING QUICK NAVIGATION BAR & CONTROLS
    =================================================== */
 
 .board-quicknav-bar {
-  position: fixed;
-  bottom: 16px;
+  position: absolute;
+  top: 12px;
   left: 50%;
   transform: translateX(-50%);
-  top: auto;
   z-index: 50;
   display: flex;
   align-items: center;
   gap: 6px;
-  background-color: var(--hermetic-parchment);
-  background-image:
-    repeating-linear-gradient(
-      -45deg,
-      rgba(22, 16, 12, 0.04) 0px,
-      rgba(22, 16, 12, 0.04) 1px,
-      transparent 1px,
-      transparent 4px
-    ),
-    linear-gradient(180deg, #e5d4b4 0%, #cbb286 100%);
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: 2px solid var(--hermetic-ink-black);
-  padding: 5px 8px;
-  box-shadow:
-    inset 0 0 0 2px var(--hermetic-parchment-light),
-    inset 0 0 0 3.5px var(--hermetic-ink-umber),
-    4px 5px 0 rgba(18, 13, 9, 0.9);
-  border-radius: 0;
-  max-width: calc(100vw - 230px);
+  background: rgba(20, 15, 12, 0.94);
+  backdrop-filter: blur(8px);
+  border: 3px solid #5a422d;
+  padding: 4px 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75);
+  border-radius: 4px;
+  max-width: 95vw;
   overflow-x: auto;
 }
 
 .quicknav-btn {
-  background: rgba(203, 178, 134, 0.65);
-  border: 1.5px solid var(--hermetic-ink-umber);
-  color: var(--hermetic-ink-black);
+  background: #2b1f17;
+  border: 1px solid #5a422d;
+  color: #d1b894;
   font-family: var(--font-game);
-  font-size: 15px;
-  letter-spacing: 0.5px;
-  padding: 4px 11px;
-  border-radius: 0;
+  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 3px;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  text-transform: uppercase;
+  gap: 4px;
+}
+
+.quicknav-btn:hover {
+  background: #3e2d21;
+  color: #f7d99a;
+  border-color: #8b6b44;
 }
 
 .quicknav-btn.active {
-  background: var(--hermetic-ink-black);
-  color: var(--hermetic-parchment-light);
-  border-color: var(--hermetic-ink-black);
-  box-shadow: inset 0 0 0 1px var(--hermetic-rule-brass);
+  background: #503928;
+  color: #fff;
+  border-color: #c49850;
+  box-shadow: 0 0 10px rgba(196, 152, 80, 0.4);
 }
 
 .board-zoom-controls {
-  position: fixed;
-  bottom: 16px;
-  right: 18px;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
   z-index: 50;
   display: flex;
   align-items: center;
   gap: 4px;
-  background-color: var(--hermetic-parchment);
-  background-image:
-    repeating-linear-gradient(
-      -45deg,
-      rgba(22, 16, 12, 0.04) 0px,
-      rgba(22, 16, 12, 0.04) 1px,
-      transparent 1px,
-      transparent 4px
-    ),
-    linear-gradient(180deg, #e5d4b4 0%, #cbb286 100%);
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: 2px solid var(--hermetic-ink-black);
-  padding: 5px 7px;
-  box-shadow:
-    inset 0 0 0 2px var(--hermetic-parchment-light),
-    inset 0 0 0 3.5px var(--hermetic-ink-umber),
-    4px 5px 0 rgba(18, 13, 9, 0.9);
-  border-radius: 0;
+  background: rgba(20, 15, 12, 0.94);
+  backdrop-filter: blur(8px);
+  border: 3px solid #5a422d;
+  padding: 4px 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75);
+  border-radius: 4px;
 }
 
 .board-zoom-btn {
-  background: rgba(203, 178, 134, 0.7);
-  border: 1.5px solid var(--hermetic-ink-umber);
-  color: var(--hermetic-ink-black);
-  width: 28px;
-  height: 28px;
+  background: #2b1f17;
+  border: 1px solid #5a422d;
+  color: #d1b894;
+  width: 30px;
+  height: 30px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-radius: 0;
-  transition: background 0.15s ease, color 0.15s ease;
+  border-radius: 3px;
+  transition: all 0.15s ease;
+}
+
+.board-zoom-btn:hover {
+  background: #423022;
+  color: #fff;
+  border-color: #9d754c;
 }
 
 .board-zoom-level {
   font-family: var(--font-game);
-  font-size: 16px;
-  color: var(--hermetic-ink-black);
+  font-size: 14px;
+  color: #f7d99a;
   min-width: 44px;
   text-align: center;
   padding: 0 4px;
@@ -1570,51 +447,6 @@
 
 .btn-reset-center {
   margin-left: 2px;
-}
-
-/* ===================================================
-   MODALS, TOOLTIPS & POPUPS — HERMETIC TREATISE PLATES
-   =================================================== */
-
-.cult-tooltip,
-.modal-slide-card,
-.mobile-inspect-sheet,
-.spotlight-balloon,
-.slide-card,
-.intro-modal-card,
-.cult-dialog,
-.ach-popup-toast,
-.ach-popup-square {
-  background-color: var(--hermetic-parchment) !important;
-  background-image:
-    repeating-linear-gradient(
-      -45deg,
-      rgba(22, 16, 12, 0.032) 0px,
-      rgba(22, 16, 12, 0.032) 1px,
-      transparent 1px,
-      transparent 5px
-    ),
-    linear-gradient(180deg, #e5d4b4 0%, #cbb286 100%) !important;
-  border: 2.5px solid var(--hermetic-ink-black) !important;
-  border-image: none !important;
-  border-radius: 0 !important;
-  box-shadow:
-    inset 0 0 0 2px var(--hermetic-parchment-light),
-    inset 0 0 0 4px var(--hermetic-rule-brass),
-    6px 8px 0 rgba(18, 13, 9, 0.92) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-.close-btn-gold,
-.close-mobile-sheet-btn,
-.ach-popup-close {
-  background: var(--hermetic-ink-soot) !important;
-  border: 1.5px solid var(--hermetic-ink-black) !important;
-  border-image: none !important;
-  box-shadow: inset 0 0 0 1px var(--hermetic-rule-brass) !important;
-  color: var(--hermetic-parchment-light) !important;
-  border-radius: 0 !important;
 }
 
 /* Ensure all tab panes inside Dodeca cards are displayed as open cards */
@@ -1634,910 +466,14 @@
 }
 
 .dodeca-card-body::-webkit-scrollbar-track {
-  background: rgba(184, 155, 108, 0.45);
+  background: rgba(14, 10, 8, 0.6);
 }
 
 .dodeca-card-body::-webkit-scrollbar-thumb {
-  background: var(--hermetic-ink-umber);
-  border-radius: 0;
+  background: #5a422d;
+  border-radius: 3px;
 }
 
 .dodeca-card-body::-webkit-scrollbar-thumb:hover {
-  background: var(--hermetic-ink-black);
-}
-
-/* ===================================================
-   ALTAR DA ENCARNAÇÃO DA ESFERA (Evolving Avatar Altar)
-   Matches the Pátio dos Fiéis layout & Hermetic Art Style
-   =================================================== */
-
-.incarnation-altar-container {
-  width: 100%;
-  margin: 4px 0 6px 0;
-  border-radius: 4px;
-  overflow: hidden;
-  position: relative;
-  background: radial-gradient(circle at 50% 50%, rgba(20, 16, 14, 0.95), rgba(8, 7, 6, 0.98));
-  border: 1.5px solid rgba(196, 152, 80, 0.45);
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.4);
-  cursor: pointer;
-  user-select: none;
-}
-
-.incarnation-altar-viewport {
-  position: relative;
-  width: 100%;
-  height: 210px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  background: #0d0b09;
-}
-
-.incarnation-avatar-art {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: drop-shadow(0 0 16px rgba(216, 191, 141, 0.25)) contrast(1.05);
-  transition: transform 0.35s ease, filter 0.35s ease;
-  z-index: 1;
-}
-
-/* Bênção 2x da Encarnação */
-.incarnation-blessing-panel {
-  width: 100%;
-  margin: 2px 0 6px 0;
-  padding: 7px 10px;
-  background: rgba(18, 14, 11, 0.9);
-  border: 1.5px solid rgba(140, 106, 54, 0.5);
-  border-radius: 4px;
-  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8);
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
-  box-sizing: border-box;
-}
-
-.incarnation-blessing-panel.active {
-  border-color: rgba(245, 158, 11, 0.85);
-  box-shadow: inset 0 0 16px rgba(245, 158, 11, 0.25), 0 0 14px rgba(245, 158, 11, 0.35);
-}
-
-.incarnation-blessing-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-family: var(--font-game);
-}
-
-.incarnation-blessing-title {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: #c9a874;
-}
-
-.incarnation-blessing-panel.active .incarnation-blessing-title {
-  color: #ffdf78;
-  text-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
-}
-
-.incarnation-blessing-status {
-  font-size: 12px;
-  letter-spacing: 0.5px;
-  color: #a89078;
-}
-
-.incarnation-blessing-panel.active .incarnation-blessing-status {
-  color: #fff0b3;
-  font-weight: bold;
-}
-
-.incarnation-blessing-track {
-  width: 100%;
-  height: 10px;
-  background: rgba(10, 8, 7, 0.95);
-  border: 1px solid rgba(140, 106, 54, 0.4);
-  border-radius: 2px;
-  overflow: hidden;
-  position: relative;
-}
-
-.incarnation-blessing-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #b45309 0%, #f59e0b 50%, #fef08a 100%);
-  box-shadow: 0 0 8px rgba(245, 158, 11, 0.7);
-  transition: width 0.12s linear;
-}
-
-.incarnation-altar-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.incarnation-altar-aura {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(circle at 50% 50%, rgba(216, 191, 141, 0.08) 0%, transparent 70%);
-  animation: altar-aura-pulse 4s ease-in-out infinite;
-  z-index: 0;
-}
-
-@keyframes altar-aura-pulse {
-  0%, 100% { opacity: 0.4; transform: scale(0.96); }
-  50% { opacity: 0.85; transform: scale(1.04); }
-}
-
-.incarnation-altar-overlay {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 10px;
-  background: rgba(18, 14, 12, 0.92);
-  border-top: 1px solid rgba(196, 152, 80, 0.3);
-  z-index: 3;
-  position: relative;
-  min-height: 36px;
-  box-sizing: border-box;
-}
-
-.incarnation-altar-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.incarnation-altar-hint {
-  font-family: var(--font-game, 'Cult Pixel', monospace);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  color: #e5d4b4;
-  text-shadow: 1px 1px 2px #000;
-  line-height: 1.2;
-}
-
-.incarnation-altar-subhint {
-  font-family: var(--font-game, 'Cult Pixel', monospace);
-  font-size: 11px;
-  color: #a18454;
-  letter-spacing: 0.5px;
-  line-height: 1.2;
-}
-
-.incarnation-altar-lore {
-  font-family: var(--font-game, 'Cult Pixel', monospace);
-  font-size: 12px;
-  color: #887456;
-  font-style: italic;
-}
-
-/* Compact Notification Toasts (270px, 2s auto-dismiss) */
-.achievements-popup-container {
-  top: 14px !important;
-  right: 14px !important;
-  gap: 6px !important;
-  z-index: 10000 !important;
-}
-
-.ach-popup-toast,
-.ach-popup-square {
-  width: 270px !important;
-  max-width: calc(100vw - 24px) !important;
-  padding: 7px 10px 8px 10px !important;
-  gap: 8px !important;
-  border: 1.5px solid var(--hermetic-ink-black) !important;
-  border-image: none !important;
-  border-radius: 0 !important;
-  box-shadow:
-    inset 0 0 0 1px var(--hermetic-parchment-light),
-    inset 0 0 0 2px var(--hermetic-rule-brass),
-    3px 4px 0 rgba(18, 13, 9, 0.85) !important;
-}
-
-.ach-popup-icon-box {
-  width: 28px !important;
-  height: 28px !important;
-  min-width: 28px !important;
-  font-size: 14px !important;
-}
-
-.ach-popup-icon {
-  width: 20px !important;
-  height: 20px !important;
-  font-size: 14px !important;
-}
-
-.ach-popup-badge {
-  font-size: 8px !important;
-  padding: 1px 5px !important;
-  letter-spacing: 0.8px !important;
-}
-
-.ach-popup-title {
-  font-size: 11.5px !important;
-  line-height: 1.2 !important;
-}
-
-.ach-popup-desc {
-  font-size: 9.5px !important;
-  line-height: 1.25 !important;
-}
-
-.ach-popup-timer-bar {
-  height: 2px !important;
-  animation: popupTimerProgress 2s linear forwards !important;
-}
-
-/* =========================================================================
-   STABLE HOVER NEUTRALIZATION
-   Eliminates all hover movement, jitter, scaling, and glow on cards, buttons,
-   and interactive elements, while PRESERVING essential structural layout
-   transforms (board camera, centering, patio followers alignment, etc.).
-   ========================================================================= */
-
-.dodeca-card:hover,
-.cult-action-card:hover,
-.cult-action-card:active,
-.fervor-upgrade-card:hover,
-.fervor-upgrade-card:active,
-.relic-action-card:hover,
-.relic-action-card:active,
-.ach-card:hover,
-.ach-card:active,
-.gnose-tree-node:hover,
-.gnose-tree-node:active,
-.btn-follower-action:hover,
-.btn-follower-action:active,
-.btn-buy-card:hover,
-.btn-buy-card:active,
-.btn-convert-primary:hover,
-.btn-convert-primary:active,
-.btn-convert-max:hover,
-.btn-convert-max:active,
-.btn-incarnation-upgrade:hover,
-.btn-incarnation-upgrade:active,
-.btn-convert-relics:hover,
-.btn-convert-relics:active,
-.btn-buy-relic:hover,
-.btn-buy-relic:active,
-.btn-unlock-action:hover,
-.btn-unlock-action:active,
-.btn-unlock-mechanic:hover,
-.btn-unlock-mechanic:active,
-.btn-gnose-reset:hover,
-.btn-gnose-reset:active,
-.btn-setting-action:hover,
-.btn-setting-action:active,
-.btn-setting-danger:hover,
-.btn-setting-danger:active,
-.quicknav-btn:hover,
-.quicknav-btn:active,
-.board-zoom-btn:hover,
-.board-zoom-btn:active,
-.icon-btn-gold:hover,
-.icon-btn-gold:active,
-.close-btn-gold:hover,
-.close-btn-gold:active,
-.close-mobile-sheet-btn:hover,
-.close-mobile-sheet-btn:active,
-.ach-popup-close:hover,
-.ach-popup-close:active,
-.panel-tab-btn:hover,
-.panel-tab-btn:active,
-.panel-toggle-btn:hover,
-.panel-toggle-btn:active,
-.dodeca-card-btn-toggle:hover,
-.dodeca-card-btn-toggle:active,
-.divine-sphere-btn:hover,
-.divine-sphere-btn:active,
-.sphere-wrapper:hover,
-.sphere-wrapper:active,
-.incarnation-avatar-art:hover,
-.incarnation-avatar-art:active,
-.incarnation-altar-container:hover,
-.incarnation-altar-container:active,
-.cult-wordmark:hover,
-.cult-wordmark:active {
-  transform: none !important;
-  filter: none !important;
-  transition: none !important;
-}
-
-/* Ensure patio blessing button preserves its centering transform on hover */
-.church-blessing,
-.church-blessing:hover,
-.church-blessing:active {
-  transform: translateX(-50%) !important;
-  filter: none !important;
-  box-shadow: 0 2px #1a120c !important;
-}
-
-/* Ensure patio followers preserve their sprite anchoring */
-.church-follower {
-  transform: translate(-50%, -94.4%) !important;
-}
-
-/* Keep card appearance identical on hover (no border or shadow pop) */
-.dodeca-card:hover {
-  box-shadow:
-    inset 0 0 0 2px var(--hermetic-parchment-light),
-    inset 0 0 0 4px var(--hermetic-rule-brass),
-    6px 8px 0 rgba(18, 13, 9, 0.9),
-    0 18px 36px rgba(0, 0, 0, 0.65) !important;
-  border-color: var(--hermetic-ink-black) !important;
-}
-
-.dodeca-card-body :is(.cult-action-card, .relic-action-card, .ach-card):hover {
-  background: rgba(203, 178, 134, 0.55) !important;
-  border: 1px solid var(--hermetic-rule-brass) !important;
-  border-top: 2px solid var(--hermetic-ink-umber) !important;
-  border-bottom: 2px solid var(--hermetic-ink-umber) !important;
-  box-shadow: inset 0 0 0 1px rgba(229, 212, 180, 0.5) !important;
-  color: var(--hermetic-ink-black) !important;
-}
-
-.dodeca-card-body :is(.btn-follower-action, .btn-incarnation-upgrade, .btn-convert-relics, .btn-buy-relic, .btn-unlock-action, .cult-action-card .card-click-hint, .relic-hint):hover {
-  background-color: var(--hermetic-ink-soot) !important;
-  background-image: linear-gradient(180deg, #2b2018 0%, #18110c 100%) !important;
-  border: 1.5px solid var(--hermetic-ink-black) !important;
-  box-shadow:
-    inset 0 0 0 1.5px var(--hermetic-rule-brass),
-    2px 3px 0 rgba(22, 16, 12, 0.75) !important;
-  color: var(--hermetic-parchment-light) !important;
-}
-
-.quicknav-btn:hover {
-  background: var(--hermetic-parchment) !important;
-  border-color: var(--hermetic-ink-black) !important;
-  box-shadow: 2px 2px 0 rgba(18, 13, 9, 0.75) !important;
-  color: var(--hermetic-ink-black) !important;
-}
-
-.btn-unlock-mechanic:hover {
-  background-color: var(--hermetic-parchment-light) !important;
-  background-image:
-    repeating-linear-gradient(
-      -45deg,
-      rgba(22, 16, 12, 0.04) 0px,
-      rgba(22, 16, 12, 0.04) 1px,
-      transparent 1px,
-      transparent 5px
-    ),
-    linear-gradient(180deg, #ebdabb 0%, #d8c29a 100%) !important;
-  border: 2px solid var(--hermetic-ink-black) !important;
-  box-shadow:
-    inset 0 0 0 1.5px var(--hermetic-rule-brass),
-    4px 5px 0 rgba(18, 13, 9, 0.9) !important;
-  color: var(--hermetic-ink-black) !important;
-}
-
-/* Ensure hover tooltip popup is permanently hidden */
-#cult-tooltip,
-.cult-tooltip {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-
-/* =========================================================================
-   RESPONSIVE DESKTOP & MOBILE LAYOUT OVERRIDES (DODECA-BOARD ARCHITECTURE)
-   Ensures zero overlap on Desktop (1024px-1920px+) and Mobile (360px-860px)
-   ========================================================================= */
-
-/* Hide resource counters & achievements button while on Start Screen */
-.ui-container:has(#start-screen.active) .resources-hud-card,
-.ui-container:has(#start-screen.active) #achievements-hud-btn,
-.ui-container:has(#start-screen.active) .cult-wordmark {
-  visibility: hidden !important;
-  pointer-events: none !important;
-}
-
-@media (max-width: 1180px) and (min-width: 861px) {
-  .cult-wordmark span:not(.cult-mark) {
-    display: none !important;
-  }
-  .cult-wordmark {
-    padding: 6px 8px !important;
-  }
-  .resource-item {
-    min-width: 104px !important;
-    padding: 4px 8px 4px 6px !important;
-  }
-}
-
-@media (max-width: 860px) {
-  #gameplay-screen {
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    overflow: hidden !important;
-  }
-
-  .dodeca-board-viewport {
-    width: 100vw !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-  }
-
-  /* 1. Compact Mobile Top HUD Bar — Fits all resources + action buttons cleanly */
-  .top-hud-bar {
-    top: calc(6px + env(safe-area-inset-top, 0px)) !important;
-    left: 6px !important;
-    right: 6px !important;
-    width: calc(100vw - 12px) !important;
-    min-height: 0 !important;
-    gap: 5px !important;
-    align-items: flex-start !important;
-  }
-
-  .cult-wordmark {
-    display: none !important;
-  }
-
-  .resources-hud-card {
-    flex: 1 1 auto !important;
-    min-width: 0 !important;
-  }
-
-  .resources-hud-row {
-    justify-content: flex-start !important;
-    gap: 4px !important;
-  }
-
-  .resource-item {
-    flex: 1 1 auto !important;
-    grid-template-columns: 16px auto !important;
-    grid-template-rows: 14px 10px !important;
-    gap: 0 4px !important;
-    min-width: 66px !important;
-    max-width: 120px !important;
-    padding: 2px 5px 2px 4px !important;
-    border-width: 1.5px !important;
-    box-shadow:
-      inset 0 0 0 1px var(--hermetic-parchment-light),
-      2px 2px 0 rgba(22, 16, 12, 0.85) !important;
-  }
-
-  .resource-item .res-name {
-    width: 16px !important;
-    height: 16px !important;
-  }
-
-  .resource-item .res-name::before {
-    width: 13px !important;
-    height: 13px !important;
-  }
-
-  .resource-item .res-num,
-  #faith-counter,
-  #followers-counter,
-  #fervor-counter-hud,
-  #relic-counter-hud,
-  #gnose-counter-hud {
-    font: 14.5px/0.95 var(--font-game) !important;
-  }
-
-  .resource-item .res-rate,
-  #faith-per-sec-counter,
-  #fervor-rate-counter-hud,
-  #relic-rate-counter-hud,
-  #gnose-mult-counter-hud {
-    font: 10px/1 var(--font-game) !important;
-  }
-
-  .top-right-group {
-    gap: 4px !important;
-    flex-shrink: 0 !important;
-  }
-
-  .top-right-group .icon-btn-gold {
-    width: 32px !important;
-    height: 32px !important;
-    border-width: 1.5px !important;
-    box-shadow:
-      inset 0 0 0 1px var(--hermetic-parchment-light),
-      2px 2px 0 rgba(22, 16, 12, 0.85) !important;
-  }
-
-  .top-right-group .icon-btn-gold svg {
-    width: 15px !important;
-    height: 15px !important;
-  }
-
-  /* 2. Mobile-Native Card Widths & Internal Scrollable Bodies (100% Scale on Phone!) */
-  #card-followers,
-  #card-fervor,
-  #card-incarnation,
-  #card-relics,
-  #card-gnose,
-  #card-achievements {
-    width: min(400px, calc(100vw - 16px)) !important;
-    max-width: calc(100vw - 16px) !important;
-    height: auto !important;
-  }
-
-  .dodeca-card-header {
-    padding: 6px 10px !important;
-  }
-
-  .dodeca-card-title {
-    font-size: 18px !important;
-    letter-spacing: 0.8px !important;
-  }
-
-  .dodeca-card-tag {
-    font-size: 11px !important;
-    padding: 1px 5px !important;
-  }
-
-  #card-followers .dodeca-card-body,
-  #card-fervor .dodeca-card-body,
-  #card-incarnation .dodeca-card-body,
-  #card-relics .dodeca-card-body,
-  #card-gnose .dodeca-card-body,
-  #card-achievements .dodeca-card-body {
-    max-height: calc(100dvh - 220px) !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch !important;
-    touch-action: pan-y !important;
-    padding: 8px 10px !important;
-    gap: 6px !important;
-  }
-
-  /* Bring Unlock Seal closer below the Sphere on Mobile so both fit at ~100% zoom */
-  #card-unlocks {
-    top: 915px !important;
-    left: 1560px !important;
-  }
-
-  .btn-unlock-mechanic {
-    min-width: 280px !important;
-    max-width: 340px !important;
-    padding: 10px 16px !important;
-  }
-
-  /* Card 2: Pátio dos Fiéis Mobile Polish */
-  #card-followers .followers-arena-container,
-  #card-followers .followers-walk-canvas {
-    height: 155px !important;
-  }
-
-  .btn-follower-action {
-    padding: 7px 10px !important;
-    gap: 6px !important;
-  }
-
-  .btn-action-title {
-    font-size: 14.5px !important;
-  }
-
-  .btn-action-benefit {
-    font-size: 11.5px !important;
-  }
-
-  .btn-action-cost {
-    font-size: 12.5px !important;
-    flex-shrink: 0 !important;
-  }
-
-  /* Card 4: Fervor Sagrado Mobile Polish */
-  #card-fervor .fervor-upgrade-card .card-name {
-    font-size: 15px !important;
-  }
-
-  #card-fervor .fervor-upgrade-card .card-desc {
-    font-size: 12px !important;
-    white-space: normal !important;
-  }
-
-  /* Card 5: Encarnação Sagrada Mobile Polish */
-  .incarnation-altar-viewport {
-    height: 148px !important;
-  }
-
-  .incarnation-altar-overlay {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 2px !important;
-    padding: 5px 8px !important;
-  }
-
-  .incarnation-altar-hint {
-    font-size: 12.5px !important;
-  }
-
-  .incarnation-altar-lore {
-    font-size: 11px !important;
-  }
-
-  .incarnation-blessing-header {
-    flex-wrap: wrap !important;
-    gap: 2px 6px !important;
-  }
-
-  .incarnation-blessing-status {
-    font-size: 11px !important;
-  }
-
-  /* Card 6: Opus Magnum (Relíquias) Mobile Single-Column Layout */
-  #card-relics .relics-convert-section {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 6px !important;
-    padding: 8px !important;
-  }
-
-  #card-relics #btn-convert-relics {
-    width: 100% !important;
-    white-space: normal !important;
-    text-align: center !important;
-    justify-content: center !important;
-    font-size: 14.5px !important;
-    padding: 7px 10px !important;
-  }
-
-  #card-relics .relics-status-info {
-    justify-content: space-between !important;
-    font-size: 12.5px !important;
-    gap: 4px 10px !important;
-  }
-
-  #card-relics #relic-upgrades-list {
-    grid-template-columns: 1fr !important;
-    gap: 6px !important;
-  }
-
-  /* Card 9: Câmara da Gnose Mobile 2-Column Readable Layout */
-  .gnose-top-bar {
-    flex-direction: column !important;
-    gap: 6px !important;
-  }
-
-  .btn-gnose-reset {
-    flex: none !important;
-    width: 100% !important;
-    padding: 7px 10px !important;
-    font-size: 15px !important;
-  }
-
-  .gnose-stats-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    gap: 4px !important;
-  }
-
-  .gnose-stat-label {
-    font-size: 9.5px !important;
-  }
-
-  .gnose-stat-val {
-    font-size: 13.5px !important;
-  }
-
-  .gnose-controls-row {
-    flex-wrap: wrap !important;
-    gap: 4px 8px !important;
-  }
-
-  .gnose-toggles-group,
-  .gnose-automation-panel {
-    flex-wrap: wrap !important;
-    gap: 4px 8px !important;
-  }
-
-  .gnose-tier-header {
-    flex-wrap: wrap !important;
-    gap: 3px 6px !important;
-    font-size: 12px !important;
-  }
-
-  .gnose-tier-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 6px !important;
-  }
-
-  .gnose-tier-grid > .gnose-tree-node:last-child:nth-child(odd) {
-    grid-column: 1 / -1 !important;
-  }
-
-  .gnose-tree-node {
-    padding: 6px 8px !important;
-    min-height: 68px !important;
-  }
-
-  .gnose-node-title {
-    font-size: 13.5px !important;
-    white-space: normal !important;
-    line-height: 1.1 !important;
-  }
-
-  .gnose-node-effect {
-    font-size: 11px !important;
-    line-height: 1.2 !important;
-  }
-
-  .gnose-node-badge {
-    font-size: 11px !important;
-    padding: 2px 6px !important;
-  }
-
-  /* 3. Native-Style Bottom QuickNav Bar (All Tabs Fit on 1 Row Without Horizontal Scroll) */
-  .board-quicknav-bar {
-    position: fixed !important;
-    bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
-    left: 6px !important;
-    right: 6px !important;
-    transform: none !important;
-    width: calc(100vw - 12px) !important;
-    max-width: none !important;
-    padding: 4px !important;
-    gap: 3px !important;
-    justify-content: stretch !important;
-    overflow-x: hidden !important;
-    box-sizing: border-box !important;
-    box-shadow:
-      inset 0 0 0 1.5px var(--hermetic-parchment-light),
-      inset 0 0 0 3px var(--hermetic-ink-umber),
-      2px 3px 0 rgba(18, 13, 9, 0.9) !important;
-  }
-
-  .quicknav-btn {
-    flex: 1 1 0 !important;
-    min-width: 0 !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 4px 2px !important;
-    gap: 1px !important;
-    font-size: 11px !important;
-    letter-spacing: 0 !important;
-  }
-
-  .quicknav-btn > span:first-child {
-    font-size: 13px !important;
-    line-height: 1 !important;
-  }
-
-  .quicknav-btn > span:last-child {
-    font-size: 10.5px !important;
-    line-height: 1.05 !important;
-    max-width: 100% !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-
-  .board-zoom-controls {
-    position: fixed !important;
-    bottom: calc(58px + env(safe-area-inset-bottom, 0px)) !important;
-    right: 6px !important;
-    padding: 3px 5px !important;
-    gap: 3px !important;
-    height: 32px !important;
-    box-sizing: border-box !important;
-    box-shadow:
-      inset 0 0 0 1.5px var(--hermetic-parchment-light),
-      inset 0 0 0 3px var(--hermetic-ink-umber),
-      2px 3px 0 rgba(18, 13, 9, 0.9) !important;
-  }
-
-  .board-zoom-btn {
-    width: 24px !important;
-    height: 24px !important;
-  }
-
-  .board-zoom-level {
-    font-size: 12px !important;
-    min-width: 34px !important;
-    padding: 0 2px !important;
-  }
-
-  /* 4. Start Screen Mobile Polish */
-  #start-screen.active {
-    padding: 48px 12px 24px 12px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    height: 100dvh !important;
-    box-sizing: border-box !important;
-  }
-
-  .slide-card {
-    width: 100% !important;
-    max-width: 400px !important;
-    padding: 20px 16px !important;
-    box-sizing: border-box !important;
-  }
-
-  .slide-title {
-    font-size: clamp(26px, 7vw, 38px) !important;
-    line-height: 1.08 !important;
-  }
-
-  .start-sphere-emblem {
-    width: 112px !important;
-    height: 112px !important;
-    margin: 16px auto !important;
-  }
-
-  /* 5. Modals (Settings, Achievements, Save Data) Mobile Polish */
-  .modal-slide-card {
-    width: calc(100vw - 20px) !important;
-    max-width: 480px !important;
-    max-height: calc(100dvh - 28px) !important;
-    padding: 14px !important;
-    box-sizing: border-box !important;
-  }
-
-  .modal-header {
-    margin-bottom: 10px !important;
-    padding-bottom: 8px !important;
-  }
-
-  .modal-title {
-    font-size: 22px !important;
-  }
-
-  .setting-item {
-    padding: 8px 10px !important;
-    gap: 8px !important;
-  }
-
-  .setting-name {
-    font-size: 16px !important;
-  }
-
-  .setting-desc {
-    font-size: 13px !important;
-  }
-
-  .btn-setting-action,
-  .btn-setting-danger {
-    font-size: 14px !important;
-    padding: 5px 8px !important;
-  }
-
-  .stats-panel-content.settings-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 6px !important;
-  }
-
-  .stat-label {
-    font-size: 12px !important;
-  }
-
-  .stat-val {
-    font-size: 17px !important;
-  }
-
-  /* 6. Spotlight Onboarding Balloon Mobile Polish */
-  .spotlight-balloon-header {
-    padding: 7px 10px !important;
-  }
-
-  .spotlight-balloon-body {
-    padding: 10px 12px !important;
-    gap: 6px !important;
-  }
-
-  .spotlight-balloon-title {
-    font-size: 20px !important;
-  }
-
-  .spotlight-balloon-desc,
-  .spotlight-balloon-action-tip {
-    font-size: 14px !important;
-    line-height: 1.2 !important;
-  }
+  background: #8b6b44;
 }

@@ -298,8 +298,20 @@ export class BoardManager {
     this.viewportEl?.classList.remove('is-dragging');
   }
 
+  // Keep the camera centre inside the play area so panning never drifts off into the void
+  private clampPan(): void {
+    if (!this.viewportEl || !this.worldEl) return;
+    const halfW = (this.viewportEl.clientWidth || window.innerWidth) / 2;
+    const halfH = (this.viewportEl.clientHeight || window.innerHeight) / 2;
+    const centerX = Math.min(this.worldEl.offsetWidth, Math.max(0, (halfW - this.panX) / this.zoom));
+    const centerY = Math.min(this.worldEl.offsetHeight, Math.max(0, (halfH - this.panY) / this.zoom));
+    this.panX = halfW - centerX * this.zoom;
+    this.panY = halfH - centerY * this.zoom;
+  }
+
   private applyTransform(): void {
     if (!this.worldEl) return;
+    this.clampPan();
     this.worldEl.style.setProperty('transform', `translate3d(${this.panX}px, ${this.panY}px, 0) scale(${this.zoom})`, 'important');
   }
 

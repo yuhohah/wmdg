@@ -33,13 +33,26 @@ export class FollowersArena {
   private miracleSpawnCooldown: number = 300; // ~5s after start
   private isPaused: boolean = false;
   private speedMultiplier: number = 1.0;
+  private spriteSheet: HTMLImageElement | HTMLCanvasElement | null = null;
+  private spriteLoaded: boolean = false;
+  private isOnScreen: boolean = true;
 
   constructor(canvasId: string = 'followers-walk-canvas') {
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     this.ctx = this.canvas.getContext('2d', { alpha: true })!;
     this.initCanvas();
+    this.loadSprite();
     this.setupEvents();
     this.startLoop();
+  }
+
+  private loadSprite(): void {
+    const img = new Image();
+    img.src = '/assets/cultist_spritesheet.png';
+    img.onload = () => {
+      this.spriteSheet = this.keyOutBlack(img);
+      this.spriteLoaded = true;
+    };
   }
 
   public setSpeedMultiplier(mult: number): void {
@@ -119,6 +132,13 @@ export class FollowersArena {
       if (this.canvas.parentElement) {
         ro.observe(this.canvas.parentElement);
       }
+    }
+
+    // Skip drawing while the courtyard is panned off-screen or its card is hidden
+    if (typeof IntersectionObserver !== 'undefined') {
+      new IntersectionObserver((entries) => {
+        this.isOnScreen = entries[entries.length - 1].isIntersecting;
+      }).observe(this.canvas);
     }
   }
 
@@ -395,8 +415,12 @@ export class FollowersArena {
     ctx.ellipse(x, y - 2, 11, 3.5, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // 2. Procedural devotee rendering with walking and prayer cycles
-    this.renderProceduralCultist(w, x, y);
+    // 2. Woodcut cultist sprite (procedural devotee until the sheet loads)
+    if (this.spriteLoaded && this.spriteSheet) {
+      this.drawFollowerSprite(w, x, y);
+    } else {
+      this.renderProceduralCultist(w, x, y);
+    }
 
     // 3. Draw prayer particles in absolute arena coordinates
     if (w.prayParticles.length > 0) {
@@ -417,6 +441,70 @@ export class FollowersArena {
     if (w.isMiraclePlea) {
       this.drawMiracleSpeechBubble(w, x, y);
     }
+  }
+
+  // The sheet is an opaque JPEG (white engraving on black): turn black into transparency once,
+  // so devotees don't carry black boxes over the courtyard
+  private keyOutBlack(img: HTMLImageElement): HTMLImageElement | HTMLCanvasElement {
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    const cx = c.getContext('2d');
+    if (!cx) return img;
+    cx.drawImage(img, 0, 0);
+    const frame = cx.getImageData(0, 0, c.width, c.height);
+    const d = frame.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const lum = Math.max(d[i], d[i + 1], d[i + 2]);
+      if (lum > 0) {
+        const k = 255 / lum;
+        d[i] = Math.min(255, d[i] * k);
+        d[i + 1] = Math.min(255, d[i + 1] * k);
+        d[i + 2] = Math.min(255, d[i + 2] * k);
+      }
+      d[i + 3] = lum;
+    }
+    cx.putImageData(frame, 0, 0);
+    return c;
+  }
+
+  // Spritesheet layout: 6 columns x 2 rows (row 0 = walk/idle, row 1 = prayer)
+  private drawFollowerSprite(w: Walker, x: number, y: number): void {
+    if (!this.spriteSheet) return;
+    const ctx = this.ctx;
+
+    let row = 0;
+    let col = 0;
+    let bob = 0;
+
+    if (w.state === 'walk') {
+      col = Math.floor(w.walkCycle) % 6;
+      bob = Math.abs(Math.sin(w.walkCycle)) * 1.2;
+    } else if (w.state === 'pray') {
+      row = 1;
+      col = Math.floor(Math.abs(w.breathTimer * 1.5)) % 6;
+    } else {
+      bob = Math.sin(w.breathTimer) * 0.8;
+    }
+
+    const totalW = this.spriteSheet.width || 1024;
+    const totalH = this.spriteSheet.height || 341;
+    const frameW = totalW / 6;
+    const frameH = totalH / 2;
+    const sx = Math.floor(col * frameW);
+    const sy = Math.floor(row * frameH);
+    const sw = Math.floor((col + 1) * frameW) - sx;
+    const sh = Math.floor((row + 1) * frameH) - sy;
+
+    const destH = 44;
+    const destW = Math.round(destH * (sw / sh));
+
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.translate(x, y - bob);
+    ctx.scale(w.facing, 1);
+    ctx.drawImage(this.spriteSheet, sx, sy, sw, sh, -destW / 2, -destH + 2, destW, destH);
+    ctx.restore();
   }
 
   private renderProceduralCultist(w: Walker, x: number, y: number): void {
@@ -602,7 +690,7 @@ export class FollowersArena {
     const loop = () => {
       if (!this.isPaused) {
         this.update();
-        this.draw();
+        if (this.isOnScreen) this.draw();
       }
       this.animFrameId = requestAnimationFrame(loop);
     };

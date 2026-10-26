@@ -134,6 +134,8 @@ export class AchievementsTab {
   }
 
   public updateRealtime(): void {
+    // Closed grimoire: nothing to show, and openModal() re-renders the list fresh
+    if (!this.isModalOpen()) return;
     const state = this.gameState.getSnapshot();
 
     for (const ach of this.gameState.achievements) {

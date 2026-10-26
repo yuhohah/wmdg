@@ -21,7 +21,12 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
-/* .cult-action-card:hover disabled */
+.cult-action-card:hover {
+  border-color: var(--border-white);
+  background: rgba(14, 20, 36, 0.85);
+  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
 
 .cult-action-card.unaffordable {
   opacity: 0.85;
@@ -38,7 +43,29 @@
   user-select: none;
 }
 
-/* action cards hover & active removed */
+.fervor-upgrade-card:hover:not(.unaffordable),
+.unlock-action-card:hover:not(.unaffordable):not(.unlocked-card),
+.relic-action-card:hover:not(.unaffordable):not(.maxed) {
+  transform: translateY(-2px);
+  border-color: var(--gold-accent);
+  box-shadow: 0 6px 18px rgba(234, 179, 8, 0.2);
+}
+
+.fervor-upgrade-card:active:not(.unaffordable),
+.unlock-action-card:active:not(.unaffordable):not(.unlocked-card),
+.relic-action-card:active:not(.unaffordable):not(.maxed) {
+  transform: translateY(1px) scale(0.99);
+}
+
+.fervor-upgrade-card:hover:not(.unaffordable) {
+  border-color: var(--border-white);
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.1);
+}
+
+.relic-action-card:hover:not(.unaffordable):not(.maxed) {
+  border-color: var(--border-white);
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.12);
+}
 
 .card-click-prompt {
   display: flex;
@@ -165,7 +192,12 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-/* .btn-buy-card hover disabled */
+.btn-buy-card:hover:not(:disabled) {
+  transform: scale(1.03);
+  background: linear-gradient(135deg, #27272a 0%, #52525b 100%);
+  border-color: var(--border-white);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
 
 .btn-buy-card:disabled {
   background: rgba(30, 36, 48, 0.6);
@@ -250,8 +282,8 @@
   flex: 1 1 0;
   min-height: 200px;
   height: auto;
-  background-color: transparent !important;
-  background-image: none !important;
+  background-color: #0d1117;
+  background-image: radial-gradient(circle at center, rgba(13, 17, 23, 0.15) 0%, rgba(5, 7, 12, 0.6) 100%), url('/assets/patio_fieis_bg.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -355,7 +387,12 @@
   border-color: var(--border-light);
 }
 
-/* .btn-convert-primary hover disabled */
+.btn-convert-primary:hover:not(:disabled) {
+  border-color: #ffffff;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.05) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.15);
+}
 
 .btn-convert-primary:disabled {
   opacity: 0.55;
@@ -390,7 +427,12 @@
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%);
 }
 
-/* .btn-convert-max hover disabled */
+.btn-convert-max:not(.locked):hover:not(:disabled) {
+  border-color: #ffffff;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.12);
+}
 
 .btn-convert-max:not(.locked):disabled {
   opacity: 0.55;
@@ -414,7 +456,7 @@
   transition: transform 0.4s ease;
 }
 
-.cult-action-card-disabled-img-hover {
+.cult-action-card:hover .card-hero-preview img {
   transform: scale(1.05);
 }
 
@@ -505,7 +547,11 @@
   transition: all 0.2s ease;
 }
 
-/* .btn-incarnation-upgrade hover disabled */
+.btn-incarnation-upgrade:hover:not(:disabled) {
+  border-color: var(--border-white);
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
 
 .btn-incarnation-upgrade:disabled {
   opacity: 0.55;
@@ -601,29 +647,9 @@
   transition: all 0.2s ease;
 }
 
-/* .fervor-upgrade-card hover removed */
-
-.fervor-upgrade-card .card-header-row {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  flex-wrap: nowrap !important;
-  gap: 8px !important;
-}
-
-.fervor-upgrade-card .card-title-group {
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  min-width: 0 !important;
-  flex: 1 1 auto !important;
-}
-
-.fervor-upgrade-card .card-name {
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  font-size: 19px !important;
+.fervor-upgrade-card:hover {
+  border-color: var(--border-white);
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.08);
 }
 
 .fervor-mult-tag {
@@ -635,8 +661,6 @@
   border: 1px solid var(--border-mid);
   border-radius: 4px;
   padding: 2px 6px;
-  flex-shrink: 0 !important;
-  white-space: nowrap !important;
 }
 
 .fervor-upgrade-card .cost-tag,
@@ -652,7 +676,12 @@
   border: 1px solid var(--border-mid);
 }
 
-/* .fervor-upgrade-card hint hover removed */
+.fervor-upgrade-card:hover:not(.unaffordable) .card-click-hint {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: #ffffff;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
 
 .btn-buy-fervor {
   background: linear-gradient(135deg, #18181b 0%, #3f3f46 100%);
@@ -702,7 +731,12 @@
   text-align: center;
 }
 
-/* .btn-convert-relics hover disabled */
+.btn-convert-relics:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-color: #ffffff;
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15);
+}
 
 .btn-convert-relics:disabled {
   background: rgba(20, 24, 34, 0.6);
@@ -782,7 +816,7 @@
   opacity: 0.8;
 }
 
-.relic-action-card-disabled-hover-2 {
+.relic-action-card:hover {
   border-color: var(--border-white);
   background: rgba(18, 22, 34, 0.9);
   box-shadow: 0 4px 16px rgba(186, 210, 235, 0.2);
@@ -844,7 +878,7 @@
   border: 1px solid var(--border-mid);
 }
 
-.relic-hint-disabled-hover {
+.relic-action-card:hover:not(.unaffordable):not(.maxed) .relic-hint {
   background: rgba(255, 255, 255, 0.18);
   border-color: #ffffff;
   color: #ffffff;
@@ -866,7 +900,12 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-/* .btn-buy-relic hover disabled */
+.btn-buy-relic:hover:not(:disabled) {
+  transform: scale(1.03);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.06) 100%);
+  border-color: #ffffff;
+  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.15);
+}
 
 .btn-buy-relic:disabled:not(.maxed-btn) {
   background: rgba(30, 36, 48, 0.6);
@@ -963,7 +1002,7 @@
   border: 1px solid rgba(251, 191, 36, 0.45);
 }
 
-.unlock-hint-disabled-hover {
+.unlock-action-card:hover:not(.unaffordable):not(.unlocked-card) .card-click-hint {
   background: rgba(251, 191, 36, 0.28);
   border-color: #fbbf24;
   color: #ffffff;
@@ -1039,7 +1078,13 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-/* .btn-unlock-action hover disabled */
+.btn-unlock-action:hover:not(:disabled) {
+  transform: scale(1.03);
+  background: linear-gradient(135deg, #ca8a04 0%, #eab308 100%);
+  border-color: #fef08a;
+  color: #000000;
+  box-shadow: 0 4px 14px rgba(234, 179, 8, 0.3);
+}
 
 .btn-unlock-action:disabled:not(.unlocked-btn) {
   background: rgba(30, 36, 48, 0.6);

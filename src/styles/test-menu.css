@@ -80,21 +80,25 @@
   position: fixed;
   inset: 0;
   background: rgba(5, 7, 10, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100000;
   opacity: 0;
+  /* Closed: skip painting entirely (a full-screen blur here re-rendered the whole board every frame) */
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.18s ease;
+  transition: opacity 0.18s ease, visibility 0s linear 0.18s;
   padding: 16px;
 }
 
 .test-menu-overlay.visible {
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
+  transition-delay: 0s;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 /* Modal Window */

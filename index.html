@@ -118,7 +118,9 @@
             <h1 class="slide-title">CULT OF THE SPHERE</h1>
           </div>
 
-          <div class="start-sphere-emblem"></div>
+          <div class="start-sphere-emblem">
+            <img src="/assets/sphere_base.png" alt="A Entidade Divina" class="start-sphere-img">
+          </div>
 
           <div class="play-btn-container">
             <button id="play-btn" class="btn-slide-play">
@@ -140,23 +142,24 @@
           <!-- 2D WORLD CONTAINER (PANNABLE & ZOOMABLE) -->
           <div id="dodeca-board-world" class="dodeca-board-world">
 
-            <!-- Astrological Woodcut Landscape Backdrop -->
+            <!-- Nocturnal Void & Celestial Chart Backdrop -->
             <div class="board-celestial-backdrop"></div>
+            <div class="board-celestial-chart"></div>
 
             <!-- Constellation Guide Rays SVG connecting Center Sphere to Satellite Cards -->
             <svg class="board-constellation-lines" viewBox="0 0 3440 1920">
-              <!-- Center Oculus (1720, 790) to High Altar Incarnation (620, 495) -->
-              <line id="ray-incarnation" x1="1720" y1="790" x2="620" y2="495" style="display: none;"></line>
-              <!-- Center Oculus (1720, 790) to Alchemical Crypt Relics (620, 1180) -->
-              <line id="ray-relics" x1="1720" y1="790" x2="620" y2="1180" style="display: none;"></line>
-              <!-- Center Oculus (1720, 790) to Scriptorium Unlocks (1720, 1065) -->
-              <line id="ray-unlocks" x1="1720" y1="790" x2="1720" y2="1065"></line>
-              <!-- Center Oculus (1720, 790) to Cathedral Nave Followers (2280, 1120) -->
-              <line id="ray-followers" x1="1720" y1="790" x2="2280" y2="1120"></line>
-              <!-- Center Oculus (1720, 790) to Sacred Hearth Fervor (2860, 1140) -->
-              <line id="ray-fervor" x1="1720" y1="790" x2="2860" y2="1140" style="display: none;"></line>
-              <!-- Center Oculus (1720, 790) to Sanctum Gnosticum Gnose (2730, 465) -->
-              <line id="ray-gnose" x1="1720" y1="790" x2="2730" y2="465" style="display: none;"></line>
+              <!-- Center Oculus (1740, 854) to High Altar Incarnation (620, 495) -->
+              <line id="ray-incarnation" x1="1740" y1="854" x2="620" y2="495" style="display: none;"></line>
+              <!-- Center Oculus (1740, 854) to Alchemical Crypt Relics (620, 1180) -->
+              <line id="ray-relics" x1="1740" y1="854" x2="620" y2="1180" style="display: none;"></line>
+              <!-- Center Oculus (1740, 854) to the Unlock Seal (1740, 1110) -->
+              <line id="ray-unlocks" x1="1740" y1="854" x2="1740" y2="1110"></line>
+              <!-- Center Oculus (1740, 854) to Cathedral Nave Followers (2280, 1120) -->
+              <line id="ray-followers" x1="1740" y1="854" x2="2280" y2="1120"></line>
+              <!-- Center Oculus (1740, 854) to Sacred Hearth Fervor (2860, 1140) -->
+              <line id="ray-fervor" x1="1740" y1="854" x2="2860" y2="1140" style="display: none;"></line>
+              <!-- Center Oculus (1740, 854) to Sanctum Gnosticum Gnose (2730, 465) -->
+              <line id="ray-gnose" x1="1740" y1="854" x2="2730" y2="465" style="display: none;"></line>
             </svg>
 
             <!-- CARD 1: ALTAR DA ESFERA SAGRADA (Center of the Cult) -->
@@ -374,6 +377,7 @@
               <div class="dodeca-card-body">
                 <div id="tab-relics" class="tab-pane active" style="display: block;">
                   <div class="relic-monument-banner">
+                    <img src="/assets/monument_relic.jpg" alt="Monumento Alquímico" class="relic-monument-img">
                     <div class="relic-monument-caption">
                       <span class="relic-monument-title">OPUS MAGNUM</span>
                       <span class="relic-monument-desc">As Above, So Below — Transmutações Alquímicas</span>

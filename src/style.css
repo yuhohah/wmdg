@@ -14,6 +14,7 @@
 @import './styles/game-hud.css';
 @import './styles/game-surfaces.css';
 @import './styles/board.css';
+@import './styles/board-features.css';
 @import './styles/board-layout.css';
 @import './styles/boss-battle.css';
 @import './styles/test-menu.css';

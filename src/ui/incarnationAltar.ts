@@ -35,6 +35,7 @@ export class IncarnationAltar {
   private rotationAngle: number = 0;
   private pulsePhase: number = 0;
   private flashAlpha: number = 0;
+  private isOnScreen: boolean = true;
   private options: IncarnationAltarOptions;
 
   constructor(containerId: string = 'incarnation-altar-container', options: IncarnationAltarOptions = {}) {
@@ -69,6 +70,13 @@ export class IncarnationAltar {
     if (typeof ResizeObserver !== 'undefined' && this.container) {
       const ro = new ResizeObserver(() => this.resize());
       ro.observe(this.container);
+    }
+
+    // Skip drawing while the altar is panned off-screen or its card is still sealed
+    if (typeof IntersectionObserver !== 'undefined') {
+      new IntersectionObserver((entries) => {
+        this.isOnScreen = entries[entries.length - 1].isIntersecting;
+      }).observe(this.canvas);
     }
   }
 
@@ -306,7 +314,7 @@ export class IncarnationAltar {
   private startLoop(): void {
     const loop = () => {
       this.update();
-      this.draw();
+      if (this.isOnScreen) this.draw();
       this.animFrameId = requestAnimationFrame(loop);
     };
     this.animFrameId = requestAnimationFrame(loop);

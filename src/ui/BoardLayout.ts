@@ -46,28 +46,30 @@ const DRAG_THRESHOLD = 4;
 const EDGE_PAN_ZONE = 48;
 const EDGE_PAN_SPEED = 14;
 const LONG_PRESS_MS = 300;
-const STORAGE_KEY = 'cult_board_layout_v1';
+// v2: cathedral landmark coordinates (v1 layouts were saved against the flat board)
+const STORAGE_KEY = 'cult_board_layout_v2';
 
 // Ray origin: center of the Sphere oculus
-const RAY_ORIGIN = { x: 1720, y: 790 };
+const RAY_ORIGIN = { x: 1740, y: 854 };
 
 const DRAGGABLE_IDS = ['card-incarnation', 'card-relics', 'card-followers', 'card-fervor', 'card-gnose'];
 const FIXED_IDS = ['card-altar-sphere', 'card-unlocks'];
 
 // Docking slots, anchored at the card's top-center so cards of different widths share a column
+// (cathedral landmarks: chancel, crypt, scriptorium, apex gallery, nave, hearth, tower)
 const SLOTS: Point[] = [
-  { x: 620, y: 220 },
-  { x: 620, y: 900 },
-  { x: 620, y: 1440 },
-  { x: 1180, y: 220 },
-  { x: 1180, y: 1300 },
-  { x: 1720, y: 120 },
-  { x: 1720, y: 1300 },
-  { x: 2280, y: 880 },
-  { x: 2280, y: 1440 },
-  { x: 2730, y: 110 },
+  { x: 490, y: 440 },
+  { x: 500, y: 1220 },
+  { x: 1110, y: 160 },
+  { x: 1110, y: 880 },
+  { x: 1110, y: 1400 },
+  { x: 1740, y: 30 },
+  { x: 1740, y: 1260 },
+  { x: 2260, y: 920 },
+  { x: 2260, y: 1450 },
   { x: 2860, y: 880 },
-  { x: 2860, y: 1440 },
+  { x: 2860, y: 1450 },
+  { x: 2970, y: 120 },
 ];
 
 export class BoardLayout {
