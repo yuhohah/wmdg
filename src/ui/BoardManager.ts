@@ -1,3 +1,5 @@
+import { BoardLayout } from './BoardLayout.js';
+
 export class BoardManager {
   private viewportEl: HTMLElement | null = null;
   private worldEl: HTMLElement | null = null;
@@ -37,8 +39,25 @@ export class BoardManager {
   private quickNavBtns = new Map<string, HTMLButtonElement>();
   public currentFocusedCardId: string = 'card-altar-sphere';
 
+  // Drag & drop arrangement of the satellite cards
+  private layout: BoardLayout | null = null;
+
   constructor() {
     this.initElements();
+    if (this.viewportEl && this.worldEl) {
+      const viewportEl = this.viewportEl;
+      this.layout = new BoardLayout({
+        getZoom: () => this.zoom,
+        getPan: () => ({ x: this.panX, y: this.panY }),
+        panBy: (dx, dy) => {
+          this.isCameraTransitioning = false;
+          this.panX += dx;
+          this.panY += dy;
+          this.applyTransform();
+        },
+        getViewport: () => viewportEl,
+      }, this.worldEl);
+    }
     this.bindEvents();
     window.requestAnimationFrame(() => {
       this.centerOnCard('card-altar-sphere', true);
@@ -110,6 +129,7 @@ export class BoardManager {
       this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
       if (this.activePointers.size === 2) {
+        this.layout?.cancelPending();
         const pts = Array.from(this.activePointers.values());
         this.initialPinchDistance = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
         this.initialPinchZoom = this.zoom;
@@ -123,8 +143,16 @@ export class BoardManager {
         return;
       }
 
-      // Filter out clicks on interactive controls or scrollable card bodies so taps and vertical touch scrolling work normally
       const target = e.target as HTMLElement;
+
+      // Card headers pick the card up (mouse instantly, touch on long press) instead of panning the board
+      const headerCard = this.layout?.getHeaderCard(target);
+      if (headerCard && this.layout) {
+        const pickedUp = this.layout.beginPress(headerCard, e, () => this.cancelPan());
+        if (pickedUp) return;
+      }
+
+      // Filter out clicks on interactive controls or scrollable card bodies so taps and vertical touch scrolling work normally
       const isCardHeader = !!target.closest('.dodeca-card-header');
       const cardBody = target.closest<HTMLElement>('.dodeca-card-body');
       const isScrollableCardBody = !!cardBody && cardBody.scrollHeight > cardBody.clientHeight + 2;
@@ -236,6 +264,10 @@ export class BoardManager {
       this.centerOnCard('card-altar-sphere');
     });
 
+    document.getElementById('btn-layout-reset')?.addEventListener('click', () => {
+      this.layout?.resetLayout();
+    });
+
     // 8. Window Resize: re-center active card inside safe viewport
     window.addEventListener('resize', () => {
       if (this.currentFocusedCardId) {
@@ -244,6 +276,26 @@ export class BoardManager {
         this.applyTransform();
       }
     });
+  }
+
+  // Abort an in-progress pan (a long press turned it into a card drag) and undo its small drift
+  private cancelPan(): void {
+    if (this.activePointerId !== null) {
+      try {
+        this.viewportEl?.releasePointerCapture(this.activePointerId);
+      } catch {
+        // pointer capture might already be released
+      }
+    }
+    if (this.hasMoved) {
+      this.panX = this.initialPanX;
+      this.panY = this.initialPanY;
+      this.applyTransform();
+    }
+    this.isPointerDown = false;
+    this.activePointerId = null;
+    this.hasMoved = false;
+    this.viewportEl?.classList.remove('is-dragging');
   }
 
   private applyTransform(): void {
