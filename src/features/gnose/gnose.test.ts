@@ -211,6 +211,62 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(newlyUnlocked.some((a) => a.id === 'ach_boss_tiamat')).toBe(true);
   });
 
+  it('scales Boss Battle HP bar drain, Click damage, Rift damage, and Altar protection across all 6 cult resources', () => {
+    gameState.totalGnoseEarned = 1;
+    const base = gameState.getBossCombatBreakdown('boss_anubis');
+
+    // 1. Adding Fé increases faithBonus and passive DPS
+    gameState.faithPoints = 1e9;
+    gameState.totalFaithAccumulated = 1e9;
+    const afterFaith = gameState.getBossCombatBreakdown('boss_anubis');
+    expect(afterFaith.faithBonus).toBeGreaterThan(base.faithBonus);
+    expect(afterFaith.passiveDps).toBeGreaterThan(base.passiveDps);
+
+    // 2. Adding Fiéis increases followersBonus, passive DPS, and Altar heal on rift shatter
+    gameState.followers[0].count = 50;
+    const afterFollowers = gameState.getBossCombatBreakdown('boss_anubis');
+    expect(afterFollowers.followersBonus).toBeGreaterThan(afterFaith.followersBonus);
+    expect(afterFollowers.passiveDps).toBeGreaterThan(afterFaith.passiveDps);
+    expect(afterFollowers.altarHealOnRift).toBeGreaterThan(0);
+
+    // 3. Adding Fervor increases fervorBonus, passive DPS, and Sphere Click damage
+    gameState.unlocks.forEach((u) => (u.unlocked = true));
+    gameState.fervorPoints = 100000;
+    gameState.fervorUpgrades[0].level = 5;
+    const afterFervor = gameState.getBossCombatBreakdown('boss_anubis');
+    expect(afterFervor.fervorBonus).toBeGreaterThan(afterFollowers.fervorBonus);
+    expect(afterFervor.clickDamage).toBeGreaterThan(afterFollowers.clickDamage);
+
+    // 4. Adding Relíquias increases relicsBonus, Rift critical damage, and mitigates Altar damage on miss
+    gameState.relicPoints = 1000;
+    gameState.relicUpgrades[0].level = 5;
+    const afterRelics = gameState.getBossCombatBreakdown('boss_anubis');
+    expect(afterRelics.relicsBonus).toBeGreaterThan(afterFervor.relicsBonus);
+    expect(afterRelics.riftDamage).toBeGreaterThan(afterFervor.riftDamage);
+    expect(afterRelics.altarDamageOnMiss).toBeLessThan(base.altarDamageOnMiss);
+
+    // 5. Advancing Encarnação increases incarnationBonus, click damage, and passive DPS
+    gameState.incarnationStage = 3;
+    gameState.incarnationBoostTimer = 30;
+    const afterIncarnation = gameState.getBossCombatBreakdown('boss_anubis');
+    expect(afterIncarnation.incarnationBonus).toBeGreaterThan(afterRelics.incarnationBonus);
+    expect(afterIncarnation.passiveDps).toBeGreaterThan(afterRelics.passiveDps);
+
+    // 6. Adding Gnose increases gnoseBonus and overall multiplier
+    gameState.gnosePoints = 100;
+    gameState.totalGnoseEarned = 100;
+    gameState.unlockedGnoseUpgrades.add('gn_init_faith');
+    const afterGnose = gameState.getBossCombatBreakdown('boss_anubis');
+    expect(afterGnose.gnoseBonus).toBeGreaterThan(afterIncarnation.gnoseBonus);
+    expect(afterGnose.totalResourceMultiplier).toBeGreaterThan(afterIncarnation.totalResourceMultiplier);
+
+    // Verify passive tick visibly drains Boss HP bar even when raw Fé/s is smaller than 1e18
+    expect(gameState.startBossBattle('boss_anubis')).toBe(true);
+    const initialHp = gameState.activeBossBattle!.bossHp;
+    gameState.tick(1.0);
+    expect(gameState.activeBossBattle!.bossHp).toBeLessThan(initialHp * 0.96);
+  });
+
   it('evolves DodecaDragons formulas for MU6 (1 + Fiéis^1.5), MU10 (1 + Fiéis^3), and MU14 (3.5^(n^0.7))', () => {
     expect(calculateGnoseFollowersSynergyMultiplier(10, false, false)).toBe(1);
     expect(calculateGnoseFollowersSynergyMultiplier(10, true, false)).toBeCloseTo(1 + Math.pow(10, 1.5), 4);

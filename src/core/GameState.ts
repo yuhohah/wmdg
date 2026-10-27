@@ -7,7 +7,8 @@ import type {
   GameState as GameStateSnapshot,
   GnoseUpgrade,
   GnoseBoss,
-  ActiveBossBattle
+  ActiveBossBattle,
+  BossCombatBreakdown
 } from '../types.js';
 import { initialFollowers } from '../config/followers.js';
 import { initialFervorUpgrades, BASE_FERVOR_RATE, getFervorUpgradeMultiplier } from '../config/fervor.js';
@@ -230,6 +231,138 @@ export class GameStateManager {
     return this.bossCurseTimerSec > 0 ? BOSS_CURSE_MULTIPLIER : 1.0;
   }
 
+  /**
+   * Computes how all 6 Cult Resources (Fé, Fiéis, Fervor, Relíquias, Encarnação, Gnose)
+   * synergize to drive Boss Battle DPS, Sphere Click damage, Rift critical damage,
+   * and Altar Integrity protection/restoration.
+   */
+  public getBossCombatBreakdown(bossId?: string): BossCombatBreakdown {
+    const targetBossId = bossId ?? this.activeBossBattle?.bossId ?? 'boss_anubis';
+    const boss = GNOSE_BOSSES.find((b) => b.id === targetBossId) ?? GNOSE_BOSSES[0];
+    const bossMaxHp =
+      this.activeBossBattle && this.activeBossBattle.bossId === boss.id
+        ? this.activeBossBattle.bossMaxHp
+        : boss.maxHp;
+
+    const difficultyScale =
+      boss.id === 'boss_anubis'
+        ? 1.0
+        : boss.id === 'boss_cronos'
+          ? 1.6
+          : boss.id === 'boss_odin'
+            ? 2.3
+            : 3.2;
+
+    const fps = this.getFaithPerSecond();
+    const fpc = this.getFaithPerClick();
+
+    // 1. Fé (current Fé, total Fé accumulated, and Fé/s)
+    const effectiveFaith = Math.max(this.faithPoints, this.totalFaithAccumulated * 0.1);
+    const faithLog = effectiveFaith > 1 ? Math.log10(effectiveFaith) : 0;
+    const fpsLog = fps > 1 ? Math.log10(fps) : 0;
+    const faithBonus = (faithLog * 0.04 + fpsLog * 0.05) / difficultyScale;
+
+    // 2. Fiéis Devotos (count of active devotees chanting)
+    const followersCount = this.getTotalFollowersCount();
+    const followersBonus =
+      followersCount > 0
+        ? (Math.log10(followersCount + 1) * 0.22 + Math.min(1.5, followersCount * 0.008)) /
+          difficultyScale
+        : 0;
+
+    // 3. Fervor (accumulated Fervor, Fervor/s, and Ritos de Fervor levels)
+    const fervorRate = this.getFervorRatePerSecond();
+    const fervorLevels = this.fervorUpgrades.reduce((acc, u) => acc + u.level, 0);
+    const fervorLog = this.fervorPoints > 0 ? Math.log10(this.fervorPoints + 1) : 0;
+    const fervorRateLog = fervorRate > 0 ? Math.log10(fervorRate + 1) : 0;
+    const fervorBonus =
+      (fervorLog * 0.12 + fervorRateLog * 0.08 + fervorLevels * 0.04) / difficultyScale;
+
+    // 4. Relíquias & Fragmentos (Fragmentos pool, best transmutation, and Relic upgrade levels)
+    const relicLevels = this.relicUpgrades.reduce((acc, r) => acc + r.level, 0);
+    const effectiveRelics = Math.max(this.relicPoints, this.bestRelicsToGet);
+    const relicsLog = effectiveRelics > 0 ? Math.log10(effectiveRelics + 1) : 0;
+    const relicsBonus = (relicsLog * 0.25 + relicLevels * 0.08) / difficultyScale;
+
+    // 5. Encarnação Sagrada (Avatar stage 1..5 and active Blessing)
+    const isBoostActive =
+      this.incarnationBoostTimer > 0 ||
+      (this.hasGnoseUpgrade('gn_bencao_eterna') && this.isIncarnationUnlocked());
+    const incarnationBonus =
+      ((this.incarnationStage - 1) * 0.35 + (isBoostActive ? 0.25 : 0)) / difficultyScale;
+
+    // 6. Gnose (Gnose points, total Gnose earned, and assimilated Gnose tree nodes)
+    const effectiveGnose = Math.max(this.gnosePoints, this.totalGnoseEarned);
+    const gnoseLog = effectiveGnose > 0 ? Math.log10(effectiveGnose + 1) : 0;
+    const gnoseNodes = this.unlockedGnoseUpgrades.size;
+    const gnoseBonus = (gnoseLog * 0.22 + gnoseNodes * 0.08) / difficultyScale;
+
+    const bonusSum =
+      faithBonus + followersBonus + fervorBonus + relicsBonus + incarnationBonus + gnoseBonus;
+    const curseMult = this.getBossCurseMultiplier();
+    const totalResourceMultiplier = (1 + bonusSum) * curseMult;
+
+    const hasActiveCultPower =
+      fps > 0 ||
+      followersCount > 0 ||
+      this.fervorPoints > 0 ||
+      fervorLevels > 0 ||
+      effectiveRelics > 0 ||
+      relicLevels > 0 ||
+      this.incarnationStage > 1 ||
+      effectiveGnose > 0 ||
+      gnoseNodes > 0 ||
+      this.faithPoints > 1;
+
+    // Passive DPS drains Boss HP proportionally to all active resources + raw Fé/s
+    const passiveHpFractionPerSec = hasActiveCultPower
+      ? Math.min(0.25, bonusSum * 0.018 * curseMult)
+      : 0;
+    const passiveDps = Math.max(fps, bossMaxHp * passiveHpFractionPerSec);
+
+    // Sphere Pulse Click Damage: base 1.5% Max HP scaled by all resources
+    const clickHpFraction = Math.min(
+      0.25,
+      0.015 * (1 + bonusSum * 0.35 + fervorBonus * 0.25 + incarnationBonus * 0.25)
+    );
+    const clickDamage = Math.max(fpc, bossMaxHp * clickHpFraction);
+
+    // Rift Shatter Damage: base 12% Max HP scaled by all resources (especially Relíquias & Gnose)
+    const baseRiftPct = boss.riftDamagePercent || 0.12;
+    const riftHpFraction = Math.min(
+      0.5,
+      baseRiftPct * (1 + bonusSum * 0.18 + relicsBonus * 0.3 + gnoseBonus * 0.2)
+    );
+    const riftDamage = Math.max(fpc * 5, bossMaxHp * riftHpFraction);
+
+    // Altar Integrity Protection (from Relíquias, Encarnação, Fervor) & Heal on Rift Shatter
+    const defenseScore = relicsBonus * 0.35 + incarnationBonus * 0.35 + fervorBonus * 0.15;
+    const mitigationFactor = 1 / (1 + defenseScore * 0.5);
+    const altarDamageOnMiss = Math.max(10, boss.altarDamageOnMiss * mitigationFactor);
+    const altarHealOnRift = Math.min(
+      15,
+      followersBonus * 4 + relicsBonus * 5 + incarnationBonus * 4
+    );
+
+    return {
+      faithBonus,
+      followersBonus,
+      fervorBonus,
+      relicsBonus,
+      incarnationBonus,
+      gnoseBonus,
+      totalResourceMultiplier,
+      passiveHpFractionPerSec,
+      passiveDps,
+      clickHpFraction,
+      clickDamage,
+      riftHpFraction,
+      riftDamage,
+      altarDamageOnMiss,
+      altarHealOnRift
+    };
+  }
+
   public startBossBattle(bossId: string): boolean {
     const boss = GNOSE_BOSSES.find((b) => b.id === bossId);
     if (!boss || !this.canChallengeBoss(bossId)) {
@@ -281,13 +414,18 @@ export class GameStateManager {
       return { damage: 0, shattered: false, victory: false };
     }
 
-    const boss = GNOSE_BOSSES.find((b) => b.id === battle.bossId);
-    const pct = boss ? boss.riftDamagePercent : 0.12;
-    const damage = battle.bossMaxHp * pct + this.getFaithPerClick() * 5;
+    const breakdown = this.getBossCombatBreakdown(battle.bossId);
+    const damage = breakdown.riftDamage;
 
     battle.activeRifts.splice(idx, 1);
     battle.riftsShattered += 1;
     battle.bossHp = Math.max(0, battle.bossHp - damage);
+    if (breakdown.altarHealOnRift > 0) {
+      battle.altarIntegrity = Math.min(
+        battle.maxAltarIntegrity,
+        battle.altarIntegrity + breakdown.altarHealOnRift
+      );
+    }
 
     if (battle.bossHp <= 0) {
       this.completeBossBattle(true);
@@ -603,7 +741,7 @@ export class GameStateManager {
 
     // Active Boss Battle tick (no countdown timer; Altar Integrity vs Boss HP)
     if (this.activeBossBattle) {
-      this.tickBossBattle(deltaSec, fps);
+      this.tickBossBattle(deltaSec);
     }
 
     // Gnose Tier 4 Automation (runs once per second)
@@ -616,30 +754,32 @@ export class GameStateManager {
     return { faithGained, fervorGained, relicGained };
   }
 
-  private tickBossBattle(deltaSec: number, fps: number): void {
+  private tickBossBattle(deltaSec: number): void {
     const battle = this.activeBossBattle;
     if (!battle) return;
 
     const boss = GNOSE_BOSSES.find((b) => b.id === battle.bossId);
     if (!boss) return;
 
-    // 1. Passive DPS from Faith/s
-    if (fps > 0) {
-      battle.bossHp = Math.max(0, battle.bossHp - fps * deltaSec);
+    const breakdown = this.getBossCombatBreakdown(battle.bossId);
+
+    // 1. Passive DPS from all Cult Resources (Fé, Fiéis, Fervor, Relíquias, Encarnação, Gnose)
+    if (breakdown.passiveDps > 0) {
+      battle.bossHp = Math.max(0, battle.bossHp - breakdown.passiveDps * deltaSec);
       if (battle.bossHp <= 0) {
         this.completeBossBattle(true);
         return;
       }
     }
 
-    // 2. Update active rifts & check for expired rifts (which damage Altar Integrity)
+    // 2. Update active rifts & check for expired rifts (which damage Altar Integrity, mitigated by Relíquias/Encarnação/Fervor)
     for (let i = battle.activeRifts.length - 1; i >= 0; i--) {
       const rift = battle.activeRifts[i];
       rift.remainingSec -= deltaSec;
       if (rift.remainingSec <= 0) {
         battle.activeRifts.splice(i, 1);
         battle.riftsMissed += 1;
-        battle.altarIntegrity = Math.max(0, battle.altarIntegrity - boss.altarDamageOnMiss);
+        battle.altarIntegrity = Math.max(0, battle.altarIntegrity - breakdown.altarDamageOnMiss);
         if (battle.altarIntegrity <= 0) {
           this.completeBossBattle(false);
           return;
@@ -687,22 +827,23 @@ export class GameStateManager {
   }
 
   // --- Click & Actions ---
-  public addClick(): { fpc: number; isCrit: boolean } {
+  public addClick(): { fpc: number; bossClickDamage: number; isCrit: boolean } {
     const fpc = this.getFaithPerClick();
     this.faithPoints += fpc;
     this.totalFaithAccumulated += fpc;
     this.totalClicks += 1;
 
+    let bossClickDamage = 0;
     if (this.activeBossBattle) {
-      // Sphere click deals FPC + 1.5% of Boss Max HP so active clicking is always meaningful
-      const bossClickDmg = fpc + this.activeBossBattle.bossMaxHp * 0.015;
-      this.activeBossBattle.bossHp = Math.max(0, this.activeBossBattle.bossHp - bossClickDmg);
+      const breakdown = this.getBossCombatBreakdown(this.activeBossBattle.bossId);
+      bossClickDamage = breakdown.clickDamage;
+      this.activeBossBattle.bossHp = Math.max(0, this.activeBossBattle.bossHp - bossClickDamage);
       if (this.activeBossBattle.bossHp <= 0) {
         this.completeBossBattle(true);
       }
     }
 
-    return { fpc, isCrit: false };
+    return { fpc, bossClickDamage, isCrit: false };
   }
 
   public addIncarnationBoost(seconds: number): void {

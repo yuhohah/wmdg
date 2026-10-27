@@ -149,7 +149,7 @@
   padding: 16px 18px !important;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   color: var(--hermetic-ink-black);
   box-sizing: border-box !important;
 }
@@ -282,6 +282,58 @@
   transition: width 0.15s ease;
 }
 
+/* Painel de Ressonância dos 6 Recursos no Combate */
+.boss-synergy-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 5px 8px;
+  background: var(--void, rgba(22, 16, 12, 0.45));
+  border: 1px solid var(--line, var(--hermetic-rule-brass));
+}
+
+.boss-synergy-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-game);
+  font-size: 12px;
+  gap: 6px;
+}
+
+.boss-synergy-title {
+  font-weight: 700;
+  color: var(--gold, var(--hermetic-ink-black));
+  letter-spacing: 0.4px;
+}
+
+.boss-synergy-total {
+  font-weight: 700;
+  color: var(--gold-light, var(--hermetic-crimson-ink));
+}
+
+.boss-synergy-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.boss-synergy-pill {
+  font-family: var(--font-game);
+  font-size: 11.5px;
+  padding: 1px 6px;
+  background: rgba(236, 226, 200, 0.04);
+  border: 1px solid var(--line-faint, rgba(94, 70, 49, 0.35));
+  color: var(--bone-dim, var(--hermetic-ink-sepia));
+}
+
+.boss-synergy-pill.active {
+  background: var(--astral-wash, rgba(169, 155, 224, 0.15));
+  border-color: rgba(169, 155, 224, 0.5);
+  color: var(--astral-light, #c3baf0);
+  font-weight: 700;
+}
+
 .boss-penalty-hint {
   font-size: 10.5px;
   color: var(--hermetic-ink-sepia);
@@ -291,7 +343,7 @@
 .boss-arena-stage {
   position: relative;
   width: 100%;
-  height: 235px;
+  height: 220px;
   background:
     radial-gradient(circle at 50% 50%, rgba(200, 157, 84, 0.18) 0%, rgba(22, 16, 12, 0.96) 72%),
     #140e0a;
@@ -340,6 +392,11 @@
   text-shadow: 0 1px 4px #000;
   text-align: center;
   pointer-events: none;
+}
+
+.boss-sphere-caption small {
+  font-size: 11px;
+  color: #fde68a;
 }
 
 .boss-rifts-layer {
@@ -429,7 +486,7 @@
   }
 
   .boss-arena-stage {
-    height: 195px;
+    height: 185px;
   }
 
   .boss-arena-sphere {

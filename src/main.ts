@@ -344,7 +344,7 @@ class AppManager {
     if (this.gameState.isRelicsUnlocked()) {
       this.relicsTab.updateUI();
     }
-    if (this.gameState.isGnoseUnlocked()) {
+    if (this.gameState.isGnoseUnlocked() || this.gameState.activeBossBattle) {
       this.gnoseTab.updateUI();
     }
   }

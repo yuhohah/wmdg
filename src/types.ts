@@ -148,6 +148,24 @@ export interface ActiveBossBattle {
   riftsMissed: number;
 }
 
+export interface BossCombatBreakdown {
+  faithBonus: number;
+  followersBonus: number;
+  fervorBonus: number;
+  relicsBonus: number;
+  incarnationBonus: number;
+  gnoseBonus: number;
+  totalResourceMultiplier: number;
+  passiveHpFractionPerSec: number;
+  passiveDps: number;
+  clickHpFraction: number;
+  clickDamage: number;
+  riftHpFraction: number;
+  riftDamage: number;
+  altarDamageOnMiss: number;
+  altarHealOnRift: number;
+}
+
 export interface GnoseSaveData {
   gnosePoints: number;
   totalGnoseEarned: number;
