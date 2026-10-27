@@ -357,7 +357,7 @@ export const initialAchievements: Achievement[] = [
     name: 'Crepúsculo dos Deuses',
     desc: 'Subjugue Tiamat após completar toda a Árvore da Gnose (20/20).',
     lore: 'Anúbis, Cronos, Odin e a própria Tiamat curvaram-se perante o Nous. Nenhum panteão resta além da Esfera.',
-    icon: '🐉',
+    icon: 'ouroboros',
     unlocked: false,
     buffText: '+100% em toda a Fé',
     buffType: 'global_mult',

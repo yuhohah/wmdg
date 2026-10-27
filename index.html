@@ -27,41 +27,41 @@
 
       <!-- Top HUD Bar -->
       <header class="top-hud-bar">
-        <a class="cult-wordmark" href="/" aria-label="Cult of the Sphere"><span class="cult-mark">◉</span><span>CULT OF<br>THE SPHERE</span></a>
+        <a class="cult-wordmark" href="/" aria-label="Cult of the Sphere"><span class="cult-mark" data-icon="sphere"></span><span>CULT OF<br>THE SPHERE</span></a>
         <!-- Left: Integrated Resources Box (Fé & Fervor) -->
         <div class="resources-hud-card">
           <div class="resources-hud-header">RECURSOS</div>
           <div class="resources-hud-row">
             <div class="resource-item resource-item-faith">
-              <span class="res-name">FÉ:</span>
+              <span class="res-name" data-icon="star" aria-label="Fé"></span>
               <span id="faith-counter" class="res-num">1</span>
               <span class="res-dash">-</span>
               <span id="faith-per-sec-counter" class="res-rate">0/s</span>
             </div>
             <div class="resource-divider"></div>
             <div class="resource-item resource-item-followers">
-              <span class="res-name">FIÉIS:</span>
+              <span class="res-name" data-icon="followers" aria-label="Fiéis"></span>
               <span id="followers-counter" class="res-num">0</span>
               <span class="res-dash">-</span>
               <span class="res-rate">fiéis</span>
             </div>
             <div class="resource-divider" id="hud-fervor-divider"></div>
             <div class="resource-item resource-item-fervor" id="hud-fervor-item">
-              <span class="res-name">FERVOR:</span>
+              <span class="res-name" data-icon="fervor" aria-label="Fervor"></span>
               <span id="fervor-counter-hud" class="res-num">0</span>
               <span class="res-dash">-</span>
               <span id="fervor-rate-counter-hud" class="res-rate">0/s</span>
             </div>
             <div class="resource-divider" id="hud-relic-divider"></div>
             <div class="resource-item resource-item-relic" id="hud-relic-item">
-              <span class="res-name">FRAGMENTOS:</span>
+              <span class="res-name" data-icon="gem" aria-label="Fragmentos"></span>
               <span id="relic-counter-hud" class="res-num">0</span>
               <span class="res-dash">-</span>
               <span id="relic-rate-counter-hud" class="res-rate">0/s</span>
             </div>
             <div class="resource-divider" id="hud-gnose-divider" style="display: none;"></div>
             <div class="resource-item resource-item-gnose" id="hud-gnose-item" style="display: none;">
-              <span class="res-name">GNOSE:</span>
+              <span class="res-name" data-icon="gnose" aria-label="Gnose"></span>
               <span id="gnose-counter-hud" class="res-num">0</span>
               <span class="res-dash">-</span>
               <span id="gnose-mult-counter-hud" class="res-rate">×1</span>
@@ -72,41 +72,13 @@
         <!-- Right Group: Achievements, Audio & Settings Buttons -->
         <div class="top-right-group">
           <button id="achievements-hud-btn" class="icon-btn-gold"
-            aria-label="Grimório de Conquistas">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-              <path d="M4 22h16"></path>
-              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
-            </svg>
+            aria-label="Grimório de Conquistas"><span data-icon="laurel"></span>
           </button>
           <button id="music-quick-btn" class="icon-btn-gold"
             aria-label="Trilha Sonora">
-            <svg id="music-icon-on" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 18V5l12-2v13"></path>
-              <circle cx="6" cy="18" r="3"></circle>
-              <circle cx="18" cy="16" r="3"></circle>
-            </svg>
-            <svg id="music-icon-off" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
-              <path d="M9 18V5l12-2v13"></path>
-              <circle cx="6" cy="18" r="3"></circle>
-              <circle cx="18" cy="16" r="3"></circle>
-              <line x1="2" y1="2" x2="22" y2="22"></line>
-            </svg>
+            <span id="music-icon-on" data-icon="lyre"></span><span id="music-icon-off" data-icon="lyre-off" style="display: none;"></span>
           </button>
-          <button id="settings-btn" class="icon-btn-gold" aria-label="Configurações">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round">
-              <path
-                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
-              </path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
+          <button id="settings-btn" class="icon-btn-gold" aria-label="Configurações"><span data-icon="gear"></span>
           </button>
         </div>
       </header>
@@ -119,7 +91,7 @@
           </div>
 
           <div class="start-sphere-emblem">
-            <img src="/assets/sphere_base.png" alt="A Entidade Divina" class="start-sphere-img">
+            <img src="/assets/board/armillary-sphere.svg" alt="A Entidade Divina" class="start-sphere-img">
           </div>
 
           <div class="play-btn-container">
@@ -166,7 +138,7 @@
             <div id="card-altar-sphere" class="dodeca-card">
               <div class="dodeca-card-header">
                 <div class="dodeca-card-title-group">
-                  <span class="dodeca-card-icon">✦</span>
+                  <span class="dodeca-card-icon" data-icon="sphere"></span>
                   <h3 class="dodeca-card-title">Altar da Esfera</h3>
                   <span class="dodeca-card-tag">Relicário</span>
                 </div>
@@ -195,7 +167,7 @@
             <div id="card-followers" class="dodeca-card">
               <div class="dodeca-card-header">
                 <div class="dodeca-card-title-group">
-                  <span class="dodeca-card-icon">👥</span>
+                  <span class="dodeca-card-icon" data-icon="followers"></span>
                   <h3 class="dodeca-card-title">Pátio dos Fiéis</h3>
                   <span class="dodeca-card-tag">Congregação</span>
                 </div>
@@ -259,7 +231,7 @@
             <div id="card-fervor" class="dodeca-card card-locked" style="display: none;">
               <div class="dodeca-card-header">
                 <div class="dodeca-card-title-group">
-                  <span class="dodeca-card-icon">🔥</span>
+                  <span class="dodeca-card-icon" data-icon="fervor"></span>
                   <h3 class="dodeca-card-title">Fervor Sagrado</h3>
                   <span class="dodeca-card-tag">Chama</span>
                 </div>
@@ -296,7 +268,7 @@
             <div id="card-incarnation" class="dodeca-card card-locked" style="display: none;">
               <div class="dodeca-card-header">
                 <div class="dodeca-card-title-group">
-                  <span class="dodeca-card-icon">👤</span>
+                  <span class="dodeca-card-icon" data-icon="incarnation"></span>
                   <h3 class="dodeca-card-title">Encarnação Sagrada</h3>
                   <span class="dodeca-card-tag">Ascensão</span>
                 </div>
@@ -369,7 +341,7 @@
             <div id="card-relics" class="dodeca-card card-locked" style="display: none;">
               <div class="dodeca-card-header">
                 <div class="dodeca-card-title-group">
-                  <span class="dodeca-card-icon">⚗️</span>
+                  <span class="dodeca-card-icon" data-icon="relics"></span>
                   <h3 class="dodeca-card-title">Opus Magnum</h3>
                   <span class="dodeca-card-tag">Transmutação</span>
                 </div>
@@ -377,7 +349,6 @@
               <div class="dodeca-card-body">
                 <div id="tab-relics" class="tab-pane active" style="display: block;">
                   <div class="relic-monument-banner">
-                    <img src="/assets/monument_relic.jpg" alt="Monumento Alquímico" class="relic-monument-img">
                     <div class="relic-monument-caption">
                       <span class="relic-monument-title">OPUS MAGNUM</span>
                       <span class="relic-monument-desc">As Above, So Below — Transmutações Alquímicas</span>
@@ -418,7 +389,7 @@
             <div id="card-gnose" class="dodeca-card card-locked" style="display: none;">
               <div class="dodeca-card-header">
                 <div class="dodeca-card-title-group">
-                  <span class="dodeca-card-icon">👁️</span>
+                  <span class="dodeca-card-icon" data-icon="gnose"></span>
                   <h3 class="dodeca-card-title">Câmara da Gnose</h3>
                   <span class="dodeca-card-tag">Prestígio</span>
                 </div>
@@ -492,13 +463,13 @@
 
           <!-- FLOATING QUICK NAVIGATION RIBBON (TOP CENTER) -->
           <nav class="board-quicknav-bar" id="board-quicknav-bar" aria-label="Navegação do Culto">
-            <button class="quicknav-btn active" data-target="card-altar-sphere"><span>✦</span> <span>Esfera</span></button>
-            <button class="quicknav-btn" data-target="card-followers"><span>👥</span> <span>Fiéis</span></button>
-            <button class="quicknav-btn" data-target="card-unlocks"><span>🔓</span> <span>Desbloqueio</span></button>
-            <button class="quicknav-btn" data-target="card-fervor" id="quicknav-fervor" style="display: none;"><span>🔥</span> <span>Fervor</span></button>
-            <button class="quicknav-btn" data-target="card-incarnation" id="quicknav-incarnation" style="display: none;"><span>👤</span> <span>Encarnação</span></button>
-            <button class="quicknav-btn" data-target="card-relics" id="quicknav-relics" style="display: none;"><span>⚗️</span> <span>Relíquias</span></button>
-            <button class="quicknav-btn" data-target="card-gnose" id="quicknav-gnose" style="display: none;"><span>👁️</span> <span>Gnose</span></button>
+            <button class="quicknav-btn active" data-target="card-altar-sphere"><span class="quicknav-ico" data-icon="sphere"></span> <span>Esfera</span></button>
+            <button class="quicknav-btn" data-target="card-followers"><span class="quicknav-ico" data-icon="followers"></span> <span>Fiéis</span></button>
+            <button class="quicknav-btn" data-target="card-unlocks"><span class="quicknav-ico" data-icon="unlock"></span> <span>Desbloqueio</span></button>
+            <button class="quicknav-btn" data-target="card-fervor" id="quicknav-fervor" style="display: none;"><span class="quicknav-ico" data-icon="fervor"></span> <span>Fervor</span></button>
+            <button class="quicknav-btn" data-target="card-incarnation" id="quicknav-incarnation" style="display: none;"><span class="quicknav-ico" data-icon="incarnation"></span> <span>Encarnação</span></button>
+            <button class="quicknav-btn" data-target="card-relics" id="quicknav-relics" style="display: none;"><span class="quicknav-ico" data-icon="relics"></span> <span>Relíquias</span></button>
+            <button class="quicknav-btn" data-target="card-gnose" id="quicknav-gnose" style="display: none;"><span class="quicknav-ico" data-icon="gnose"></span> <span>Gnose</span></button>
           </nav>
 
           <!-- FLOATING ZOOM CONTROLS (BOTTOM RIGHT) -->
@@ -544,7 +515,7 @@
         <div class="spotlight-balloon-arrow" id="spotlight-balloon-arrow"></div>
         <div class="spotlight-balloon-header">
           <div class="spotlight-balloon-badge-group">
-            <span class="spotlight-balloon-icon" id="spotlight-balloon-icon">🔮</span>
+            <span class="spotlight-balloon-icon" id="spotlight-balloon-icon" data-icon="orb"></span>
             <span class="spotlight-balloon-badge" id="spotlight-balloon-badge">ETAPA 1/2 • O DESPERTAR</span>
           </div>
           <button id="spotlight-balloon-skip" class="spotlight-balloon-skip">Pular</button>
@@ -567,7 +538,7 @@
           </div>
 
           <div class="spotlight-balloon-action-tip" id="spotlight-balloon-action-tip">
-            👉 Toque a Esfera até juntar Fé suficiente (+1 Fé por toque).
+            Toque a Esfera até juntar Fé suficiente (+1 Fé por toque).
           </div>
         </div>
       </div>

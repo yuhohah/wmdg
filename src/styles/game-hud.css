@@ -29,7 +29,6 @@ html,body { background:#211a18; }
 .icon-btn-gold svg { visibility:hidden; position:absolute; }
 .icon-btn-gold::before { content:''; display:block; width:24px; height:24px; background:url('/assets/hud/settings.svg') center / contain no-repeat; }
 #music-quick-btn::before { background-image:url('/assets/hud/music.svg'); }
-#music-quick-btn:has(#music-icon-off[style*='block'])::before { opacity:.4; }
 #music-quick-btn.muted::before { opacity:.4; }
 .top-right-group { gap:10px; }
 .procession-world { border:8px solid transparent; border-image:var(--wood-frame) 8 / 8px / 0 stretch; height:49%; min-height:270px; }
@@ -140,13 +139,6 @@ html,body { background:#211a18; }
   max-width: 0;
 }
 
-.gameplay-split-container:has(.side-panel-unified.collapsed) .gameplay-world-column,
-.gameplay-3frame-container:has(.side-panel-right.collapsed) .gameplay-world-column {
-  flex: 1 1 100%;
-  max-width: 100%;
-  width: 100%;
-}
-
 .panel-header { background:#4e3427; border-bottom:3px solid #271b16; padding:7px 10px 8px; min-height:52px; display:flex; align-items:center; justify-content:space-between; }
 .panel-tag { display:none; }
 .panel-title-group { display:flex; flex-direction:row; align-items:center; gap:9px; }
@@ -213,7 +205,7 @@ html,body { background:#211a18; }
 .sacred-window-heading p { font:16px var(--font-game); color:#a48b6c; margin:0; }
 .sphere-wrapper { background:repeating-conic-gradient(from 0deg,#927248 0deg 2deg,transparent 2deg 30deg); border:5px double #8b6b44; border-radius:50%; box-shadow:0 0 0 6px #241b17,0 0 0 8px #664b31; width:160px; height:160px; position:relative; }
 .divine-sphere-btn {
-  background: radial-gradient(circle at center, rgba(30, 24, 20, 0.2) 0%, rgba(10, 8, 8, 0.8) 100%), url('/assets/sphere_base.png') center / cover no-repeat;
+  background: radial-gradient(circle at center, rgba(30, 24, 20, 0.2) 0%, rgba(10, 8, 8, 0.8) 100%), url('/assets/board/armillary-sphere.svg') center / cover no-repeat;
   width: 134px;
   height: 134px;
   border-radius: 50%;

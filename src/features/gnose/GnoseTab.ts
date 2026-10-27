@@ -7,6 +7,7 @@ import { formatNumber } from '../../systems/calculations.js';
 import { cultDialog } from '../../ui/CultDialog.js';
 import { BossBattleModal } from './BossBattleModal.js';
 import type { GnoseUpgrade } from '../../types.js';
+import { icon, iconOrText } from '../../ui/icons.js';
 
 export interface GnoseTabOptions {
   gameState: GameStateManager;
@@ -150,7 +151,7 @@ export class GnoseTab {
       this.options.notifications.showCustomPopup(
         'ASCENSÃO GNÓSTICA',
         `O templo dissolveu-se em pura Mente: +${formatNumber(result.gained)} Gnose assimilada.`,
-        '👁️',
+        'gnose',
         'PRESTÍGIO'
       );
       this.updateUI();
@@ -177,7 +178,7 @@ export class GnoseTab {
       this.options.notifications.showCustomPopup(
         upg.name,
         upg.effectText,
-        upg.icon || '✦',
+        upg.icon || 'star',
         'GNOSE ASSIMILADA'
       );
       this.updateUI();
@@ -200,7 +201,7 @@ export class GnoseTab {
     curseBanner.className = 'gnose-curse-banner';
     curseBanner.style.display = gs.bossCurseTimerSec > 0 ? 'flex' : 'none';
     curseBanner.innerHTML = `
-      <span>⚠️ <strong>Maldição dos Deuses Antigos:</strong> -25% Fé/s e Fervor/s</span>
+      <span>${icon('warning')} <strong>Maldição dos Deuses Antigos:</strong> -25% Fé/s e Fervor/s</span>
       <span id="gnose-curse-timer-val">${Math.ceil(gs.bossCurseTimerSec)}s</span>
     `;
     this.treeContainerEl.appendChild(curseBanner);
@@ -225,13 +226,13 @@ export class GnoseTab {
           if (isTierOpen) {
             guardianBadgeHtml = `
               <span class="gnose-guardian-badge defeated">
-                ${guardian.symbol} ${guardian.name}: SUBJUGADO (×${guardian.faithFervorMult} Fé/Fervor)
+                ${iconOrText(guardian.symbol)} ${guardian.name}: SUBJUGADO (×${guardian.faithFervorMult} Fé/Fervor)
               </span>
             `;
           } else {
             guardianBadgeHtml = `
               <button type="button" class="btn-challenge-guardian ${canChallenge ? 'ready' : 'locked'}" data-boss-id="${guardian.id}" ${canChallenge ? '' : 'disabled'}>
-                ⚔️ Desafiar ${guardian.name} (${guardian.mythology}) — Destravar Tier
+                ${icon('swords')} Desafiar ${guardian.name} (${guardian.mythology}) — Destravar Tier
               </button>
             `;
           }
@@ -280,15 +281,15 @@ export class GnoseTab {
         nodeEl.id = `card-${upg.id}`;
 
         const symbolHtml = DISPLAY_CONFIG.showEmojisAndSymbols
-          ? `<span class="gnose-node-symbol">${upg.icon}</span>`
+          ? `<span class="gnose-node-symbol">${iconOrText(upg.icon)}</span>`
           : '';
 
         const statusBadge = isUnlocked
           ? `<span class="gnose-node-badge unlocked">ASSIMILADO</span>`
           : !isTierUnlocked
-            ? `<span class="gnose-node-badge locked">⚔️ Guardião (${formatNumber(upg.cost)} Gnose)</span>`
+            ? `<span class="gnose-node-badge locked">${icon('swords')} Guardião (${formatNumber(upg.cost)} Gnose)</span>`
             : !prereqsMet
-              ? `<span class="gnose-node-badge locked">🔒 ${formatNumber(upg.cost)} Gnose</span>`
+              ? `<span class="gnose-node-badge locked">${icon('lock')} ${formatNumber(upg.cost)} Gnose</span>`
               : `<span class="gnose-node-badge cost">${formatNumber(upg.cost)} Gnose</span>`;
 
         nodeEl.innerHTML = `
@@ -327,14 +328,14 @@ export class GnoseTab {
       endgameBar.id = 'gnose-endgame-boss-bar';
 
       const actionHtml = isTiamatDefeated
-        ? `<span class="gnose-guardian-badge defeated">👑 CREPÚSCULO DOS DEUSES CONCLUÍDO (×10 Fé & Fervor)</span>`
+        ? `<span class="gnose-guardian-badge defeated">${icon('crown')} CREPÚSCULO DOS DEUSES CONCLUÍDO (×10 Fé & Fervor)</span>`
         : canChallengeTiamat
-          ? `<button type="button" id="btn-challenge-tiamat" class="btn-challenge-guardian endgame-ready">🐉 Desafiar ${tiamat.name} (${tiamat.title})</button>`
-          : `<span class="gnose-endgame-lock-hint">🔒 Assimile toda a Árvore da Gnose (${totalUnlockedNodes}/${GNOSE_UPGRADES.length}) para desafiar ${tiamat.name}</span>`;
+          ? `<button type="button" id="btn-challenge-tiamat" class="btn-challenge-guardian endgame-ready">${iconOrText(tiamat.symbol)} Desafiar ${tiamat.name} (${tiamat.title})</button>`
+          : `<span class="gnose-endgame-lock-hint">${icon('lock')} Assimile toda a Árvore da Gnose (${totalUnlockedNodes}/${GNOSE_UPGRADES.length}) para desafiar ${tiamat.name}</span>`;
 
       endgameBar.innerHTML = `
         <div class="gnose-endgame-info">
-          <span class="gnose-endgame-title">${tiamat.symbol} APOTEOSE FINAL: ${tiamat.name.toUpperCase()} — ${tiamat.mythology.toUpperCase()}</span>
+          <span class="gnose-endgame-title">${iconOrText(tiamat.symbol)} APOTEOSE FINAL: ${tiamat.name.toUpperCase()} — ${tiamat.mythology.toUpperCase()}</span>
           <span class="gnose-endgame-desc">${tiamat.rewardDesc}</span>
         </div>
         <div class="gnose-endgame-action">

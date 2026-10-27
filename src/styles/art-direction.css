@@ -185,7 +185,6 @@
 .sphere-orbit-ring.ring-2 { width:200px; height:200px; border-style:dashed; }
 .sphere-aura { width:190px; height:190px; background:radial-gradient(circle,#bd8e3620,transparent 70%); animation:none; }
 .sphere-satellites-orbit { display:none; }
-.sphere-satellites-orbit:has(.state-unlocked) { display:block; --satellites-orbit-size:220px; --satellite-offset:-110px; --satellite-node-size:30px; }
 .sphere-satellite-node.state-locked { display:none; }
 .sphere-satellite-node.state-unlocked:hover,.sphere-satellite-node.state-unlocked:active { transform:rotate(var(--node-angle)) translateY(-110px); }
 .satellite-sprite-view { width:24px; height:24px; background-size:144px 48px; }

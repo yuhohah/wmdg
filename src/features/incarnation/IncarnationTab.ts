@@ -123,7 +123,7 @@ export class IncarnationTab {
       this.options.notifications.showCustomPopup(
         'A ENCARNAÇÃO RENASCE',
         `A Encarnação renasceu como ${nextStage.name}! Fervor/s multiplicado por ${formatNumber(nextStage.multiplier)}x.`,
-        '👑',
+        'crown',
         'EVOLUÇÃO'
       );
       this.updateUI();

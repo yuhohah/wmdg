@@ -1,3 +1,5 @@
+import { getDevoteeSheet, type DevoteeSheet } from './pixelArt.js';
+
 export interface Walker {
   id: number;
   x: number;
@@ -33,26 +35,15 @@ export class FollowersArena {
   private miracleSpawnCooldown: number = 300; // ~5s after start
   private isPaused: boolean = false;
   private speedMultiplier: number = 1.0;
-  private spriteSheet: HTMLImageElement | HTMLCanvasElement | null = null;
-  private spriteLoaded: boolean = false;
+  private sheet: DevoteeSheet = getDevoteeSheet();
   private isOnScreen: boolean = true;
 
   constructor(canvasId: string = 'followers-walk-canvas') {
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     this.ctx = this.canvas.getContext('2d', { alpha: true })!;
     this.initCanvas();
-    this.loadSprite();
     this.setupEvents();
     this.startLoop();
-  }
-
-  private loadSprite(): void {
-    const img = new Image();
-    img.src = '/assets/cultist_spritesheet.png';
-    img.onload = () => {
-      this.spriteSheet = this.keyOutBlack(img);
-      this.spriteLoaded = true;
-    };
   }
 
   public setSpeedMultiplier(mult: number): void {
@@ -409,32 +400,18 @@ export class FollowersArena {
     const x = Math.round(w.x);
     const y = Math.round(w.y);
 
-    // 1. Soft contact shadow under feet
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-    ctx.beginPath();
-    ctx.ellipse(x, y - 2, 11, 3.5, 0, 0, Math.PI * 2);
-    ctx.fill();
+    // 1. Pixel contact shadow under the feet
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.fillRect(x - 12, y - 1, 24, 3);
 
-    // 2. Woodcut cultist sprite (procedural devotee until the sheet loads)
-    if (this.spriteLoaded && this.spriteSheet) {
-      this.drawFollowerSprite(w, x, y);
-    } else {
-      this.renderProceduralCultist(w, x, y);
-    }
+    // 2. Pixel-art devotee
+    this.drawFollowerSprite(w, x, y);
 
-    // 3. Draw prayer particles in absolute arena coordinates
-    if (w.prayParticles.length > 0) {
-      for (const p of w.prayParticles) {
-        ctx.fillStyle = `rgba(251, 191, 36, ${p.alpha * 0.9})`;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * 0.5, 0, Math.PI * 2);
-        ctx.fill();
-      }
+    // 3. Prayer sparks as square pixels, in arena coordinates
+    for (const p of w.prayParticles) {
+      const size = Math.max(2, Math.round(p.size * 1.5));
+      ctx.fillStyle = `rgba(246, 220, 154, ${p.alpha})`;
+      ctx.fillRect(Math.round(p.x), Math.round(p.y), size, size);
     }
 
     // 4. Draw miracle plea speech bubble if requesting miracle
@@ -443,237 +420,67 @@ export class FollowersArena {
     }
   }
 
-  // The sheet is an opaque JPEG (white engraving on black): turn black into transparency once,
-  // so devotees don't carry black boxes over the courtyard
-  private keyOutBlack(img: HTMLImageElement): HTMLImageElement | HTMLCanvasElement {
-    const c = document.createElement('canvas');
-    c.width = img.naturalWidth;
-    c.height = img.naturalHeight;
-    const cx = c.getContext('2d');
-    if (!cx) return img;
-    cx.drawImage(img, 0, 0);
-    const frame = cx.getImageData(0, 0, c.width, c.height);
-    const d = frame.data;
-    for (let i = 0; i < d.length; i += 4) {
-      const lum = Math.max(d[i], d[i + 1], d[i + 2]);
-      if (lum > 0) {
-        const k = 255 / lum;
-        d[i] = Math.min(255, d[i] * k);
-        d[i + 1] = Math.min(255, d[i + 1] * k);
-        d[i + 2] = Math.min(255, d[i + 2] * k);
-      }
-      d[i + 3] = lum;
-    }
-    cx.putImageData(frame, 0, 0);
-    return c;
-  }
-
-  // Spritesheet layout: 6 columns x 2 rows (row 0 = walk/idle, row 1 = prayer)
+  // Sheet columns: 0..3 walk cycle, 4..5 prayer; rows: robe palettes
   private drawFollowerSprite(w: Walker, x: number, y: number): void {
-    if (!this.spriteSheet) return;
-    const ctx = this.ctx;
-
-    let row = 0;
+    const { canvas, frameW, frameH, variants, walkFrames, prayColumn } = this.sheet;
+    const scale = 3;
     let col = 0;
     let bob = 0;
 
     if (w.state === 'walk') {
-      col = Math.floor(w.walkCycle) % 6;
-      bob = Math.abs(Math.sin(w.walkCycle)) * 1.2;
+      col = Math.floor(w.walkCycle) % walkFrames;
+      bob = col % 2 === 1 ? 1 : 0;
     } else if (w.state === 'pray') {
-      row = 1;
-      col = Math.floor(Math.abs(w.breathTimer * 1.5)) % 6;
+      col = prayColumn + (Math.floor(Math.abs(w.breathTimer * 0.8)) % 2);
     } else {
-      bob = Math.sin(w.breathTimer) * 0.8;
+      bob = Math.sin(w.breathTimer) > 0.6 ? 1 : 0;
     }
 
-    const totalW = this.spriteSheet.width || 1024;
-    const totalH = this.spriteSheet.height || 341;
-    const frameW = totalW / 6;
-    const frameH = totalH / 2;
-    const sx = Math.floor(col * frameW);
-    const sy = Math.floor(row * frameH);
-    const sw = Math.floor((col + 1) * frameW) - sx;
-    const sh = Math.floor((row + 1) * frameH) - sy;
-
-    const destH = 44;
-    const destW = Math.round(destH * (sw / sh));
-
+    const ctx = this.ctx;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
-    ctx.translate(x, y - bob);
+    ctx.translate(x, y - bob * scale);
     ctx.scale(w.facing, 1);
-    ctx.drawImage(this.spriteSheet, sx, sy, sw, sh, -destW / 2, -destH + 2, destW, destH);
+    ctx.drawImage(
+      canvas,
+      col * frameW, (w.variant % variants) * frameH, frameW, frameH,
+      (-frameW * scale) / 2, -frameH * scale + scale, frameW * scale, frameH * scale
+    );
     ctx.restore();
   }
 
-  private renderProceduralCultist(w: Walker, x: number, y: number): void {
-    const ctx = this.ctx;
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(w.facing, 1);
-
-    // Color palettes for 9 variants
-    const palettes = [
-      { robe: '#334155', cowl: '#1e293b', trim: '#94a3b8', eye: '#e2e8f0' }, // 0
-      { robe: '#27272a', cowl: '#18181b', trim: '#e4e4e7', eye: '#ffffff' }, // 1
-      { robe: '#451a03', cowl: '#291002', trim: '#d97706', eye: '#fef08a' }, // 2
-      { robe: '#172554', cowl: '#0f172a', trim: '#60a5fa', eye: '#93c5fd' }, // 3
-      { robe: '#4c0519', cowl: '#2d030f', trim: '#f43f5e', eye: '#fecdd3' }, // 4
-      { robe: '#064e3b', cowl: '#022c22', trim: '#34d399', eye: '#a7f3d0' }, // 5
-      { robe: '#312e81', cowl: '#1e1b4b', trim: '#a5b4fc', eye: '#e0e7ff' }, // 6
-      { robe: '#713f12', cowl: '#452509', trim: '#fbbf24', eye: '#fef08a' }, // 7
-      { robe: '#1c1917', cowl: '#0c0a09', trim: '#c49850', eye: '#fbbf24' }  // 8
-    ];
-    const pal = palettes[w.variant % palettes.length];
-
-    let bob = 0;
-    let bowY = 0;
-    let bowRot = 0;
-    let legOffset = 0;
-
-    if (w.state === 'walk') {
-      const step = Math.sin(w.walkCycle * 2);
-      legOffset = step * 4;
-      bob = Math.abs(Math.sin(w.walkCycle * 2)) * 2;
-    } else if (w.state === 'pray') {
-      const pFrame = (Math.floor(w.prayCycle) % 9) / 8;
-      const bow = Math.sin(pFrame * Math.PI);
-      bowY = bow * 5;
-      bowRot = bow * 0.22;
-      bob = -bowY;
-    } else {
-      bob = Math.sin(w.idleCycle) * 1;
-    }
-
-    // Feet
-    ctx.fillStyle = '#09090b';
-    ctx.fillRect(-5 + legOffset, -3, 4, 3);
-    ctx.fillRect(1 - legOffset, -3, 4, 3);
-
-    // Robe Body
-    ctx.save();
-    ctx.translate(0, -bob);
-    if (w.state === 'pray') {
-      ctx.rotate(bowRot);
-    }
-
-    ctx.fillStyle = pal.robe;
-    ctx.beginPath();
-    ctx.moveTo(-6, -26);
-    ctx.lineTo(6, -26);
-    ctx.lineTo(9, -3);
-    ctx.lineTo(-9, -3);
-    ctx.closePath();
-    ctx.fill();
-
-    // Robe gold/silver hem/belt trim
-    ctx.strokeStyle = pal.trim;
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.moveTo(-6, -15);
-    ctx.lineTo(6, -15);
-    ctx.stroke();
-
-    // Cowl / Hood
-    ctx.fillStyle = pal.cowl;
-    ctx.beginPath();
-    ctx.arc(0, -32, 7, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Hood peak
-    ctx.beginPath();
-    ctx.moveTo(-5, -34);
-    ctx.lineTo(-9, -38);
-    ctx.lineTo(-2, -36);
-    ctx.closePath();
-    ctx.fill();
-
-    // Face shadow & glowing eye slit
-    ctx.fillStyle = '#09090b';
-    ctx.fillRect(1, -33, 4, 3);
-    ctx.fillStyle = pal.eye;
-    ctx.fillRect(2, -32, 2, 1.5);
-
-    // Hands in prayer
-    if (w.state === 'pray') {
-      ctx.fillStyle = '#d4af37';
-      ctx.beginPath();
-      ctx.arc(5, -18, 2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    ctx.restore();
-    ctx.restore();
-  }
-
+  // Pixel speech bubble (3px grid) with a twinkling star asking for a miracle
   private drawMiracleSpeechBubble(w: Walker, x: number, y: number): void {
     const ctx = this.ctx;
-    ctx.save();
+    const px = 3;
+    const bob = Math.sin(w.breathTimer * 4) > 0 ? px : 0;
+    const blink = Math.sin(w.breathTimer * 6) > 0;
 
-    const bob = Math.sin(w.breathTimer * 4) * 2.5;
-    const pulse = 1 + Math.sin(w.breathTimer * 6) * 0.08;
+    const cols = 11;
+    const rows = 8;
+    const left = Math.round(Math.max(6, Math.min(this.width - cols * px - 6, x - (cols * px) / 2)));
+    const top = Math.round(Math.max(4, y - 68 - bob));
 
-    const bx = Math.max(24, Math.min(this.width - 24, x));
-    const by = Math.max(22, y - 68 + bob);
-    const bw = 38 * pulse;
-    const bh = 24 * pulse;
-    const r = 7 * pulse;
+    // Gold frame, dark plate, tail pointing at the devotee
+    ctx.fillStyle = blink ? '#f6dc9a' : '#c99a4e';
+    ctx.fillRect(left + px, top, (cols - 2) * px, rows * px);
+    ctx.fillRect(left, top + px, cols * px, (rows - 2) * px);
+    ctx.fillRect(left + 4 * px, top + rows * px, 3 * px, px);
+    ctx.fillRect(left + 5 * px, top + (rows + 1) * px, px, px);
+    ctx.fillStyle = '#0f0c0a';
+    ctx.fillRect(left + px, top + px, (cols - 2) * px, (rows - 2) * px);
+    ctx.fillRect(left + 5 * px, top + rows * px, px, px);
 
-    // Glowing halo behind speech bubble
-    ctx.shadowColor = 'rgba(245, 158, 11, 0.9)';
-    ctx.shadowBlur = 12;
-
-    // Speech bubble path with bottom pointer/tail
-    ctx.beginPath();
-    ctx.moveTo(bx - bw / 2 + r, by - bh / 2);
-    ctx.lineTo(bx + bw / 2 - r, by - bh / 2);
-    ctx.arcTo(bx + bw / 2, by - bh / 2, bx + bw / 2, by + bh / 2, r);
-    ctx.lineTo(bx + bw / 2, by + bh / 2 - r);
-    ctx.arcTo(bx + bw / 2, by + bh / 2, bx - bw / 2, by + bh / 2, r);
-
-    // Tail pointing down to hood
-    ctx.lineTo(bx + 4, by + bh / 2);
-    ctx.lineTo(bx, by + bh / 2 + 6);
-    ctx.lineTo(bx - 4, by + bh / 2);
-
-    ctx.lineTo(bx - bw / 2 + r, by + bh / 2);
-    ctx.arcTo(bx - bw / 2, by + bh / 2, bx - bw / 2, by - bh / 2, r);
-    ctx.arcTo(bx - bw / 2, by - bh / 2, bx + bw / 2, by - bh / 2, r);
-    ctx.closePath();
-
-    ctx.fillStyle = '#0f172a';
-    ctx.fill();
-
-    ctx.strokeStyle = '#f59e0b';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // Inner glowing miracle golden star
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = '#fef08a';
-    ctx.beginPath();
-    const starSize = 5;
-    ctx.moveTo(bx, by - starSize);
-    ctx.quadraticCurveTo(bx, by, bx + starSize, by);
-    ctx.quadraticCurveTo(bx, by, bx, by + starSize);
-    ctx.quadraticCurveTo(bx, by, bx - starSize, by);
-    ctx.quadraticCurveTo(bx, by, bx, by - starSize);
-    ctx.fill();
-
-    // Golden divine sparkles around bubble
-    const rayDist = 20 * pulse;
-    for (let i = 0; i < 4; i++) {
-      const angle = (i * Math.PI) / 2 + w.breathTimer * 2;
-      const rx = bx + Math.cos(angle) * rayDist;
-      const ry = by + Math.sin(angle) * (rayDist * 0.7);
-      ctx.fillStyle = 'rgba(251, 191, 36, 0.7)';
-      ctx.beginPath();
-      ctx.arc(rx, ry, 1.2, 0, Math.PI * 2);
-      ctx.fill();
+    // Four-point star
+    const cx = left + 5 * px;
+    const cy = top + 3 * px;
+    ctx.fillStyle = '#f6dc9a';
+    ctx.fillRect(cx, cy - px, px, 4 * px);
+    ctx.fillRect(cx - px, cy, 3 * px, 2 * px);
+    if (blink) {
+      ctx.fillRect(cx - 2 * px, cy + px / 2, px, px);
+      ctx.fillRect(cx + 2 * px, cy + px / 2, px, px);
     }
-
-    ctx.restore();
   }
 
   public pause(): void {

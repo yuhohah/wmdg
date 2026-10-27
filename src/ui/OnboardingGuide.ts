@@ -1,6 +1,7 @@
 import { GameStateManager } from '../core/GameState.js';
 import { NotificationManager } from '../systems/notifications.js';
 import { AudioManager } from '../systems/audio.js';
+import { icon } from './icons.js';
 
 export interface OnboardingGuideOptions {
   gameState: GameStateManager;
@@ -174,7 +175,7 @@ export class OnboardingGuide {
         this.notifications.showCustomPopup(
           'O PRIMEIRO CONVERSO',
           'Seu primeiro fiel começou a orar no pátio: +1 Fé/s.',
-          '👥',
+          'followers',
           'FIÉIS'
         );
       }
@@ -215,7 +216,7 @@ export class OnboardingGuide {
     if (this.currentStep === 'sphere') {
       const percent = Math.min(100, Math.floor((faith / targetFaith) * 100));
 
-      if (this.iconEl) this.iconEl.textContent = '🔮';
+      if (this.iconEl) this.iconEl.innerHTML = icon('orb');
       if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 1/2 • O DESPERTAR';
       if (this.titleEl) this.titleEl.textContent = 'Toque a Esfera';
       if (this.descEl) {
@@ -228,11 +229,11 @@ export class OnboardingGuide {
         this.trackerFillEl.style.background = 'linear-gradient(90deg, #f59e0b, #fef08a)';
       }
       if (this.actionTipEl) {
-        this.actionTipEl.textContent = '👉 Toque a Esfera até juntar Fé suficiente (+1 Fé por toque).';
+        this.actionTipEl.textContent = 'Toque a Esfera até juntar Fé suficiente (+1 Fé por toque).';
       }
     } else {
       // Step 2: Buy follower
-      if (this.iconEl) this.iconEl.textContent = '🏛️';
+      if (this.iconEl) this.iconEl.innerHTML = icon('temple');
       if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 2/2 • CONVERTA FIÉIS';
       if (this.titleEl) this.titleEl.textContent = 'Converta seu primeiro fiel';
       if (this.descEl) {
@@ -245,7 +246,7 @@ export class OnboardingGuide {
         this.trackerFillEl.style.background = 'linear-gradient(90deg, #22c55e, #86efac)';
       }
       if (this.actionTipEl) {
-        this.actionTipEl.textContent = '👉 Clique no botão "CONVERTER FIEL".';
+        this.actionTipEl.textContent = 'Clique no botão "CONVERTER FIEL".';
       }
     }
   }

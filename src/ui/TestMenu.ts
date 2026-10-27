@@ -2,6 +2,7 @@ import { INCARNATION_STAGES } from '../config/incarnation.js';
 import { ProgressionSimulator } from '../benchmark/ProgressionSimulator.js';
 import { formatHtmlReport } from '../benchmark/reporters.js';
 import { SaveSystem } from '../systems/saveSystem.js';
+import { icon } from './icons.js';
 
 export class TestMenu {
   private game: any;
@@ -59,7 +60,7 @@ export class TestMenu {
     if (this.launcherBtn) {
       const badge = this.launcherBtn.querySelector('.test-launcher-badge');
       if (badge) {
-        badge.textContent = `⚡ ${speed}x`;
+        badge.textContent = `${speed}x`;
       }
     }
   }
@@ -91,7 +92,7 @@ export class TestMenu {
     const launcher = document.createElement('button');
     launcher.id = 'test-menu-launcher';
     launcher.className = 'test-menu-launcher';
-    launcher.innerHTML = `<span class="test-launcher-icon">🛠️</span> <span class="test-launcher-badge">⚡ 1x</span>`;
+    launcher.innerHTML = `<span class="test-launcher-icon">${icon('gear')}</span> <span class="test-launcher-badge">1x</span>`;
     launcher.addEventListener('click', (e) => {
       e.stopPropagation();
       this.toggle();
@@ -107,7 +108,7 @@ export class TestMenu {
       <div class="test-menu-modal" role="dialog" aria-modal="true" aria-label="Menu de Testes">
         <div class="test-menu-header">
           <div class="test-menu-title-group">
-            <span class="test-menu-icon">⚙️</span>
+            <span class="test-menu-icon">${icon('gear')}</span>
             <h2 class="test-menu-title">PAINEL DE TESTES DO CULTO</h2>
           </div>
           <button id="test-menu-close-btn" class="test-menu-close-btn" aria-label="Fechar">✕</button>
@@ -126,14 +127,14 @@ export class TestMenu {
               <button class="test-btn test-speed-btn" data-speed="2">2x</button>
               <button class="test-btn test-speed-btn" data-speed="5">5x</button>
               <button class="test-btn test-speed-btn" data-speed="10">10x</button>
-              <button class="test-btn test-speed-btn test-speed-max" data-speed="100">⚡ 100x</button>
+              <button class="test-btn test-speed-btn test-speed-max" data-speed="100">100x</button>
             </div>
           </div>
 
           <!-- SEÇÃO 2: RECURSOS RÁPIDOS -->
           <div class="test-section">
             <div class="test-section-header">
-              <span class="test-section-title">💎 CONCESSÃO DE RECURSOS</span>
+              <span class="test-section-title">${icon('gem')} CONCESSÃO DE RECURSOS</span>
             </div>
             <div class="test-grid">
               <button class="test-btn test-action-btn" data-action="add-faith-100k">+100.000 Fé</button>
@@ -152,7 +153,7 @@ export class TestMenu {
           <!-- SEÇÃO 3: MECÂNICAS & ESTADO -->
           <div class="test-section">
             <div class="test-section-header">
-              <span class="test-section-title">🔮 ESTADO & PROGRESSÃO</span>
+              <span class="test-section-title">${icon('orb')} ESTADO & PROGRESSÃO</span>
             </div>
             <div class="test-grid">
               <button class="test-btn test-action-btn test-highlight" data-action="unlock-all">Desbloquear Todas as Mecânicas</button>
@@ -165,11 +166,11 @@ export class TestMenu {
           <!-- SEÇÃO 4: BENCHMARK ANALÍTICO DEFINITIVO -->
           <div class="test-section">
             <div class="test-section-header">
-              <span class="test-section-title">📊 MEDIÇÃO DEFINITIVA DE PROGRESSÃO</span>
+              <span class="test-section-title">${icon('chart')} MEDIÇÃO DEFINITIVA DE PROGRESSÃO</span>
             </div>
             <div class="test-grid">
               <button id="run-benchmark-btn" class="test-btn test-action-btn test-highlight" data-action="run-progression-benchmark" style="grid-column: 1 / -1; background: linear-gradient(135deg, #b45309, #d97706); color: #fff; font-weight: bold; padding: 10px;">
-                ⚡ Simular Curva de Progressão (Ativo vs Casual vs AFK)
+                ${icon('bolt')} Simular Curva de Progressão (Ativo vs Casual vs AFK)
               </button>
             </div>
             <div id="benchmark-results-container" style="display: none; margin-top: 10px; max-height: 280px; overflow-y: auto; background: rgba(0,0,0,0.5); padding: 10px; border: 1px solid #d97706; border-radius: 6px;"></div>
@@ -249,7 +250,7 @@ export class TestMenu {
         const btn = this.overlayEl?.querySelector<HTMLButtonElement>('#run-benchmark-btn');
         if (container) {
           container.style.display = 'block';
-          container.innerHTML = '<div style="color: #fbbf24; text-align: center; padding: 12px;">⏳ Calculando simulação hiper-rápida (Ativo, Casual, AFK)...</div>';
+          container.innerHTML = `<div style="color: #fbbf24; text-align: center; padding: 12px;">${icon('hourglass')} Calculando simulação hiper-rápida (Ativo, Casual, AFK)...</div>`;
           if (btn) btn.disabled = true;
 
           setTimeout(() => {

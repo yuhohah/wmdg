@@ -21,6 +21,7 @@ import { StatsTab } from './features/stats/StatsTab.js';
 import { SphereController } from './features/sphere/SphereController.js';
 import { OnboardingGuide } from './ui/OnboardingGuide.js';
 import { BoardManager } from './ui/BoardManager.js';
+import { hydrateIcons } from './ui/icons.js';
 import { cultDialog } from './ui/CultDialog.js';
 import { TestMenu } from './ui/TestMenu.js';
 
@@ -69,6 +70,9 @@ class AppManager {
   private isHapticsEnabled: boolean = true;
 
   constructor() {
+    // 0. Fill static [data-icon] placeholders with the game's engraved icon set
+    hydrateIcons();
+
     // 1. Instantiate Core Subsystems
     this.audio = new AudioManager();
     this.notifications = new NotificationManager('achievements-popup-container');
@@ -242,6 +246,8 @@ class AppManager {
       this.audio.playTone(440, 'sine', 0.1);
       startScreen?.classList.remove('active');
       gameplayScreen?.classList.add('active');
+      // Cheap hook for play-time styles (a body:has() selector re-ran style recalcs on every DOM change)
+      document.body.classList.add('is-playing');
       requestAnimationFrame(() => {
         this.board.centerOnCard('card-altar-sphere', true);
         this.followersTab.resize();
@@ -395,7 +401,7 @@ class AppManager {
       this.notifications.showCustomPopup(
         'Culto Salvo',
         'Seu progresso sagrado foi gravado com sucesso.',
-        '💾',
+        'codex',
         'REGISTRO SAGRADO'
       );
       this.settingsModal.updateSaveStatus();
@@ -403,7 +409,7 @@ class AppManager {
       this.notifications.showCustomPopup(
         'Erro ao Salvar',
         'Não foi possível gravar no armazenamento do navegador.',
-        '⚠️',
+        'warning',
         'ALERTA'
       );
     }

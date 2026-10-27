@@ -5,6 +5,7 @@ import { GNOSE_BOSSES } from '../../config/bosses.js';
 import { formatNumber } from '../../systems/calculations.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 import type { GnoseBoss } from '../../types.js';
+import { icon, iconOrText } from '../../ui/icons.js';
 
 export interface BossBattleModalOptions {
   gameState: GameStateManager;
@@ -55,7 +56,7 @@ export class BossBattleModal {
       <div class="modal-slide-card boss-battle-card" role="dialog" aria-modal="true" aria-label="Julgamento dos Deuses Antigos">
         <div class="boss-battle-header">
           <div class="boss-identity-group">
-            <div class="boss-emblem-box" id="boss-modal-symbol">⚖️</div>
+            <div class="boss-emblem-box" id="boss-modal-symbol">${icon('scales')}</div>
             <div class="boss-identity-text">
               <span class="boss-myth-badge" id="boss-modal-myth">MITOLOGIA EGÍPCIA</span>
               <h3 class="boss-modal-name" id="boss-modal-name">ANÚBIS</h3>
@@ -101,7 +102,7 @@ export class BossBattleModal {
         <!-- BARRA 2: INTEGRIDADE DO ALTAR (SEM TIMER DE RELÓGIO) -->
         <div class="boss-bar-section altar-integrity-section">
           <div class="boss-bar-header">
-            <span class="boss-bar-label">🛡️ INTEGRIDADE DO ALTAR (SEM LIMITE DE TEMPO)</span>
+            <span class="boss-bar-label">${icon('shield')} INTEGRIDADE DO ALTAR (SEM LIMITE DE TEMPO)</span>
             <span class="boss-bar-val" id="boss-altar-val">100%</span>
           </div>
           <div class="boss-bar-track altar-integrity-track">
@@ -146,7 +147,7 @@ export class BossBattleModal {
       this.options.audio.playTone(640 + Math.random() * 140, 'sine', 0.08);
       const x = e.clientX || window.innerWidth / 2;
       const y = e.clientY || window.innerHeight / 2;
-      this.options.spawnFloatingText(x, y, `⚡ -${formatNumber(fpc)} HP (1,5% PULSO)`);
+      this.options.spawnFloatingText(x, y, `✦ -${formatNumber(fpc)} HP (1,5% PULSO)`);
       this.updateUI();
       events.emit(GameEvents.STATE_CHANGED);
     });
@@ -166,7 +167,7 @@ export class BossBattleModal {
       return false;
     }
 
-    if (this.bossSymbolEl) this.bossSymbolEl.textContent = boss.symbol;
+    if (this.bossSymbolEl) this.bossSymbolEl.innerHTML = iconOrText(boss.symbol);
     if (this.bossNameEl) this.bossNameEl.textContent = boss.name.toUpperCase();
     if (this.bossTitleEl) this.bossTitleEl.textContent = boss.title;
     if (this.bossMythEl) this.bossMythEl.textContent = boss.mythology.toUpperCase();
@@ -212,7 +213,7 @@ export class BossBattleModal {
       this.options.notifications.showCustomPopup(
         `ALTAR ROMPIDO POR ${boss.name.toUpperCase()}`,
         'Maldição Divina Leve: -25% de Fé/s e Fervor/s por 20 segundos. Você pode desafiar novamente quando quiser.',
-        '⚠️',
+        'warning',
         'RECUO DO ALTAR'
       );
     }

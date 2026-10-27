@@ -1,5 +1,6 @@
 import type { Achievement } from '../types.js';
 import { DISPLAY_CONFIG } from '../config/display.js';
+import { icon as renderIcon, iconOrText } from '../ui/icons.js';
 
 export class NotificationManager {
   private container!: HTMLElement;
@@ -28,27 +29,27 @@ export class NotificationManager {
     if (ach.icon && ach.icon.trim().length > 0) {
       return ach.icon;
     }
-    if (ach.id.startsWith('ach_click')) return '👆';
-    if (ach.id.startsWith('ach_f_')) return '👥';
-    if (ach.id.startsWith('ach_faith')) return '🔮';
-    if (ach.id.startsWith('ach_fps')) return '⚡';
-    if (ach.id.startsWith('ach_fervor')) return '🔥';
-    if (ach.id.startsWith('ach_relic')) return '✨';
-    return '🏆';
+    if (ach.id.startsWith('ach_click')) return 'sphere';
+    if (ach.id.startsWith('ach_f_')) return 'followers';
+    if (ach.id.startsWith('ach_faith')) return 'orb';
+    if (ach.id.startsWith('ach_fps')) return 'bolt';
+    if (ach.id.startsWith('ach_fervor')) return 'fervor';
+    if (ach.id.startsWith('ach_relic')) return 'gem';
+    return 'laurel';
   }
 
   private getCustomFallbackIcon(title: string, badge: string): string {
     const combined = `${title} ${badge}`.toUpperCase();
-    if (combined.includes('MILAGRE') || combined.includes('CLIQUE')) return '⚡';
-    if (combined.includes('CONQUISTA')) return '🏆';
-    if (combined.includes('INCARNA') || combined.includes('ASCENSÃO') || combined.includes('EVOLUÇÃO')) return '👑';
-    if (combined.includes('FERVOR') || combined.includes('CHAMA')) return '🔥';
-    if (combined.includes('RELÍQUIA') || combined.includes('TRANSMUTAÇÃO')) return '✨';
-    if (combined.includes('SALV') || combined.includes('REGISTRO')) return '💾';
-    if (combined.includes('EXPORT') || combined.includes('IMPORT')) return '📋';
-    if (combined.includes('ALERTA') || combined.includes('ERRO')) return '⚠️';
-    if (combined.includes('DESBLOQUEIO') || combined.includes('MECÂNICA')) return '🔓';
-    return '🔔';
+    if (combined.includes('MILAGRE') || combined.includes('CLIQUE')) return 'bolt';
+    if (combined.includes('CONQUISTA')) return 'laurel';
+    if (combined.includes('INCARNA') || combined.includes('ASCENSÃO') || combined.includes('EVOLUÇÃO')) return 'crown';
+    if (combined.includes('FERVOR') || combined.includes('CHAMA')) return 'fervor';
+    if (combined.includes('RELÍQUIA') || combined.includes('TRANSMUTAÇÃO')) return 'gem';
+    if (combined.includes('SALV') || combined.includes('REGISTRO')) return 'codex';
+    if (combined.includes('EXPORT') || combined.includes('IMPORT')) return 'scroll';
+    if (combined.includes('ALERTA') || combined.includes('ERRO')) return 'warning';
+    if (combined.includes('DESBLOQUEIO') || combined.includes('MECÂNICA')) return 'unlock';
+    return 'bell';
   }
 
   private getToastVariant(title: string, badge: string): string {
@@ -74,12 +75,12 @@ export class NotificationManager {
       : '';
 
     const iconHtml = icon
-      ? `<div class="ach-popup-icon-box"><span class="ach-popup-icon">${icon}</span></div>`
+      ? `<div class="ach-popup-icon-box"><span class="ach-popup-icon">${iconOrText(icon)}</span></div>`
       : '';
 
     const buffHtml = ach.buffText
       ? `<div class="ach-popup-buff">
-          <span class="ach-popup-buff-icon">✨</span>
+          <span class="ach-popup-buff-icon">${renderIcon('star')}</span>
           <span class="ach-popup-buff-text">Bônus: ${ach.buffText}</span>
         </div>`
       : '';
@@ -121,7 +122,7 @@ export class NotificationManager {
       : '';
 
     const iconHtml = finalIcon
-      ? `<div class="ach-popup-icon-box"><span class="ach-popup-icon">${finalIcon}</span></div>`
+      ? `<div class="ach-popup-icon-box"><span class="ach-popup-icon">${iconOrText(finalIcon)}</span></div>`
       : '';
 
     popup.innerHTML = `

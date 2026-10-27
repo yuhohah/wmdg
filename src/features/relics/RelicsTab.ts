@@ -63,7 +63,7 @@ export class RelicsTab {
       this.options.notifications.showCustomPopup(
         'TRANSMUTAÇÃO',
         `Sua Fé virou +${formatNumber(result.gained)} Fragmentos de deuses caídos.`,
-        '✨',
+        'relics',
         'TRANSMUTAÇÃO'
       );
       this.updateUI();

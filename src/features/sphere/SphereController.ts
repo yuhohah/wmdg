@@ -18,6 +18,12 @@ export class SphereController {
   private triggerHaptic: (pattern: number | number[]) => void;
 
   private divineSphereBtn: HTMLElement | null = null;
+  private sphereRings: HTMLElement[] = [];
+  private sphereGlobe: HTMLElement | null = null;
+  private shockPool: HTMLElement[] = [];
+  private shockIndex: number = 0;
+  private swingDirection: number = 1;
+  private reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   constructor(options: SphereControllerOptions) {
     this.gameState = options.gameState;
@@ -31,6 +37,56 @@ export class SphereController {
 
   private initElements(): void {
     this.divineSphereBtn = document.getElementById('divine-sphere-btn');
+    if (!this.divineSphereBtn) return;
+
+    // Three stacked layers so the rings can swing around a still globe
+    this.divineSphereBtn.innerHTML =
+      '<img class="sphere-layer sphere-rings" src="/assets/board/sphere-rings-back.svg" alt="" draggable="false">' +
+      '<img class="sphere-layer sphere-globe" src="/assets/board/sphere-globe.svg" alt="" draggable="false">' +
+      '<img class="sphere-layer sphere-rings" src="/assets/board/sphere-rings-front.svg" alt="" draggable="false">';
+    this.sphereRings = Array.from(this.divineSphereBtn.querySelectorAll<HTMLElement>('.sphere-rings'));
+    this.sphereGlobe = this.divineSphereBtn.querySelector<HTMLElement>('.sphere-globe');
+    for (let i = 0; i < 3; i++) {
+      const wave = document.createElement('span');
+      wave.className = 'sphere-shock';
+      this.divineSphereBtn.appendChild(wave);
+      this.shockPool.push(wave);
+    }
+  }
+
+  // Click feedback: rings swing like a gimbal, the globe pulses and a gold wave spreads.
+  // Transform/opacity only, so it all runs on the compositor.
+  private playClickAnimation(isCrit: boolean): void {
+    if (!this.sphereGlobe || this.reducedMotion.matches) return;
+
+    const dir = (this.swingDirection = -this.swingDirection);
+    const swing = isCrit ? 11 : 7;
+    this.sphereRings.forEach((ring) =>
+      ring.animate(
+        [
+          { transform: 'rotate(0deg) scale(1)' },
+          { transform: `rotate(${dir * swing}deg) scale(1.03)`, offset: 0.25 },
+          { transform: `rotate(${-dir * swing * 0.45}deg) scale(1)`, offset: 0.6 },
+          { transform: `rotate(${dir * swing * 0.15}deg)`, offset: 0.85 },
+          { transform: 'rotate(0deg) scale(1)' },
+        ],
+        { duration: isCrit ? 900 : 650, easing: 'ease-out' }
+      )
+    );
+    this.sphereGlobe.animate(
+      [{ transform: 'scale(1)' }, { transform: 'scale(0.95)', offset: 0.3 }, { transform: 'scale(1.03)', offset: 0.65 }, { transform: 'scale(1)' }],
+      { duration: 340, easing: 'ease-out' }
+    );
+
+    const waves = isCrit ? 2 : 1;
+    for (let i = 0; i < waves; i++) {
+      const wave = this.shockPool[this.shockIndex++ % this.shockPool.length];
+      wave.classList.toggle('crit', isCrit);
+      wave.animate(
+        [{ transform: 'scale(0.4)', opacity: 1 }, { transform: `scale(${isCrit ? 1.55 : 1.35})`, opacity: 0 }],
+        { duration: 700, delay: i * 150, easing: 'cubic-bezier(0.15, 0.6, 0.35, 1)', fill: 'backwards' }
+      );
+    }
   }
 
   private bindEvents(): void {
@@ -62,6 +118,7 @@ export class SphereController {
     }
     const label = isCrit ? `✦ CRÍTICO! +${formatNumber(fpc)} FÉ` : `+${formatNumber(fpc)} FÉ`;
     this.spawnFloatingText(x, y, label);
+    this.playClickAnimation(isCrit);
   }
 
   public grantMiracle(clientX: number, clientY: number): number {

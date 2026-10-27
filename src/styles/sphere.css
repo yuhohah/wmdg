@@ -58,7 +58,7 @@
   width: var(--sphere-size);
   height: var(--sphere-size);
   border-radius: 50%;
-  background: url('/assets/sphere_base.png') center / cover no-repeat;
+  background: url('/assets/board/armillary-sphere.svg') center / cover no-repeat;
   box-shadow: 0 0 35px rgba(255, 255, 255, 0.25), inset 0 0 25px rgba(255, 255, 255, 0.4);
   border: 3px solid var(--border-light);
   cursor: pointer;
@@ -217,7 +217,7 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background-image: url('/assets/cultist_spritesheet.png');
+  background-image: none;
   background-size: 204px 68px;
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;

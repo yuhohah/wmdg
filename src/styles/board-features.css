@@ -59,57 +59,62 @@
   display: none;
 }
 
+/* The armillary sphere floats free in the oculus: it carries its own meridian ring, so no frame */
 #card-altar-sphere .sphere-wrapper {
-  width: 300px;
-  height: 300px;
+  width: 400px;
+  height: 400px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 0 6px #241b17, 0 0 0 8px #664b31, 0 0 60px rgba(220, 180, 110, 0.35);
+  background: none;
+  border: none;
+  border-radius: 50%;
+  box-shadow: none;
 }
 
-/* Own compositor layer and no filters: hover/press feedback is a scale plus a light overlay
-   fading in, so a click never repaints the sphere image */
 #card-altar-sphere .divine-sphere-btn,
 #card-altar-sphere .sphere-wrapper:hover .divine-sphere-btn,
 #card-altar-sphere .sphere-wrapper:active .divine-sphere-btn,
 #card-altar-sphere .divine-sphere-btn:hover {
   position: relative;
-  width: 262px;
-  height: 262px;
-  background:
-    radial-gradient(circle at center, transparent 58%, rgba(10, 8, 8, 0.55) 100%),
-    url('/assets/sphere_base.png') center / cover no-repeat;
+  width: 400px;
+  height: 400px;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  box-shadow: none;
   filter: none;
-  will-change: transform;
-  transition: transform 120ms ease-out;
+  transform: none;
 }
 
-#card-altar-sphere .sphere-wrapper:hover .divine-sphere-btn {
-  transform: scale(1.03);
-}
-
-#card-altar-sphere .sphere-wrapper:active .divine-sphere-btn {
-  transform: scale(0.96);
-}
-
-#card-altar-sphere .divine-sphere-btn::after {
-  content: '';
+/* Layers stacked on one grid; click animations (SphereController) move them on the compositor */
+#card-altar-sphere .sphere-layer {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+
+#card-altar-sphere .sphere-globe {
+  transform-origin: 50% 50%;
+}
+
+/* Expanding gold wave on each click (pooled, animated via Web Animations) */
+#card-altar-sphere .sphere-shock {
+  position: absolute;
+  inset: 14%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 240, 200, 0.28) 0%, transparent 70%);
+  border: 3px solid #f6dc9a;
+  box-shadow: 0 0 22px rgba(246, 220, 154, 0.55), inset 0 0 18px rgba(246, 220, 154, 0.35);
   opacity: 0;
-  transition: opacity 120ms ease-out;
   pointer-events: none;
 }
 
-#card-altar-sphere .sphere-wrapper:hover .divine-sphere-btn::after {
-  opacity: 0.5;
-}
-
-#card-altar-sphere .sphere-wrapper:active .divine-sphere-btn::after {
-  opacity: 1;
+#card-altar-sphere .sphere-shock.crit {
+  border-width: 4px;
+  box-shadow: 0 0 34px rgba(255, 211, 107, 0.8), inset 0 0 24px rgba(255, 211, 107, 0.5);
 }
 
 /* Satellite cards: content-sized, long lists scroll inside the plate (580px body cap) */
@@ -861,7 +866,7 @@ html .gnose-endgame-title { font-size: 18px; }
 }
 
 /* The landscape sits fully hidden behind the board during play */
-body:has(#gameplay-screen.active) .bg-landscape-layer {
+body.is-playing .bg-landscape-layer {
   display: none;
 }
 
