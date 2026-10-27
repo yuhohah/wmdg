@@ -117,6 +117,25 @@ body {
   display: none !important;
 }
 
+/* Name above the number, so players learn what each currency is called */
+.resource-item {
+  grid-template-rows: 13px 27px 14px !important;
+  align-content: center;
+}
+
+.res-name {
+  grid-row: 1 / 4 !important;
+}
+
+.res-label {
+  grid-column: 2;
+  font: 14px/1 var(--font-game);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+  white-space: nowrap;
+}
+
 .res-num {
   color: var(--gold-light);
   text-shadow: 0 2px 0 #000;
@@ -1003,6 +1022,19 @@ input[type='range']::-webkit-slider-thumb {
   .res-name {
     width: 18px !important;
     height: 18px !important;
+  }
+
+  .resource-item {
+    grid-template-rows: 10px 18px 11px !important;
+  }
+
+  .res-name {
+    grid-row: 1 / 4 !important;
+  }
+
+  .res-label {
+    font-size: 10px;
+    letter-spacing: 0.5px;
   }
 
   .res-num {
