@@ -9,6 +9,12 @@ export const BOSS_CURSE_MULTIPLIER = 0.75;
 /** Maximum Altar Integrity percentage */
 export const BOSS_MAX_ALTAR_INTEGRITY = 100;
 
+/** Combat caps apply after combining resource power with raw production. */
+export const BOSS_MAX_PASSIVE_HP_PER_SEC = 0.025;
+export const BOSS_MAX_CLICK_HP_FRACTION = 0.006;
+export const BOSS_MAX_RIFT_HP_FRACTION = 0.12;
+export const BOSS_SPHERE_COOLDOWN_SEC = 0.2;
+
 export const GNOSE_BOSSES: GnoseBoss[] = [
   {
     id: 'boss_anubis',
@@ -18,9 +24,9 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
     symbol: 'scales',
     unlocksTier: 2,
     maxHp: 1e18,
-    riftDamagePercent: 0.12,
-    riftIntervalSec: 2.5,
-    riftWindowSec: 2.5,
+    riftDamagePercent: 0.04,
+    riftIntervalSec: 4.5,
+    riftWindowSec: 3,
     altarDamageOnMiss: 25,
     rewardName: 'Balança de Maat',
     rewardDesc: 'Rompe o Selo do Tier II da Gnose e concede +50% (1,5×) de Fé/s e Fervor/s permanentes.',
@@ -35,9 +41,9 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
     symbol: 'hourglass',
     unlocksTier: 3,
     maxHp: 5e28,
-    riftDamagePercent: 0.12,
-    riftIntervalSec: 2.5,
-    riftWindowSec: 2.5,
+    riftDamagePercent: 0.04,
+    riftIntervalSec: 4.2,
+    riftWindowSec: 2.75,
     altarDamageOnMiss: 25,
     rewardName: 'Foice de Adamante',
     rewardDesc: 'Rompe o Selo do Tier III da Gnose e concede +50% (1,5×) de Fé/s e Fervor/s permanentes.',
@@ -52,8 +58,8 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
     symbol: 'eye',
     unlocksTier: 4,
     maxHp: 1e38,
-    riftDamagePercent: 0.12,
-    riftIntervalSec: 2.5,
+    riftDamagePercent: 0.04,
+    riftIntervalSec: 4.0,
     riftWindowSec: 2.5,
     altarDamageOnMiss: 25,
     rewardName: 'Runas de Yggdrasil',
@@ -69,8 +75,8 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
     symbol: 'ouroboros',
     unlocksTier: 'endgame',
     maxHp: 1e42,
-    riftDamagePercent: 0.12,
-    riftIntervalSec: 2.4,
+    riftDamagePercent: 0.04,
+    riftIntervalSec: 3.8,
     riftWindowSec: 2.5,
     altarDamageOnMiss: 25,
     rewardName: 'Tábua dos Destinos (Apoteose)',

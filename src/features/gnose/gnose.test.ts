@@ -175,7 +175,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
 
     // 2. Re-challenge Anúbis and shatter rifts + click Sphere to win quickly
     expect(gameState.startBossBattle('boss_anubis')).toBe(true);
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 30; i++) {
       if (!gameState.activeBossBattle) break;
       gameState.spawnBossRift();
       const riftId = gameState.activeBossBattle.activeRifts[0].id;
@@ -199,7 +199,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(gameState.canChallengeBoss('boss_tiamat')).toBe(true);
 
     expect(gameState.startBossBattle('boss_tiamat')).toBe(true);
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 30; i++) {
       if (!gameState.activeBossBattle) break;
       gameState.spawnBossRift();
       const riftId = gameState.activeBossBattle.activeRifts[0].id;
@@ -264,7 +264,8 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(gameState.startBossBattle('boss_anubis')).toBe(true);
     const initialHp = gameState.activeBossBattle!.bossHp;
     gameState.tick(1.0);
-    expect(gameState.activeBossBattle!.bossHp).toBeLessThan(initialHp * 0.96);
+    expect(gameState.activeBossBattle!.bossHp).toBeLessThan(initialHp);
+    expect(gameState.activeBossBattle!.bossHp).toBeGreaterThanOrEqual(initialHp * 0.975);
   });
 
   it('evolves DodecaDragons formulas for MU6 (1 + Fiéis^1.5), MU10 (1 + Fiéis^3), and MU14 (3.5^(n^0.7))', () => {
@@ -291,12 +292,13 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(gameState.getFaithPerSecond()).toBeCloseTo(baseFps * 2, 5);
   });
 
-  it('runs Tier 4 automation on tick without spending Fé or Fervor and respects toggles', () => {
+  it('makes the tier I autobuyers free after Olho do Infinito', () => {
     gameState.unlocks.forEach((u) => {
       u.unlocked = true;
     });
     gameState.unlockedGnoseUpgrades.add('gn_auto_followers');
     gameState.unlockedGnoseUpgrades.add('gn_auto_fervor');
+    gameState.unlockedGnoseUpgrades.add('gn_omniscience');
 
     gameState.faithPoints = 5000;
     gameState.fervorPoints = 1000;

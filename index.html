@@ -89,7 +89,7 @@
       </header>
 
       <!-- START SCREEN CONTENT -->
-      <main id="start-screen" class="main-content screen active">
+      <section id="start-screen" class="main-content screen active" aria-label="Tela Inicial">
         <div class="slide-card">
           <div class="slide-card-header">
             <h1 class="slide-title">CULT OF THE SPHERE</h1>
@@ -100,7 +100,7 @@
           </div>
 
           <div class="play-btn-container">
-            <button id="play-btn" class="btn-slide-play">
+            <button id="play-btn" class="btn-slide-play" type="button">
               <span>INICIAR CULTO</span>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
@@ -108,7 +108,7 @@
             </button>
           </div>
         </div>
-      </main>
+      </section>
 
       <!-- GAMEPLAY SCREEN: DODECADRAGONS PANNABLE & ZOOMABLE CARD BOARD -->
       <main id="gameplay-screen" class="main-content screen">
@@ -163,7 +163,7 @@
                       </div>
                     </div>
                   </div>
-                  <div class="sacred-window-footer"><span>CANALIZAR FÉ</span><p>Clique na Esfera</p></div>
+                  <div class="sacred-window-footer"><span>CANALIZAR FÉ</span><p>Clique na Esfera (<span id="sphere-click-val" class="sphere-click-val">+1 Fé</span>)</p></div>
                 </section>
               </div>
             </div>

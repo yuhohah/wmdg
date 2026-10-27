@@ -6,7 +6,6 @@ import {
   calculateCostDiscountMultiplier,
   calculateMaxAffordableFollowers
 } from '../../systems/calculations.js';
-import { getFervorUpgradeMultiplier } from '../../config/fervor.js';
 
 export interface FollowersTabOptions {
   gameState: GameStateManager;
@@ -117,12 +116,8 @@ export class FollowersTab {
     if (!devotee) return;
 
     const totalCount = this.options.gameState.getTotalFollowersCount();
-    const fervorFollowersMult = getFervorUpgradeMultiplier(
-      this.options.gameState.fervorUpgrades[3],
-      totalCount
-    );
-    const incFollowerMult = this.options.gameState.getEffectiveIncarnationFollowerMultiplier();
-    const followerOutput = devotee.count * devotee.baseEffect * fervorFollowersMult * incFollowerMult;
+    const followerOutput = this.options.gameState.getFaithPerSecond();
+    const ratePerFollower = this.options.gameState.getFollowerPurchaseFaithGain(1);
 
     if (this.totalCountEl) {
       this.totalCountEl.textContent = formatNumber(totalCount);
@@ -131,9 +126,7 @@ export class FollowersTab {
       this.rateBadgeEl.textContent = `+${formatNumber(followerOutput)} Fé/s`;
     }
     if (this.convertOneBenefitEl) {
-      const ratePerFollower = devotee.baseEffect * fervorFollowersMult * incFollowerMult;
-      const perFollower = ratePerFollower.toFixed(1);
-      this.convertOneBenefitEl.textContent = `+${perFollower.endsWith('.0') ? Math.floor(ratePerFollower) : perFollower} Fé/s`;
+      this.convertOneBenefitEl.textContent = `+${formatNumber(ratePerFollower)} Fé/s`;
     }
 
     const costOne = this.options.gameState.getItemCost(devotee);
@@ -169,7 +162,7 @@ export class FollowersTab {
           discount,
           mult
         );
-        const extraRate = maxCount * devotee.baseEffect * fervorFollowersMult * incFollowerMult;
+        const extraRate = this.options.gameState.getFollowerPurchaseFaithGain(maxCount);
 
         if (maxCount > 0) {
           this.btnConvertMaxEl.disabled = false;
@@ -193,20 +186,14 @@ export class FollowersTab {
   public updateRealtime(): void {
     const devotee = this.options.gameState.followers[0];
     if (!devotee) return;
-    const fervorFollowersMult = getFervorUpgradeMultiplier(
-      this.options.gameState.fervorUpgrades[3],
-      this.options.gameState.getTotalFollowersCount()
-    );
-    const incFollowerMult = this.options.gameState.getEffectiveIncarnationFollowerMultiplier();
-    const followerOutput = devotee.count * devotee.baseEffect * fervorFollowersMult * incFollowerMult;
+    const followerOutput = this.options.gameState.getFaithPerSecond();
 
     if (this.rateBadgeEl) {
       this.rateBadgeEl.textContent = `+${formatNumber(followerOutput)} Fé/s`;
     }
     if (this.convertOneBenefitEl) {
-      const ratePerFollower = devotee.baseEffect * fervorFollowersMult * incFollowerMult;
-      const perFollower = ratePerFollower.toFixed(1);
-      this.convertOneBenefitEl.textContent = `+${perFollower.endsWith('.0') ? Math.floor(ratePerFollower) : perFollower} Fé/s`;
+      const ratePerFollower = this.options.gameState.getFollowerPurchaseFaithGain(1);
+      this.convertOneBenefitEl.textContent = `+${formatNumber(ratePerFollower)} Fé/s`;
     }
   }
 

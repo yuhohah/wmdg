@@ -21,8 +21,6 @@ export class IncarnationTab {
 
   // DOM Elements
   private stageBadgeEl: HTMLElement | null = null;
-  private titleEl: HTMLElement | null = null;
-  private descSubEl: HTMLElement | null = null;
   private rateBadgeEl: HTMLElement | null = null;
   private btnUpgradeEl: HTMLButtonElement | null = null;
   private upgradeTitleEl: HTMLElement | null = null;
@@ -53,8 +51,6 @@ export class IncarnationTab {
     }
 
     this.stageBadgeEl = document.getElementById('incarnation-stage-badge');
-    this.titleEl = document.getElementById('incarnation-title');
-    this.descSubEl = document.getElementById('incarnation-desc-sub');
     this.rateBadgeEl = document.getElementById('incarnation-rate-badge');
     this.btnUpgradeEl = document.getElementById('btn-upgrade-incarnation') as HTMLButtonElement | null;
     this.upgradeTitleEl = document.getElementById('incarnation-upgrade-title');
@@ -142,14 +138,6 @@ export class IncarnationTab {
       const stageName = currentStage ? currentStage.name.toUpperCase() : `ESTÁGIO ${stage}`;
       const multText = currentStage ? ` (${formatNumber(currentStage.multiplier)}x)` : '';
       this.stageBadgeEl.textContent = `ESTÁGIO ${stage}: ${stageName}${multText}`;
-    }
-    if (this.titleEl) {
-      this.titleEl.textContent = '';
-      this.titleEl.style.display = 'none';
-    }
-    if (this.descSubEl) {
-      this.descSubEl.textContent = '';
-      this.descSubEl.style.display = 'none';
     }
     if (this.rateBadgeEl) {
       const incFollowerMult = this.options.gameState.getEffectiveIncarnationFollowerMultiplier();

@@ -2,7 +2,6 @@ import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { FervorUpgrade } from '../../types.js';
 import { DISPLAY_CONFIG } from '../../config/display.js';
-import { getFervorUpgradeMultiplier } from '../../config/fervor.js';
 import { calculateFervorUpgradeCost, formatNumber } from '../../systems/calculations.js';
 
 export interface FervorTabOptions {
@@ -46,8 +45,6 @@ export class FervorTab {
     if (!this.listEl) return;
     this.listEl.innerHTML = '';
 
-    const totalFollowers = this.options.gameState.getTotalFollowersCount();
-    const faith = this.options.gameState.faithPoints;
     const fervor = this.options.gameState.fervorPoints;
     const phoenixUnlocked = this.options.gameState.isPhoenixRelicUnlocked();
 
@@ -57,8 +54,7 @@ export class FervorTab {
       }
 
       const cost = calculateFervorUpgradeCost(upg);
-      const fu1Boosted = this.options.gameState.isFu1Boosted();
-      const mult = getFervorUpgradeMultiplier(upg, totalFollowers, faith, fu1Boosted);
+      const mult = this.options.gameState.getFervorUpgradeEffect(upg);
       const canAfford = fervor >= cost;
 
       const card = document.createElement('div');
@@ -98,13 +94,10 @@ export class FervorTab {
 
   public updateButtonStates(): void {
     const fervor = this.options.gameState.fervorPoints;
-    const totalFollowers = this.options.gameState.getTotalFollowersCount();
-    const faith = this.options.gameState.faithPoints;
-    const fu1Boosted = this.options.gameState.isFu1Boosted();
 
     this.options.gameState.fervorUpgrades.forEach((upg) => {
       const cost = calculateFervorUpgradeCost(upg);
-      const mult = getFervorUpgradeMultiplier(upg, totalFollowers, faith, fu1Boosted);
+      const mult = this.options.gameState.getFervorUpgradeEffect(upg);
       const card = document.getElementById(`card-${upg.id}`);
       if (card) {
         if (fervor >= cost) {

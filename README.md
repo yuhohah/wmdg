@@ -56,12 +56,14 @@ Jogo idle/clicker hermético em **TypeScript** + **Vite**, com tabuleiro panorâ
 ### 6. Câmara da Gnose (True Prestige)
 - Desbloqueada ao romper o **Selo da Gnose** (`1Q` / `1e15` Fé).
 - **Ascensão Gnóstica**: dissolve o culto terreno em troca de **Gnose** pela curva sub-exponencial `floor(((Fé / 1e15) ^ 0.15) × mult)`.
-- **Bônus Passivo Permanente**: cada ponto de Gnose total adquirido ao longo dos ciclos concede `1 + TotalGnose^0.85 × 1.5` (ampliado em +50% com *Olho do Infinito*), de modo que gastar Gnose nunca reduz sua produção.
+- **Bônus Passivo Permanente**: cada ponto de Gnose total adquirido ao longo dos ciclos concede `1 + TotalGnose^0.35 × 1.5` (ampliado em +50% com *Olho do Infinito*), de modo que gastar Gnose nunca reduz sua produção.
 - **Árvore Hermética (20 upgrades em 4 Tiers)**:
-  - **Tier I — Despertar Gnóstico**: *Emanação Primordial* (5× Fé e inicia com 1.000 Fé), *Memória Hermética* (mantém Selos abertos e Converter Máx. livre), *Chama Astral* (5× Fervor/s e 3× Fragmentos), *Pulso Cósmico* (10× Fé/clique), *Dilatação Hermética* (2× Fé e Fervor).
-  - **Tier II — Persistência & Sinergia**: *Congregação Esférica* (`1 + Fiéis^1.5`), *Cripta Eterna* (mantém Relíquias no reset e +25% Transmutação/s), *Vigília Perpétua* (Bênção 2× permanente), *Altar Ressonante* (Encarnação multiplica Fervor/s), *Transmutação Áurea* (4× Fragmentos).
-  - **Tier III — Evoluções Herméticas**: *Coro Cúbico* (`1 + Fiéis^3`), *Fogo Hermético* (1º Rito evolui para `3.5^(Nível^0.7)`), *Olho de Trismegisto* (2,5× Gnose e 3× Encarnação), *Forja Cósmica* (5× 5º Rito), *Harmonia Planetária* (+50% Fé/s e Fervor/s por Relíquia ativa).
-  - **Tier IV — Automação & Apoteose**: *Recrutamento Astral* (auto-converte Fiéis/s sem gastar Fé), *Ritos Automáticos* (auto-compra Ritos de Fervor/s sem gastar Fervor), *Transmutação Espontânea* (+100% Transmutação/s contínua), *Olho do Infinito* (2× Gnose e +50% bônus passivo), *Gnosis Suprema* (100× Fé/Fervor, 2× Gnose e Estágios IV–V 100.000× mais baratos).
+  - **Tier I — Despertar & Automação (8 nós):** Emanação Primordial (8× Fé, 3× Fervor, 3,5× Fragmentos e saldo de até 1.000 Fé imediatamente), Memória Hermética, Chama Astral, Pulso Cósmico (10× clique e +25% Fé/s), Dilatação Hermética e as três automações: **Recrutamento Astral (3 Gnose), Ritos Automáticos (5), Transmutação Espontânea (8)**.
+  - **Tier II — Persistência & Sinergia (5 nós):** Congregação Esférica, Vigília Perpétua (2× sem ativação manual, por 30 Gnose), Cripta Eterna, Altar Ressonante e Transmutação Áurea (4× Fragmentos, evolução do Rito alquímico e Auto-Relíquias a 25%/s).
+  - **Tier III — Evoluções Herméticas (5 nós):** Coro Cúbico (`1 + Fiéis^3`), Olho de Trismegisto, Fogo Hermético, Forja Cósmica (`5 × efeito do 5º Rito^1.35`) e Harmonia Planetária (até 7× Fé/Fervor conforme as Relíquias restauradas).
+  - **Tier IV — Onisciência & Apoteose (2 nós):** Olho do Infinito (2× Gnose, 1,5× bônus vitalício e gratuidade das automações) e Gnosis Suprema (100× Fé/Fervor, 2× Gnose e custos de 1e20/1e36 Fé para Eclipse/Solar).
+- **Compradores automáticos:** reservam 25% da renda por segundo, acumulando verba até 10% do saldo; os custos normais só são descontados ao comprar. A verba acompanha o save. Auto-Relíquias rende 10% da Transmutação/s, depois 25% com Transmutação Áurea e 100% com Olho do Infinito, sem consumir Fé. Os três toggles podem ser pausados.
+- Revisão completa dos 20 efeitos e validação dos perfis: [gnose-revisada-2026-10-27.md](Base/gnose-revisada-2026-10-27.md).
 
 ### 7. Conquistas
 **19 marcos** (cliques, fiéis, Fé total, Fé/s e Ascensões/Gnose), cada um com um bônus permanente:
@@ -79,7 +81,7 @@ Bônus da mesma categoria **somam**; categorias diferentes **multiplicam** entre
 
 ## ✨ Outras funcionalidades
 - 🗺️ **Tabuleiro 2D Panorâmico (Dodeca-Board)**: navegação livre com arraste (pan), zoom no cursor/pinça e barra rápida de acesso aos cards desbloqueados.
-- 🛠️ **Painel de Testes & Benchmark Analítico (`[T]` ou `[F2]`)**: modificadores de velocidade (`0x` a `100x`), concessão rápida de recursos e simulador analítico de progressão comparando os perfis **Ativo**, **Casual** e **AFK**.
+- 🛠️ **Painel de Testes & Benchmark por Sessões (`[T]` ou `[F2]`)**: modificadores de velocidade (`0x` a `100x`), concessão rápida de recursos e simulador de progressão por sessões comparando **Ativo**, **Casual** e **AFK**, com seed fixa, ações manuais e conclusão explícita; executado num Web Worker.
 - 💾 **Salvamento automático** no `localStorage` a cada 20 s, ao trocar de aba e ao fechar a página, com cópia de backup.
 - 📤 **Exportar/Importar save** em Base64 e reset completo nas Configurações.
 - 🔊 Áudio sintetizado (Web Audio) e vibração háptica em dispositivos móveis.
@@ -97,7 +99,7 @@ Bônus da mesma categoria **somam**; categorias diferentes **multiplicam** entre
 npm install         # Instalar dependências
 npm run dev         # Servidor de desenvolvimento (http://localhost:5173)
 npm test            # Executar suíte de testes (Vitest)
-npm run benchmark   # Executar o Relatório Definitivo de Progressão no terminal
+npm run benchmark   # Executar o benchmark por sessões (limite padrão: 72 h simuladas)
 npm run build       # Verificar tipos e compilar para produção
 npm run preview     # Pré-visualizar o build de produção
 ```
@@ -117,7 +119,7 @@ wmdg/
 ├── Base/                    # Documentos de design, metodologia do benchmark e balanceamento
 ├── docs/                    # Documentação de domínio e ADRs
 ├── src/
-│   ├── benchmark/           # ProgressionSimulator, reporters e suíte de benchmark analítico
+│   ├── benchmark/           # ProgressionSimulator, reporters e testes de fidelidade do benchmark
 │   ├── config/              # Dados do jogo: fiéis, fervor, incarnation, relíquias, gnose, unlocks, conquistas
 │   ├── core/
 │   │   ├── GameState.ts         # Estado, regras, multiplicadores, automações e serialização

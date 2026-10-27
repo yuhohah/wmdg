@@ -1,3 +1,5 @@
+> **Registro histórico:** as durações e conclusões abaixo pertencem ao simulador simplificado anterior. Não validam os perfis atuais. O benchmark foi substituído por sessões, ações manuais e integração de 0,1 s. Use `npm run benchmark` e `Base/METODOLOGIA_CALCULO_PROGRESSAO.md` para a metodologia vigente.
+
 # Análise de Balanceamento & Fluxo de Progressão — Cult of the Sphere
 
 Este documento apresenta uma análise aprofundada de todos os sistemas de progressão atualmente implementados no jogo, mapeando a jornada do jogador desde o primeiro clique até a Ascensão Gnóstica, os **3 Guardiões Mitológicos** (Anúbis, Cronos e Odin) e o **Chefe Final de Endgame** (Tiamat), acompanhado das estimativas reais obtidas pelo simulador analítico (`ProgressionSimulator.ts`).

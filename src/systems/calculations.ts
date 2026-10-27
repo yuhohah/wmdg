@@ -1,5 +1,9 @@
 import type { BuyableItem, FervorUpgrade, Achievement, BuffType } from '../types.js';
 
+export function calculateMiracleReward(faith: number, faithPerClick: number, faithPerSecond: number): number {
+  return Math.max(30, faithPerClick * 15, Math.floor(30 * faithPerSecond + 0.1 * faith));
+}
+
 export function calculateItemCost(
   item: BuyableItem,
   discountMultiplier: number = 1.0,

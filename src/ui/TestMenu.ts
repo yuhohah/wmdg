@@ -1,5 +1,5 @@
 import { INCARNATION_STAGES } from '../config/incarnation.js';
-import { ProgressionSimulator } from '../benchmark/ProgressionSimulator.js';
+import type { BenchmarkWorkerMessage } from '../benchmark/types.js';
 import { formatHtmlReport } from '../benchmark/reporters.js';
 import { SaveSystem } from '../systems/saveSystem.js';
 import { icon } from './icons.js';
@@ -166,7 +166,7 @@ export class TestMenu {
           <!-- SEÇÃO 4: BENCHMARK ANALÍTICO DEFINITIVO -->
           <div class="test-section">
             <div class="test-section-header">
-              <span class="test-section-title">${icon('chart')} MEDIÇÃO DEFINITIVA DE PROGRESSÃO</span>
+              <span class="test-section-title">${icon('chart')} SIMULAÇÃO DE PROGRESSÃO POR SESSÕES</span>
             </div>
             <div class="test-grid">
               <button id="run-benchmark-btn" class="test-btn test-action-btn test-highlight" data-action="run-progression-benchmark" style="grid-column: 1 / -1; background: linear-gradient(135deg, #b45309, #d97706); color: #fff; font-weight: bold; padding: 10px;">
@@ -250,19 +250,36 @@ export class TestMenu {
         const btn = this.overlayEl?.querySelector<HTMLButtonElement>('#run-benchmark-btn');
         if (container) {
           container.style.display = 'block';
-          container.innerHTML = `<div style="color: #fbbf24; text-align: center; padding: 12px;">${icon('hourglass')} Calculando simulação hiper-rápida (Ativo, Casual, AFK)...</div>`;
+          container.innerHTML = `<div style="color: #fbbf24; text-align: center; padding: 12px;">${icon('hourglass')} Preparando simulação por sessões (Ativo, Casual, AFK)...</div>`;
           if (btn) btn.disabled = true;
 
-          setTimeout(() => {
-            try {
-              const report = ProgressionSimulator.runFullBenchmark();
-              container.innerHTML = formatHtmlReport(report);
-            } catch (err) {
-              container.innerHTML = `<div style="color: #ef4444;">Erro ao rodar benchmark: ${String(err)}</div>`;
-            } finally {
+          try {
+            // Numerical reference simulations run off the main thread so the game keeps responding.
+            const worker = new Worker(new URL('../benchmark/benchmark.worker.ts', import.meta.url), { type: 'module' });
+            const finish = () => {
+              worker.terminate();
               if (btn) btn.disabled = false;
-            }
-          }, 20);
+            };
+            worker.onmessage = (event: MessageEvent<BenchmarkWorkerMessage>) => {
+              const message = event.data;
+              if (message.kind === 'progress') {
+                const names = { active: 'Ativo', casual: 'Casual', afk: 'AFK' };
+                container.textContent = `Simulando ${names[message.profile]} com visitas e passos de 0,1 s...`;
+              } else {
+                if (message.kind === 'done') container.innerHTML = formatHtmlReport(message.report);
+                else container.textContent = `Erro ao rodar benchmark: ${message.message}`;
+                finish();
+              }
+            };
+            worker.onerror = (event) => {
+              container.textContent = `Erro ao rodar benchmark: ${event.message}`;
+              finish();
+            };
+            worker.postMessage({});
+          } catch (error) {
+            container.textContent = `Erro ao iniciar benchmark: ${String(error)}`;
+            if (btn) btn.disabled = false;
+          }
         }
         return;
       }

@@ -143,6 +143,7 @@ export interface ActiveBossBattle {
   altarIntegrity: number;
   maxAltarIntegrity: number;
   riftSpawnTimerSec: number;
+  sphereCooldownSec: number;
   activeRifts: BossRift[];
   riftsShattered: number;
   riftsMissed: number;
@@ -177,4 +178,6 @@ export interface GnoseSaveData {
   autoFollowersEnabled: boolean;
   autoFervorEnabled: boolean;
   autoRelicsEnabled?: boolean;
+  autoFollowersBudget?: number;
+  autoFervorBudget?: number;
 }

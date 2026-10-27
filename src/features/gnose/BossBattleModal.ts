@@ -42,9 +42,11 @@ export class BossBattleModal {
   private arenaHintTopEl: HTMLElement | null = null;
   private sphereSubEl: HTMLElement | null = null;
   private riftsLayerEl: HTMLElement | null = null;
-  private sphereBtnEl: HTMLElement | null = null;
+  private sphereBtnEl: HTMLButtonElement | null = null;
   private combatStatsEl: HTMLElement | null = null;
   private retreatBtnEl: HTMLButtonElement | null = null;
+  private returnFocusEl: HTMLElement | null = null;
+  private backgroundInert = new Map<HTMLElement, boolean>();
 
   constructor(options: BossBattleModalOptions) {
     this.options = options;
@@ -74,7 +76,7 @@ export class BossBattleModal {
               <span class="boss-modal-title" id="boss-modal-title">O Pesador de Almas</span>
             </div>
           </div>
-          <button id="btn-boss-retreat" class="btn-boss-retreat" type="button">Recuar</button>
+          <button id="btn-boss-retreat" class="btn-boss-retreat" type="button" title="Cancela o combate sem penalidade. Atalho: Escape.">Recuar</button>
         </div>
 
         <p class="boss-modal-lore" id="boss-modal-lore"></p>
@@ -109,12 +111,12 @@ export class BossBattleModal {
         <!-- ARENA CENTRAL: ESFERA DE CANALIZAÇÃO + FENDAS DIVINAS -->
         <div class="boss-arena-stage" id="boss-arena-stage">
           <div class="boss-arena-hint-top" id="boss-arena-hint-top">
-            ✦ Clique nas <strong>Fendas Divinas</strong> para aparar os golpes e causar <strong>12% de Dano Crítico</strong>!
+            ✦ Apare as <strong>Fendas Divinas</strong> para causar dano e proteger o Altar!
           </div>
 
           <div class="boss-arena-center">
             <button id="boss-arena-sphere-btn" class="divine-sphere-btn boss-arena-sphere" type="button" aria-label="Canalizar Esfera contra o Guardião">
-              <span class="boss-sphere-caption">PULSAR<br>ESFERA<br><small id="boss-sphere-sub">-1.5% HP</small></span>
+              <span class="boss-sphere-caption">PULSAR<br>ESFERA<br><small id="boss-sphere-sub"></small></span>
             </button>
           </div>
 
@@ -172,6 +174,7 @@ export class BossBattleModal {
     this.sphereBtnEl = overlay.querySelector('#boss-arena-sphere-btn');
     this.combatStatsEl = overlay.querySelector('#boss-combat-stats');
     this.retreatBtnEl = overlay.querySelector('#btn-boss-retreat');
+    if (this.sphereBtnEl) this.sphereBtnEl.title = 'Até 5 pulsos/s. Críticos têm 5% de chance e causam dano dobrado.';
   }
 
   private bindEvents(): void {
@@ -181,18 +184,16 @@ export class BossBattleModal {
     });
 
     this.sphereBtnEl?.addEventListener('click', (e: MouseEvent) => {
-      if (!this.options.gameState.activeBossBattle) return;
-      const breakdown = this.options.gameState.getBossCombatBreakdown(
-        this.options.gameState.activeBossBattle.bossId
-      );
-      const { bossClickDamage } = this.options.gameState.addClick();
+      const battle = this.options.gameState.activeBossBattle;
+      if (!battle || battle.sphereCooldownSec > 1e-8) return;
+      const { bossClickDamage, isCrit } = this.options.gameState.addClick();
       this.options.audio.playTone(640 + Math.random() * 140, 'sine', 0.08);
       const x = e.clientX || window.innerWidth / 2;
       const y = e.clientY || window.innerHeight / 2;
       this.options.spawnFloatingText(
         x,
         y,
-        `✦ -${formatNumber(bossClickDamage)} HP (-${(breakdown.clickHpFraction * 100).toFixed(1)}%)`
+        `✦ ${isCrit ? 'CRÍTICO! ' : ''}-${formatNumber(bossClickDamage)} HP (-${(bossClickDamage / battle.bossMaxHp * 100).toFixed(2)}%)`
       );
       this.updateUI();
       events.emit(GameEvents.STATE_CHANGED);
@@ -201,6 +202,39 @@ export class BossBattleModal {
     this.options.gameState.onBossBattleFinished = ({ boss, victory }) => {
       this.handleBattleFinished(boss, victory);
     };
+
+    document.addEventListener('keydown', (event) => {
+      if (!this.isOpen()) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        this.options.gameState.retreatBossBattle();
+        this.close();
+      } else if (event.key === 'Tab') {
+        const targets = Array.from(this.overlayEl!.querySelectorAll<HTMLElement>('button:not(:disabled)'));
+        const first = targets[0], last = targets[targets.length - 1];
+        if (event.shiftKey && (document.activeElement === first || !this.overlayEl!.contains(document.activeElement))) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && (document.activeElement === last || !this.overlayEl!.contains(document.activeElement))) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+      event.stopPropagation();
+    }, true);
+
+    document.addEventListener('focusin', (event) => {
+      if (this.isOpen() && !this.overlayEl!.contains(event.target as Node)) this.retreatBtnEl?.focus();
+    });
+  }
+
+  private isOpen(): boolean {
+    return this.overlayEl?.style.display === 'flex';
+  }
+
+  private setText(el: HTMLElement | null, value: string): void {
+    if (el && el.textContent !== value) el.textContent = value;
   }
 
   public openForBoss(bossId: string): boolean {
@@ -214,26 +248,35 @@ export class BossBattleModal {
     }
 
     if (this.bossSymbolEl) this.bossSymbolEl.innerHTML = iconOrText(boss.symbol);
-    if (this.bossNameEl) this.bossNameEl.textContent = boss.name.toUpperCase();
-    if (this.bossTitleEl) this.bossTitleEl.textContent = boss.title;
-    if (this.bossMythEl) this.bossMythEl.textContent = boss.mythology.toUpperCase();
-    if (this.bossLoreEl) this.bossLoreEl.textContent = boss.lore;
+    if (this.bossNameEl) this.setText(this.bossNameEl, boss.name.toUpperCase());
+    if (this.bossTitleEl) this.setText(this.bossTitleEl, boss.title);
+    if (this.bossMythEl) this.setText(this.bossMythEl, boss.mythology.toUpperCase());
+    if (this.bossLoreEl) this.setText(this.bossLoreEl, boss.lore);
 
     if (this.riftsLayerEl) {
       this.riftsLayerEl.innerHTML = '';
     }
 
     if (this.overlayEl) {
+      this.returnFocusEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      for (const element of Array.from(document.body.children)) {
+        if (element instanceof HTMLElement && element !== this.overlayEl) {
+          this.backgroundInert.set(element, element.inert);
+          element.inert = true;
+        }
+      }
       this.overlayEl.style.display = 'flex';
       this.overlayEl.classList.add('open', 'active');
     }
 
     this.options.audio.playTone(320, 'triangle', 0.25);
     this.updateUI();
+    this.retreatBtnEl?.focus();
     return true;
   }
 
   public close(): void {
+    const wasOpen = this.isOpen();
     if (this.overlayEl) {
       this.overlayEl.style.display = 'none';
       this.overlayEl.classList.remove('open', 'active');
@@ -241,6 +284,10 @@ export class BossBattleModal {
     if (this.riftsLayerEl) {
       this.riftsLayerEl.innerHTML = '';
     }
+    for (const [element, inert] of this.backgroundInert) element.inert = inert;
+    this.backgroundInert.clear();
+    if (wasOpen && this.returnFocusEl?.isConnected) this.returnFocusEl.focus();
+    this.returnFocusEl = null;
   }
 
   private handleBattleFinished(boss: GnoseBoss, victory: boolean): void {
@@ -270,27 +317,31 @@ export class BossBattleModal {
 
   public updateUI(): void {
     const battle = this.options.gameState.activeBossBattle;
-    if (!battle) return;
+    if (!battle) {
+      if (this.isOpen()) this.close();
+      return;
+    }
 
     const breakdown = this.options.gameState.getBossCombatBreakdown(battle.bossId);
 
     const hpPercent = Math.max(0, Math.min(100, (battle.bossHp / battle.bossMaxHp) * 100));
     if (this.bossHpFillEl) {
-      this.bossHpFillEl.style.width = `${hpPercent.toFixed(1)}%`;
+      const width = `${hpPercent.toFixed(1)}%`;
+      if (this.bossHpFillEl.style.width !== width) this.bossHpFillEl.style.width = width;
     }
     if (this.bossHpValEl) {
       const dpsPctStr = (breakdown.passiveHpFractionPerSec * 100).toFixed(2);
-      this.bossHpValEl.textContent = `${formatNumber(battle.bossHp)} / ${formatNumber(battle.bossMaxHp)} (${hpPercent.toFixed(1)}% • -${dpsPctStr}%/s)`;
+      this.setText(this.bossHpValEl, `${formatNumber(battle.bossHp)} / ${formatNumber(battle.bossMaxHp)} (${hpPercent.toFixed(1)}% • -${dpsPctStr}%/s)`);
     }
 
     // Update Resource Synergy Panel
     if (this.synergyTotalEl) {
-      this.synergyTotalEl.textContent = `Poder Total: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(2)}% HP/s)`;
+      this.setText(this.synergyTotalEl, `Ressonância: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(2)}% HP/s)`);
     }
     const updatePill = (el: HTMLElement | null, label: string, bonus: number) => {
       if (!el) return;
       const pct = Math.round(bonus * 100);
-      el.textContent = `${label}: +${pct}%`;
+      this.setText(el, `${label}: +${pct}%`);
       el.classList.toggle('active', pct > 0);
     };
     updatePill(this.synFaithEl, 'Fé', breakdown.faithBonus);
@@ -300,17 +351,23 @@ export class BossBattleModal {
     updatePill(this.synIncarnationEl, 'Encarnação', breakdown.incarnationBonus);
     updatePill(this.synGnoseEl, 'Gnose', breakdown.gnoseBonus);
 
-    const riftPctText = `${(breakdown.riftHpFraction * 100).toFixed(0)}%`;
+    const riftPctText = `${(breakdown.riftHpFraction * 100).toFixed(1)}%`;
     if (this.arenaHintTopEl) {
       const healHint =
         breakdown.altarHealOnRift >= 1
           ? ` e restaurar <strong>+${breakdown.altarHealOnRift.toFixed(0)}% do Altar</strong>`
           : '';
-      this.arenaHintTopEl.innerHTML = `✦ Clique nas <strong>Fendas Divinas</strong> para aparar golpes, causar <strong>${riftPctText} de Dano Crítico</strong>${healHint}!`;
+      const hint = `✦ Clique nas <strong>Fendas Divinas</strong> para aparar golpes, causar <strong>${riftPctText} de dano</strong>${healHint}!`;
+      if (this.arenaHintTopEl.innerHTML !== hint) this.arenaHintTopEl.innerHTML = hint;
     }
 
     if (this.sphereSubEl) {
-      this.sphereSubEl.textContent = `-${(breakdown.clickHpFraction * 100).toFixed(1)}% HP`;
+      this.setText(this.sphereSubEl, `-${(breakdown.clickHpFraction * 100).toFixed(2)}% HP`);
+    }
+
+    if (this.sphereBtnEl) {
+      const cooling = battle.sphereCooldownSec > 1e-8;
+      if (this.sphereBtnEl.disabled !== cooling) this.sphereBtnEl.disabled = cooling;
     }
 
     const altarPercent = Math.max(
@@ -318,21 +375,22 @@ export class BossBattleModal {
       Math.min(100, (battle.altarIntegrity / battle.maxAltarIntegrity) * 100)
     );
     if (this.altarIntegrityFillEl) {
-      this.altarIntegrityFillEl.style.width = `${altarPercent.toFixed(0)}%`;
+      const width = `${altarPercent.toFixed(0)}%`;
+      if (this.altarIntegrityFillEl.style.width !== width) this.altarIntegrityFillEl.style.width = width;
     }
     if (this.altarIntegrityValEl) {
-      this.altarIntegrityValEl.textContent = `${altarPercent.toFixed(0)}%`;
+      this.setText(this.altarIntegrityValEl, `${altarPercent.toFixed(0)}%`);
     }
     if (this.penaltyHintEl) {
       const healStr =
         breakdown.altarHealOnRift >= 1
           ? ` Aparar Fenda restaura +${breakdown.altarHealOnRift.toFixed(0)}% de Integridade.`
           : '';
-      this.penaltyHintEl.textContent = `Cada Fenda ignorada drena ${breakdown.altarDamageOnMiss.toFixed(0)}% da Integridade (mitigado por Relíquias, Fervor e Encarnação).${healStr}`;
+      this.setText(this.penaltyHintEl, `Cada Fenda ignorada drena ${breakdown.altarDamageOnMiss.toFixed(0)}% da Integridade (mitigado por Relíquias, Fervor e Encarnação).${healStr} Derrota: −25% Fé/s e Fervor/s por 20 s. Recuar (Esc) não aplica penalidade.`);
     }
 
     if (this.combatStatsEl) {
-      this.combatStatsEl.textContent = `DPS Passivo: ${formatNumber(breakdown.passiveDps)}/s (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(2)}%/s) • Pulso: -${(breakdown.clickHpFraction * 100).toFixed(1)}% • Fendas Aparadas: ${battle.riftsShattered}`;
+      this.setText(this.combatStatsEl, `DPS Passivo: ${formatNumber(breakdown.passiveDps)}/s (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(2)}%/s) • Pulso: -${(breakdown.clickHpFraction * 100).toFixed(1)}% • Fendas Aparadas: ${battle.riftsShattered}`);
     }
 
     this.syncRiftsDOM(battle.activeRifts, breakdown.riftHpFraction);
@@ -351,7 +409,7 @@ export class BossBattleModal {
     if (!this.riftsLayerEl) return;
 
     const activeIds = new Set(activeRifts.map((r) => r.id));
-    const riftPctLabel = `-${(riftHpFraction * 100).toFixed(0)}%`;
+    const riftPctLabel = `-${(riftHpFraction * 100).toFixed(1)}%`;
 
     // Remove expired/shattered rift elements
     Array.from(this.riftsLayerEl.children).forEach((child) => {
@@ -372,6 +430,7 @@ export class BossBattleModal {
         riftEl.type = 'button';
         riftEl.className = 'boss-rift-target';
         riftEl.setAttribute('data-rift-id', rift.id);
+        riftEl.setAttribute('aria-label', 'Aparar Fenda Divina: causa dano e protege o altar');
         riftEl.style.left = `${rift.xPercent}%`;
         riftEl.style.top = `${rift.yPercent}%`;
         riftEl.innerHTML = `
@@ -389,7 +448,7 @@ export class BossBattleModal {
             this.options.audio.playTone(880, 'triangle', 0.16);
             const x = e.clientX || window.innerWidth / 2;
             const y = e.clientY || window.innerHeight / 2;
-            const pctStr = (currentBreakdown.riftHpFraction * 100).toFixed(0);
+            const pctStr = (currentBreakdown.riftHpFraction * 100).toFixed(1);
             this.options.spawnFloatingText(x, y, `✦ FENDA ROMPIDA! -${pctStr}% HP`);
             this.updateUI();
             events.emit(GameEvents.STATE_CHANGED);
@@ -398,14 +457,16 @@ export class BossBattleModal {
         this.riftsLayerEl!.appendChild(riftEl);
       }
 
+      const percentLabel = `Aparar Fenda Divina: ${(riftHpFraction * 100).toFixed(1)}% de dano ao guardião`;
+      if (riftEl.getAttribute('aria-label') !== percentLabel) riftEl.setAttribute('aria-label', percentLabel);
       const labelSpan = riftEl.querySelector<HTMLElement>('.boss-rift-label');
       if (labelSpan) {
-        labelSpan.textContent = `APARAR (${riftPctLabel})`;
+        this.setText(labelSpan, `APARAR (${riftPctLabel})`);
       }
 
       const timerSpan = riftEl.querySelector<HTMLElement>('.boss-rift-timer');
       if (timerSpan) {
-        timerSpan.textContent = `${Math.max(0, rift.remainingSec).toFixed(1)}s`;
+        this.setText(timerSpan, `${Math.max(0, rift.remainingSec).toFixed(1)}s`);
       }
     });
   }

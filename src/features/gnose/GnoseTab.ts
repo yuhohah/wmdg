@@ -234,7 +234,7 @@ export class GnoseTab {
           } else {
             guardianBadgeHtml = `
               <button type="button" class="btn-challenge-guardian ${canChallenge ? 'ready' : 'locked'}" data-boss-id="${guardian.id}" ${canChallenge ? '' : 'disabled'}>
-                ${icon('swords')} Desafiar ${guardian.name} (${guardian.mythology}) — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)
+                ${icon('swords')} <span class="gnose-guardian-label">Desafiar ${guardian.name} (${guardian.mythology}) — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)</span>
               </button>
             `;
           }
@@ -281,6 +281,7 @@ export class GnoseTab {
         const nodeEl = document.createElement('div');
         nodeEl.className = `cult-action-card gnose-tree-node ${stateClass}`;
         nodeEl.id = `card-${upg.id}`;
+        nodeEl.title = upg.desc;
 
         const symbolHtml = DISPLAY_CONFIG.showEmojisAndSymbols
           ? `<span class="gnose-node-symbol">${iconOrText(upg.icon)}</span>`
@@ -333,8 +334,8 @@ export class GnoseTab {
       const actionHtml = isTiamatDefeated
         ? `<span class="gnose-guardian-badge defeated">${icon('crown')} CREPÚSCULO DOS DEUSES CONCLUÍDO (×10 Fé & Fervor)</span>`
         : canChallengeTiamat
-          ? `<button type="button" id="btn-challenge-tiamat" class="btn-challenge-guardian endgame-ready" data-boss-id="${tiamat.id}">${iconOrText(tiamat.symbol)} Desafiar ${tiamat.name} — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)</button>`
-          : `<span class="gnose-endgame-lock-hint" id="gnose-endgame-lock-hint">${icon('lock')} Assimile a Árvore da Gnose (${totalUnlockedNodes}/${GNOSE_UPGRADES.length}) • Poder Atual: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)</span>`;
+          ? `<button type="button" id="btn-challenge-tiamat" class="btn-challenge-guardian endgame-ready" data-boss-id="${tiamat.id}">${iconOrText(tiamat.symbol)} <span class="gnose-guardian-label">Desafiar ${tiamat.name} — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)</span></button>`
+          : `<span class="gnose-endgame-lock-hint" id="gnose-endgame-lock-hint">${icon('lock')} <span class="gnose-endgame-label">Assimile a Árvore da Gnose (${totalUnlockedNodes}/${GNOSE_UPGRADES.length}) • Poder Atual: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)</span></span>`;
 
       endgameBar.innerHTML = `
         <div class="gnose-endgame-info">
@@ -360,79 +361,91 @@ export class GnoseTab {
     const toGet = gs.getGnoseToGet();
 
     if (this.gnoseToGetEl) {
-      this.gnoseToGetEl.textContent = formatNumber(toGet);
+      this.setText(this.gnoseToGetEl, formatNumber(toGet));
     }
 
     if (this.gnoseReqHintEl) {
       if (gs.faithPoints >= GNOSE_MIN_FAITH_REQ) {
-        this.gnoseReqHintEl.textContent = `Multiplicador de Gnose: ×${gs.getGnoseGainMultiplier().toFixed(1)}`;
+        this.setText(this.gnoseReqHintEl, `Multiplicador de Gnose: ×${gs.getGnoseGainMultiplier().toFixed(1)}`);
       } else {
-        this.gnoseReqHintEl.textContent = `Requer ${formatNumber(GNOSE_MIN_FAITH_REQ)} Fé (${formatNumber(Math.floor(gs.faithPoints))} / ${formatNumber(GNOSE_MIN_FAITH_REQ)})`;
+        this.setText(this.gnoseReqHintEl, `Requer ${formatNumber(GNOSE_MIN_FAITH_REQ)} Fé (${formatNumber(Math.floor(gs.faithPoints))} / ${formatNumber(GNOSE_MIN_FAITH_REQ)})`);
       }
     }
 
     if (this.btnGnoseResetEl) {
-      this.btnGnoseResetEl.disabled = toGet <= 0;
+      if (this.btnGnoseResetEl.disabled !== (toGet <= 0)) this.btnGnoseResetEl.disabled = toGet <= 0;
     }
 
     if (this.gnoseBalanceValEl) {
-      this.gnoseBalanceValEl.textContent = formatNumber(gs.gnosePoints);
+      this.setText(this.gnoseBalanceValEl, formatNumber(gs.gnosePoints));
     }
     if (this.gnoseTotalValEl) {
-      this.gnoseTotalValEl.textContent = formatNumber(gs.totalGnoseEarned);
+      this.setText(this.gnoseTotalValEl, formatNumber(gs.totalGnoseEarned));
     }
     if (this.gnosePassiveMultValEl) {
-      this.gnosePassiveMultValEl.textContent = `×${formatNumber(gs.getTotalGnosePassiveMultiplier())}`;
+      this.setText(this.gnosePassiveMultValEl, `×${formatNumber(gs.getTotalGnosePassiveMultiplier())}`);
     }
     if (this.gnoseResetsValEl) {
-      this.gnoseResetsValEl.textContent = `${gs.gnoseResets}`;
+      this.setText(this.gnoseResetsValEl, `${gs.gnoseResets}`);
     }
 
     if (this.confirmToggleEl) {
-      this.confirmToggleEl.checked = gs.confirmGnoseReset;
+      if (this.confirmToggleEl.checked !== (gs.confirmGnoseReset)) this.confirmToggleEl.checked = gs.confirmGnoseReset;
     }
 
     const hasAutoFollowers = gs.hasGnoseUpgrade('gn_auto_followers');
     const hasAutoFervor = gs.hasGnoseUpgrade('gn_auto_fervor');
     const hasAutoRelics = gs.hasGnoseUpgrade('gn_auto_relics');
+    const free = gs.hasGnoseUpgrade('gn_omniscience');
+    const updateAutomation = (el: HTMLElement | null, text: string, hint: string) => {
+      if (!el) return;
+      this.setText(el.querySelector('span'), text);
+      if (el.title !== hint) el.title = hint;
+    };
+    updateAutomation(this.autoFollowersWrapEl, `Auto-Fiéis · ${free ? 'gratuito' : 'pago'}`,
+      free ? 'Recruta o máximo acessível sem gastar Fé.'
+        : 'Reserva 25% da Fé/s; a verba acumula até 10% do saldo. Sem fiéis, compra o primeiro pelo custo normal.');
+    updateAutomation(this.autoFervorWrapEl, `Auto-Ritos · ${free ? 'gratuito' : 'pago'}`,
+      free ? 'Até 50 níveis por Rito/s, sem gastar Fervor.'
+        : 'Reserva 25% do Fervor/s; a verba acumula até 10% do saldo, comprando os Ritos mais baratos.');
+    updateAutomation(this.autoRelicsWrapEl, `Auto-Relíquias · ${gs.getAutoRelicsFraction() * 100}%/s`,
+      'Gera uma fração da Transmutação atual sem gastar Fé nem reiniciar o saldo.');
+
 
     if (this.automationPanelEl) {
-      this.automationPanelEl.style.display =
-        hasAutoFollowers || hasAutoFervor || hasAutoRelics ? 'flex' : 'none';
+      this.setDisplay(this.automationPanelEl, hasAutoFollowers || hasAutoFervor || hasAutoRelics ? 'flex' : 'none');
     }
     if (this.autoFollowersWrapEl) {
-      this.autoFollowersWrapEl.style.display = hasAutoFollowers ? 'flex' : 'none';
+      this.setDisplay(this.autoFollowersWrapEl, hasAutoFollowers ? 'flex' : 'none');
     }
     if (this.autoFollowersToggleEl) {
-      this.autoFollowersToggleEl.checked = gs.autoFollowersEnabled;
+      if (this.autoFollowersToggleEl.checked !== (gs.autoFollowersEnabled)) this.autoFollowersToggleEl.checked = gs.autoFollowersEnabled;
     }
     if (this.autoFervorWrapEl) {
-      this.autoFervorWrapEl.style.display = hasAutoFervor ? 'flex' : 'none';
+      this.setDisplay(this.autoFervorWrapEl, hasAutoFervor ? 'flex' : 'none');
     }
     if (this.autoFervorToggleEl) {
-      this.autoFervorToggleEl.checked = gs.autoFervorEnabled;
+      if (this.autoFervorToggleEl.checked !== (gs.autoFervorEnabled)) this.autoFervorToggleEl.checked = gs.autoFervorEnabled;
     }
     if (this.autoRelicsWrapEl) {
-      this.autoRelicsWrapEl.style.display = hasAutoRelics ? 'flex' : 'none';
+      this.setDisplay(this.autoRelicsWrapEl, hasAutoRelics ? 'flex' : 'none');
     }
     if (this.autoRelicsToggleEl) {
-      this.autoRelicsToggleEl.checked = gs.autoRelicsEnabled;
+      if (this.autoRelicsToggleEl.checked !== (gs.autoRelicsEnabled)) this.autoRelicsToggleEl.checked = gs.autoRelicsEnabled;
     }
 
     // Update curse banner countdown
     const curseBanner = document.getElementById('gnose-curse-banner');
     const curseTimerVal = document.getElementById('gnose-curse-timer-val');
     if (curseBanner) {
-      curseBanner.style.display = gs.bossCurseTimerSec > 0 ? 'flex' : 'none';
+      this.setDisplay(curseBanner, gs.bossCurseTimerSec > 0 ? 'flex' : 'none');
     }
     if (curseTimerVal && gs.bossCurseTimerSec > 0) {
-      curseTimerVal.textContent = `${Math.ceil(gs.bossCurseTimerSec)}s`;
+      this.setText(curseTimerVal, `${Math.ceil(gs.bossCurseTimerSec)}s`);
     }
 
     // Update active boss battle modal if open
-    if (gs.activeBossBattle) {
-      this.bossBattleModal.updateUI();
-    }
+    this.bossBattleModal.updateUI();
 
     this.updateNodeStates();
   }
@@ -448,21 +461,21 @@ export class GnoseTab {
       const prereqsMet = isTierUnlocked && upg.prerequisites.every((reqId) => gs.hasGnoseUpgrade(reqId));
       const canAfford = gs.gnosePoints >= upg.cost;
 
-      nodeEl.classList.remove(
-        'gnose-node-unlocked',
-        'gnose-node-locked-prereq',
-        'gnose-node-available',
-        'gnose-node-unaffordable'
-      );
-
-      if (isUnlocked) {
-        nodeEl.classList.add('gnose-node-unlocked');
-      } else if (!prereqsMet) {
-        nodeEl.classList.add('gnose-node-locked-prereq');
-      } else if (canAfford) {
-        nodeEl.classList.add('gnose-node-available');
-      } else {
-        nodeEl.classList.add('gnose-node-unaffordable');
+      const stateClass = isUnlocked
+        ? 'gnose-node-unlocked'
+        : !prereqsMet
+          ? 'gnose-node-locked-prereq'
+          : canAfford
+            ? 'gnose-node-available'
+            : 'gnose-node-unaffordable';
+      if (!nodeEl.classList.contains(stateClass)) {
+        nodeEl.classList.remove(
+          'gnose-node-unlocked',
+          'gnose-node-locked-prereq',
+          'gnose-node-available',
+          'gnose-node-unaffordable'
+        );
+        nodeEl.classList.add(stateClass);
       }
     });
 
@@ -477,24 +490,31 @@ export class GnoseTab {
 
         const canChallenge = gs.canChallengeBoss(bossId);
         const breakdown = gs.getBossCombatBreakdown(bossId);
-        btn.disabled = !canChallenge;
-        btn.classList.toggle('ready', canChallenge);
-        btn.classList.toggle('locked', !canChallenge);
+        if (btn.disabled !== !canChallenge) btn.disabled = !canChallenge;
+        if (btn.classList.contains('ready') !== canChallenge) btn.classList.toggle('ready', canChallenge);
+        if (btn.classList.contains('locked') === canChallenge) btn.classList.toggle('locked', !canChallenge);
 
-        if (boss.unlocksTier === 'endgame') {
-          btn.innerHTML = `${iconOrText(boss.symbol)} Desafiar ${boss.name} — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)`;
-        } else {
-          btn.innerHTML = `${icon('swords')} Desafiar ${boss.name} (${boss.mythology}) — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)`;
-        }
+        const label = boss.unlocksTier === 'endgame'
+          ? `Desafiar ${boss.name} — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)`
+          : `Desafiar ${boss.name} (${boss.mythology}) — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)`;
+        this.setText(btn.querySelector('.gnose-guardian-label'), label);
       });
 
       const endgameLockHint = this.treeContainerEl.querySelector<HTMLElement>('#gnose-endgame-lock-hint');
       if (endgameLockHint) {
         const totalUnlockedNodes = GNOSE_UPGRADES.filter((u) => gs.hasGnoseUpgrade(u.id)).length;
         const breakdown = gs.getBossCombatBreakdown('boss_tiamat');
-        endgameLockHint.innerHTML = `${icon('lock')} Assimile a Árvore da Gnose (${totalUnlockedNodes}/${GNOSE_UPGRADES.length}) • Poder Atual: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)`;
+        this.setText(endgameLockHint.querySelector('.gnose-endgame-label'), `Assimile a Árvore da Gnose (${totalUnlockedNodes}/${GNOSE_UPGRADES.length}) • Poder Atual: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)`);
       }
     }
+  }
+
+  private setText(element: Element | null, text: string): void {
+    if (element && element.textContent !== text) element.textContent = text;
+  }
+
+  private setDisplay(element: HTMLElement, display: string): void {
+    if (element.style.display !== display) element.style.display = display;
   }
 
   public setHudVisibility(unlocked: boolean): void {

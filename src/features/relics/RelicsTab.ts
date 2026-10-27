@@ -58,7 +58,7 @@ export class RelicsTab {
       this.options.spawnFloatingText(
         window.innerWidth / 2,
         window.innerHeight / 2,
-        `+${result.gained} FRAGMENTOS!`
+        `+${formatNumber(result.gained)} FRAGMENTOS!`
       );
       this.options.notifications.showCustomPopup(
         'TRANSMUTAÇÃO',

@@ -1,7 +1,7 @@
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { NotificationManager } from '../../systems/notifications.js';
-import { formatNumber } from '../../systems/calculations.js';
+import { calculateMiracleReward, formatNumber } from '../../systems/calculations.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 
 export interface SphereControllerOptions {
@@ -134,11 +134,7 @@ export class SphereController {
     const currentFaith = this.gameState.faithPoints;
 
     // Fórmula: 30x produção/s + 10% da Fé atual acumulada
-    const baseFromFps = 30 * fps;
-    const bonusFromStockpile = 0.10 * currentFaith;
-    const minReward = Math.max(30, this.gameState.getFaithPerClick() * 15);
-    const calculated = Math.floor(baseFromFps + bonusFromStockpile);
-    const finalReward = Math.max(minReward, calculated);
+    const finalReward = calculateMiracleReward(currentFaith, this.gameState.getFaithPerClick(), fps);
 
     this.gameState.faithPoints += finalReward;
     this.gameState.totalFaithAccumulated += finalReward;

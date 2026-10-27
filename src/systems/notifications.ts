@@ -99,7 +99,7 @@ export class NotificationManager {
       </div>
     `;
 
-    this.bindPopupLifecycle(popup);
+    this.bindPopupLifecycle(popup, key);
     this.container.appendChild(popup);
   }
 
@@ -138,11 +138,11 @@ export class NotificationManager {
       </div>
     `;
 
-    this.bindPopupLifecycle(popup);
+    this.bindPopupLifecycle(popup, key);
     this.container.appendChild(popup);
   }
 
-  private bindPopupLifecycle(popup: HTMLElement): void {
+  private bindPopupLifecycle(popup: HTMLElement, key?: string): void {
     let closed = false;
     const closePopup = () => {
       if (closed) return;
@@ -150,6 +150,9 @@ export class NotificationManager {
       popup.classList.add('closing');
       setTimeout(() => {
         if (popup.parentElement) popup.remove();
+        if (key && !key.startsWith('ach::')) {
+          this.shownNotificationKeys.delete(key);
+        }
       }, 400);
     };
 

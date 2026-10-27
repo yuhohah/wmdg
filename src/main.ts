@@ -24,6 +24,7 @@ import { BoardManager } from './ui/BoardManager.js';
 import { hydrateIcons } from './ui/icons.js';
 import { cultDialog } from './ui/CultDialog.js';
 import { TestMenu } from './ui/TestMenu.js';
+import { formatNumber } from './systems/calculations.js';
 
 export function isDevMode(): boolean {
   if (typeof window === 'undefined') return false;
@@ -68,6 +69,7 @@ class AppManager {
   private lastSaveTime: number = Date.now();
   public isResetting: boolean = false;
   private isHapticsEnabled: boolean = true;
+  private pendingOfflineNotice?: { title: string; desc: string };
 
   constructor() {
     // 0. Fill static [data-icon] placeholders with the game's engraved icon set
@@ -137,6 +139,7 @@ class AppManager {
         this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
         this.incarnationTab.updateUI();
         this.refreshAllUI();
+        this.board.centerOnCard('card-altar-sphere', true);
       },
       onUpgradePurchased: () => {
         this.refreshAllUI();
@@ -253,6 +256,15 @@ class AppManager {
         this.followersTab.resize();
         this.incarnationTab.altar?.resize();
         this.onboardingGuide.update();
+        if (this.pendingOfflineNotice) {
+          this.notifications.showCustomPopup(
+            this.pendingOfflineNotice.title,
+            this.pendingOfflineNotice.desc,
+            'hourglass',
+            'VIGÍLIA SAGRADA'
+          );
+          this.pendingOfflineNotice = undefined;
+        }
       });
     });
   }
@@ -389,9 +401,69 @@ class AppManager {
     if (data) {
       this.applySaveData(data);
       this.lastSaveTime = data.timestamp || Date.now();
+      if (data.timestamp) {
+        this.processOfflineGains(data.timestamp);
+      }
       return true;
     }
     return false;
+  }
+
+  private processOfflineGains(lastTimestamp: number): void {
+    if (!lastTimestamp || lastTimestamp <= 0) return;
+    const now = Date.now();
+    const elapsedSec = (now - lastTimestamp) / 1000;
+    // Pelo menos 15s de ausência para calcular ganhos offline
+    if (elapsedSec < 15) return;
+
+    // Teto de 24 horas (86.400 segundos) de ausência
+    const offlineSec = Math.min(86400, elapsedSec);
+
+    const fps = this.gameState.getFaithPerSecond();
+    let faithGained = 0;
+    if (fps > 0) {
+      faithGained = fps * offlineSec;
+      this.gameState.faithPoints += faithGained;
+      this.gameState.totalFaithAccumulated += faithGained;
+    }
+
+    const fervorRate = this.gameState.getFervorRatePerSecond();
+    let fervorGained = 0;
+    if (fervorRate > 0) {
+      fervorGained = fervorRate * offlineSec;
+      this.gameState.fervorPoints += fervorGained;
+    }
+
+    const relicRate = this.gameState.getRelicsRatePerSecond();
+    let relicGained = 0;
+    if (relicRate > 0) {
+      relicGained = relicRate * offlineSec;
+      this.gameState.relicPoints += relicGained;
+    }
+
+    // Executa automações gnósticas acumuladas se desbloqueadas (até 60 ciclos)
+    if (this.gameState.hasGnoseUpgrade('gn_auto_followers') || this.gameState.hasGnoseUpgrade('gn_auto_fervor')) {
+      const autoSteps = Math.min(60, Math.floor(offlineSec));
+      for (let i = 0; i < autoSteps; i++) {
+        this.gameState.runGnoseAutomation();
+      }
+    }
+
+    if (faithGained > 0 || fervorGained > 0 || relicGained > 0) {
+      const minutes = Math.floor(elapsedSec / 60);
+      const hours = (elapsedSec / 3600).toFixed(1);
+      const timeStr = elapsedSec >= 3600 ? `${hours}h` : `${minutes}m`;
+
+      const parts: string[] = [];
+      if (faithGained > 0) parts.push(`+${formatNumber(faithGained)} Fé`);
+      if (fervorGained > 0) parts.push(`+${formatNumber(fervorGained)} Fervor`);
+      if (relicGained > 0) parts.push(`+${formatNumber(relicGained)} Fragmentos`);
+
+      this.pendingOfflineNotice = {
+        title: `VIGÍLIA SAGRADA (${timeStr})`,
+        desc: `Durante sua ausência, o culto continuou ardendo: ${parts.join(', ')} acumulados.`
+      };
+    }
   }
 
   private manualSave(): void {
