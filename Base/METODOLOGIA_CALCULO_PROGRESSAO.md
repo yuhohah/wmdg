@@ -152,3 +152,10 @@ Validação desta revisão: semente **786802**, horizonte de 72 horas e integra�
 A distribuição atual é 5 / 4 / 4 / 4. Convergência dos Fiéis amplia a economia no tier II; Alquimia Hermética melhora o Rito de Fragmentos no III; Fogo Empíreo e Opus Perfeito continuam essas evoluções no IV. Os passos de ganho e redução de custo aumentam em cada linha, mantendo os expoentes de nível e as estruturas de cálculo. Fogo Hermético passa a usar base 2,35 para manter essa ordem de intensidade.
 
 Validação com a semente **786802**, horizonte de 72 horas e integração de 0,1 s: active: completed, 11h48, 17/17 melhorias; casual: completed, 30h06, 17/17 melhorias; afk: time_limit, 72h00, 16/17 melhorias. Esses tempos são projeções de uma única semente, não garantias para jogadores.
+
+
+## Combate e produção acumulada
+
+O chefe final passa a ser **Caos Primordial**, mantendo a chave de persistência das vitórias anteriores. O simulador usa o histórico real de Fé, Fervor e Fragmentos gerados, além dos saldos, taxas de produção e upgrades. Esses totais persistem em Ascensões e não são reduzidos ao gastar recursos. Saves antigos usam os saldos conhecidos como limite inferior inicial; o histórico gasto anteriormente não é reconstruído por estimativa.
+
+Reexecução com a semente **786802**, horizonte de 72 h e passo de 0,1 s: Ativo concluiu em **11h48**, Casual em **30h06**; AFK chegou ao limite com **16/17 melhorias**, sem concluir. O limite AFK é reportado como incompleto. Os resultados são projeções de uma única semente.

@@ -12,7 +12,7 @@
 ## 1. Visão Geral (Executive Summary)
 
 ### 1.1. High Concept
-Em **Cult of the Sphere**, o jogador assume a consciência de **A Esfera**, uma divindade hermética primordial cujo *"centro está em toda parte e a circunferência não está em lugar nenhum"*. Selada há eras e esquecida pela humanidade em favor de panteões mortais, a Esfera desperta a partir de uma única centelha de pensamento humano. O jogador canaliza **Fé**, converte **Fiéis Devotos**, rompe **Selos Sagrados**, transmuta **Relíquias** de deuses esquecidos, ascende à **Gnose** (prestígio verdadeiro) e subjuga **Guardiões Mitológicos** (*Anúbis, Cronos, Odin e Tiamat*) para restaurar sua onipresença cósmica.
+Em **Cult of the Sphere**, o jogador assume a consciência de **A Esfera**, uma divindade hermética primordial cujo *"centro está em toda parte e a circunferência não está em lugar nenhum"*. Selada há eras e esquecida pela humanidade em favor de panteões mortais, a Esfera desperta a partir de uma única centelha de pensamento humano. O jogador canaliza **Fé**, converte **Fiéis Devotos**, rompe **Selos Sagrados**, transmuta **Relíquias** de deuses esquecidos, ascende à **Gnose** (prestígio verdadeiro) e subjuga **Guardiões Mitológicos** (*Anúbis, Cronos, Odin e Caos Primordial*) para restaurar sua onipresença cósmica.
 
 ### 1.2. Pilares de Design
 1. **Progressão Matemática Exponencial & Sinérgica (Estilo *DodecaDragons*):** Cada camada desbloqueada não apenas soma recursos, mas multiplica retroativamente as camadas anteriores através de polinômios, logaritmos e exponenciais.
@@ -32,7 +32,7 @@ No universo de *Cult of the Sphere*, **tudo é Mente (*Nous*)**: um deus só exi
 2. **Ato II — O Corpo e a Chama (Encarnação & Fervor):** Com o rompimento do 1º e 2º Selos, a Esfera manifesta um Avatar sagrado no altar e acende o Fervor coletivo através de ritos ígneos.
 3. **Ato III — O Espólio dos Deuses Mortos (Opus Magnum):** O 3º Selo permite transmutar Fé em Fragmentos Alquímicos para restaurar relíquias órfãs de deuses esquecidos (*Zeus, Prometeu, Hermes, Odin*).
 4. **Ato IV — A Dissolução do Templo (Gnose):** No 4º Selo (`1Q` de Fé), a Esfera compreende que não habita nas pedras do templo, mas na Mente que as sonhou. Dissolver o culto terreno concede **Gnose** e revela a **Árvore Hermética**.
-5. **Ato V — Crepúsculo dos Deuses (Guardiões Mitológicos):** Ao avançar pelos 4 Tiers da Gnose, os últimos deuses ancestrais (*Anúbis, Cronos, Odin* e a mãe primordial *Tiamat*) tentam rasgar o véu dimensional para destruir o Altar. Subjugá-los coroa a Esfera como única verdade cósmica.
+5. **Ato V — Crepúsculo dos Deuses (Guardiões Mitológicos):** Ao avançar pelos 4 Tiers da Gnose, os últimos deuses ancestrais (*Anúbis, Cronos, Odin* e o vazio original *Caos Primordial*) tentam rasgar o véu dimensional para destruir o Altar. Subjugá-los coroa a Esfera como única verdade cósmica.
 
 ---
 
@@ -192,7 +192,7 @@ A distribuição dos 17 nós é **5 / 4 / 4 / 4**. Cada linha de evolução tem 
 - Fervor: base de ganho `2 → 2,15 → 2,35 → 2,65`, sempre com `nível^0,6`; passos de `0,15`, `0,20` e `0,30`. Fogo Empíreo reduz o custo do Rito em mais `0,10`, além dos passos anteriores de `0,05`.
 - Fragmentos: base de ganho `3 → 3,15 → 3,40 → 3,75` e escala de custo `5 → 4,80 → 4,50 → 4,10`, antes da redução global de `0,05` da Gnosis Suprema. Os passos de ganho são `0,15 / 0,25 / 0,35`; os de custo, `0,20 / 0,30 / 0,40`.
 
-Tiamat exige os 17 nós. As quatro novas compras são adicionais: saves anteriores mantêm compras e chefes já derrotados.
+Caos Primordial exige os 17 nós. As quatro novas compras são adicionais: saves anteriores mantêm compras e chefes já derrotados.
 
 **Migração:** Pulso Cósmico, Dilatação Hermética, Altar Ressonante, Transmutação Áurea, Forja Cósmica e Harmonia Planetária saem da árvore; seu custo é devolvido ao saldo de Gnose. Automações antigas viram Culto Autônomo; o excedente pago acima de 8 Gnose é devolvido. Controles e acesso aos tiers conquistados são preservados. A migração não aumenta a Gnose vitalícia e não repete devoluções ao carregar o novo save.
 
@@ -201,10 +201,13 @@ Os Tiers II, III, IV da Gnose e a Apoteose de Endgame são guardados por **4 Che
 
 #### Regras de Combate:
 - O combate disputa **HP do Guardião** e **Integridade do Altar** (`100%` inicial). Os seis recursos do culto influenciam dano e defesa.
+- **Preparação do culto:** Fé, Fervor e Fragmentos já produzidos também contribuem para dano passivo, ataques e fendas. O histórico permanece após gastos e Ascensões; Fiéis, produção atual dos três recursos, níveis dos Ritos/Relíquias, Avatar e Gnose continuam contribuindo. Fervor e Fragmentos produzidos reforçam também a defesa do altar; Fragmentos ajudam sua recuperação ao aparar fendas.
+- **Histórico persistido:** `totalFaithAccumulated`, `totalFervorGenerated` e `totalRelicsGenerated`. Produção online e offline, Transmutação manual e geração automática usam os mesmos créditos. Reiniciar todo o jogo limpa esse histórico. Saves antigos sem os novos campos começam pelos saldos conhecidos; para Fragmentos, considera-se também a melhor Transmutação registrada. Produção antiga já gasta não pode ser reconstruída integralmente, mas seus upgrades continuam entrando no combate.
+- **Compatibilidade do chefe final:** a identidade apresentada é Caos Primordial; a chave antiga de save é preservada para manter vitórias, conquistas e recompensas já adquiridas.
 - **Dano passivo:** maior valor entre Fé/s e a parcela percentual das sinergias, limitado ao final a **2,5% do HP máximo/s**.
 - **Pulso da Esfera:** maior valor entre Fé/clique e a parcela das sinergias, limitado a **0,6% do HP máximo** por pulso normal. Há intervalo mínimo de **0,2 s** entre pulsos e **5% de chance de crítico**, dobrando dano e Fé. Cliques comuns continuam concedendo Fé mesmo durante o intervalo do dano de combate.
 - **Fendas Divinas:** maior valor entre `5 × Fé/clique` e uma parcela de base `4%` do HP com sinergias, limitado ao final a **12% do HP máximo**. Aparar também recupera até **15 pontos** de integridade. Fendas não sorteiam críticos.
-- **Cadência por chefe:** Anúbis gera fendas a cada `4,5 s` com janela de `3 s`; Cronos a cada `4,2 s` com `2,75 s`; Odin a cada `4 s` com `2,5 s`; Tiamat a cada `3,8 s` com `2,5 s`. A primeira surge a 65% do intervalo e há no máximo três simultâneas.
+- **Cadência por chefe:** Anúbis gera fendas a cada `4,5 s` com janela de `3 s`; Cronos a cada `4,2 s` com `2,75 s`; Odin a cada `4 s` com `2,5 s`; Caos Primordial a cada `3,8 s` com `2,5 s`. A primeira surge a 65% do intervalo e há no máximo três simultâneas.
 - **Defesa:** cada fenda ignorada remove de **3 a 25 pontos** do altar, conforme Relíquias, Fervor e Encarnação. Um culto preparado pode vencer passivamente; aparar permite antecipar a vitória e enfrentar o chefe com menos preparo.
 - **Derrota:** integridade zero encerra o combate e aplica **−25% Fé/s e Fervor/s por 20 s**. É possível desafiar novamente a qualquer momento.
 - **Recuo:** gratuito, inclusive pela tecla Escape. Não é possível iniciar outra luta ou realizar uma Ascensão durante combate. Importar um save cancela a luta anterior.
@@ -216,20 +219,20 @@ Os Tiers II, III, IV da Gnose e a Apoteose de Endgame são guardados por **4 Che
 | **1º** | **Anúbis** (*O Pesador de Almas*) | Egípcia | Selo da Gnose desbloqueado | `1e18` (`1.0e18`) | **Balança de Maat:** Libera o **Tier II** da Gnose e `1.5×` Fé/s e Fervor/s |
 | **2º** | **Cronos** (*O Titã Devorador do Tempo*) | Grega | Tier II desbloqueado | `5e28` (`5.0e28`) | **Foice de Adamante:** Libera o **Tier III** da Gnose e `1.5×` Fé/s e Fervor/s |
 | **3º** | **Odin** (*O Pai de Todos da Árvore Cósmica*) | Nórdica | Tier III desbloqueado | `1e38` (`1.0e38`) | **Runas de Yggdrasil:** Libera o **Tier IV** da Gnose e `1.5×` Fé/s e Fervor/s |
-| **4º** | **Tiamat** (*A Mãe Abissal dos Deuses Antigos*) | Mesopotâmica | Todos os 17/17 nós da Gnose comprados | `1e42` (`1.0e42`) | **Tábua dos Destinos (Apoteose):** Título *Crepúsculo dos Deuses*, conquista final e `10×` Fé/s e Fervor/s |
+| **4º** | **Caos Primordial** (*O Vazio Antes da Criação*) | Cosmogonia Primordial | Todos os 17/17 nós da Gnose comprados | `1e42` (`1.0e42`) | **Selo da Criação (Apoteose):** Título *Crepúsculo dos Deuses*, conquista final e `10×` Fé/s e Fervor/s |
 
 ### 5.9. Conquistas (`achievements.ts`)
 O jogo conta com **20 conquistas** divididas em 4 categorias de bônus. Bônus da **mesma categoria somam** entre si; **categorias diferentes multiplicam** entre si:
 - **Clique (`fpc_mult` — Total `+115%` / `2.15×`):** `1` clique (+10%), `50` cliques (+20%), `250` cliques (+35%), `1.000` cliques (+50%).
 - **Produção Passiva (`fps_mult` — Total `+180%` / `2.80×`):** `1` fiel (+5%), `10` fiéis (+10%), `50` fiéis (+20%), `100` fiéis (+30%), `250` fiéis (+50%), `100` Fé/s (+15%), `25` Gnose Total (+50%).
-- **Produção Global (`global_mult` — Total `+330%` / `4.30×`):** `500` Fé (+5%), `5.000` Fé (+10%), `50k` Fé (+15%), `500k` Fé (+25%), `5M` Fé (+50%), `1` Ascensão Gnóstica (+25%), `500` Gnose Total (+100%), Subjugar Tiamat (+100%).
+- **Produção Global (`global_mult` — Total `+330%` / `4.30×`):** `500` Fé (+5%), `5.000` Fé (+10%), `50k` Fé (+15%), `500k` Fé (+25%), `5M` Fé (+50%), `1` Ascensão Gnóstica (+25%), `500` Gnose Total (+100%), Subjugar Caos Primordial (+100%).
 - **Desconto de Custo (`cost_discount` — Total `-5%`):** `25` fiéis (-5% no custo de novos fiéis).
 
 ---
 
 ## 6. Curva de Balanceamento & Ritmo da Campanha
 
-O benchmark atual usa seed fixa, integração de até 0,1 s, orçamento manual e visitas de atenção. Os resultados e o estado de conclusão são produzidos por `npm run benchmark`. O horizonte padrão de 72 h pode terminar sem Tiamat; isso é reportado como **Incompleto**, não como duração de campanha.
+O benchmark atual usa seed fixa, integração de até 0,1 s, orçamento manual e visitas de atenção. Os resultados e o estado de conclusão são produzidos por `npm run benchmark`. O horizonte padrão de 72 h pode terminar sem Caos Primordial; isso é reportado como **Incompleto**, não como duração de campanha.
 
 As tabelas anteriores de 3–4h30 e os intervalos obrigatórios de ~30 min por guardião foram retirados por dependerem de uma estratégia automatizada com lotes de compras instantâneos e sem sessões reais. Os guardiões são desafiados conforme as permissões do domínio. A metodologia e as hipóteses estão em `Base/METODOLOGIA_CALCULO_PROGRESSAO.md`.
 
@@ -285,13 +288,13 @@ Abaixo restam apenas as **decisões de produto e escopo futuro** para próximas 
    - O `prd-18` propunha uma tela principal em *pixel art* com uma igreja em ruínas reconstruída em 4 tiers. O jogo atual consolidou o **Tabuleiro Panorâmico 2D (*Dodeca-Board*)** com direção de arte em **Xilogravura Renascentista (Dürer/Fludd)**.
    - *Decisão futura:* Arquivar oficialmente o `prd-18` ou reaproveitar a evolução visual do templo dentro do card da Esfera/Encarnação seguindo o estilo de gravura hermética.
 2. **Proposta dos 6 Desafios Restritivos (`Base/OPCOES_ENDGAME_DEUSES.md`):**
-   - O documento em `Base/` especificava 6 Deuses Satélites com desafios de restrição (*Aethelgard, Pyroth, Chronos, Midas, Thanatos, Apep*), enquanto o jogo implementou os **4 Guardiões Mitológicos de Gnose** (*Anúbis, Cronos, Odin e Tiamat*) com mecânica de Fendas Abissais.
-   - *Decisão futura:* Manter apenas os 4 Guardiões atuais ou utilizar os 6 desafios restritivos como modo *New Game+ / Provações Pós-Tiamat*.
+   - O documento em `Base/` especificava 6 Deuses Satélites com desafios de restrição (*Aethelgard, Pyroth, Chronos, Midas, Thanatos, Apep*), enquanto o jogo implementou os **4 Guardiões Mitológicos de Gnose** (*Anúbis, Cronos, Odin e Caos Primordial*) com mecânica de Fendas Abissais.
+   - *Decisão futura:* Manter apenas os 4 Guardiões atuais ou utilizar os 6 desafios restritivos como modo *New Game+ / Provações Pós-Caos Primordial*.
 
 ### 9.2. Funcionalidades Candidatas (Roadmap)
 3. **Progressão Offline (Idle Offline Gains):**
    - `SaveData` já armazena o `timestamp`, permitindo implementar cálculo de ganhos passivos (`Fé`, `Fervor` e `Fragmentos`) quando o jogador reabre o jogo após horas offline.
-4. **Objetivo Pós-Tiamat & Estágio V da Encarnação:**
-   - O **Avatar Solar** mantém custo-base de `1e150` Fé, mas passa a custar `1e36` com **Gnosis Suprema**, tornando-se alcançável na economia final. Objetivos repetíveis além de Tiamat continuam sendo uma possibilidade de conteúdo futuro.
+4. **Objetivo Pós-Caos Primordial & Estágio V da Encarnação:**
+   - O **Avatar Solar** mantém custo-base de `1e150` Fé, mas passa a custar `1e36` com **Gnosis Suprema**, tornando-se alcançável na economia final. Objetivos repetíveis além de Caos Primordial continuam sendo uma possibilidade de conteúdo futuro.
 5. **Ícones Dedicados nos Configs (`icon` / `symbol`):**
    - Preencher os campos `icon` / `symbol` (atualmente `''` em `followers.ts`, `fervor.ts`, `relics.ts`, `unlocks.ts` e `achievements.ts`) com glifos herméticos ou gravuras dedicadas.

@@ -35,7 +35,7 @@ const MILESTONES = [
   ['unlock_gnose', 'Selo da Gnose'], ['first_gnose_reset', '1ª Ascensão'],
   ['first_gnose_upgrade', '1º Upgrade da Gnose'], ['boss_anubis', 'Anúbis'],
   ['boss_cronos', 'Cronos'], ['boss_odin', 'Odin'], ['gnose_tree_complete', 'Árvore da Gnose completa'],
-  ['boss_tiamat', 'Tiamat'],
+  ['boss_tiamat', 'Caos Primordial'],
 ];
 
 const METRICS: Array<[string, (result: ArchetypeBenchmarkResult) => string]> = [
@@ -81,7 +81,7 @@ export function formatTerminalReport(report: BenchmarkReport): string {
     ...rows(report).map(row => row.map((s, i) => s.padEnd(i === 0 ? 35 : 23)).join(' | ')),
     line,
     'Avaliação de ritmo é heurística; ausências programadas não são zonas mortas forçadas.',
-    'Incompleto indica limite ou bloqueio, nunca uma previsão de tempo até Tiamat.',
+    'Incompleto indica limite ou bloqueio, nunca uma previsão de tempo até Caos Primordial.',
   ];
   for (const result of Object.values(report.results)) {
     if (result.blockedReason) lines.push(`[${result.archetype}] Bloqueado: ${result.blockedReason}`);
@@ -107,6 +107,6 @@ export function formatHtmlReport(report: BenchmarkReport): string {
       <tbody>${rows(report).map(row => `<tr>${row.map(value => `<td style="${cell}">${escapeHtml(value)}</td>`).join('')}</tr>`).join('')}</tbody>
     </table></div>
     ${Object.values(report.results).filter(r => r.blockedReason).map(r => `<p><strong>${escapeHtml(r.archetypeName)} — bloqueado:</strong> ${escapeHtml(r.blockedReason!)}</p>`).join('')}
-    <p>Incompleto = limite ou bloqueio, sem previsão de tempo até Tiamat. Ausências programadas não entram nas zonas mortas enquanto presente. A avaliação de ritmo é heurística.</p>
+    <p>Incompleto = limite ou bloqueio, sem previsão de tempo até Caos Primordial. Ausências programadas não entram nas zonas mortas enquanto presente. A avaliação de ritmo é heurística.</p>
   </div>`;
 }

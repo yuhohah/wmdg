@@ -292,16 +292,16 @@ export class TestMenu {
         gs.totalFaithAccumulated += 1000000;
         break;
       case 'add-fervor-10k':
-        gs.fervorPoints += 10000;
+        gs.addFervor(10000);
         break;
       case 'add-fervor-100k':
-        gs.fervorPoints += 100000;
+        gs.addFervor(100000);
         break;
       case 'add-relics-100':
-        gs.relicPoints += 100;
+        gs.addRelics(100);
         break;
       case 'add-relics-1k':
-        gs.relicPoints += 1000;
+        gs.addRelics(1000);
         break;
       case 'add-gnose-10':
         gs.gnosePoints += 10;

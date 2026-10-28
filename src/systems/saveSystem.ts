@@ -10,8 +10,10 @@ export interface SaveData {
     totalFaithAccumulated: number;
     totalClicks: number;
     fervorPoints: number;
+    totalFervorGenerated?: number;
     incarnationStage: number;
     relicPoints: number;
+    totalRelicsGenerated?: number;
     bestRelicsToGet: number;
     incarnationBoostTimer?: number;
     hasSeenIntro?: boolean;

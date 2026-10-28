@@ -225,6 +225,9 @@ export class GnoseTab {
           const isTierOpen = gs.isGnoseTierUnlocked(tier);
           const canChallenge = gs.canChallengeBoss(guardian.id);
           const breakdown = gs.getBossCombatBreakdown(guardian.id);
+          const etaSec = Number.isFinite(breakdown.estimatedPassiveVictorySec)
+            ? `~${Math.round(breakdown.estimatedPassiveVictorySec)}s`
+            : '∞';
           if (isTierOpen) {
             guardianBadgeHtml = `
               <span class="gnose-guardian-badge defeated">
@@ -232,9 +235,17 @@ export class GnoseTab {
               </span>
             `;
           } else {
+            const prevTier = (tier - 1) as 1 | 2 | 3;
+            const prevTierOwned = GNOSE_UPGRADES.filter(
+              (u) => u.tier === prevTier && gs.hasGnoseUpgrade(u.id)
+            ).length;
+            const gateHint =
+              tier >= 3 && !canChallenge
+                ? ` [Requer Tier ${prevTier === 2 ? 'II' : 'III'}: ${prevTierOwned}/2 nós]`
+                : '';
             guardianBadgeHtml = `
               <button type="button" class="btn-challenge-guardian ${canChallenge ? 'ready' : 'locked'}" data-boss-id="${guardian.id}" ${canChallenge ? '' : 'disabled'}>
-                ${icon('swords')} <span class="gnose-guardian-label">Desafiar ${guardian.name} (${guardian.mythology}) — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)</span>
+                ${icon('swords')} <span class="gnose-guardian-label">Desafiar ${guardian.name} (${guardian.mythology})${gateHint} — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s · ${etaSec})</span>
               </button>
             `;
           }
@@ -328,6 +339,9 @@ export class GnoseTab {
       const isTiamatDefeated = gs.isBossDefeated(tiamat.id);
       const canChallengeTiamat = gs.canChallengeBoss(tiamat.id);
       const breakdown = gs.getBossCombatBreakdown(tiamat.id);
+      const etaSec = Number.isFinite(breakdown.estimatedPassiveVictorySec)
+        ? `~${Math.round(breakdown.estimatedPassiveVictorySec)}s`
+        : '∞';
 
       const endgameBar = document.createElement('div');
       endgameBar.className = `gnose-endgame-boss-bar ${isTiamatDefeated ? 'defeated' : canChallengeTiamat ? 'ready' : 'locked'}`;
@@ -336,8 +350,8 @@ export class GnoseTab {
       const actionHtml = isTiamatDefeated
         ? `<span class="gnose-guardian-badge defeated">${icon('crown')} CREPÚSCULO DOS DEUSES CONCLUÍDO (×10 Fé & Fervor)</span>`
         : canChallengeTiamat
-          ? `<button type="button" id="btn-challenge-tiamat" class="btn-challenge-guardian endgame-ready" data-boss-id="${tiamat.id}">${iconOrText(tiamat.symbol)} <span class="gnose-guardian-label">Desafiar ${tiamat.name} — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)</span></button>`
-          : `<span class="gnose-endgame-lock-hint" id="gnose-endgame-lock-hint">${icon('lock')} <span class="gnose-endgame-label">Assimile a Árvore da Gnose (${totalUnlockedNodes}/${GNOSE_UPGRADES.length}) • Poder Atual: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)</span></span>`;
+          ? `<button type="button" id="btn-challenge-tiamat" class="btn-challenge-guardian endgame-ready" data-boss-id="${tiamat.id}">${iconOrText(tiamat.symbol)} <span class="gnose-guardian-label">Desafiar ${tiamat.name} — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s · ${etaSec})</span></button>`
+          : `<span class="gnose-endgame-lock-hint" id="gnose-endgame-lock-hint">${icon('lock')} <span class="gnose-endgame-label">Assimile a Árvore da Gnose (${totalUnlockedNodes}/${GNOSE_UPGRADES.length}) • Poder Atual: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s · ${etaSec})</span></span>`;
 
       endgameBar.innerHTML = `
         <div class="gnose-endgame-info">
@@ -492,13 +506,25 @@ export class GnoseTab {
 
         const canChallenge = gs.canChallengeBoss(bossId);
         const breakdown = gs.getBossCombatBreakdown(bossId);
+        const etaSec = Number.isFinite(breakdown.estimatedPassiveVictorySec)
+          ? `~${Math.round(breakdown.estimatedPassiveVictorySec)}s`
+          : '∞';
         if (btn.disabled !== !canChallenge) btn.disabled = !canChallenge;
         if (btn.classList.contains('ready') !== canChallenge) btn.classList.toggle('ready', canChallenge);
         if (btn.classList.contains('locked') === canChallenge) btn.classList.toggle('locked', !canChallenge);
 
+        let gateHint = '';
+        if (boss.unlocksTier !== 'endgame' && boss.unlocksTier >= 3 && !canChallenge) {
+          const prevTier = (boss.unlocksTier - 1) as 2 | 3;
+          const prevTierOwned = GNOSE_UPGRADES.filter(
+            (u) => u.tier === prevTier && gs.hasGnoseUpgrade(u.id)
+          ).length;
+          gateHint = ` [Requer Tier ${prevTier === 2 ? 'II' : 'III'}: ${prevTierOwned}/2 nós]`;
+        }
+
         const label = boss.unlocksTier === 'endgame'
-          ? `Desafiar ${boss.name} — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)`
-          : `Desafiar ${boss.name} (${boss.mythology}) — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)`;
+          ? `Desafiar ${boss.name} — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s · ${etaSec})`
+          : `Desafiar ${boss.name} (${boss.mythology})${gateHint} — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s · ${etaSec})`;
         this.setText(btn.querySelector('.gnose-guardian-label'), label);
       });
 
@@ -506,7 +532,10 @@ export class GnoseTab {
       if (endgameLockHint) {
         const totalUnlockedNodes = GNOSE_UPGRADES.filter((u) => gs.hasGnoseUpgrade(u.id)).length;
         const breakdown = gs.getBossCombatBreakdown('boss_tiamat');
-        this.setText(endgameLockHint.querySelector('.gnose-endgame-label'), `Assimile a Árvore da Gnose (${totalUnlockedNodes}/${GNOSE_UPGRADES.length}) • Poder Atual: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s)`);
+        const etaSec = Number.isFinite(breakdown.estimatedPassiveVictorySec)
+          ? `~${Math.round(breakdown.estimatedPassiveVictorySec)}s`
+          : '∞';
+        this.setText(endgameLockHint.querySelector('.gnose-endgame-label'), `Assimile a Árvore da Gnose (${totalUnlockedNodes}/${GNOSE_UPGRADES.length}) • Poder Atual: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s · ${etaSec})`);
       }
     }
   }

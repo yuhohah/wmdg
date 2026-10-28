@@ -317,7 +317,7 @@ describe('Gnose tree revision', () => {
     expect(restored.unlockedGnoseUpgrades).toEqual(new Set(['gn_automation']));
   });
 
-  it('keeps every prerequisite reachable and gates Tiamat on all current purchases', () => {
+  it('keeps every prerequisite reachable and gates Primordial Chaos on all current purchases', () => {
     const g = prepared(); g.gnosePoints = 100000;
     for (const id of ['boss_anubis', 'boss_cronos', 'boss_odin']) g.defeatedBosses.add(id);
     for (const upgrade of GNOSE_UPGRADES) {

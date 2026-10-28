@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GameStateManager } from '../../core/GameState.js';
+import { GNOSE_BOSSES } from '../../config/bosses.js';
 
 function eligibleCult() {
   const g = new GameStateManager();
@@ -20,6 +21,75 @@ function preparedCult() {
 }
 
 describe('Boss battle invariants', () => {
+  it('presents Primordial Chaos as the final boss while preserving legacy victories and rewards', () => {
+    const boss = GNOSE_BOSSES.at(-1)!;
+    expect(boss.name).toBe('Caos Primordial');
+    expect(boss.unlocksTier).toBe('endgame');
+    const g = eligibleCult(); g.defeatedBosses.add('boss_tiamat');
+    g.achievements.find(a => a.id === 'ach_boss_tiamat')!.unlocked = true;
+    const restored = new GameStateManager(); restored.applySaveData(g.buildSaveData());
+    expect(restored.isBossDefeated(boss.id)).toBe(true);
+    expect(restored.getBossRewardsMultiplier()).toBe(10);
+    expect(restored.canChallengeBoss(boss.id)).toBe(false);
+    expect(restored.achievements.find(a => a.id === 'ach_boss_tiamat')!.unlocked).toBe(true);
+  });
+
+  it.each(['faith', 'fervor', 'relics'] as const)('keeps %s generated before the fight useful after its balance is spent', resource => {
+    const g = eligibleCult();
+    const before = g.getBossCombatBreakdown();
+    if (resource === 'faith') g.totalFaithAccumulated = 1e18;
+    if (resource === 'fervor') g.totalFervorGenerated = 1e12;
+    if (resource === 'relics') g.totalRelicsGenerated = 1e9;
+    const after = g.getBossCombatBreakdown();
+    expect(after.passiveDps).toBeGreaterThan(before.passiveDps);
+    expect(after.clickDamage).toBeGreaterThan(before.clickDamage);
+    expect(after.riftDamage).toBeGreaterThan(before.riftDamage);
+    if (resource !== 'faith') expect(after.altarDamageOnMiss).toBeLessThan(before.altarDamageOnMiss);
+    expect(g.startBossBattle('boss_anubis')).toBe(true);
+    const hp = g.activeBossBattle!.bossHp;
+    g.tick(1);
+    expect(g.activeBossBattle!.bossHp).toBeCloseTo(hp - after.passiveDps, -4);
+  });
+
+  it('counts production, offline credits and transmutations without losing history to spending or Ascension', () => {
+    const g = eligibleCult(); g.unlocks.forEach(u => { u.unlocked = true; });
+    const gains = g.tick(2);
+    expect(g.totalFervorGenerated).toBeCloseTo(gains.fervorGained, 7);
+    expect(g.totalRelicsGenerated).toBeCloseTo(gains.relicGained, 7);
+    g.addFervor(1000); g.addRelics(500); // Same credit path as offline production.
+    const fervorHistory = g.totalFervorGenerated;
+    expect(g.buyFervorUpgrade(g.fervorUpgrades[0])).toBe(true);
+    expect(g.totalFervorGenerated).toBe(fervorHistory);
+    g.faithPoints = 1e18;
+    const relicHistory = g.totalRelicsGenerated;
+    const transmutation = g.convertFaithToRelics();
+    expect(transmutation.success).toBe(true);
+    expect(g.totalRelicsGenerated).toBe(relicHistory + transmutation.gained);
+    g.faithPoints = 1e18;
+    const history = [g.totalFervorGenerated, g.totalRelicsGenerated];
+    expect(g.performGnoseReset().success).toBe(true);
+    expect(g.fervorPoints).toBe(0);
+    expect(g.relicPoints).toBe(0);
+    expect([g.totalFervorGenerated, g.totalRelicsGenerated]).toEqual(history);
+    const restored = new GameStateManager(); restored.applySaveData(g.buildSaveData());
+    expect([restored.totalFervorGenerated, restored.totalRelicsGenerated]).toEqual(history);
+    restored.applySaveData(restored.buildSaveData());
+    expect([restored.totalFervorGenerated, restored.totalRelicsGenerated]).toEqual(history);
+    restored.resetToDefaults();
+    expect([restored.totalFervorGenerated, restored.totalRelicsGenerated]).toEqual([0, 0]);
+  });
+
+  it('loads saves without production counters from their known balances and best transmutation', () => {
+    const g = eligibleCult(); g.unlocks.forEach(u => { u.unlocked = true; });
+    g.fervorPoints = 1500; g.relicPoints = 300; g.bestRelicsToGet = 500;
+    const save = g.buildSaveData();
+    delete save.stats.totalFervorGenerated; delete save.stats.totalRelicsGenerated;
+    const restored = new GameStateManager(); restored.applySaveData(save);
+    expect(restored.totalFervorGenerated).toBe(1500);
+    expect(restored.totalRelicsGenerated).toBe(500);
+    expect(restored.buildSaveData().stats.totalRelicsGenerated).toBe(500);
+  });
+
   it('rejects a second challenge without changing the current fight', () => {
     const g = eligibleCult();
     g.startBossBattle('boss_anubis');
@@ -118,5 +188,79 @@ describe('Boss battle invariants', () => {
     expect(active.elapsed).toBeGreaterThanOrEqual(8);
     expect(active.elapsed).toBeLessThan(passive.elapsed * 0.75);
     expect(active.rifts).toBeGreaterThan(0);
+  });
+
+  it('gates Cronos and Odin behind Tier II and Tier III Gnose nodes', () => {
+    const g = eligibleCult();
+    g.defeatedBosses.add('boss_anubis');
+    expect(g.canChallengeBoss('boss_cronos')).toBe(false);
+    g.unlockedGnoseUpgrades.add('gn_followers_syn');
+    expect(g.canChallengeBoss('boss_cronos')).toBe(false);
+    g.unlockedGnoseUpgrades.add('gn_bencao_eterna');
+    expect(g.canChallengeBoss('boss_cronos')).toBe(true);
+
+    g.defeatedBosses.add('boss_cronos');
+    expect(g.canChallengeBoss('boss_odin')).toBe(false);
+    g.unlockedGnoseUpgrades.add('gn_followers_cubic');
+    expect(g.canChallengeBoss('boss_odin')).toBe(false);
+    g.unlockedGnoseUpgrades.add('gn_gnose_mult');
+    expect(g.canChallengeBoss('boss_odin')).toBe(true);
+  });
+
+  it('escalates boss phases as HP drops and tracks rift combo streaks', () => {
+    const g = eligibleCult();
+    g.startBossBattle('boss_anubis');
+    const battle = g.activeBossBattle!;
+    expect(battle.phase).toBe(1);
+    expect(battle.comboStreak).toBe(0);
+
+    // Phase 1 rift window
+    g.spawnBossRift();
+    const phase1Window = battle.activeRifts[0].maxSec;
+    const firstRes = g.clickBossRift(battle.activeRifts[0].id);
+    expect(firstRes.shattered).toBe(true);
+    expect(battle.comboStreak).toBe(1);
+
+    // Second consecutive rift deals higher damage due to comboStreak
+    g.spawnBossRift();
+    const secondRes = g.clickBossRift(battle.activeRifts[0].id);
+    expect(secondRes.shattered).toBe(true);
+    expect(secondRes.damage).toBeGreaterThan(firstRes.damage);
+    expect(battle.comboStreak).toBe(2);
+
+    // Missing a rift resets comboStreak
+    g.spawnBossRift();
+    g.tick(10);
+    expect(battle.comboStreak).toBe(0);
+
+    // Drop HP to Phase 2 (<= 60%) and Phase 3 (<= 25%)
+    battle.bossHp = battle.bossMaxHp * 0.55;
+    g.tick(0.1);
+    expect(battle.phase).toBe(2);
+
+    battle.bossHp = battle.bossMaxHp * 0.20;
+    g.tick(0.1);
+    expect(battle.phase).toBe(3);
+
+    battle.activeRifts = [];
+    g.spawnBossRift();
+    expect(battle.activeRifts[0].maxSec).toBeLessThan(phase1Window);
+  });
+
+  it('scales cultReadiness, damage, and battle time estimates with external game progression', () => {
+    const weak = eligibleCult();
+    const strong = preparedCult();
+    strong.achievements.slice(0, 10).forEach(a => { a.unlocked = true; });
+    strong.unlockedGnoseUpgrades.add('gn_init_faith');
+    strong.unlockedGnoseUpgrades.add('gn_memoria_selos');
+
+    const bWeak = weak.getBossCombatBreakdown('boss_anubis');
+    const bStrong = strong.getBossCombatBreakdown('boss_anubis');
+
+    expect(bStrong.cultReadiness).toBeGreaterThan(bWeak.cultReadiness);
+    expect(bStrong.achievementsBonus).toBeGreaterThan(bWeak.achievementsBonus);
+    expect(bStrong.passiveDps).toBeGreaterThan(bWeak.passiveDps);
+    expect(bStrong.estimatedPassiveVictorySec).toBeLessThan(bWeak.estimatedPassiveVictorySec);
+    expect(bStrong.estimatedAltarSurvivalSec).toBeGreaterThan(bWeak.estimatedAltarSurvivalSec);
   });
 });

@@ -66,7 +66,7 @@
   font-size: 14px;
 }
 
-/* Endgame Boss Bar (Tiamat after completing the Gnose tree) */
+/* Endgame Boss Bar (Primordial Chaos after completing the Gnose tree) */
 .gnose-endgame-boss-bar {
   margin-top: 6px;
   padding: 7px 10px;
@@ -128,7 +128,7 @@
    =================================================== */
 
 .boss-battle-overlay {
-  z-index: 9500 !important;
+  z-index: 11000 !important;
 }
 
 .boss-battle-overlay.open,

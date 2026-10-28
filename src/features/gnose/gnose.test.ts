@@ -188,7 +188,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(gameState.getFaithPerSecond()).toBeCloseTo(normalFps * 1.5, 4);
   });
 
-  it('unlocks Tiamat (Endgame Boss) only when the complete Gnose tree are assimilated and grants Crepúsculo dos Deuses on victory', () => {
+  it('unlocks Primordial Chaos (Endgame Boss) only when the complete Gnose tree are assimilated and grants Crepúsculo dos Deuses on victory', () => {
     gameState.totalGnoseEarned = 1000;
     expect(gameState.canChallengeBoss('boss_tiamat')).toBe(false);
 

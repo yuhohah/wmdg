@@ -28,6 +28,7 @@ export class BossBattleModal {
   private bossHpValEl: HTMLElement | null = null;
 
   private synergyTotalEl: HTMLElement | null = null;
+  private preparationSummaryEl: HTMLElement | null = null;
   private synFaithEl: HTMLElement | null = null;
   private synFollowersEl: HTMLElement | null = null;
   private synFervorEl: HTMLElement | null = null;
@@ -50,6 +51,8 @@ export class BossBattleModal {
   private retreatBtnEl: HTMLButtonElement | null = null;
   private returnFocusEl: HTMLElement | null = null;
   private backgroundInert = new Map<HTMLElement, boolean>();
+  private lastRiftsMissed = 0;
+  private lastPhase = 1;
 
   constructor(options: BossBattleModalOptions) {
     this.options = options;
@@ -69,7 +72,7 @@ export class BossBattleModal {
     overlay.style.display = 'none';
 
     overlay.innerHTML = `
-      <div class="modal-slide-card boss-battle-card" role="dialog" aria-modal="true" aria-label="Julgamento dos Deuses Antigos">
+      <div class="modal-slide-card boss-battle-card" role="dialog" aria-modal="true" aria-label="Confronto com o Guardião">
         <div class="boss-battle-header">
           <div class="boss-identity-group">
             <div class="boss-emblem-box" id="boss-modal-symbol">${icon('scales')}</div>
@@ -93,10 +96,10 @@ export class BossBattleModal {
           </div>
         </div>
 
-        <!-- SINERGIA DE RECURSOS DO CULTO (TODOS OS RECURSOS AFETAM O COMBATE) -->
+        <!-- SINERGIA DE RECURSOS DO CULTO (TODOS OS RECURSOS AFETAM O COMBATE E O TEMPO) -->
         <details class="boss-synergy-panel" id="boss-synergy-panel">
           <summary class="boss-synergy-header">
-            <span class="boss-synergy-title">RECURSOS DO CULTO</span>
+            <span class="boss-synergy-title">SINERGIA DO CULTO &amp; TEMPO ESTIMADO</span>
             <span class="boss-synergy-total" id="boss-synergy-total">Poder Total: ×1.00</span>
           </summary>
           <div class="boss-synergy-pills">
@@ -105,8 +108,9 @@ export class BossBattleModal {
             <span class="boss-synergy-pill" id="boss-syn-fervor" title="Fervor e Ritos aumentam o DPS, o dano dos ataques e a defesa do Altar">Fervor: +0%</span>
             <span class="boss-synergy-pill" id="boss-syn-relics" title="Fragmentos e Relíquias ampliam o dano crítico das Fendas e protegem o Altar">Relíquias: +0%</span>
             <span class="boss-synergy-pill" id="boss-syn-incarnation" title="Estágio da Encarnação e Bênção multiplicam o dano e protegem o Altar">Encarnação: +0%</span>
-            <span class="boss-synergy-pill" id="boss-syn-gnose" title="Gnose e Nós da Árvore ampliam o dano contra os Deuses Antigos">Gnose: +0%</span>
+            <span class="boss-synergy-pill" id="boss-syn-gnose" title="Gnose, Nós da Árvore e Conquistas ampliam o dano contra os Deuses Antigos">Gnose: +0%</span>
           </div>
+          <p class="boss-penalty-hint" id="boss-preparation-summary"></p>
         </details>
 
         <div class="boss-arena-hint-top" id="boss-arena-hint-top"></div>
@@ -123,7 +127,7 @@ export class BossBattleModal {
           <div class="boss-rifts-layer" id="boss-rifts-layer"></div>
 
         </div>
-        <div class="boss-combat-feedback" id="boss-combat-feedback" role="status" aria-atomic="true">Clique no guardião para atacar. Apare as fendas para defender o altar.</div>
+        <div class="boss-combat-feedback" id="boss-combat-feedback" role="status" aria-atomic="true">Clique no guardião para atacar. Apare as fendas para defender o altar e acumular Combo.</div>
 
         <!-- BARRA 2: INTEGRIDADE DO ALTAR (SEM TIMER DE RELÓGIO) -->
         <div class="boss-bar-section altar-integrity-section">
@@ -157,6 +161,7 @@ export class BossBattleModal {
     this.bossHpValEl = overlay.querySelector('#boss-hp-val');
 
     this.synergyTotalEl = overlay.querySelector('#boss-synergy-total');
+    this.preparationSummaryEl = overlay.querySelector('#boss-preparation-summary');
     this.synFaithEl = overlay.querySelector('#boss-syn-faith');
     this.synFollowersEl = overlay.querySelector('#boss-syn-followers');
     this.synFervorEl = overlay.querySelector('#boss-syn-fervor');
@@ -193,18 +198,25 @@ export class BossBattleModal {
 
     this.attackBtnEl?.addEventListener('click', (e: MouseEvent) => {
       const battle = this.options.gameState.activeBossBattle;
-      if (!battle || battle.sphereCooldownSec > 1e-8) return;
-      const { bossClickDamage, isCrit } = this.options.gameState.addClick();
-      this.options.audio.playTone(640 + Math.random() * 140, 'sine', 0.08);
+      if (!battle) return;
+      const { fpc, bossClickDamage, isCrit } = this.options.gameState.addClick();
       const rect = this.attackBtnEl!.getBoundingClientRect();
       const x = e.detail === 0 ? rect.x + rect.width / 2 : e.clientX;
       const y = e.detail === 0 ? rect.y + rect.height / 2 : e.clientY;
-      this.showHitFeedback(isCrit ? 'Golpe crítico!' : 'Golpe desferido.', `−${(bossClickDamage / battle.bossMaxHp * 100).toFixed(2)}% de essência`);
-      this.options.spawnFloatingText(
-        x,
-        y,
-        `✦ ${isCrit ? 'CRÍTICO! ' : ''}-${formatNumber(bossClickDamage)} HP (-${(bossClickDamage / battle.bossMaxHp * 100).toFixed(2)}%)`
-      );
+      if (bossClickDamage > 0) {
+        this.options.audio.playTone(640 + Math.random() * 140, 'sine', 0.08);
+        this.showHitFeedback(
+          isCrit ? 'Golpe crítico!' : 'Golpe desferido.',
+          `−${((bossClickDamage / battle.bossMaxHp) * 100).toFixed(2)}% de essência`
+        );
+        this.options.spawnFloatingText(
+          x,
+          y,
+          `✦ ${isCrit ? 'CRÍTICO! ' : ''}-${formatNumber(bossClickDamage)} HP (-${((bossClickDamage / battle.bossMaxHp) * 100).toFixed(2)}%)`
+        );
+      } else {
+        this.options.spawnFloatingText(x, y, `+${formatNumber(fpc)} FÉ`);
+      }
       this.updateUI();
       events.emit(GameEvents.STATE_CHANGED);
     });
@@ -216,6 +228,8 @@ export class BossBattleModal {
     document.addEventListener('keydown', (event) => {
       if (!this.isOpen()) return;
       if (event.key === 'Escape') {
+        const testOverlay = document.getElementById('test-menu-overlay');
+        if (testOverlay?.classList.contains('visible')) return;
         event.preventDefault();
         event.stopImmediatePropagation();
         this.options.gameState.retreatBossBattle();
@@ -265,6 +279,9 @@ export class BossBattleModal {
       return false;
     }
 
+    this.lastRiftsMissed = 0;
+    this.lastPhase = 1;
+
     if (this.bossSymbolEl) this.bossSymbolEl.innerHTML = iconOrText(boss.symbol);
     if (this.bossNameEl) this.setText(this.bossNameEl, boss.name.toUpperCase());
     if (this.bossTitleEl) this.setText(this.bossTitleEl, boss.title);
@@ -280,7 +297,7 @@ export class BossBattleModal {
       if (boss.portraitSrc) this.bossPortraitEl.src = boss.portraitSrc;
       else this.bossPortraitEl.removeAttribute('src');
     }
-    this.setText(this.combatFeedbackEl, 'Clique no guardião para atacar. Apare as fendas para defender o altar.');
+    this.setText(this.combatFeedbackEl, 'Clique no guardião para atacar. Apare as fendas para defender o altar e acumular Combo.');
 
     if (this.riftsLayerEl) {
       this.riftsLayerEl.innerHTML = '';
@@ -334,7 +351,7 @@ export class BossBattleModal {
       this.options.audio.playTone(150, 'sawtooth', 0.35);
       this.options.notifications.showCustomPopup(
         `ALTAR ROMPIDO POR ${boss.name.toUpperCase()}`,
-        'Maldição Divina Leve: -25% de Fé/s e Fervor/s por 20 segundos. Você pode desafiar novamente quando quiser.',
+        'Maldição Divina Leve: -25% de Fé/s e Fervor/s por 20 segundos. Fortaleça Fé, Fiéis, Fervor, Relíquias, Encarnação e Gnose para acelerar o combate e resistir mais tempo.',
         'warning',
         'RECUO DO ALTAR'
       );
@@ -352,6 +369,20 @@ export class BossBattleModal {
     }
 
     const breakdown = this.options.gameState.getBossCombatBreakdown(battle.bossId);
+    const phase = battle.phase ?? this.options.gameState.getBossPhase();
+
+    if (battle.riftsMissed > this.lastRiftsMissed) {
+      this.lastRiftsMissed = battle.riftsMissed;
+      this.options.audio.playTone(210, 'sawtooth', 0.14);
+      this.setText(
+        this.combatFeedbackEl,
+        `Fenda colapsou! −${breakdown.altarDamageOnMiss.toFixed(0)}% de Integridade do Altar (Combo reiniciado).`
+      );
+    } else if (phase > this.lastPhase) {
+      this.lastPhase = phase;
+      const phaseLabel = phase === 3 ? 'Fase III: Apocalipse Divino!' : 'Fase II: Fúria do Guardião!';
+      this.setText(this.combatFeedbackEl, `${phaseLabel} As Fendas surgem e colapsam mais rápido.`);
+    }
 
     const hpPercent = Math.max(0, Math.min(100, (battle.bossHp / battle.bossMaxHp) * 100));
     if (this.bossHpFillEl) {
@@ -359,14 +390,25 @@ export class BossBattleModal {
       if (this.bossHpFillEl.style.width !== width) this.bossHpFillEl.style.width = width;
       this.bossHpFillEl.parentElement?.setAttribute('aria-valuenow', hpPercent.toFixed(1));
     }
+    const remainingPassiveSec =
+      breakdown.passiveDps > 0 ? Math.ceil(battle.bossHp / breakdown.passiveDps) : Infinity;
+    const etaStr = Number.isFinite(remainingPassiveSec) ? `~${remainingPassiveSec}s` : '∞';
     if (this.bossHpValEl) {
       const dpsPctStr = (breakdown.passiveHpFractionPerSec * 100).toFixed(2);
-      this.setText(this.bossHpValEl, `${formatNumber(battle.bossHp)} / ${formatNumber(battle.bossMaxHp)} (${hpPercent.toFixed(1)}% • -${dpsPctStr}%/s)`);
+      const phaseTag = phase === 3 ? 'Fase III' : phase === 2 ? 'Fase II' : 'Fase I';
+      this.setText(
+        this.bossHpValEl,
+        `${phaseTag} · ${formatNumber(battle.bossHp)} / ${formatNumber(battle.bossMaxHp)} (${hpPercent.toFixed(1)}% • -${dpsPctStr}%/s • ${etaStr})`
+      );
     }
 
     // Update Resource Synergy Panel
     if (this.synergyTotalEl) {
-      this.setText(this.synergyTotalEl, `Ressonância: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(2)}% HP/s)`);
+      const readinessPct = Math.round(breakdown.cultReadiness * 100);
+      this.setText(
+        this.synergyTotalEl,
+        `Preparo: ${readinessPct}% · Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (Tempo passivo: ${etaStr})`
+      );
     }
     const updatePill = (el: HTMLElement | null, label: string, bonus: number) => {
       if (!el) return;
@@ -381,13 +423,30 @@ export class BossBattleModal {
     updatePill(this.synIncarnationEl, 'Encarnação', breakdown.incarnationBonus);
     updatePill(this.synGnoseEl, 'Gnose', breakdown.gnoseBonus);
 
-    const riftPctText = `${(breakdown.riftHpFraction * 100).toFixed(1)}%`;
+    const gs = this.options.gameState;
+    const survivalSec = Math.round(breakdown.estimatedAltarSurvivalSec);
+    this.setText(
+      this.preparationSummaryEl,
+      `Preparo do Culto: ${Math.round(breakdown.cultReadiness * 100)}% (Resistência estimada do Altar: ~${survivalSec}s vs Tempo passivo de vitória: ~${Math.round(breakdown.estimatedPassiveVictorySec)}s). Já produzido: ${formatNumber(gs.totalFaithAccumulated)} Fé · ${formatNumber(gs.totalFervorGenerated)} Fervor · ${formatNumber(gs.totalRelicsGenerated)} Fragmentos. Evoluir todos os recursos acelera a vitória e reduz a pressão sobre o Altar.`
+    );
+    const setHint = (el: HTMLElement | null, hint: string) => {
+      if (el && el.title !== hint) el.title = hint;
+    };
+    setHint(this.synFaithEl, `Fé já gerada: ${formatNumber(gs.totalFaithAccumulated)}; saldo: ${formatNumber(gs.faithPoints)}; produção: ${formatNumber(gs.getFaithPerSecond())}/s. Fortalece dano passivo, ataques e fendas.`);
+    setHint(this.synFervorEl, `Fervor já gerado: ${formatNumber(gs.totalFervorGenerated)}; saldo: ${formatNumber(gs.fervorPoints)}; produção: ${formatNumber(gs.getFervorRatePerSecond())}/s. Ritos e histórico fortalecem dano e defesa do altar.`);
+    setHint(this.synRelicsEl, `Fragmentos já gerados: ${formatNumber(gs.totalRelicsGenerated)}; saldo: ${formatNumber(gs.relicPoints)}; produção: ${formatNumber(gs.getRelicsRatePerSecond())}/s. Relíquias e histórico fortalecem fendas, defesa e recuperação do altar.`);
+
+    const comboStreak = battle.comboStreak ?? 0;
+    const comboMult = 1 + Math.min(0.3, comboStreak * 0.05);
+    const effectiveRiftPct = Math.min(0.12, breakdown.riftHpFraction * comboMult);
+    const riftPctText = `${(effectiveRiftPct * 100).toFixed(1)}%`;
     if (this.arenaHintTopEl) {
       const healHint =
         breakdown.altarHealOnRift >= 1
           ? ` e restaurar <strong>+${breakdown.altarHealOnRift.toFixed(0)}% do Altar</strong>`
           : '';
-      const hint = `Ataque o <strong>guardião</strong> e apare as <strong>Fendas Divinas</strong> para causar <strong>${riftPctText} de dano</strong>${healHint}.`;
+      const comboHint = comboStreak > 0 ? ` · <strong>Combo ×${comboMult.toFixed(2)}</strong>` : '';
+      const hint = `Ataque o <strong>guardião</strong> e apare as <strong>Fendas Divinas</strong> para causar <strong>${riftPctText} de dano</strong>${healHint}${comboHint}.`;
       if (this.arenaHintTopEl.innerHTML !== hint) this.arenaHintTopEl.innerHTML = hint;
     }
 
@@ -417,16 +476,19 @@ export class BossBattleModal {
     if (this.penaltyHintEl) {
       const healStr =
         breakdown.altarHealOnRift >= 1
-          ? ` Aparar Fenda restaura +${breakdown.altarHealOnRift.toFixed(0)}% de Integridade.`
+          ? ` Aparar Fenda restaura +${breakdown.altarHealOnRift.toFixed(0)}% de Integridade e acumula até +30% de Combo.`
           : '';
-      this.setText(this.penaltyHintEl, `Cada Fenda ignorada drena ${breakdown.altarDamageOnMiss.toFixed(0)}% da Integridade (mitigado por Relíquias, Fervor e Encarnação).${healStr} Derrota: −25% Fé/s e Fervor/s por 20 s. Recuar (Esc) não aplica penalidade.`);
+      this.setText(this.penaltyHintEl, `Cada Fenda ignorada drena ${breakdown.altarDamageOnMiss.toFixed(0)}% da Integridade (mitigado por Relíquias, Fervor, Fiéis, Conquistas e Encarnação).${healStr} Derrota: −25% Fé/s e Fervor/s por 20 s. Recuar (Esc) não aplica penalidade.`);
     }
 
     if (this.combatStatsEl) {
-      this.setText(this.combatStatsEl, `Dano passivo: −${(breakdown.passiveHpFractionPerSec * 100).toFixed(2)}%/s · Fendas aparadas: ${battle.riftsShattered} · Próxima fenda: ${Math.max(0, battle.riftSpawnTimerSec).toFixed(1)}s`);
+      this.setText(
+        this.combatStatsEl,
+        `Dano passivo: −${(breakdown.passiveHpFractionPerSec * 100).toFixed(2)}%/s (${etaStr}) · Fendas: ${battle.riftsShattered} (Combo: ${comboStreak}) · Próxima fenda: ${Math.max(0, battle.riftSpawnTimerSec).toFixed(1)}s`
+      );
     }
 
-    this.syncRiftsDOM(battle.activeRifts, breakdown.riftHpFraction);
+    this.syncRiftsDOM(battle.activeRifts, effectiveRiftPct);
   }
 
   private syncRiftsDOM(
@@ -479,14 +541,27 @@ export class BossBattleModal {
           const currentBreakdown = this.options.gameState.getBossCombatBreakdown(
             this.options.gameState.activeBossBattle?.bossId
           );
+          const maxHp = this.options.gameState.activeBossBattle?.bossMaxHp ?? 1;
           const res = this.options.gameState.clickBossRift(rift.id);
           if (res.shattered) {
-            this.showHitFeedback('Fenda aparada!', `−${(currentBreakdown.riftHpFraction * 100).toFixed(1)}% de essência. Altar protegido.`);
+            const actualPct = ((res.damage / maxHp) * 100).toFixed(1);
+            const healStr =
+              currentBreakdown.altarHealOnRift >= 1
+                ? ` +${currentBreakdown.altarHealOnRift.toFixed(0)}% Altar.`
+                : '';
+            const comboTag = (res.comboStreak ?? 1) > 1 ? ` (Combo ×${res.comboStreak})` : '';
+            this.showHitFeedback(
+              `Fenda aparada!${comboTag}`,
+              `−${actualPct}% de essência.${healStr}`
+            );
             this.options.audio.playTone(880, 'triangle', 0.16);
             const x = e.clientX || window.innerWidth / 2;
             const y = e.clientY || window.innerHeight / 2;
-            const pctStr = (currentBreakdown.riftHpFraction * 100).toFixed(1);
-            this.options.spawnFloatingText(x, y, `✦ FENDA ROMPIDA! -${pctStr}% HP`);
+            this.options.spawnFloatingText(
+              x,
+              y,
+              `✦ FENDA ROMPIDA! -${actualPct}% HP${healStr ? ` (${healStr.trim()})` : ''}`
+            );
             this.updateUI();
             events.emit(GameEvents.STATE_CHANGED);
           }

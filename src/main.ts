@@ -431,14 +431,14 @@ class AppManager {
     let fervorGained = 0;
     if (fervorRate > 0) {
       fervorGained = fervorRate * offlineSec;
-      this.gameState.fervorPoints += fervorGained;
+      this.gameState.addFervor(fervorGained);
     }
 
     const relicRate = this.gameState.getRelicsRatePerSecond();
     let relicGained = 0;
     if (relicRate > 0) {
       relicGained = relicRate * offlineSec;
-      this.gameState.relicPoints += relicGained;
+      this.gameState.addRelics(relicGained);
     }
 
     // Executa automações gnósticas acumuladas se desbloqueadas (até 60 ciclos)

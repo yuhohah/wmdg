@@ -331,9 +331,15 @@ body {
 }
 
 .followers-arena-hint {
-  background: transparent !important;
+  background: rgba(9, 10, 15, 0.8) !important;
   border: 1px solid var(--line-faint) !important;
   color: var(--bone-mute) !important;
+}
+
+/* Engraved scenery stays behind the transparent character canvases. */
+#card-followers .followers-arena-container {
+  background: #090a0f url('/assets/backgrounds/followers-courtyard-v1.png') center / cover no-repeat !important;
+  image-rendering: auto;
 }
 
 /* ---------------------------------------------------
@@ -521,7 +527,8 @@ html :is(.btn-follower-action, .btn-incarnation-upgrade):disabled :is(.btn-actio
    --------------------------------------------------- */
 
 .incarnation-altar-viewport {
-  background: transparent !important;
+  background: #090a0f url('/assets/backgrounds/incarnation-sanctuary-v1.png') center / cover no-repeat !important;
+  image-rendering: auto;
 }
 
 .incarnation-altar-overlay {
