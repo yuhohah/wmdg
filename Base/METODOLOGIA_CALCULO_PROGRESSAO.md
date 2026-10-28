@@ -131,6 +131,24 @@ Na primeira Ascensão sem Emanação Primordial, o ciclo começa com 1 Fé e zer
 
 Na revisão de 27/10/2026, o Casual passou a jogar por 8 minutos desde o início de cada ciclo de 20 minutos, com 12 minutos de ausência. Os cliques rotineiros passaram a ser contínuos durante a presença e a Bênção é mantida até 6 s de carga. As demais cadências, prioridades e limites de interação do perfil foram preservados.
 
-Nas sementes **786802** e **42**, o Casual concluiu os **20 nós e 4 chefes** em aproximadamente **11h40**, com **4h41 de presença** e **36 sessões iniciadas**. A última sessão terminou com a conclusão da campanha. Os tempos iguais nessas duas execuções não garantem igualdade para outras sementes. A simulação mantém o jogo aberto e visível durante as ausências; não mede ganhos offline.
+Na revisão anterior, com 20 nós, nas sementes **786802** e **42**, o Casual concluiu os **20 nós e 4 chefes** em aproximadamente **11h40**, com **4h41 de presença** e **36 sessões iniciadas**. A última sessão terminou com a conclusão da campanha. Os tempos iguais nessas duas execuções não garantem igualdade para outras sementes. A simulação mantém o jogo aberto e visível durante as ausências; não mede ganhos offline.
 
 As regressões verificam saídas aos 480 e 1.680 segundos, retornos aos 1.200 e 2.400 segundos, atividade em todos os oito minutos de ambas as sessões e ausência de ações manuais fora delas. Os **67 testes**, a verificação TypeScript e a compilação de produção passaram.
+
+
+## Revisão anterior da Gnose: 13 melhorias
+
+A árvore tem 13 compras. Culto Autônomo reúne as três automações; seis buffs redundantes foram removidos. A migração de saves devolve compras removidas sem aumentar a Gnose vitalícia.
+
+As melhorias ajustam parâmetros das fórmulas existentes em passos pequenos. Fiéis mantêm produção linear e ganham escala de custo menor; Ritos mantêm o mesmo expoente de nível e recebem bases de ganho melhores e escalas de custo menores. A Transmutação mantém o logaritmo e usa o Rito revisado. O ganho de Gnose mantém a potência de Fé/1Q, com expoente de 0,15 para 0,17. Os custos de Gnose das melhorias finais foram recalibrados para esses efeitos menores.
+
+Os resultados da revisão anterior com multiplicadores fixos não descrevem esta revisão.
+
+Validação desta revisão: semente **786802**, horizonte de 72 horas e integração de 0,1 s. active: completed, 9h46, 13/13 melhorias; casual: completed, 22h04, 13/13 melhorias; afk: completed, 47h27, 13/13 melhorias. Uma única semente não caracteriza a distribuição dos tempos nem garante esses resultados para jogadores.
+
+
+## Expansão da Gnose: 17 melhorias
+
+A distribuição atual é 5 / 4 / 4 / 4. Convergência dos Fiéis amplia a economia no tier II; Alquimia Hermética melhora o Rito de Fragmentos no III; Fogo Empíreo e Opus Perfeito continuam essas evoluções no IV. Os passos de ganho e redução de custo aumentam em cada linha, mantendo os expoentes de nível e as estruturas de cálculo. Fogo Hermético passa a usar base 2,35 para manter essa ordem de intensidade.
+
+Validação com a semente **786802**, horizonte de 72 horas e integração de 0,1 s: active: completed, 11h48, 17/17 melhorias; casual: completed, 30h06, 17/17 melhorias; afk: time_limit, 72h00, 16/17 melhorias. Esses tempos são projeções de uma única semente, não garantias para jogadores.

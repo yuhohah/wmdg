@@ -18,6 +18,7 @@ export const BOSS_SPHERE_COOLDOWN_SEC = 0.2;
 export const GNOSE_BOSSES: GnoseBoss[] = [
   {
     id: 'boss_anubis',
+    portraitSrc: '/assets/bosses/anubis-concept-v1.png',
     name: 'Anúbis',
     title: 'O Pesador de Almas',
     mythology: 'Mitologia Egípcia',

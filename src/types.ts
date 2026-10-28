@@ -117,6 +117,7 @@ export interface GnoseBoss {
   mythology: string;
   symbol: string;
   unlocksTier: 2 | 3 | 4 | 'endgame';
+  portraitSrc?: string;
   maxHp: number;
   riftDamagePercent: number;
   riftIntervalSec: number;

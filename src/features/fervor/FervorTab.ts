@@ -2,7 +2,7 @@ import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { FervorUpgrade } from '../../types.js';
 import { DISPLAY_CONFIG } from '../../config/display.js';
-import { calculateFervorUpgradeCost, formatNumber } from '../../systems/calculations.js';
+import { formatNumber } from '../../systems/calculations.js';
 
 export interface FervorTabOptions {
   gameState: GameStateManager;
@@ -53,7 +53,7 @@ export class FervorTab {
         return;
       }
 
-      const cost = calculateFervorUpgradeCost(upg);
+      const cost = this.options.gameState.getFervorUpgradeCost(upg);
       const mult = this.options.gameState.getFervorUpgradeEffect(upg);
       const canAfford = fervor >= cost;
 
@@ -96,7 +96,7 @@ export class FervorTab {
     const fervor = this.options.gameState.fervorPoints;
 
     this.options.gameState.fervorUpgrades.forEach((upg) => {
-      const cost = calculateFervorUpgradeCost(upg);
+      const cost = this.options.gameState.getFervorUpgradeCost(upg);
       const mult = this.options.gameState.getFervorUpgradeEffect(upg);
       const card = document.getElementById(`card-${upg.id}`);
       if (card) {

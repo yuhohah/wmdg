@@ -16,7 +16,7 @@ import { initialAchievements } from '../config/achievements.js';
 import { initialUnlocks } from '../config/unlocks.js';
 import { initialRelicUpgrades } from '../config/relics.js';
 import { INCARNATION_STAGES, BLESSING_MAX_SECONDS, type IncarnationStage } from '../config/incarnation.js';
-import { GNOSE_UPGRADES, GNOSE_AUTOMATION, GNOSE_APOTHEOSIS_COSTS } from '../config/gnose.js';
+import { GNOSE_UPGRADES, GNOSE_AUTOMATION, GNOSE_FORMULAS, GNOSE_APOTHEOSIS_COSTS, RETIRED_GNOSE_UPGRADES, LEGACY_GNOSE_AUTOMATIONS } from '../config/gnose.js';
 import {
   GNOSE_BOSSES,
   BOSS_CURSE_DURATION_SEC,
@@ -393,7 +393,7 @@ export class GameStateManager {
     if (!boss) return;
 
     this.riftIdCounter += 1;
-    // Spread rifts around the arena perimeter (avoiding the center sphere)
+    // Spread rifts around the guardian, leaving the portrait readable.
     const angle = ((this.riftIdCounter * 137.5) % 360) * (Math.PI / 180);
     const radiusPercent = 30 + (this.riftIdCounter % 3) * 6;
     const xPercent = Math.max(14, Math.min(86, 50 + Math.cos(angle) * radiusPercent));
@@ -468,40 +468,26 @@ export class GameStateManager {
     return this.hasGnoseUpgrade('gn_fu1_boost');
   }
 
-  public getGnoseGainMultiplier(): number {
-    let mult = 1.0;
-    if (this.hasGnoseUpgrade('gn_gnose_mult')) {
-      mult *= 2.5;
-    }
-    if (this.hasGnoseUpgrade('gn_omniscience')) {
-      mult *= 2.0;
-    }
-    if (this.hasGnoseUpgrade('gn_apotheosis')) {
-      mult *= 2.0;
-    }
-    return mult;
+  public getGnoseGainExponent(): number {
+    return this.hasGnoseUpgrade('gn_gnose_mult') ? GNOSE_FORMULAS.ascensionExponent : 0.15;
   }
 
   public getGnoseToGet(): number {
     if (!this.isGnoseUnlocked()) {
       return 0;
     }
-    return calculateGnoseToGet(this.faithPoints, this.getGnoseGainMultiplier());
+    return calculateGnoseToGet(this.faithPoints, this.getGnoseGainExponent());
   }
 
   public getTotalGnosePassiveMultiplier(): number {
-    let mult = calculateTotalGnoseMultiplier(this.totalGnoseEarned);
-    if (this.hasGnoseUpgrade('gn_omniscience')) {
-      mult *= 1.5;
-    }
-    return mult;
+    return calculateTotalGnoseMultiplier(this.totalGnoseEarned);
   }
 
   public getGnoseFollowersSynergyMultiplier(followersCount: number = this.getTotalFollowersCount()): number {
     return calculateGnoseFollowersSynergyMultiplier(
       followersCount,
       this.hasGnoseUpgrade('gn_followers_syn'),
-      this.hasGnoseUpgrade('gn_followers_cubic')
+      this.hasGnoseUpgrade('gn_followers_cubic') ? GNOSE_FORMULAS.followersSynergyExponent : 1.5
     );
   }
 
@@ -513,8 +499,7 @@ export class GameStateManager {
   }
 
   public getEffectiveIncarnationFollowerMultiplier(): number {
-    const base = calculateIncarnationFollowerMultiplier(this.fervorPoints, this.incarnationStage);
-    return this.hasGnoseUpgrade('gn_gnose_mult') ? base * 3.0 : base;
+    return calculateIncarnationFollowerMultiplier(this.fervorPoints, this.incarnationStage);
   }
 
   public isPhoenixRelicUnlocked(): boolean {
@@ -525,27 +510,32 @@ export class GameStateManager {
     return BLESSING_MAX_SECONDS;
   }
 
-  /** Production and the Ritos panel use exactly the same evolved formulas. */
-  public getFervorUpgradeEffect(upg: FervorUpgrade, followersCount = this.getTotalFollowersCount()): number {
-    let effect = getFervorUpgradeMultiplier(upg, followersCount, this.faithPoints, this.isFu1Boosted());
-    if (upg.id === 'fu_relics' && upg.level > 0 && this.hasGnoseUpgrade('gn_alchemical_mind')) {
-      effect = Math.pow(4, Math.pow(upg.level, 0.6));
-    }
-    if (upg.id === 'fu_synergy' && this.hasGnoseUpgrade('gn_synergy_boost')) {
-      effect = 5 * Math.pow(effect, 1.35);
-    }
-    return effect;
+  /** Manual purchases, automation and UI use the same effective exponential cost. */
+  public getFervorUpgradeCost(upg: FervorUpgrade): number {
+    let scale = upg.costMultiplier;
+    if (upg.id === 'fu_prod' && this.hasGnoseUpgrade('gn_init_fervor')) scale -= GNOSE_FORMULAS.ritualCostStep;
+    if (upg.id === 'fu_relics' && this.hasGnoseUpgrade('gn_relic_gain')) scale -= GNOSE_FORMULAS.relicCostStep;
+    if (upg.id === 'fu_relics' && this.hasGnoseUpgrade('gn_relic_refinement')) scale -= GNOSE_FORMULAS.refinedRelicCostStep;
+    if (upg.id === 'fu_relics' && this.hasGnoseUpgrade('gn_perfect_opus')) scale -= GNOSE_FORMULAS.perfectRelicCostStep;
+    if (upg.id === 'fu_prod' && this.hasGnoseUpgrade('gn_empyrean_fire')) scale -= GNOSE_FORMULAS.empyreanRitualCostStep;
+    if (this.hasGnoseUpgrade('gn_apotheosis')) scale -= GNOSE_FORMULAS.ritualCostStep;
+    return calculateFervorUpgradeCost(upg, Math.max(1.01, scale));
   }
 
-  public getRelicResonanceMultiplier(): number {
-    if (!this.hasGnoseUpgrade('gn_relic_resonance')) return 1;
-    return 1 + this.relicUpgrades.reduce((sum, r) => sum + (r.level > 0 ? 0.5 + 0.5 * Math.min(1, r.level / r.maxLevel) : 0), 0);
+  /** Only formula coefficients change; production retains the same level exponent. */
+  public getFervorUpgradeEffect(upg: FervorUpgrade, followersCount = this.getTotalFollowersCount()): number {
+    const productionBase = this.hasGnoseUpgrade('gn_empyrean_fire') ? GNOSE_FORMULAS.empyreanProductionBase
+      : this.isFu1Boosted() ? GNOSE_FORMULAS.hermeticProductionBase
+      : this.hasGnoseUpgrade('gn_init_fervor') ? GNOSE_FORMULAS.fervorProductionBase : 2;
+    const relicBase = this.hasGnoseUpgrade('gn_perfect_opus') ? GNOSE_FORMULAS.perfectRelicProductionBase
+      : this.hasGnoseUpgrade('gn_relic_refinement') ? GNOSE_FORMULAS.refinedRelicProductionBase
+      : this.hasGnoseUpgrade('gn_relic_gain') ? GNOSE_FORMULAS.relicProductionBase : 3;
+    return getFervorUpgradeMultiplier(upg, followersCount, this.faithPoints, productionBase, relicBase);
   }
 
   public getAutoRelicsFraction(): number {
     if (this.hasGnoseUpgrade('gn_omniscience')) return 1;
-    return this.hasGnoseUpgrade('gn_alchemical_mind')
-      ? GNOSE_AUTOMATION.refinedRelicFraction : GNOSE_AUTOMATION.relicFraction;
+    return GNOSE_AUTOMATION.relicFraction;
   }
 
   public getRelicsBonusMultiplier(): number {
@@ -553,18 +543,6 @@ export class GameStateManager {
     let mult = 1.0;
     if (fuRelics && fuRelics.level > 0) {
       mult = this.getFervorUpgradeEffect(fuRelics);
-    }
-    if (this.hasGnoseUpgrade('gn_init_faith')) {
-      mult *= 3.5;
-    }
-    if (this.hasGnoseUpgrade('gn_memoria_selos')) {
-      mult *= 1.5;
-    }
-    if (this.hasGnoseUpgrade('gn_init_fervor')) {
-      mult *= 3.0;
-    }
-    if (this.hasGnoseUpgrade('gn_alchemical_mind')) {
-      mult *= 4.0;
     }
     return mult;
   }
@@ -580,7 +558,9 @@ export class GameStateManager {
 
   public getDevoteeBaseMultiplier(): number {
     const caduceusLevel = this.relicUpgrades[3]?.level || 0;
-    return Math.max(1.05, 1.10 - caduceusLevel * 0.005);
+    return Math.max(1.05, 1.10 - caduceusLevel * 0.005
+      - (this.hasGnoseUpgrade('gn_init_faith') ? GNOSE_FORMULAS.followerCostStep : 0)
+      - (this.hasGnoseUpgrade('gn_followers_economy') ? GNOSE_FORMULAS.followerEconomyStep : 0));
   }
 
   public getItemCost(item: BuyableItem): number {
@@ -592,16 +572,6 @@ export class GameStateManager {
   public getFaithPerClick(): number {
     const clickBuff = calculateClickBuffMultiplier(this.achievements);
     let globalBuff = calculateGlobalBuffMultiplier(this.achievements);
-    if (this.hasGnoseUpgrade('gn_init_faith')) {
-      globalBuff *= 8.0;
-    }
-    if (this.hasGnoseUpgrade('gn_apotheosis')) {
-      globalBuff *= 100.0;
-    }
-    if (this.hasGnoseUpgrade('gn_dilatacao')) {
-      globalBuff *= 2.0;
-    }
-    globalBuff *= this.getRelicResonanceMultiplier();
     globalBuff *= this.getTotalGnosePassiveMultiplier();
     globalBuff *= this.getGnoseFollowersSynergyMultiplier();
     globalBuff *= this.getBossRewardsMultiplier();
@@ -610,12 +580,7 @@ export class GameStateManager {
     const fervorEffectMult = this.getFervorUpgradeEffect(this.fervorUpgrades[1]);
     const fervorFaithBonus = calculateFervorFaithBonus(this.fervorPoints, fervorEffectMult);
 
-    let fpc = calculateFaithPerClick(clickBuff, globalBuff, fervorClickMult, fervorFaithBonus);
-    if (this.hasGnoseUpgrade('gn_click_power')) {
-      fpc *= 10.0;
-    }
-
-    return fpc;
+    return calculateFaithPerClick(clickBuff, globalBuff, fervorClickMult, fervorFaithBonus);
   }
 
   public getFaithPerSecond(): number {
@@ -633,21 +598,10 @@ export class GameStateManager {
 
   private getFaithPerSecondForFollowers(followers: BuyableItem[]): number {
     const followersCount = followers.reduce((total, item) => total + item.count, 0);
-    const pulsePassiveMultiplier = this.hasGnoseUpgrade('gn_click_power') ? 1.25 : 1;
     const fervorFollowersMult = this.getFervorUpgradeEffect(this.fervorUpgrades[3], followersCount);
     const incFollowerMult = this.getEffectiveIncarnationFollowerMultiplier();
     const passiveBuff = calculatePassiveBuffMultiplier(this.achievements);
     let globalBuff = calculateGlobalBuffMultiplier(this.achievements);
-    if (this.hasGnoseUpgrade('gn_init_faith')) {
-      globalBuff *= 8.0;
-    }
-    if (this.hasGnoseUpgrade('gn_apotheosis')) {
-      globalBuff *= 100.0;
-    }
-    if (this.hasGnoseUpgrade('gn_dilatacao')) {
-      globalBuff *= 2.0;
-    }
-    globalBuff *= this.getRelicResonanceMultiplier();
     globalBuff *= this.getTotalGnosePassiveMultiplier();
     globalBuff *= this.getGnoseFollowersSynergyMultiplier(followersCount);
     globalBuff *= this.getBossRewardsMultiplier();
@@ -671,7 +625,7 @@ export class GameStateManager {
       globalBuff,
       fervorFaithBonus,
       relicFaithMult,
-      incarnationBoostMult * pulsePassiveMultiplier
+      incarnationBoostMult
     );
   }
 
@@ -684,22 +638,6 @@ export class GameStateManager {
     const torchMult = 1 + (this.relicUpgrades[1].level * 0.20);
     prodMult *= torchMult;
     prodMult *= this.getIncarnationStageMultiplier();
-    if (this.hasGnoseUpgrade('gn_init_faith')) {
-      prodMult *= 3.0;
-    }
-    if (this.hasGnoseUpgrade('gn_init_fervor')) {
-      prodMult *= 5.0;
-    }
-    if (this.hasGnoseUpgrade('gn_dilatacao')) {
-      prodMult *= 2.0;
-    }
-    if (this.hasGnoseUpgrade('gn_altar_resonance')) {
-      prodMult *= this.getEffectiveIncarnationFollowerMultiplier();
-    }
-    prodMult *= this.getRelicResonanceMultiplier();
-    if (this.hasGnoseUpgrade('gn_apotheosis')) {
-      prodMult *= 100.0;
-    }
     prodMult *= this.getTotalGnosePassiveMultiplier();
     prodMult *= this.getBossRewardsMultiplier();
     prodMult *= this.getBossCurseMultiplier();
@@ -723,10 +661,7 @@ export class GameStateManager {
     if (this.relicUpgrades[4]?.level >= 1) {
       autoGen += toGet * 0.05;
     }
-    if (this.hasGnoseUpgrade('gn_keep_relics')) {
-      autoGen += toGet * 0.25;
-    }
-    if (this.hasGnoseUpgrade('gn_auto_relics') && this.autoRelicsEnabled) {
+    if (this.hasGnoseUpgrade('gn_automation') && this.autoRelicsEnabled) {
       autoGen += toGet * this.getAutoRelicsFraction();
     }
     return Math.max(1.0, extraPerSec) + autoGen;
@@ -846,7 +781,7 @@ export class GameStateManager {
 
   public runGnoseAutomation(): void {
     const free = this.hasGnoseUpgrade('gn_omniscience');
-    if (this.hasGnoseUpgrade('gn_auto_followers') && this.autoFollowersEnabled) {
+    if (this.hasGnoseUpgrade('gn_automation') && this.autoFollowersEnabled) {
       const devotee = this.followers[0];
       if (devotee) {
         // Seed the economy when there is no passive income, using the normal first cost.
@@ -866,7 +801,7 @@ export class GameStateManager {
       }
     }
 
-    if (this.hasGnoseUpgrade('gn_auto_fervor') && this.autoFervorEnabled && this.isFervorUpgradesUnlocked()) {
+    if (this.hasGnoseUpgrade('gn_automation') && this.autoFervorEnabled && this.isFervorUpgradesUnlocked()) {
       this.autoFervorBudget = free ? 0 : Math.min(this.fervorPoints * GNOSE_AUTOMATION.balanceShare,
         this.autoFervorBudget + this.getFervorRatePerSecond() * GNOSE_AUTOMATION.incomeShare);
       let budget = free ? this.fervorPoints : this.autoFervorBudget;
@@ -874,10 +809,10 @@ export class GameStateManager {
       // Spend one shared budget on the cheapest eligible Rito; cap work at 50 levels per Rito.
       for (let step = 0; step < this.fervorUpgrades.length * 50; step++) {
         const upg = this.fervorUpgrades.filter(u => (u.id !== 'fu_relics' || this.isPhoenixRelicUnlocked())
-          && (bought.get(u.id) ?? 0) < 50 && calculateFervorUpgradeCost(u) <= budget)
-          .sort((a, b) => calculateFervorUpgradeCost(a) - calculateFervorUpgradeCost(b))[0];
+          && (bought.get(u.id) ?? 0) < 50 && this.getFervorUpgradeCost(u) <= budget)
+          .sort((a, b) => this.getFervorUpgradeCost(a) - this.getFervorUpgradeCost(b))[0];
         if (!upg) break;
-        const cost = calculateFervorUpgradeCost(upg);
+        const cost = this.getFervorUpgradeCost(upg);
         if (!free) {
           budget = Math.max(0, budget - cost);
           this.fervorPoints = Math.max(0, this.fervorPoints - cost);
@@ -967,7 +902,7 @@ export class GameStateManager {
     if (upg.id === 'fu_relics' && !this.isPhoenixRelicUnlocked()) {
       return false;
     }
-    const cost = calculateFervorUpgradeCost(upg);
+    const cost = this.getFervorUpgradeCost(upg);
     if (this.fervorPoints >= cost) {
       this.fervorPoints -= cost;
       upg.level += 1;
@@ -1236,6 +1171,7 @@ export class GameStateManager {
       } else {
         this.defeatedBosses.clear();
       }
+      this.migrateGnoseUpgrades();
       this.bossCurseTimerSec =
         typeof save.gnose.bossCurseTimerSec === 'number' ? Math.max(0, save.gnose.bossCurseTimerSec) : 0;
       this.confirmGnoseReset = typeof save.gnose.confirmReset === 'boolean' ? save.gnose.confirmReset : true;
@@ -1261,5 +1197,24 @@ export class GameStateManager {
     if (this.hasGnoseUpgrade('gn_bencao_eterna') && this.isIncarnationUnlocked()) {
       this.incarnationBoostTimer = this.getMaxIncarnationBoost();
     }
+  }
+
+  private migrateGnoseUpgrades(): void {
+    for (const upgrade of RETIRED_GNOSE_UPGRADES) {
+      if (!this.unlockedGnoseUpgrades.delete(upgrade.id)) continue;
+      this.gnosePoints += upgrade.cost;
+      // Owning a later-tier purchase already made that tier accessible in old saves.
+      const guardian = GNOSE_BOSSES.find(boss => boss.unlocksTier === upgrade.tier);
+      if (guardian) this.defeatedBosses.add(guardian.id);
+    }
+    const automations = LEGACY_GNOSE_AUTOMATIONS.filter(upgrade => this.unlockedGnoseUpgrades.delete(upgrade.id));
+    if (automations.length > 0) {
+      const automation = GNOSE_UPGRADES.find(upgrade => upgrade.id === 'gn_automation')!;
+      const previousCost = automations.reduce((sum, upgrade) => sum + upgrade.cost, 0);
+      this.gnosePoints += this.hasGnoseUpgrade(automation.id) ? previousCost : Math.max(0, previousCost - automation.cost);
+      this.unlockedGnoseUpgrades.add(automation.id);
+    }
+    const validIds = new Set(GNOSE_UPGRADES.map(upgrade => upgrade.id));
+    this.unlockedGnoseUpgrades = new Set([...this.unlockedGnoseUpgrades].filter(id => validIds.has(id)));
   }
 }

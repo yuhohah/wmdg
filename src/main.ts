@@ -442,7 +442,7 @@ class AppManager {
     }
 
     // Executa automações gnósticas acumuladas se desbloqueadas (até 60 ciclos)
-    if (this.gameState.hasGnoseUpgrade('gn_auto_followers') || this.gameState.hasGnoseUpgrade('gn_auto_fervor')) {
+    if (this.gameState.hasGnoseUpgrade('gn_automation')) {
       const autoSteps = Math.min(60, Math.floor(offlineSec));
       for (let i = 0; i < autoSteps; i++) {
         this.gameState.runGnoseAutomation();

@@ -44,7 +44,7 @@ flowchart TD
     B --> C["3. Alimentar Fervor & Encarnação<br/>(5 Estágios de Avatar + 6 Ritos de Fervor)"]
     C --> D["4. Opus Magnum (1º Prestígio)<br/>(Transmutar Fé em Fragmentos -> 6 Relíquias)"]
     D --> E["5. Ascensão Gnóstica (True Prestige)<br/>(Resetar Culto a partir de 1Q Fé -> Ganhar Gnose)"]
-    E --> F["6. Árvore Hermética & Boss Battles<br/>(20 Nós em 4 Tiers + 4 Guardiões Mitológicos)"]
+    E --> F["6. Árvore Hermética & Boss Battles<br/>(17 Nós em 4 Tiers + 4 Guardiões Mitológicos)"]
     F -->|Multiplicadores Permanentes & Automação| A
 ```
 
@@ -58,7 +58,7 @@ flowchart TD
 - Evoluir os **Estágios da Encarnação** (Estágios I a V) em grandes saltos de produção (`100×` a `10¹⁵×` Fervor/s).
 
 ### 3.3. Macro-Loop (1h20 a 4h30)
-- Realizar **Ascensões Gnósticas** para acumular **Gnose**, desbloquear os **20 nós da Árvore Hermética** (que concedem persistência de selos/relíquias e automação total) e derrotar em combate ativo os **4 Guardiões Mitológicos**.
+- Realizar **Ascensões Gnósticas** para acumular **Gnose**, desbloquear os **17 nós da Árvore Hermética** (que concedem persistência de selos/relíquias e automação total) e derrotar em combate ativo os **4 Guardiões Mitológicos**.
 
 ---
 
@@ -69,7 +69,7 @@ flowchart TD
 | **Fé (PF)** | Ouro Solar (`#fbbf24`) | Cliques na Esfera, Fiéis Devotos (`/s`) e Pedidos de Milagre | Fiéis Devotos, Selos Sagrados (1 a 4) e Estágios da Encarnação | Zerada na **Transmutação** e na **Ascensão Gnóstica** (inicia em `1.000` com *Emanação Primordial*) |
 | **Fervor** | Vermelho Carmim (`#ef4444`) | Gerado passivamente (`1.0/s` base × multiplicadores) após romper o *Selo da Encarnação* | Os 6 **Ritos de Fervor** | Mantido na Transmutação; zerado na **Ascensão Gnóstica** |
 | **Fragmentos** | Prata Etérea (`#c5d3e2`) | **Transmutação** de Fé (`log2`) + geração passiva por segundo | Restauração e melhoria das **6 Relíquias** | Mantidos na Transmutação; zerados na **Ascensão Gnóstica** |
-| **Gnose** | Púrpura / Branco Astral | **Ascensão Gnóstica** a partir de `1e15` (`1Q`) de Fé | Os 20 nós da **Árvore Hermética** | **Permanente** (`TotalGnose` também concede bônus passivo perpétuo que não diminui ao gastar) |
+| **Gnose** | Púrpura / Branco Astral | **Ascensão Gnóstica** a partir de `1e15` (`1Q`) de Fé | Os 17 nós da **Árvore Hermética** | **Permanente** (`TotalGnose` também concede bônus passivo perpétuo que não diminui ao gastar) |
 
 ---
 
@@ -126,11 +126,11 @@ flowchart TD
 
 | ID | Nome do Rito | Custo Base | Escala | Fórmula de Efeito ($\text{Nível} = L$) | Evoluções / Notas |
 |---|---|---:|---:|---|---|
-| `fu_prod` | **Aumentar Produção de Fervor** | `50` | `×1.8` | $2^{L^{0.6}}$ | Evolui para $3.5^{L^{0.7}}$ com *Fogo Hermético* (`gn_fu1_boost`) |
+| `fu_prod` | **Aumentar Produção de Fervor** | `50` | `×1.8` | $2^{L^{0.6}}$ | Base 2 → 2,15 com Chama Astral; evolui para $2.35^{L^{0.6}}$ com *Fogo Hermético* (`gn_fu1_boost`) |
 | `fu_effect` | **Aumentar Efeito do Fervor** | `100` | `×2.0` | $1.25^{L^{0.8}}$ | Amplifica diretamente $\text{Bônus}_{\text{FervorFé}}$ |
 | `fu_click` | **Aumentar Fé por Clique** | `100` | `×1.4` | $L^{2.6} \times 4 + 1$ | Multiplica $\text{FPC}$ |
 | `fu_followers` | **Fiéis Aumentam Fé/s** | `500` | `×1.5` | $\frac{L^{1.5} \times \text{Fiéis}}{50} + 1$ | Sinergia direta com total de devotos |
-| `fu_synergy` | **Fé Aumenta Fervor/s** | `500` | `×2.5` | $\frac{L^{1.5} \times \log_{10}(\text{Fé}+1)}{5} + 1$ | Multiplicado por `5×` com *Forja Cósmica* (`gn_synergy_boost`) |
+| `fu_synergy` | **Fé Aumenta Fervor/s** | `500` | `×2.5` | $\frac{L^{1.5} \times \log_{10}(\text{Fé}+1)}{5} + 1$ | Sem multiplicador adicional da Gnose |
 | `fu_relics` | **Aumentar Ganho de Fragmentos** | `20.000.000` | `×5.0` | $3^{L^{0.6}}$ | Oculto até restaurar a *Pena Solar de Fênix* |
 
 ### 5.6. Opus Magnum: Fragmentos & Relíquias (`relics.ts`)
@@ -138,9 +138,10 @@ flowchart TD
   - Consome `100%` da Fé atual (cooldown de `3s`) e mantém Fiéis, Fervor, Ritos e Estágio da Encarnação.
   - **Fórmula de Fragmentos Obtidos:**
     $$\text{Fragmentos} = \lfloor \log_2(\text{Fé} + 1) \times \text{Mult}_{\text{Fragmentos}} \rfloor$$
-    Onde $\text{Mult}_{\text{Fragmentos}} = \text{FU6} \times 3.5_{(\text{gn\_init\_faith})} \times 1.5_{(\text{gn\_memoria\_selos})} \times 3.0_{(\text{gn\_init\_fervor})} \times 4.0_{(\text{gn\_alchemical\_mind})}$.
+    O único multiplicador é o Rito de Fragmentos: base `3`, ou `3,15` com Alquimia Astral, sempre elevada a `nível^0,6`.
 - **Geração Passiva de Fragmentos/s:**
-  $$\text{Fragmentos/s} = \max\left(1,\; \lfloor \text{MelhorTransmutação} / 10 \rfloor\right) + \text{TransmutaçãoAtual} \times \left(0.05_{(\text{Draupnir})} + 0.25_{(\text{Cripta})} + 1.00_{(\text{Espontânea})}\right)$$
+  $$\text{Fragmentos/s} = \max\left(1,\; \lfloor \text{MelhorTransmutação} / 10 \rfloor\right) + \text{TransmutaçãoAtual} \times (\text{Draupnir} + \text{Automação})$$
+  Draupnir acrescenta `0,05`. Culto Autônomo acrescenta `0,25` quando habilitado, ou `1,00` com Olho do Infinito. Cripta Eterna apenas preserva os níveis das Relíquias.
 - **Tabela das 6 Relíquias Mitológicas (Custo Fixo por Nível):**
 
 | ID | Relíquia | Custo / Nível | Nível Máx. | Efeito por Nível / Total |
@@ -155,38 +156,45 @@ flowchart TD
 ### 5.7. Câmara da Gnose & Árvore Hermética (`gnose.ts`)
 - **Requisito de Ascensão:** Romper o *Selo da Gnose* e possuir ao menos `1e15` (`1Q`) de Fé.
 - **Fórmula de Ganho de Gnose no Reset:**
-  $$\text{Gnose} = \left\lfloor \left(\frac{\text{Fé}}{10^{15}}\right)^{0.15} \times \text{Mult}_{\text{Gnose}} \right\rfloor$$
-  Onde $\text{Mult}_{\text{Gnose}} = 2.5_{(\text{Trismegisto})} \times 2.0_{(\text{Olho do Infinito})} \times 2.0_{(\text{Gnosis Suprema})}$ (até `10×`).
+  $$\text{Gnose} = \left\lfloor \left(\frac{\text{Fé}}{10^{15}}\right)^{\alpha} \right\rfloor$$
+  O expoente α é `0,15`, ou `0,17` com Olho de Trismegisto. O requisito de `1Q` continua igual.
 - **Multiplicador Passivo Permanente de Gnose Acumulada (`TotalGnose`):**
-  $$\text{Mult}_{\text{TotalGnose}} = \left(1 + \text{TotalGnose}^{0.35} \times 1.5\right) \times \begin{cases} 1.5 & \text{se } \text{Olho do Infinito} \\ 1.0 & \text{caso contrário} \end{cases}$$
-- **Tabela Completa dos 20 Nós da Árvore Hermética:**
+  $$\text{Mult}_{\text{TotalGnose}} = 1 + \text{TotalGnose}^{0.35} \times 1.5$$
+- **Tabela Completa dos 17 Nós da Árvore Hermética:**
 
 | Tier | ID | Nome | Custo (Gnose) | Pré-requisitos | Efeito |
 | --- | --- | --- | ---: | --- | --- |
-| 1 | `gn_init_faith` | Emanação Primordial | 1 |  | 8× Fé, 3× Fervor, 3,5× Fragmentos; até 1.000 Fé agora e em cada reinício |
-| 1 | `gn_memoria_selos` | Memória Hermética | 2 | `gn_init_faith` | Mantém Selos abertos, Converter Máx. livre e 1,5× Fragmentos |
-| 1 | `gn_init_fervor` | Chama Astral | 2 | `gn_init_faith` | 5× Fervor/s e 3× Ganho de Fragmentos |
-| 1 | `gn_click_power` | Pulso Cósmico | 3 | `gn_init_faith` | 10× Fé/clique e +25% Fé/s dos Fiéis |
-| 1 | `gn_dilatacao` | Dilatação Hermética | 3 | `gn_init_faith` | 2× Fé/clique, Fé/s e Fervor/s |
-| 1 | `gn_auto_followers` | Recrutamento Astral | 3 | `gn_init_faith` | Auto-Fiéis com gasto e reserva; gratuito com Olho do Infinito |
-| 1 | `gn_auto_fervor` | Ritos Automáticos | 5 | `gn_init_fervor` | Auto-Ritos com gasto e reserva; gratuitos com Olho do Infinito |
-| 1 | `gn_auto_relics` | Transmutação Espontânea | 8 | `gn_memoria_selos` | 10% Transmutação/s → 25% com Áurea → 100% com Infinito |
-| 2 | `gn_followers_syn` | Congregação Esférica | 10 | `gn_memoria_selos` | Multiplica Fé por (1 + Fiéis^1.5) |
-| 2 | `gn_bencao_eterna` | Vigília Perpétua | 30 | `gn_init_fervor` | 2× Fé/s permanente com Encarnação desbloqueada |
-| 2 | `gn_keep_relics` | Cripta Eterna | 78 | `gn_memoria_selos`, `gn_init_fervor` | Mantém Relíquias no reset e +25% Transmutação/s |
-| 2 | `gn_altar_resonance` | Altar Ressonante | 118 | `gn_bencao_eterna` | Sinergia da Encarnação com Fiéis também multiplica Fervor/s |
-| 2 | `gn_alchemical_mind` | Transmutação Áurea | 150 | `gn_keep_relics` | 4× Fragmentos, Rito alquímico base 4 e Auto-Relíquias a 25%/s |
-| 3 | `gn_followers_cubic` | Coro Cúbico | 170 | `gn_followers_syn` | Evolui sinergia dos Fiéis para (1 + Fiéis^3) |
-| 3 | `gn_gnose_mult` | Olho de Trismegisto | 1.020 | `gn_bencao_eterna` | 2,5× Gnose obtida e 3× efeito da Encarnação |
-| 3 | `gn_fu1_boost` | Fogo Hermético | 3.380 | `gn_keep_relics` | 1º Rito de Fervor evolui para 3.5^(Nível^0.7) |
-| 3 | `gn_synergy_boost` | Forja Cósmica | 8.450 | `gn_fu1_boost` | 5º Rito evolui para 5 × efeito^1.35 |
-| 3 | `gn_relic_resonance` | Harmonia Planetária | 9.900 | `gn_keep_relics` | Relíquias ativas e restauradas multiplicam Fé/Fervor, até 7× |
-| 4 | `gn_omniscience` | Olho do Infinito | 14.700 | `gn_gnose_mult`, `gn_auto_followers`, `gn_auto_fervor`, `gn_auto_relics` | 2× Gnose, 1,5× bônus vitalício e automações sem gasto |
-| 4 | `gn_apotheosis` | Gnosis Suprema | 45.800 | `gn_omniscience`, `gn_synergy_boost`, `gn_relic_resonance`, `gn_alchemical_mind` | 100× Fé/Fervor, 2× Gnose; Eclipse por 1e20 e Solar por 1e36 Fé |
+| 1 | `gn_init_faith` | Emanação Primordial | 1 |  | Fiéis: escala de custo −0,01 |
+| 1 | `gn_memoria_selos` | Memória Hermética | 2 | `gn_init_faith` | Preserva Selos e libera Converter Máximo |
+| 1 | `gn_init_fervor` | Chama Astral | 2 | `gn_init_faith` | Rito de Fervor: ganho 2 → 2,15; custo 1,80 → 1,75 |
+| 1 | `gn_relic_gain` | Alquimia Astral | 3 | `gn_init_faith` | Rito de Fragmentos: ganho 3 → 3,15; custo 5 → 4,80 |
+| 1 | `gn_automation` | Culto Autônomo | 8 | `gn_memoria_selos`, `gn_init_fervor` | Automatiza Fiéis, Ritos e Fragmentos |
+| 2 | `gn_followers_syn` | Congregação Esférica | 10 | `gn_memoria_selos` | Mais Fiéis aumentam toda a Fé |
+| 2 | `gn_bencao_eterna` | Vigília Perpétua | 30 | `gn_init_fervor` | Bênção sempre ativa |
+| 2 | `gn_keep_relics` | Cripta Eterna | 78 | `gn_memoria_selos`, `gn_init_fervor` | Preserva Relíquias nos reinícios |
+| 2 | `gn_followers_economy` | Convergência dos Fiéis | 45 | `gn_init_faith`, `gn_followers_syn` | Fiéis: escala de custo −0,015 adicional |
+| 3 | `gn_followers_cubic` | Coro Harmônico | 60 | `gn_followers_syn` | Sinergia dos Fiéis: expoente 1,5 → 1,6 |
+| 3 | `gn_gnose_mult` | Olho de Trismegisto | 120 | `gn_bencao_eterna` | Ascensão: expoente 0,15 → 0,17 |
+| 3 | `gn_relic_refinement` | Alquimia Hermética | 240 | `gn_relic_gain`, `gn_keep_relics` | Fragmentos: ganho 3,15 → 3,40; custo 4,80 → 4,50 |
+| 3 | `gn_fu1_boost` | Fogo Hermético | 360 | `gn_keep_relics` | Rito de Fervor: ganho 2,15 → 2,35 |
+| 4 | `gn_omniscience` | Olho do Infinito | 600 | `gn_gnose_mult`, `gn_automation` | Automações sem gasto de recursos |
+| 4 | `gn_apotheosis` | Gnosis Suprema | 1200 | `gn_omniscience`, `gn_fu1_boost`, `gn_followers_cubic` | Ritos: escala de custo −0,05 · Avatares finais |
+| 4 | `gn_empyrean_fire` | Fogo Empíreo | 1800 | `gn_init_fervor`, `gn_fu1_boost`, `gn_apotheosis` | Fervor: ganho 2,35 → 2,65; custo −0,10 adicional |
+| 4 | `gn_perfect_opus` | Opus Perfeito | 2400 | `gn_relic_refinement`, `gn_apotheosis` | Fragmentos: ganho 3,40 → 3,75; custo −0,40 adicional |
 
-As três automações ficam no **tier I**: Recrutamento Astral (3), Ritos Automáticos (5) e Transmutação Espontânea (8). Os compradores pagos acumulam verba equivalente a 25% da renda por segundo, limitada a 10% do saldo; sem fiéis, o recrutador pode comprar o primeiro pelo custo normal. A verba não usada acompanha o save e zera na Ascensão. Toggles permitem pausar. Olho do Infinito elimina o gasto sem dispensar acessibilidade e pré-requisitos, e Auto-Ritos continua limitado a 50 níveis por Rito/s. Auto-Relíquias gera 10% da Transmutação/s, depois 25% com Transmutação Áurea e 100% com Olho do Infinito, sem consumir Fé.
+**Culto Autônomo** (8 Gnose, tier I) reúne as três automações, com controles separados. Fiéis e Ritos usam uma reserva de 25% da produção, limitada a 10% do saldo. Fragmentos automáticos rendem 25% da Transmutação/s sem consumir Fé; Olho do Infinito eleva essa taxa para 100% e elimina os gastos dos compradores. As exigências de saldo, Selos e Fênix continuam valendo.
 
-Emanação Primordial completa o saldo até 1.000 Fé na compra e mantém esse início nos resets seguintes. Não reduz saldos maiores nem concede o bônus novamente ao importar saves. Os 20 identificadores e os toggles são preservados; os efeitos revisados também se aplicam a compras de saves anteriores.
+A Gnose preserva as estruturas de cálculo: Emanação reduz a escala de custo dos Fiéis em 0,01; Chama Astral melhora a base do Rito de Fervor de 2 para 2,15 e sua escala de custo de 1,80 para 1,75; Alquimia Astral melhora a base do Rito de Fragmentos de 3 para 3,15 e sua escala de custo de 5 para 4,80. Fogo Hermético continua o mesmo ganho com base 2,35 e expoente de nível 0,6. Coro Harmônico melhora apenas o expoente já existente da sinergia de 1,5 para 1,6. Gnosis Suprema reduz as escalas de custo dos Ritos em mais 0,05; compras manuais, automações e interface usam o mesmo custo efetivo. Os custos finais de Encarnação e as funcionalidades de persistência continuam disponíveis.
+
+A distribuição dos 17 nós é **5 / 4 / 4 / 4**. Cada linha de evolução tem passos maiores nos tiers mais altos, mantendo as fórmulas originais:
+
+- Fiéis: escala de custo `1,10 → 1,09 → 1,075`, antes do Cajado de Hermes; reduções de `0,01` e `0,015`.
+- Fervor: base de ganho `2 → 2,15 → 2,35 → 2,65`, sempre com `nível^0,6`; passos de `0,15`, `0,20` e `0,30`. Fogo Empíreo reduz o custo do Rito em mais `0,10`, além dos passos anteriores de `0,05`.
+- Fragmentos: base de ganho `3 → 3,15 → 3,40 → 3,75` e escala de custo `5 → 4,80 → 4,50 → 4,10`, antes da redução global de `0,05` da Gnosis Suprema. Os passos de ganho são `0,15 / 0,25 / 0,35`; os de custo, `0,20 / 0,30 / 0,40`.
+
+Tiamat exige os 17 nós. As quatro novas compras são adicionais: saves anteriores mantêm compras e chefes já derrotados.
+
+**Migração:** Pulso Cósmico, Dilatação Hermética, Altar Ressonante, Transmutação Áurea, Forja Cósmica e Harmonia Planetária saem da árvore; seu custo é devolvido ao saldo de Gnose. Automações antigas viram Culto Autônomo; o excedente pago acima de 8 Gnose é devolvido. Controles e acesso aos tiers conquistados são preservados. A migração não aumenta a Gnose vitalícia e não repete devoluções ao carregar o novo save.
 
 ### 5.8. Guardiões Mitológicos — Sistema de Boss Battle (`bosses.ts`)
 Os Tiers II, III, IV da Gnose e a Apoteose de Endgame são guardados por **4 Chefes Mitológicos**.
@@ -208,7 +216,7 @@ Os Tiers II, III, IV da Gnose e a Apoteose de Endgame são guardados por **4 Che
 | **1º** | **Anúbis** (*O Pesador de Almas*) | Egípcia | Selo da Gnose desbloqueado | `1e18` (`1.0e18`) | **Balança de Maat:** Libera o **Tier II** da Gnose e `1.5×` Fé/s e Fervor/s |
 | **2º** | **Cronos** (*O Titã Devorador do Tempo*) | Grega | Tier II desbloqueado | `5e28` (`5.0e28`) | **Foice de Adamante:** Libera o **Tier III** da Gnose e `1.5×` Fé/s e Fervor/s |
 | **3º** | **Odin** (*O Pai de Todos da Árvore Cósmica*) | Nórdica | Tier III desbloqueado | `1e38` (`1.0e38`) | **Runas de Yggdrasil:** Libera o **Tier IV** da Gnose e `1.5×` Fé/s e Fervor/s |
-| **4º** | **Tiamat** (*A Mãe Abissal dos Deuses Antigos*) | Mesopotâmica | Todos os 20/20 nós da Gnose comprados | `1e42` (`1.0e42`) | **Tábua dos Destinos (Apoteose):** Título *Crepúsculo dos Deuses*, conquista final e `10×` Fé/s e Fervor/s |
+| **4º** | **Tiamat** (*A Mãe Abissal dos Deuses Antigos*) | Mesopotâmica | Todos os 17/17 nós da Gnose comprados | `1e42` (`1.0e42`) | **Tábua dos Destinos (Apoteose):** Título *Crepúsculo dos Deuses*, conquista final e `10×` Fé/s e Fervor/s |
 
 ### 5.9. Conquistas (`achievements.ts`)
 O jogo conta com **20 conquistas** divididas em 4 categorias de bônus. Bônus da **mesma categoria somam** entre si; **categorias diferentes multiplicam** entre si:

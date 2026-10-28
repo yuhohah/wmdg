@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ProgressionSimulator } from './ProgressionSimulator.js';
 import { PLAYER_BEHAVIORS, manualBlessingAllowed, manualSphereAllowed, VisitSchedule } from './behavior.js';
 import { ProgressTracker } from './ProgressTracker.js';
+import { GNOSE_UPGRADES } from '../config/gnose.js';
 import { GameStateManager } from '../core/GameState.js';
 import type { BenchmarkEvent } from './types.js';
 import { formatDuration, formatHtmlReport, formatTerminalReport } from './reporters.js';
@@ -284,7 +285,7 @@ describe('Reference progression simulation', () => {
     const result = ProgressionSimulator.runArchetype('active', { maxDurationSec: 18 * 3600 });
     expect(result.status).toBe('completed');
     expect(result.completed).toBe(true);
-    expect(result.gnoseUpgradesBought).toBe(20);
+    expect(result.gnoseUpgradesBought).toBe(GNOSE_UPGRADES.length);
     expect(result.bossesDefeated).toBe(4);
     expect(result.milestones.at(-1)?.id).toBe('boss_tiamat');
     expect(result.milestones.every((m, i, all) => i === 0 || m.gameTimeSec >= all[i - 1].gameTimeSec)).toBe(true);

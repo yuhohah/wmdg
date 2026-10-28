@@ -40,9 +40,12 @@ export class BossBattleModal {
   private penaltyHintEl: HTMLElement | null = null;
 
   private arenaHintTopEl: HTMLElement | null = null;
-  private sphereSubEl: HTMLElement | null = null;
+  private attackDamageEl: HTMLElement | null = null;
+  private bossPortraitEl: HTMLImageElement | null = null;
+  private bossFallbackEl: HTMLElement | null = null;
+  private combatFeedbackEl: HTMLElement | null = null;
   private riftsLayerEl: HTMLElement | null = null;
-  private sphereBtnEl: HTMLButtonElement | null = null;
+  private attackBtnEl: HTMLButtonElement | null = null;
   private combatStatsEl: HTMLElement | null = null;
   private retreatBtnEl: HTMLButtonElement | null = null;
   private returnFocusEl: HTMLElement | null = null;
@@ -79,68 +82,65 @@ export class BossBattleModal {
           <button id="btn-boss-retreat" class="btn-boss-retreat" type="button" title="Cancela o combate sem penalidade. Atalho: Escape.">Recuar</button>
         </div>
 
-        <p class="boss-modal-lore" id="boss-modal-lore"></p>
-
         <!-- BARRA 1: ESSÊNCIA DO DEUS (HP DO BOSS) -->
         <div class="boss-bar-section">
           <div class="boss-bar-header">
             <span class="boss-bar-label">ESSÊNCIA DIVINA DO GUARDIÃO</span>
             <span class="boss-bar-val" id="boss-hp-val">100%</span>
           </div>
-          <div class="boss-bar-track boss-hp-track">
+          <div class="boss-bar-track boss-hp-track" role="progressbar" aria-label="Essência do guardião" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
             <div class="boss-bar-fill boss-hp-fill" id="boss-hp-fill" style="width: 100%;"></div>
           </div>
         </div>
 
         <!-- SINERGIA DE RECURSOS DO CULTO (TODOS OS RECURSOS AFETAM O COMBATE) -->
-        <div class="boss-synergy-panel" id="boss-synergy-panel">
-          <div class="boss-synergy-header">
-            <span class="boss-synergy-title">✦ RESSONÂNCIA DOS RECURSOS NO COMBATE</span>
+        <details class="boss-synergy-panel" id="boss-synergy-panel">
+          <summary class="boss-synergy-header">
+            <span class="boss-synergy-title">RECURSOS DO CULTO</span>
             <span class="boss-synergy-total" id="boss-synergy-total">Poder Total: ×1.00</span>
-          </div>
+          </summary>
           <div class="boss-synergy-pills">
             <span class="boss-synergy-pill" id="boss-syn-faith" title="Fé acumulada e Fé/s aumentam o DPS e o Pulso">Fé: +0%</span>
             <span class="boss-synergy-pill" id="boss-syn-followers" title="Fiéis Devotos aumentam o DPS e curam o Altar ao aparar Fendas">Fiéis: +0%</span>
-            <span class="boss-synergy-pill" id="boss-syn-fervor" title="Fervor e Ritos aumentam o DPS, o Pulso da Esfera e a defesa do Altar">Fervor: +0%</span>
+            <span class="boss-synergy-pill" id="boss-syn-fervor" title="Fervor e Ritos aumentam o DPS, o dano dos ataques e a defesa do Altar">Fervor: +0%</span>
             <span class="boss-synergy-pill" id="boss-syn-relics" title="Fragmentos e Relíquias ampliam o dano crítico das Fendas e protegem o Altar">Relíquias: +0%</span>
             <span class="boss-synergy-pill" id="boss-syn-incarnation" title="Estágio da Encarnação e Bênção multiplicam o dano e protegem o Altar">Encarnação: +0%</span>
             <span class="boss-synergy-pill" id="boss-syn-gnose" title="Gnose e Nós da Árvore ampliam o dano contra os Deuses Antigos">Gnose: +0%</span>
           </div>
-        </div>
+        </details>
 
-        <!-- ARENA CENTRAL: ESFERA DE CANALIZAÇÃO + FENDAS DIVINAS -->
+        <div class="boss-arena-hint-top" id="boss-arena-hint-top"></div>
+
+        <!-- O próprio guardião é o alvo; as fendas ficam sobre a arte. -->
         <div class="boss-arena-stage" id="boss-arena-stage">
-          <div class="boss-arena-hint-top" id="boss-arena-hint-top">
-            ✦ Apare as <strong>Fendas Divinas</strong> para causar dano e proteger o Altar!
-          </div>
-
-          <div class="boss-arena-center">
-            <button id="boss-arena-sphere-btn" class="divine-sphere-btn boss-arena-sphere" type="button" aria-label="Canalizar Esfera contra o Guardião">
-              <span class="boss-sphere-caption">PULSAR<br>ESFERA<br><small id="boss-sphere-sub"></small></span>
-            </button>
-          </div>
+          <button id="boss-arena-attack-btn" class="boss-attack-target" type="button" aria-label="Atacar o guardião" aria-describedby="boss-arena-hint-top boss-attack-damage">
+            <img id="boss-arena-portrait" class="boss-portrait" alt="" draggable="false" hidden>
+            <span id="boss-arena-fallback" class="boss-portrait-fallback" aria-hidden="true"></span>
+            <span class="boss-attack-caption" aria-hidden="true">ATACAR <span id="boss-attack-damage"></span></span>
+          </button>
 
           <!-- Camada de Fendas de Blasfêmia / Julgamento -->
           <div class="boss-rifts-layer" id="boss-rifts-layer"></div>
 
-          <div class="boss-combat-stats" id="boss-combat-stats">
-            DPS Passivo: +0 Fé/s • Fendas Aparadas: 0
-          </div>
         </div>
+        <div class="boss-combat-feedback" id="boss-combat-feedback" role="status" aria-atomic="true">Clique no guardião para atacar. Apare as fendas para defender o altar.</div>
 
         <!-- BARRA 2: INTEGRIDADE DO ALTAR (SEM TIMER DE RELÓGIO) -->
         <div class="boss-bar-section altar-integrity-section">
           <div class="boss-bar-header">
-            <span class="boss-bar-label">${icon('shield')} INTEGRIDADE DO ALTAR (SEM LIMITE DE TEMPO)</span>
+            <span class="boss-bar-label">${icon('shield')} INTEGRIDADE DO ALTAR</span>
             <span class="boss-bar-val" id="boss-altar-val">100%</span>
           </div>
-          <div class="boss-bar-track altar-integrity-track">
+          <div class="boss-bar-track altar-integrity-track" role="progressbar" aria-label="Integridade do altar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
             <div class="boss-bar-fill altar-integrity-fill" id="boss-altar-fill" style="width: 100%;"></div>
           </div>
-          <div class="boss-penalty-hint" id="boss-penalty-hint">
-            Cada Fenda ignorada drena 25% da Integridade. Se cair a 0%, aplica Maldição Leve (-25% Fé/s e Fervor/s por 20s).
-          </div>
         </div>
+        <div class="boss-combat-stats" id="boss-combat-stats"></div>
+        <details class="boss-battle-details">
+          <summary>Sobre o guardião e as regras do combate</summary>
+          <p class="boss-modal-lore" id="boss-modal-lore"></p>
+          <p class="boss-penalty-hint" id="boss-penalty-hint"></p>
+        </details>
       </div>
     `;
 
@@ -169,12 +169,15 @@ export class BossBattleModal {
     this.penaltyHintEl = overlay.querySelector('#boss-penalty-hint');
 
     this.arenaHintTopEl = overlay.querySelector('#boss-arena-hint-top');
-    this.sphereSubEl = overlay.querySelector('#boss-sphere-sub');
+    this.attackDamageEl = overlay.querySelector('#boss-attack-damage');
+    this.bossPortraitEl = overlay.querySelector('#boss-arena-portrait');
+    this.bossFallbackEl = overlay.querySelector('#boss-arena-fallback');
+    this.combatFeedbackEl = overlay.querySelector('#boss-combat-feedback');
     this.riftsLayerEl = overlay.querySelector('#boss-rifts-layer');
-    this.sphereBtnEl = overlay.querySelector('#boss-arena-sphere-btn');
+    this.attackBtnEl = overlay.querySelector('#boss-arena-attack-btn');
     this.combatStatsEl = overlay.querySelector('#boss-combat-stats');
     this.retreatBtnEl = overlay.querySelector('#btn-boss-retreat');
-    if (this.sphereBtnEl) this.sphereBtnEl.title = 'Até 5 pulsos/s. Críticos têm 5% de chance e causam dano dobrado.';
+    if (this.attackBtnEl) this.attackBtnEl.title = 'Clique para atacar, ou use Enter/Espaço com o alvo em foco. Até 5 ataques/s; 5% de chance de dano crítico dobrado.';
   }
 
   private bindEvents(): void {
@@ -183,13 +186,20 @@ export class BossBattleModal {
       this.close();
     });
 
-    this.sphereBtnEl?.addEventListener('click', (e: MouseEvent) => {
+    this.bossPortraitEl?.addEventListener('error', () => {
+      if (this.bossPortraitEl) this.bossPortraitEl.hidden = true;
+      if (this.bossFallbackEl) this.bossFallbackEl.hidden = false;
+    });
+
+    this.attackBtnEl?.addEventListener('click', (e: MouseEvent) => {
       const battle = this.options.gameState.activeBossBattle;
       if (!battle || battle.sphereCooldownSec > 1e-8) return;
       const { bossClickDamage, isCrit } = this.options.gameState.addClick();
       this.options.audio.playTone(640 + Math.random() * 140, 'sine', 0.08);
-      const x = e.clientX || window.innerWidth / 2;
-      const y = e.clientY || window.innerHeight / 2;
+      const rect = this.attackBtnEl!.getBoundingClientRect();
+      const x = e.detail === 0 ? rect.x + rect.width / 2 : e.clientX;
+      const y = e.detail === 0 ? rect.y + rect.height / 2 : e.clientY;
+      this.showHitFeedback(isCrit ? 'Golpe crítico!' : 'Golpe desferido.', `−${(bossClickDamage / battle.bossMaxHp * 100).toFixed(2)}% de essência`);
       this.options.spawnFloatingText(
         x,
         y,
@@ -211,7 +221,7 @@ export class BossBattleModal {
         this.options.gameState.retreatBossBattle();
         this.close();
       } else if (event.key === 'Tab') {
-        const targets = Array.from(this.overlayEl!.querySelectorAll<HTMLElement>('button:not(:disabled)'));
+        const targets = Array.from(this.overlayEl!.querySelectorAll<HTMLElement>('summary, button:not(:disabled)'));
         const first = targets[0], last = targets[targets.length - 1];
         if (event.shiftKey && (document.activeElement === first || !this.overlayEl!.contains(document.activeElement))) {
           event.preventDefault();
@@ -237,6 +247,14 @@ export class BossBattleModal {
     if (el && el.textContent !== value) el.textContent = value;
   }
 
+  private showHitFeedback(label: string, detail: string): void {
+    this.setText(this.combatFeedbackEl, `${label} ${detail}`);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const target = this.bossPortraitEl?.hidden ? this.bossFallbackEl : this.bossPortraitEl;
+    target?.getAnimations().forEach(animation => animation.cancel());
+    target?.animate([{ filter: 'brightness(1.5)' }, { filter: 'brightness(1)' }], { duration: 180 });
+  }
+
   public openForBoss(bossId: string): boolean {
     const boss = GNOSE_BOSSES.find((b) => b.id === bossId);
     if (!boss) return false;
@@ -252,6 +270,17 @@ export class BossBattleModal {
     if (this.bossTitleEl) this.setText(this.bossTitleEl, boss.title);
     if (this.bossMythEl) this.setText(this.bossMythEl, boss.mythology.toUpperCase());
     if (this.bossLoreEl) this.setText(this.bossLoreEl, boss.lore);
+    this.attackBtnEl?.setAttribute('aria-label', `Atacar ${boss.name}`);
+    if (this.bossFallbackEl) {
+      this.bossFallbackEl.innerHTML = iconOrText(boss.symbol);
+      this.bossFallbackEl.hidden = Boolean(boss.portraitSrc);
+    }
+    if (this.bossPortraitEl) {
+      this.bossPortraitEl.hidden = !boss.portraitSrc;
+      if (boss.portraitSrc) this.bossPortraitEl.src = boss.portraitSrc;
+      else this.bossPortraitEl.removeAttribute('src');
+    }
+    this.setText(this.combatFeedbackEl, 'Clique no guardião para atacar. Apare as fendas para defender o altar.');
 
     if (this.riftsLayerEl) {
       this.riftsLayerEl.innerHTML = '';
@@ -328,6 +357,7 @@ export class BossBattleModal {
     if (this.bossHpFillEl) {
       const width = `${hpPercent.toFixed(1)}%`;
       if (this.bossHpFillEl.style.width !== width) this.bossHpFillEl.style.width = width;
+      this.bossHpFillEl.parentElement?.setAttribute('aria-valuenow', hpPercent.toFixed(1));
     }
     if (this.bossHpValEl) {
       const dpsPctStr = (breakdown.passiveHpFractionPerSec * 100).toFixed(2);
@@ -357,17 +387,18 @@ export class BossBattleModal {
         breakdown.altarHealOnRift >= 1
           ? ` e restaurar <strong>+${breakdown.altarHealOnRift.toFixed(0)}% do Altar</strong>`
           : '';
-      const hint = `✦ Clique nas <strong>Fendas Divinas</strong> para aparar golpes, causar <strong>${riftPctText} de dano</strong>${healHint}!`;
+      const hint = `Ataque o <strong>guardião</strong> e apare as <strong>Fendas Divinas</strong> para causar <strong>${riftPctText} de dano</strong>${healHint}.`;
       if (this.arenaHintTopEl.innerHTML !== hint) this.arenaHintTopEl.innerHTML = hint;
     }
 
-    if (this.sphereSubEl) {
-      this.setText(this.sphereSubEl, `-${(breakdown.clickHpFraction * 100).toFixed(2)}% HP`);
+    if (this.attackDamageEl) {
+      this.setText(this.attackDamageEl, `−${(breakdown.clickHpFraction * 100).toFixed(2)}% por golpe`);
     }
 
-    if (this.sphereBtnEl) {
+    if (this.attackBtnEl) {
       const cooling = battle.sphereCooldownSec > 1e-8;
-      if (this.sphereBtnEl.disabled !== cooling) this.sphereBtnEl.disabled = cooling;
+      // Keep keyboard focus stable during the short cooldown.
+      this.attackBtnEl.setAttribute('aria-disabled', String(cooling));
     }
 
     const altarPercent = Math.max(
@@ -377,9 +408,11 @@ export class BossBattleModal {
     if (this.altarIntegrityFillEl) {
       const width = `${altarPercent.toFixed(0)}%`;
       if (this.altarIntegrityFillEl.style.width !== width) this.altarIntegrityFillEl.style.width = width;
+      this.altarIntegrityFillEl.parentElement?.setAttribute('aria-valuenow', altarPercent.toFixed(0));
+      this.altarIntegrityFillEl.parentElement?.classList.toggle('is-critical', altarPercent <= 25);
     }
     if (this.altarIntegrityValEl) {
-      this.setText(this.altarIntegrityValEl, `${altarPercent.toFixed(0)}%`);
+      this.setText(this.altarIntegrityValEl, `${altarPercent <= 25 ? 'EM RISCO · ' : ''}${altarPercent.toFixed(0)}%`);
     }
     if (this.penaltyHintEl) {
       const healStr =
@@ -390,7 +423,7 @@ export class BossBattleModal {
     }
 
     if (this.combatStatsEl) {
-      this.setText(this.combatStatsEl, `DPS Passivo: ${formatNumber(breakdown.passiveDps)}/s (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(2)}%/s) • Pulso: -${(breakdown.clickHpFraction * 100).toFixed(1)}% • Fendas Aparadas: ${battle.riftsShattered}`);
+      this.setText(this.combatStatsEl, `Dano passivo: −${(breakdown.passiveHpFractionPerSec * 100).toFixed(2)}%/s · Fendas aparadas: ${battle.riftsShattered} · Próxima fenda: ${Math.max(0, battle.riftSpawnTimerSec).toFixed(1)}s`);
     }
 
     this.syncRiftsDOM(battle.activeRifts, breakdown.riftHpFraction);
@@ -416,7 +449,9 @@ export class BossBattleModal {
       const el = child as HTMLElement;
       const riftId = el.getAttribute('data-rift-id');
       if (!riftId || !activeIds.has(riftId)) {
+        const hadFocus = el.contains(document.activeElement);
         el.remove();
+        if (hadFocus && this.isOpen()) this.attackBtnEl?.focus({ preventScroll: true });
       }
     });
 
@@ -431,12 +466,13 @@ export class BossBattleModal {
         riftEl.className = 'boss-rift-target';
         riftEl.setAttribute('data-rift-id', rift.id);
         riftEl.setAttribute('aria-label', 'Aparar Fenda Divina: causa dano e protege o altar');
-        riftEl.style.left = `${rift.xPercent}%`;
-        riftEl.style.top = `${rift.yPercent}%`;
+        riftEl.style.left = `clamp(58px, ${rift.xPercent}%, calc(100% - 58px))`;
+        riftEl.style.top = `clamp(38px, ${rift.yPercent}%, calc(100% - 38px))`;
         riftEl.innerHTML = `
           <span class="boss-rift-core">✦</span>
           <span class="boss-rift-label">APARAR (${riftPctLabel})</span>
           <span class="boss-rift-timer"></span>
+          <span class="boss-rift-window" aria-hidden="true"><span class="boss-rift-window-fill"></span></span>
         `;
         riftEl.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation();
@@ -445,6 +481,7 @@ export class BossBattleModal {
           );
           const res = this.options.gameState.clickBossRift(rift.id);
           if (res.shattered) {
+            this.showHitFeedback('Fenda aparada!', `−${(currentBreakdown.riftHpFraction * 100).toFixed(1)}% de essência. Altar protegido.`);
             this.options.audio.playTone(880, 'triangle', 0.16);
             const x = e.clientX || window.innerWidth / 2;
             const y = e.clientY || window.innerHeight / 2;
@@ -468,6 +505,9 @@ export class BossBattleModal {
       if (timerSpan) {
         this.setText(timerSpan, `${Math.max(0, rift.remainingSec).toFixed(1)}s`);
       }
+      riftEl.classList.toggle('is-urgent', rift.remainingSec <= 1);
+      const windowFill = riftEl.querySelector<HTMLElement>('.boss-rift-window-fill');
+      if (windowFill) windowFill.style.width = `${Math.max(0, Math.min(100, rift.remainingSec / rift.maxSec * 100))}%`;
     });
   }
 }

@@ -17,6 +17,7 @@ describe('Follower purchase production preview', () => {
     game.incarnationBoostTimer = 20;
     game.totalGnoseEarned = 100;
     game.unlockedGnoseUpgrades.add('gn_init_faith');
+    game.unlockedGnoseUpgrades.add('gn_followers_economy');
     game.defeatedBosses.add('boss_anubis');
     game.bossCurseTimerSec = 10;
     game.achievements.forEach((achievement) => { achievement.unlocked = true; });
@@ -45,7 +46,7 @@ describe('Follower purchase production preview', () => {
     game.unlockedGnoseUpgrades.add('gn_init_faith');
     expect(game.getFaithPerSecond()).toBe(0);
     const preview = game.getFollowerPurchaseFaithGain(1);
-    expect(preview).toBe(8);
+    expect(preview).toBe(1);
     expect(game.buyOneFollower()).toBe(true);
     expect(game.getFaithPerSecond()).toBe(preview);
   });

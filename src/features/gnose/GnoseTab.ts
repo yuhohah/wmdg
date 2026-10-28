@@ -278,7 +278,9 @@ export class GnoseTab {
               ? 'gnose-node-available'
               : 'gnose-node-unaffordable';
 
-        const nodeEl = document.createElement('div');
+        const nodeEl = document.createElement('button');
+        nodeEl.type = 'button';
+        nodeEl.disabled = !gs.canBuyGnoseUpgrade(upg);
         nodeEl.className = `cult-action-card gnose-tree-node ${stateClass}`;
         nodeEl.id = `card-${upg.id}`;
         nodeEl.title = upg.desc;
@@ -290,7 +292,7 @@ export class GnoseTab {
         const statusBadge = isUnlocked
           ? `<span class="gnose-node-badge unlocked">ASSIMILADO</span>`
           : !isTierUnlocked
-            ? `<span class="gnose-node-badge locked">${icon('swords')} Guardião (${formatNumber(upg.cost)} Gnose)</span>`
+            ? `<span class="gnose-node-badge locked">${icon('lock')} ${formatNumber(upg.cost)} Gnose</span>`
             : !prereqsMet
               ? `<span class="gnose-node-badge locked">${icon('lock')} ${formatNumber(upg.cost)} Gnose</span>`
               : `<span class="gnose-node-badge cost">${formatNumber(upg.cost)} Gnose</span>`;
@@ -319,7 +321,7 @@ export class GnoseTab {
       this.treeContainerEl!.appendChild(tierSection);
     });
 
-    // ENDGAME BOSS FOOTER: TIAMAT (unlocked after 20/20 Gnose nodes)
+    // ENDGAME BOSS FOOTER: TIAMAT (unlocked after completing the Gnose tree)
     const tiamat = gs.getBossForTier('endgame');
     if (tiamat) {
       const totalUnlockedNodes = GNOSE_UPGRADES.filter((u) => gs.hasGnoseUpgrade(u.id)).length;
@@ -366,7 +368,7 @@ export class GnoseTab {
 
     if (this.gnoseReqHintEl) {
       if (gs.faithPoints >= GNOSE_MIN_FAITH_REQ) {
-        this.setText(this.gnoseReqHintEl, `Multiplicador de Gnose: ×${gs.getGnoseGainMultiplier().toFixed(1)}`);
+        this.setText(this.gnoseReqHintEl, `Curva da Ascensão: (Fé / 1Q)^${gs.getGnoseGainExponent().toFixed(2)}`);
       } else {
         this.setText(this.gnoseReqHintEl, `Requer ${formatNumber(GNOSE_MIN_FAITH_REQ)} Fé (${formatNumber(Math.floor(gs.faithPoints))} / ${formatNumber(GNOSE_MIN_FAITH_REQ)})`);
       }
@@ -393,9 +395,7 @@ export class GnoseTab {
       if (this.confirmToggleEl.checked !== (gs.confirmGnoseReset)) this.confirmToggleEl.checked = gs.confirmGnoseReset;
     }
 
-    const hasAutoFollowers = gs.hasGnoseUpgrade('gn_auto_followers');
-    const hasAutoFervor = gs.hasGnoseUpgrade('gn_auto_fervor');
-    const hasAutoRelics = gs.hasGnoseUpgrade('gn_auto_relics');
+    const hasAutomation = gs.hasGnoseUpgrade('gn_automation');
     const free = gs.hasGnoseUpgrade('gn_omniscience');
     const updateAutomation = (el: HTMLElement | null, text: string, hint: string) => {
       if (!el) return;
@@ -413,22 +413,22 @@ export class GnoseTab {
 
 
     if (this.automationPanelEl) {
-      this.setDisplay(this.automationPanelEl, hasAutoFollowers || hasAutoFervor || hasAutoRelics ? 'flex' : 'none');
+      this.setDisplay(this.automationPanelEl, hasAutomation ? 'flex' : 'none');
     }
     if (this.autoFollowersWrapEl) {
-      this.setDisplay(this.autoFollowersWrapEl, hasAutoFollowers ? 'flex' : 'none');
+      this.setDisplay(this.autoFollowersWrapEl, hasAutomation ? 'flex' : 'none');
     }
     if (this.autoFollowersToggleEl) {
       if (this.autoFollowersToggleEl.checked !== (gs.autoFollowersEnabled)) this.autoFollowersToggleEl.checked = gs.autoFollowersEnabled;
     }
     if (this.autoFervorWrapEl) {
-      this.setDisplay(this.autoFervorWrapEl, hasAutoFervor ? 'flex' : 'none');
+      this.setDisplay(this.autoFervorWrapEl, hasAutomation ? 'flex' : 'none');
     }
     if (this.autoFervorToggleEl) {
       if (this.autoFervorToggleEl.checked !== (gs.autoFervorEnabled)) this.autoFervorToggleEl.checked = gs.autoFervorEnabled;
     }
     if (this.autoRelicsWrapEl) {
-      this.setDisplay(this.autoRelicsWrapEl, hasAutoRelics ? 'flex' : 'none');
+      this.setDisplay(this.autoRelicsWrapEl, hasAutomation ? 'flex' : 'none');
     }
     if (this.autoRelicsToggleEl) {
       if (this.autoRelicsToggleEl.checked !== (gs.autoRelicsEnabled)) this.autoRelicsToggleEl.checked = gs.autoRelicsEnabled;
@@ -460,6 +460,8 @@ export class GnoseTab {
       const isTierUnlocked = gs.isGnoseTierUnlocked(upg.tier);
       const prereqsMet = isTierUnlocked && upg.prerequisites.every((reqId) => gs.hasGnoseUpgrade(reqId));
       const canAfford = gs.gnosePoints >= upg.cost;
+
+      if (nodeEl instanceof HTMLButtonElement) nodeEl.disabled = !gs.canBuyGnoseUpgrade(upg);
 
       const stateClass = isUnlocked
         ? 'gnose-node-unlocked'

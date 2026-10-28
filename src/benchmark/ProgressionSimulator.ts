@@ -2,7 +2,7 @@ import { GameStateManager } from '../core/GameState.js';
 import { INCARNATION_STAGES, BLESSING_SECONDS_PER_PRESS } from '../config/incarnation.js';
 import { GNOSE_UPGRADES } from '../config/gnose.js';
 import { GNOSE_BOSSES } from '../config/bosses.js';
-import { calculateFervorUpgradeCost, calculateMiracleReward } from '../systems/calculations.js';
+import { calculateMiracleReward } from '../systems/calculations.js';
 import { PLAYER_BEHAVIORS, createSeededRandom, describeBehavior, manualBlessingAllowed, manualSphereAllowed, routineClicksAvailable, VisitSchedule } from './behavior.js';
 import { ProgressTracker } from './ProgressTracker.js';
 import { formatDuration } from './reporters.js';
@@ -288,12 +288,12 @@ class Simulation {
     }
     const relic = g.isRelicsUnlocked() ? g.relicUpgrades.find(r => r.level < r.maxLevel && g.relicPoints >= r.cost) : undefined;
     if (relic) return decision(relic.id, 'relic', () => g.buyRelicUpgrade(relic));
-    if (g.isFervorUpgradesUnlocked() && !(g.hasGnoseUpgrade('gn_auto_fervor') && g.autoFervorEnabled)) {
-      const rito = g.fervorUpgrades.filter(u => (u.id !== 'fu_relics' || g.isPhoenixRelicUnlocked()) && g.fervorPoints >= calculateFervorUpgradeCost(u))
-        .sort((a, b) => calculateFervorUpgradeCost(a) - calculateFervorUpgradeCost(b))[0];
+    if (g.isFervorUpgradesUnlocked() && !(g.hasGnoseUpgrade('gn_automation') && g.autoFervorEnabled)) {
+      const rito = g.fervorUpgrades.filter(u => (u.id !== 'fu_relics' || g.isPhoenixRelicUnlocked()) && g.fervorPoints >= g.getFervorUpgradeCost(u))
+        .sort((a, b) => g.getFervorUpgradeCost(a) - g.getFervorUpgradeCost(b))[0];
       if (rito) return decision(rito.id, 'fervor', () => g.buyFervorUpgrade(rito));
     }
-    const passiveRelics = g.hasGnoseUpgrade('gn_keep_relics') || g.hasGnoseUpgrade('gn_auto_relics') || g.relicUpgrades[4].level > 0;
+    const passiveRelics = (g.hasGnoseUpgrade('gn_automation') && g.autoRelicsEnabled) || g.relicUpgrades[4].level > 0;
     const transmute = g.getRelicsToGet();
     if (g.isRelicsUnlocked() && g.relicConvertCooldown === 0 && transmute >= 15
       && ((!passiveRelics && transmute >= Math.max(20, g.relicPoints * 1.5)) || g.bestRelicsToGet === 0)) {
@@ -310,7 +310,7 @@ class Simulation {
     const savingForUnlock = unlock?.costCurrency === 'faith' && fps > 0 && (unlock.cost - g.faithPoints) / fps < 180;
     const savingForIncarnation = incarnation && g.isIncarnationUnlocked() && fps > 0
       && (g.getIncarnationStageCost(incarnation) - g.faithPoints) / fps < 180;
-    if (!savingForUnlock && !savingForIncarnation && !(g.hasGnoseUpgrade('gn_auto_followers') && g.autoFollowersEnabled)
+    if (!savingForUnlock && !savingForIncarnation && !(g.hasGnoseUpgrade('gn_automation') && g.autoFollowersEnabled)
       && g.faithPoints >= g.getItemCost(follower) && (g.gnoseResets === 0 || (fps > 0 && g.getItemCost(follower) / fps < 8))) {
       return decision('follower', 'follower', buyFollower);
     }
@@ -335,7 +335,7 @@ class Simulation {
     record('first_gnose_reset', '1ª Ascensão', this.gnoseResets > 0);
     record('first_gnose_upgrade', '1º Upgrade da Gnose', g.unlockedGnoseUpgrades.size > 0, [...g.unlockedGnoseUpgrades][0]);
     for (const upg of GNOSE_UPGRADES) record(`gnose_node_${upg.id}`, upg.name, g.hasGnoseUpgrade(upg.id), `${upg.cost} Gnose · Tier ${upg.tier}`);
-    record('gnose_tree_complete', 'Árvore da Gnose (20/20)', g.unlockedGnoseUpgrades.size === GNOSE_UPGRADES.length);
+    record('gnose_tree_complete', `Árvore da Gnose (${GNOSE_UPGRADES.length}/${GNOSE_UPGRADES.length})`, g.unlockedGnoseUpgrades.size === GNOSE_UPGRADES.length);
     for (const boss of GNOSE_BOSSES) record(boss.id, boss.name, g.isBossDefeated(boss.id));
   }
 }

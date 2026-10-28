@@ -16,12 +16,12 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     gameState = new GameStateManager();
   });
 
-  it('initializes with locked gnose, 20 tree nodes across 4 tiers, and 4 mythological bosses', () => {
+  it('initializes with locked gnose, 17 tree nodes across 4 tiers, and 4 mythological bosses', () => {
     expect(gameState.isGnoseUnlocked()).toBe(false);
     expect(gameState.gnosePoints).toBe(0);
     expect(gameState.totalGnoseEarned).toBe(0);
     expect(gameState.gnoseResets).toBe(0);
-    expect(GNOSE_UPGRADES.length).toBe(20);
+    expect(GNOSE_UPGRADES.length).toBe(17);
     expect(GNOSE_BOSSES.length).toBe(4);
     expect(GNOSE_BOSSES.map((b) => b.id)).toEqual([
       'boss_anubis',
@@ -47,7 +47,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(calculateGnoseToGet(1e15)).toBe(1);
     expect(calculateGnoseToGet(1e18)).toBe(Math.floor(Math.pow(1e3, 0.15))); // 2
     expect(calculateGnoseToGet(1e25)).toBe(Math.floor(Math.pow(1e10, 0.15))); // 31
-    expect(calculateGnoseToGet(1e25, 2.5)).toBe(Math.floor(Math.pow(1e10, 0.15) * 2.5));
+    expect(calculateGnoseToGet(1e25, 0.17)).toBe(Math.floor(Math.pow(1e10, 0.17)));
   });
 
   it('performs hard DodecaDragons reset by default, re-locking earlier Selos while keeping Achievements and Defeated Bosses', () => {
@@ -188,11 +188,11 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(gameState.getFaithPerSecond()).toBeCloseTo(normalFps * 1.5, 4);
   });
 
-  it('unlocks Tiamat (Endgame Boss) only when all 20/20 Gnose nodes are assimilated and grants Crepúsculo dos Deuses on victory', () => {
+  it('unlocks Tiamat (Endgame Boss) only when the complete Gnose tree are assimilated and grants Crepúsculo dos Deuses on victory', () => {
     gameState.totalGnoseEarned = 1000;
     expect(gameState.canChallengeBoss('boss_tiamat')).toBe(false);
 
-    // Assimilate all 20 Gnose nodes
+    // Assimilate every Gnose node
     GNOSE_UPGRADES.forEach((u) => {
       gameState.unlockedGnoseUpgrades.add(u.id);
     });
@@ -268,36 +268,36 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(gameState.activeBossBattle!.bossHp).toBeGreaterThanOrEqual(initialHp * 0.975);
   });
 
-  it('evolves DodecaDragons formulas for MU6 (1 + Fiéis^1.5), MU10 (1 + Fiéis^3), and MU14 (3.5^(n^0.7))', () => {
-    expect(calculateGnoseFollowersSynergyMultiplier(10, false, false)).toBe(1);
-    expect(calculateGnoseFollowersSynergyMultiplier(10, true, false)).toBeCloseTo(1 + Math.pow(10, 1.5), 4);
-    expect(calculateGnoseFollowersSynergyMultiplier(10, true, true)).toBe(1001);
+  it('evolves only the coefficients and exponents of the existing synergy and ritual formulas', () => {
+    expect(calculateGnoseFollowersSynergyMultiplier(10, false)).toBe(1);
+    expect(calculateGnoseFollowersSynergyMultiplier(10, true)).toBeCloseTo(1 + Math.pow(10, 1.5), 4);
+    expect(calculateGnoseFollowersSynergyMultiplier(10, true, 1.6)).toBeCloseTo(1 + 10 ** 1.6, 7);
 
     const fu1 = { ...gameState.fervorUpgrades[0], level: 5 };
-    const normalFu1 = getFervorUpgradeMultiplier(fu1, 0, 0, false);
-    const boostedFu1 = getFervorUpgradeMultiplier(fu1, 0, 0, true);
+    const normalFu1 = getFervorUpgradeMultiplier(fu1, 0, 0, 2);
+    const boostedFu1 = getFervorUpgradeMultiplier(fu1, 0, 0, 2.35);
     expect(normalFu1).toBeCloseTo(Math.pow(2, Math.pow(5, 0.6)), 4);
-    expect(boostedFu1).toBeCloseTo(Math.pow(3.5, Math.pow(5, 0.7)), 4);
+    expect(boostedFu1).toBeCloseTo(Math.pow(2.35, Math.pow(5, 0.6)), 4);
     expect(boostedFu1).toBeGreaterThan(normalFu1);
   });
 
-  it('applies gn_dilatacao (Dilatação Hermética) as an exact 2x multiplier to both click and passive faith', () => {
+  it('applies Emanação to faith without unrelated resource multipliers', () => {
     gameState.followers[0].count = 10;
     const baseFpc = gameState.getFaithPerClick();
     const baseFps = gameState.getFaithPerSecond();
 
-    gameState.unlockedGnoseUpgrades.add('gn_dilatacao');
+    gameState.unlockedGnoseUpgrades.add('gn_init_faith');
 
-    expect(gameState.getFaithPerClick()).toBeCloseTo(baseFpc * 2, 5);
-    expect(gameState.getFaithPerSecond()).toBeCloseTo(baseFps * 2, 5);
+    expect(gameState.getFaithPerClick()).toBe(baseFpc);
+    expect(gameState.getFaithPerSecond()).toBeCloseTo(baseFps, 5);
   });
 
   it('makes the tier I autobuyers free after Olho do Infinito', () => {
     gameState.unlocks.forEach((u) => {
       u.unlocked = true;
     });
-    gameState.unlockedGnoseUpgrades.add('gn_auto_followers');
-    gameState.unlockedGnoseUpgrades.add('gn_auto_fervor');
+    gameState.unlockedGnoseUpgrades.add('gn_automation');
+    gameState.unlockedGnoseUpgrades.add('gn_automation');
     gameState.unlockedGnoseUpgrades.add('gn_omniscience');
 
     gameState.faithPoints = 5000;
