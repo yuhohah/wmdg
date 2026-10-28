@@ -3,7 +3,6 @@ import { AudioManager } from '../../systems/audio.js';
 import { NotificationManager } from '../../systems/notifications.js';
 import { GNOSE_UPGRADES, GNOSE_TIER_LABELS, GNOSE_MIN_FAITH_REQ } from '../../config/gnose.js';
 import { GNOSE_BOSSES } from '../../config/bosses.js';
-import { DISPLAY_CONFIG } from '../../config/display.js';
 import { formatNumber } from '../../systems/calculations.js';
 import { cultDialog } from '../../ui/CultDialog.js';
 import { BossBattleModal } from './BossBattleModal.js';
@@ -296,10 +295,6 @@ export class GnoseTab {
         nodeEl.id = `card-${upg.id}`;
         nodeEl.title = upg.desc;
 
-        const symbolHtml = DISPLAY_CONFIG.showEmojisAndSymbols
-          ? `<span class="gnose-node-symbol">${iconOrText(upg.icon)}</span>`
-          : '';
-
         const statusBadge = isUnlocked
           ? `<span class="gnose-node-badge unlocked">ASSIMILADO</span>`
           : !isTierUnlocked
@@ -309,10 +304,6 @@ export class GnoseTab {
               : `<span class="gnose-node-badge cost">${formatNumber(upg.cost)} Gnose</span>`;
 
         nodeEl.innerHTML = `
-          <div class="gnose-node-top">
-            ${symbolHtml}
-            <span class="gnose-node-title">${upg.name}</span>
-          </div>
           <div class="gnose-node-body">
             <p class="gnose-node-effect">${upg.effectText}</p>
           </div>

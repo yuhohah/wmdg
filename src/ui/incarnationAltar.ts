@@ -22,7 +22,6 @@ export class IncarnationAltar {
   private container: HTMLElement | null;
   private canvas: HTMLCanvasElement | null;
   private ctx: CanvasRenderingContext2D | null = null;
-  private nameEl: HTMLElement | null = null;
   private titleEl: HTMLElement | null = null;
   private loreEl: HTMLElement | null = null;
 
@@ -43,7 +42,6 @@ export class IncarnationAltar {
     this.options = options;
     this.container = document.getElementById(containerId);
     this.canvas = document.getElementById('incarnation-altar-canvas') as HTMLCanvasElement | null;
-    this.nameEl = document.getElementById('incarnation-altar-name');
     this.titleEl = document.getElementById('incarnation-altar-title');
     this.loreEl = document.getElementById('incarnation-altar-lore');
 
@@ -119,7 +117,6 @@ export class IncarnationAltar {
     const stageData: IncarnationStage | undefined = INCARNATION_STAGES.find((s) => s.stage === stageNumber);
 
     if (stageData) {
-      if (this.nameEl) this.nameEl.textContent = `Estágio ${stageData.stage}: ${stageData.name}`;
       if (this.titleEl) this.titleEl.textContent = stageData.title;
       if (this.loreEl) this.loreEl.textContent = `"${stageData.lore}"`;
     }
