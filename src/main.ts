@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+import { ElapsedTimeCredit } from './systems/elapsedTime.js';
 // --- App Manager for Cult of the Sphere (Modular Orchestrator) ---
 
 import { AudioManager } from './systems/audio.js';
@@ -7,6 +8,7 @@ import { SaveSystem, type SaveData } from './systems/saveSystem.js';
 import { SettingsModal } from './ui/SettingsModal.js';
 import { SaveDataModal } from './ui/SaveDataModal.js';
 import { HUDController } from './ui/HUDController.js';
+import { VisibleCardUpdates } from './ui/VisibleCardUpdates.js';
 import { GameStateManager } from './core/GameState.js';
 import { GameLoop } from './core/GameLoop.js';
 import { events, GameEvents } from './core/EventBus.js';
@@ -64,11 +66,13 @@ class AppManager {
   public achievementsTab: AchievementsTab;
   public statsTab: StatsTab;
   public testMenu?: TestMenu;
+  private cardUpdates: VisibleCardUpdates;
 
   // Save & System State
   private lastSaveTime: number = Date.now();
   public isResetting: boolean = false;
   private isHapticsEnabled: boolean = true;
+  private hiddenSinceMs: number | undefined;
   private pendingOfflineNotice?: { title: string; desc: string };
 
   constructor() {
@@ -124,9 +128,8 @@ class AppManager {
       spawnFloatingText: (x, y, t) => this.sphere.spawnFloatingText(x, y, t),
       onRelicsTransmuted: () => events.emit(GameEvents.STATE_CHANGED),
       onUpgradePurchased: () => {
+        this.renderAllLists();
         events.emit(GameEvents.STATE_CHANGED);
-        this.fervorTab.renderList();
-        this.fervorTab.updateButtonStates();
       }
     });
 
@@ -137,7 +140,6 @@ class AppManager {
       spawnFloatingText: (x, y, t) => this.sphere.spawnFloatingText(x, y, t),
       onGnoseReset: () => {
         this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
-        this.incarnationTab.updateUI();
         this.refreshAllUI();
         this.board.centerOnCard('card-altar-sphere', true);
       },
@@ -181,6 +183,8 @@ class AppManager {
         if (ok) {
           SaveSystem.save(imported);
           this.applySaveData(imported);
+          this.processOfflineGains(imported.timestamp);
+          this.saveProgress();
           this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
           this.refreshAllUI();
           return true;
@@ -198,6 +202,7 @@ class AppManager {
 
     this.settingsModal = new SettingsModal({
       audio: this.audio,
+      onOpen: () => this.statsTab.updateUI(),
       getLastSaveTime: () => this.lastSaveTime,
       onManualSave: () => this.manualSave(),
       onExportSave: () => this.saveDataModal.openExport(),
@@ -213,10 +218,10 @@ class AppManager {
     // 5. Load Progress & Sync Views
     this.loadProgress();
     this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
-    this.incarnationTab.updateUI();
 
     // 6. Setup Listeners, Initial Renders & Loops
     this.board = new BoardManager();
+    this.cardUpdates = this.setupCardUpdates();
     this.onboardingGuide.setOnFocusCard((cardId, immediate) => {
       this.board.centerOnCard(cardId, immediate);
     });
@@ -228,7 +233,6 @@ class AppManager {
     this.startPassiveFaithLoop();
     this.startAutoSaveLoop();
     this.hud.update();
-    this.statsTab.updateUI();
     this.onboardingGuide.update();
 
     // 7. Developer-only / Localhost Test Menu & Global Window Helpers
@@ -271,22 +275,20 @@ class AppManager {
 
   private setupReactiveListeners(): void {
     events.on(GameEvents.STATE_CHANGED, () => {
-      this.hud.update();
-      this.statsTab.updateUI();
+      if (this.settingsModal.isOpen()) this.statsTab.updateUI();
       this.achievementsTab.checkAchievements();
       this.achievementsTab.updateRealtime();
-      this.updateItemButtonsState();
+      this.cardUpdates.update();
+      if (this.gnoseTab.bossBattleModal.isOpen()) this.gnoseTab.bossBattleModal.updateUI();
       this.onboardingGuide.update();
     });
 
     events.on(GameEvents.GAME_TICK, () => {
-      this.statsTab.updateUI();
+      if (this.settingsModal.isOpen()) this.statsTab.updateUI();
       this.achievementsTab.checkAchievements();
-      this.updateItemButtonsState();
-      this.fervorTab.updateButtonStates();
+      this.cardUpdates.update();
+      if (this.gnoseTab.bossBattleModal.isOpen()) this.gnoseTab.bossBattleModal.updateUI();
       this.achievementsTab.updateRealtime();
-      this.incarnationTab.updateRealtime();
-      this.followersTab.updateRealtime();
       this.onboardingGuide.update();
     });
   }
@@ -300,12 +302,23 @@ class AppManager {
 
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') {
+        this.hiddenSinceMs ??= Date.now();
         if (!this.isResetting) {
           this.saveProgress();
         }
         this.gameLoop.pause();
         this.followersTab.pause();
       } else {
+        if (this.hiddenSinceMs !== undefined) {
+          this.processOfflineGains(this.hiddenSinceMs);
+          this.hiddenSinceMs = undefined;
+          this.saveProgress();
+          this.refreshAllUI();
+          if (this.pendingOfflineNotice) {
+            this.notifications.showCustomPopup(this.pendingOfflineNotice.title, this.pendingOfflineNotice.desc, 'hourglass', 'VIGÍLIA SAGRADA');
+            this.pendingOfflineNotice = undefined;
+          }
+        }
         this.gameLoop.resume();
         this.followersTab.resume();
       }
@@ -316,7 +329,7 @@ class AppManager {
     this.updateUnlockedTabsVisibility();
     this.renderAllLists();
     this.hud.update();
-    this.statsTab.updateUI();
+    if (this.settingsModal.isOpen()) this.statsTab.updateUI();
     events.emit(GameEvents.STATE_CHANGED);
   }
 
@@ -339,31 +352,35 @@ class AppManager {
   }
 
   public renderAllLists(): void {
-    this.followersTab.updateUI();
-    this.incarnationTab.updateUI();
-    this.fervorTab.renderList();
-    this.unlocksTab.renderList();
-    this.relicsTab.renderList();
-    this.gnoseTab.renderTree();
-    this.gnoseTab.updateUI();
+    this.cardUpdates.invalidateAll();
     this.achievementsTab.renderList();
   }
 
-  private updateItemButtonsState(): void {
-    this.followersTab.updateUI();
-    this.incarnationTab.updateUpgradeButtonState();
-    this.unlocksTab.updateButtonStates();
-    if (this.gameState.isRelicsUnlocked()) {
-      this.relicsTab.updateUI();
-    }
-    if (this.gameState.isGnoseUnlocked() || this.gameState.activeBossBattle) {
-      this.gnoseTab.updateUI();
-    }
+  private setupCardUpdates(): VisibleCardUpdates {
+    const views = new VisibleCardUpdates();
+    views.register('card-altar-sphere', () => {}, () => this.hud.updateCard('card-altar-sphere'));
+    views.register('card-followers', () => {}, () => this.followersTab.updateUI());
+    views.register('card-incarnation', () => this.incarnationTab.updateUI(), () => this.incarnationTab.updateRealtime());
+    views.register('card-unlocks', () => this.unlocksTab.renderList(), () => this.unlocksTab.updateButtonStates());
+    views.register('card-fervor', () => this.fervorTab.renderList(), () => {
+      this.hud.updateCard('card-fervor');
+      this.fervorTab.updateButtonStates();
+    });
+    views.register('card-relics', () => this.relicsTab.renderList(), () => this.relicsTab.updateUI());
+    views.register('card-gnose', () => this.gnoseTab.renderTree(), () => this.gnoseTab.updateUI());
+    return views;
   }
 
   private startPassiveFaithLoop(): void {
     this.gameLoop.onTick((deltaSec) => {
+      const unlockedCount = this.gameState.unlocks.filter(u => u.unlocked).length;
       this.gameState.tick(deltaSec);
+      if (this.gameState.unlocks.filter(u => u.unlocked).length !== unlockedCount) {
+        this.updateUnlockedTabsVisibility();
+        this.renderAllLists();
+      }
+      // Walkers own miracle timers; keep their population in sync even off-screen.
+      this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
       events.emit(GameEvents.GAME_TICK, deltaSec);
     });
     this.gameLoop.start();
@@ -388,6 +405,7 @@ class AppManager {
   private saveProgress(): boolean {
     if (this.isResetting) return false;
     const data = this.gameState.buildSaveData();
+    if (this.hiddenSinceMs !== undefined) data.timestamp = this.hiddenSinceMs;
     const success = SaveSystem.save(data);
     if (success) {
       this.lastSaveTime = Date.now();
@@ -403,6 +421,7 @@ class AppManager {
       this.lastSaveTime = data.timestamp || Date.now();
       if (data.timestamp) {
         this.processOfflineGains(data.timestamp);
+        this.saveProgress();
       }
       return true;
     }
@@ -413,41 +432,7 @@ class AppManager {
     if (!lastTimestamp || lastTimestamp <= 0) return;
     const now = Date.now();
     const elapsedSec = (now - lastTimestamp) / 1000;
-    // Pelo menos 15s de ausência para calcular ganhos offline
-    if (elapsedSec < 15) return;
-
-    // Teto de 24 horas (86.400 segundos) de ausência
-    const offlineSec = Math.min(86400, elapsedSec);
-
-    const fps = this.gameState.getFaithPerSecond();
-    let faithGained = 0;
-    if (fps > 0) {
-      faithGained = fps * offlineSec;
-      this.gameState.faithPoints += faithGained;
-      this.gameState.totalFaithAccumulated += faithGained;
-    }
-
-    const fervorRate = this.gameState.getFervorRatePerSecond();
-    let fervorGained = 0;
-    if (fervorRate > 0) {
-      fervorGained = fervorRate * offlineSec;
-      this.gameState.addFervor(fervorGained);
-    }
-
-    const relicRate = this.gameState.getRelicsRatePerSecond();
-    let relicGained = 0;
-    if (relicRate > 0) {
-      relicGained = relicRate * offlineSec;
-      this.gameState.addRelics(relicGained);
-    }
-
-    // Executa automações gnósticas acumuladas se desbloqueadas (até 60 ciclos)
-    if (this.gameState.hasGnoseUpgrade('gn_automation')) {
-      const autoSteps = Math.min(60, Math.floor(offlineSec));
-      for (let i = 0; i < autoSteps; i++) {
-        this.gameState.runGnoseAutomation();
-      }
-    }
+    const { faithGained, fervorGained, relicGained } = new ElapsedTimeCredit(lastTimestamp).consume(this.gameState, now);
 
     if (faithGained > 0 || fervorGained > 0 || relicGained > 0) {
       const minutes = Math.floor(elapsedSec / 60);

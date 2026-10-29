@@ -102,7 +102,7 @@ export class IncarnationTab {
       this.blessingStatusEl.textContent = `✦ 2× FÉ ATIVO · ${Math.ceil(boostSec)}s / ${maxCap}s`;
       this.blessingPanelEl?.classList.add('active');
     } else {
-      this.blessingStatusEl.textContent = 'INATIVA (Clique no Altar para +2s)';
+      this.blessingStatusEl.textContent = `INATIVA (Clique no Altar para +${BLESSING_SECONDS_PER_PRESS}s)`;
       this.blessingPanelEl?.classList.remove('active');
     }
   }
@@ -132,7 +132,7 @@ export class IncarnationTab {
     const currentStage = INCARNATION_STAGES.find((s) => s.stage === stage);
     const nextStage = INCARNATION_STAGES.find((s) => s.stage === stage + 1);
 
-    this.altar?.setStage(stage);
+    if (this.altar && this.altar.getCurrentStage() !== stage) this.altar.setStage(stage, true);
 
     if (this.stageBadgeEl) {
       const stageName = currentStage ? currentStage.name.toUpperCase() : `ESTÁGIO ${stage}`;
@@ -152,8 +152,8 @@ export class IncarnationTab {
           this.upgradeBenefitEl.textContent = `${formatNumber(nextStage.multiplier)}x Fervor/s`;
           this.upgradeBenefitEl.style.display = 'block';
         }
-        this.upgradeCostValEl.textContent = `${formatNumber(stageCost)} Fé`;
-        this.btnUpgradeEl.disabled = this.options.gameState.faithPoints < stageCost;
+        this.upgradeCostValEl.textContent = this.options.gameState.canAccessIncarnationStage(nextStage.stage) ? `${formatNumber(stageCost)} Fé` : 'Exige Gnosis Suprema';
+        this.btnUpgradeEl.disabled = !this.options.gameState.canAccessIncarnationStage(nextStage.stage) || this.options.gameState.faithPoints < stageCost;
       } else {
         this.upgradeTitleEl.textContent = 'ENCARNAÇÃO MÁXIMA';
         if (this.upgradeBenefitEl) {
@@ -173,7 +173,7 @@ export class IncarnationTab {
     const nextStage = INCARNATION_STAGES.find((s) => s.stage === this.options.gameState.incarnationStage + 1);
     if (nextStage) {
       const stageCost = this.options.gameState.getIncarnationStageCost(nextStage);
-      this.btnUpgradeEl.disabled = this.options.gameState.faithPoints < stageCost;
+      this.btnUpgradeEl.disabled = !this.options.gameState.canAccessIncarnationStage(nextStage.stage) || this.options.gameState.faithPoints < stageCost;
     }
   }
 

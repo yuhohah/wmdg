@@ -1,9 +1,12 @@
+import { ElapsedTimeCredit } from '../systems/elapsedTime.js';
+import type { SaveData } from '../systems/saveSystem.js';
 import { GameStateManager } from '../core/GameState.js';
 import { INCARNATION_STAGES, BLESSING_SECONDS_PER_PRESS } from '../config/incarnation.js';
 import { GNOSE_UPGRADES } from '../config/gnose.js';
 import { GNOSE_BOSSES } from '../config/bosses.js';
 import { calculateMiracleReward } from '../systems/calculations.js';
 import { PLAYER_BEHAVIORS, createSeededRandom, describeBehavior, manualBlessingAllowed, manualSphereAllowed, routineClicksAvailable, VisitSchedule } from './behavior.js';
+import { CampaignMetrics } from './CampaignMetrics.js';
 import { ProgressTracker } from './ProgressTracker.js';
 import { formatDuration } from './reporters.js';
 import type { ArchetypeBenchmarkResult, BenchmarkReport, ManualAction, MilestoneRecord, PlayerArchetype, SimulationOptions } from './types.js';
@@ -25,12 +28,16 @@ class Simulation {
   private readonly randomMiracles: () => number;
   private readonly randomClicks: () => number;
   private readonly progress = new ProgressTracker();
+  private readonly metrics = new CampaignMetrics();
   private readonly seed: number;
   private readonly horizon: number;
   private readonly step: number;
   private time = 0;
+  private absenceSave: SaveData | undefined;
+  private absenceCredit: ElapsedTimeCredit | undefined;
   private presentTime = 0;
   private tickSeconds = 0;
+  private tickOffset = 0;
   private nextInteraction = 0;
   private nextSphere = 0;
   private pending: { decision: Decision; due: number } | null = null;
@@ -59,30 +66,45 @@ class Simulation {
     if (!Number.isFinite(this.seed) || !Number.isInteger(this.seed)) throw new Error('Seed deve ser um inteiro finito.');
     if (!Number.isFinite(this.horizon) || this.horizon < 0) throw new Error('Duração inválida.');
     if (!Number.isFinite(this.step) || this.step <= 0 || this.step > 0.1) throw new Error('Passo deve estar entre 0 e 0,1 s.');
-    this.behavior = PLAYER_BEHAVIORS[archetype];
+    this.behavior = { ...PLAYER_BEHAVIORS[archetype], ...options.behavior };
     this.visits = new VisitSchedule(this.behavior, createSeededRandom(this.seed ^ 0x513a));
     this.randomMiracles = createSeededRandom(this.seed ^ 0xa117);
     this.randomClicks = createSeededRandom(this.seed ^ 0xc11c);
     if (options.initialSave) this.game.applySaveData(options.initialSave);
+    this.game.onBossBattleFinished = result => this.metrics.finishCombat(this.time + this.tickOffset, result.victory ? 'won' : 'lost');
     this.recordMilestones();
   }
 
   public run(): ArchetypeBenchmarkResult {
     let previousProgress = this.signature();
-    while (this.time + EPSILON < this.horizon && !this.completed()) {
+    while (this.time + EPSILON < this.horizon && !this.completed() && !(this.options.stopAfterUpgrade && this.game.hasGnoseUpgrade(this.options.stopAfterUpgrade))) {
       // Every elapsed interval advances the same state, including visits and reaction delays.
       const dt = Math.min(this.step, this.horizon - this.time, this.visits.nextTransitionSec - this.time);
       if (dt > EPSILON) {
-        this.game.tick(dt);
-        this.tickSeconds += dt;
+        const battle = this.game.activeBossBattle;
+        const hpBefore = battle?.bossHp ?? 0;
+        this.tickOffset = dt;
+        const gains = this.absenceCredit ? { faithGained: 0 } : this.game.tick(dt);
+        this.tickOffset = 0;
+        if (battle) this.metrics.damageCombat('passive', hpBefore - battle.bossHp, battle.bossMaxHp);
+        this.metrics.passiveFaith += gains.faithGained;
+        if (!this.absenceCredit) this.tickSeconds += dt;
         this.progress.advance(dt, this.visits.present);
         if (this.visits.present) this.presentTime += dt;
         this.time += dt;
-        this.updateMiracle(dt);
+        if (!this.absenceCredit) this.updateMiracle(dt);
         this.game.checkAchievements();
       }
       const transition = this.visits.update(this.time);
       if (transition) {
+        if (transition === 'arrive') this.creditAbsence();
+        else if (this.options.absenceMode && this.options.absenceMode !== 'visible') {
+          this.metrics.finishCombat(this.time, 'retreated');
+          this.game.retreatBossBattle();
+          this.absenceSave = this.game.buildSaveData();
+          this.absenceCredit = new ElapsedTimeCredit(this.time * 1000);
+          this.miracle = null;
+        }
         this.emit(transition);
         this.pending = null;
         this.occasionalBlessingPresses = 0;
@@ -91,6 +113,7 @@ class Simulation {
       }
       if (this.visits.present && this.time < this.horizon - EPSILON) this.interact();
       this.game.checkAchievements();
+      this.metrics.observe(this.time, this.game);
       const signature = this.signature();
       if (signature !== previousProgress) {
         this.progress.progress(this.time, !this.game.isIncarnationUnlocked() ? 'early' : !this.game.isGnoseUnlocked() ? 'mid' : 'late');
@@ -104,6 +127,8 @@ class Simulation {
         break;
       }
     }
+    this.creditAbsence();
+    this.options.onSnapshot?.(this.time, this.game.buildSaveData());
     this.progress.finish();
     const completed = this.completed();
     const score = !completed ? 'Incompleto'
@@ -111,6 +136,7 @@ class Simulation {
         : this.progress.deadZones.length > 0 || this.progress.maxPresentIdleSec > 3600 ? 'Lento'
           : this.progress.maxPresentIdleSec < 300 && this.presentTime < 5 * 3600 ? 'Excelente' : 'Balanceado';
     return {
+      progression: this.metrics.finish(this.time),
       status: completed ? 'completed' : this.blockedReason ? 'blocked' : 'time_limit', completed, seed: this.seed,
       blockedReason: this.blockedReason,
       maxDurationSec: this.horizon, stepSec: this.step,
@@ -131,12 +157,21 @@ class Simulation {
       firstGnoseUpgradeBought: this.milestones.find(m => m.id === 'first_gnose_upgrade')?.details,
       summaryScore: score,
       bottleneckNotes: [
-        'Jogo aberto e visível: a produção continua durante a ausência do jogador. Não simula aba oculta nem save offline.',
+        this.options.absenceMode && this.options.absenceMode !== 'visible' ? `Ausência real via ${this.options.absenceMode}, com teto de 24 h e sem ações manuais.` : 'Jogo aberto e visível: a produção continua durante a ausência do jogador. Não simula aba oculta nem save offline.',
         describeBehavior(this.archetype),
-        'Gnose por menor custo entre nós elegíveis; reserva para Selos/Encarnação. Não é uma prova de estratégia ótima.',
+        'Gnose por menor custo entre nós elegíveis; Auto-Fiéis usa a mesma reserva por objetivo do jogo. Não é uma prova de estratégia ótima.',
         ...(this.blockedReason ? [this.blockedReason] : !completed ? [`Campanha não concluída no limite de ${formatDuration(this.horizon)}.`] : []),
       ],
     };
+  }
+
+  private creditAbsence(): void {
+    if (!this.absenceCredit) return;
+    if (this.options.absenceMode === 'save' && this.absenceSave) this.game.applySaveData(this.absenceSave);
+    const gains = this.absenceCredit.consume(this.game, this.time * 1000);
+    this.metrics.passiveFaith += gains.faithGained;
+    this.tickSeconds += gains.seconds;
+    this.absenceCredit = undefined; this.absenceSave = undefined;
   }
 
   private emit(kind: 'action' | 'arrive' | 'leave' | 'miracle_spawn' | 'miracle_expire', action?: ManualAction): void {
@@ -181,10 +216,15 @@ class Simulation {
     let action: ManualAction | null = null;
     // All manual events share the same finite interaction budget.
     const rift = !this.awaitingConfirmation && g.activeBossBattle?.activeRifts.find(r => r.maxSec - r.remainingSec + EPSILON >= this.behavior.riftResponseSec);
-    if (rift && g.clickBossRift(rift.id).shattered) {
+    const battleBeforeRift = g.activeBossBattle;
+    const hpBeforeRift = battleBeforeRift?.bossHp ?? 0;
+    const riftHit = rift ? g.clickBossRift(rift.id) : undefined;
+    if (riftHit?.shattered) {
+      if (battleBeforeRift) this.metrics.damageCombat('rift', Math.min(hpBeforeRift, riftHit.damage), battleBeforeRift.bossMaxHp);
       action = 'rift';
     } else if (!this.awaitingConfirmation && this.miracle?.willing && this.time + EPSILON >= this.miracle.born + this.behavior.miracleResponseSec) {
       const reward = calculateMiracleReward(g.faithPoints, g.getFaithPerClick(), g.getFaithPerSecond());
+      this.metrics.miracleFaith += reward;
       g.faithPoints += reward;
       g.totalFaithAccumulated += reward;
       this.miracle = null;
@@ -194,12 +234,17 @@ class Simulation {
       // Re-evaluate eligibility: state may have changed during the reaction delay.
       const current = this.chooseDecision();
       const ready = this.pending.decision;
+      const productionBefore = g.getFaithPerSecond();
       this.pending = null;
-      if (current?.key === ready.key && current.execute()) action = current.action;
+      if (current?.key === ready.key && current.execute()) {
+        action = current.action;
+        this.metrics.afterPurchase(this.time, action, productionBefore, g.getFaithPerSecond());
+        if (action === 'gnose_upgrade') this.options.onSnapshot?.(this.time, g.buildSaveData());
+      }
     } else if (!this.awaitingConfirmation && manualBlessingAllowed(this.behavior, this.time)
       && g.isIncarnationUnlocked() && !g.hasGnoseUpgrade('gn_bencao_eterna')
       && ((this.behavior.blessingMode === 'maintain'
-        && g.incarnationBoostTimer <= this.behavior.blessingTargetSec - BLESSING_SECONDS_PER_PRESS + EPSILON)
+        && g.incarnationBoostTimer <= Math.max(0, this.behavior.blessingTargetSec - BLESSING_SECONDS_PER_PRESS) + EPSILON)
         || this.occasionalBlessingPresses > 0)) {
       g.addIncarnationBoost(BLESSING_SECONDS_PER_PRESS);
       this.occasionalBlessingPresses = Math.max(0, this.occasionalBlessingPresses - 1);
@@ -211,7 +256,11 @@ class Simulation {
         : g.getTotalFollowersCount() === 0 ? this.behavior.initialClickCps
           : routineClicksAvailable(this.behavior, this.time, this.visits.visitStartedAtSec) ? this.behavior.routineClickCps : 0;
       if (cps > 0 && this.time + EPSILON >= this.nextSphere) {
+        const battle = g.activeBossBattle;
+        const hpBefore = battle?.bossHp ?? 0;
         const result = g.addClick(this.randomClicks);
+        if (battle) this.metrics.damageCombat('sphere', Math.min(hpBefore, result.bossClickDamage), battle.bossMaxHp);
+        this.metrics.clickFaith += result.fpc;
         this.clicks++;
         if (recovery) this.recoveryClicks++;
         if (result.isCrit) this.criticalClicks++;
@@ -251,6 +300,7 @@ class Simulation {
     const decision = (key: string, action: ManualAction, execute: () => boolean): Decision => ({ key, action, execute });
     const ascend = () => {
       this.awaitingConfirmation = false;
+      this.metrics.beforeReset(this.time, g);
       const result = g.performGnoseReset();
       if (result.success) this.gnoseResets++;
       return result.success;
@@ -261,17 +311,36 @@ class Simulation {
     if (g.getTotalFollowersCount() === 0 && g.faithPoints >= g.getItemCost(follower)) {
       return decision('bootstrap', 'follower', buyFollower);
     }
-    const nextGnose = GNOSE_UPGRADES.filter(u => !g.hasGnoseUpgrade(u.id)
-      && g.isGnoseTierUnlocked(u.tier) && u.prerequisites.every(id => g.hasGnoseUpgrade(id)))
-      .sort((a, b) => a.cost - b.cost)[0];
+    const eligibleGnose = GNOSE_UPGRADES.filter(u => !g.hasGnoseUpgrade(u.id)
+      && g.isGnoseTierUnlocked(u.tier) && u.prerequisites.every(id => g.hasGnoseUpgrade(id)));
+    const cheapestGnoseCost = Math.min(...eligibleGnose.map(u => u.cost));
+    const nextGnose = eligibleGnose.sort((a, b) => {
+        const score = (u: typeof a) => u.cost <= cheapestGnoseCost * 1.25 && g.unlockedGnoseUpgrades.size < 8 && this.options.purchasePriority === 'comfort' && /automation|keep_relics|bencao/.test(u.id) ? u.cost / 5
+          : u.cost <= cheapestGnoseCost * 1.25 && g.unlockedGnoseUpgrades.size < 8 && this.options.purchasePriority === 'production' && /followers_syn|init_fervor|fu1_boost/.test(u.id) ? u.cost / 5 : u.cost;
+        return score(a) - score(b);
+      })[0];
+    const remainingGnose = Math.max(1, (nextGnose?.cost ?? 1) - g.gnosePoints);
+    const desiredGnose = this.options.resetPolicy === 'immediate' ? 1 : Math.max(1, Math.ceil(
+      this.options.resetPolicy === 'short' ? Math.min(remainingGnose, (nextGnose?.cost ?? 1) * 0.9)
+        : remainingGnose * (this.options.resetPolicy === 'long' ? 1.05 : 1)));
+    if (nextGnose && nextGnose.cost > g.gnosePoints && g.isGnoseUnlocked()
+      && (g.automationGoal !== 'gnose' || g.automationGnoseTarget !== desiredGnose)) {
+      return decision(`goal-${desiredGnose}`, 'goal', () => {
+        g.automationGoal = 'gnose'; g.automationGnoseTarget = desiredGnose; return true;
+      });
+    }
     if (nextGnose && g.canBuyGnoseUpgrade(nextGnose)) {
       return decision(nextGnose.id, 'gnose_upgrade', () => g.buyGnoseUpgrade(nextGnose.id));
     }
     const boss = GNOSE_BOSSES.find(b => g.canChallengeBoss(b.id));
     if (boss && g.bossCurseTimerSec === 0) {
-      return decision(boss.id, 'challenge', () => g.startBossBattle(boss.id));
+      return decision(boss.id, 'challenge', () => {
+        const started = g.startBossBattle(boss.id);
+        if (started) this.metrics.startCombat(this.time, g);
+        return started;
+      });
     }
-    if (nextGnose && g.getGnoseToGet() >= Math.max(1, nextGnose.cost - g.gnosePoints)) {
+    if (nextGnose && g.getGnoseToGet() >= desiredGnose) {
       return decision('gnose', 'gnose', () => {
         if (!g.confirmGnoseReset) return ascend();
         this.awaitingConfirmation = true;
@@ -283,17 +352,27 @@ class Simulation {
       return decision(unlock.id, 'unlock', () => g.buyUnlock(unlock));
     }
     const incarnation = INCARNATION_STAGES.find(s => s.stage === g.incarnationStage + 1);
-    if (incarnation && g.isIncarnationUnlocked() && g.faithPoints >= g.getIncarnationStageCost(incarnation)) {
+    if (incarnation && g.isIncarnationUnlocked() && g.canAccessIncarnationStage(incarnation.stage) && g.faithPoints >= g.getIncarnationStageCost(incarnation)) {
       return decision(`incarnation-${incarnation.stage}`, 'incarnation', () => g.upgradeIncarnation());
     }
-    const relic = g.isRelicsUnlocked() ? g.relicUpgrades.find(r => r.level < r.maxLevel && g.relicPoints >= r.cost) : undefined;
-    if (relic) return decision(relic.id, 'relic', () => g.buyRelicUpgrade(relic));
-    if (g.isFervorUpgradesUnlocked() && !(g.hasGnoseUpgrade('gn_automation') && g.autoFervorEnabled)) {
+    const routineDuty = Number.isFinite(this.behavior.routineBurstEverySec)
+      ? this.behavior.routineBurstDurationSec / this.behavior.routineBurstEverySec : 1;
+    const routineCps = manualSphereAllowed(this.behavior, this.time) ? this.behavior.routineClickCps * routineDuty : 0;
+    const fps = g.getFaithPerSecond() + routineCps * g.getFaithPerClick();
+    const savingForUnlock = unlock?.costCurrency === 'faith' && fps > 0 && (unlock.cost - g.faithPoints) / fps < 180;
+    const savingForIncarnation = incarnation && g.canAccessIncarnationStage(incarnation.stage) && g.isIncarnationUnlocked() && fps > 0
+      && (g.getIncarnationStageCost(incarnation) - g.faithPoints) / fps < 180;
+    const ascensionTarget = nextGnose && g.isGnoseUnlocked()
+      ? 1e15 * Math.max(1, nextGnose.cost - g.gnosePoints) ** (1 / g.getGnoseGainExponent()) : Infinity;
+    const savingForGnose = fps > 0 && (ascensionTarget - g.faithPoints) / fps < 180;
+    const relic = g.isRelicsUnlocked() && !(g.hasGnoseUpgrade('gn_relic_automation') && g.autoRelicUpgradesEnabled) ? g.relicUpgrades.find(r => r.level < r.maxLevel && g.relicPoints >= r.cost) : undefined;
+    if (relic) return decision(relic.id, 'relic', () => g.hasGnoseUpgrade('gn_memoria_selos') ? g.buyMaxRelicUpgrade(relic) > 0 : g.buyRelicUpgrade(relic));
+    if (g.isFervorUpgradesUnlocked() && !(g.hasGnoseUpgrade('gn_ritual_automation') && g.autoFervorEnabled)) {
       const rito = g.fervorUpgrades.filter(u => (u.id !== 'fu_relics' || g.isPhoenixRelicUnlocked()) && g.fervorPoints >= g.getFervorUpgradeCost(u))
         .sort((a, b) => g.getFervorUpgradeCost(a) - g.getFervorUpgradeCost(b))[0];
-      if (rito) return decision(rito.id, 'fervor', () => g.buyFervorUpgrade(rito));
+      if (rito) return decision(rito.id, 'fervor', () => g.hasGnoseUpgrade('gn_memoria_selos') ? g.buyMaxFervorUpgrade(rito) > 0 : g.buyFervorUpgrade(rito));
     }
-    const passiveRelics = (g.hasGnoseUpgrade('gn_automation') && g.autoRelicsEnabled) || g.relicUpgrades[4].level > 0;
+    const passiveRelics = (g.hasGnoseUpgrade('gn_omniscience') && g.autoRelicsEnabled) || g.relicUpgrades[4].level > 0;
     const transmute = g.getRelicsToGet();
     if (g.isRelicsUnlocked() && g.relicConvertCooldown === 0 && transmute >= 15
       && ((!passiveRelics && transmute >= Math.max(20, g.relicPoints * 1.5)) || g.bestRelicsToGet === 0)) {
@@ -303,14 +382,7 @@ class Simulation {
         return result.success;
       });
     }
-    const routineDuty = Number.isFinite(this.behavior.routineBurstEverySec)
-      ? this.behavior.routineBurstDurationSec / this.behavior.routineBurstEverySec : 1;
-    const routineCps = manualSphereAllowed(this.behavior, this.time) ? this.behavior.routineClickCps * routineDuty : 0;
-    const fps = g.getFaithPerSecond() + routineCps * g.getFaithPerClick();
-    const savingForUnlock = unlock?.costCurrency === 'faith' && fps > 0 && (unlock.cost - g.faithPoints) / fps < 180;
-    const savingForIncarnation = incarnation && g.isIncarnationUnlocked() && fps > 0
-      && (g.getIncarnationStageCost(incarnation) - g.faithPoints) / fps < 180;
-    if (!savingForUnlock && !savingForIncarnation && !(g.hasGnoseUpgrade('gn_automation') && g.autoFollowersEnabled)
+    if (g.shouldInvestInFollower() && !savingForUnlock && !savingForIncarnation && !savingForGnose && !(g.hasGnoseUpgrade('gn_automation') && g.autoFollowersEnabled)
       && g.faithPoints >= g.getItemCost(follower) && (g.gnoseResets === 0 || (fps > 0 && g.getItemCost(follower) / fps < 8))) {
       return decision('follower', 'follower', buyFollower);
     }
@@ -347,6 +419,7 @@ export class ProgressionSimulator {
 
   public static runFullBenchmark(options: SimulationOptions = {}): BenchmarkReport {
     return { timestamp: Date.now(), results: {
+      reference: this.runArchetype('reference', options),
       active: this.runArchetype('active', options),
       casual: this.runArchetype('casual', options),
       afk: this.runArchetype('afk', options),

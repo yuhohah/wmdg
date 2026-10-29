@@ -128,8 +128,9 @@
 }
 
 #card-gnose .dodeca-card-body {
-  max-height: none;
-  overflow: visible;
+  max-height: calc(100dvh - 240px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Sanctum Gnosticum takes the Via Stellarum tower once held by the Pantheon */
@@ -525,8 +526,7 @@
   white-space: nowrap;
 }
 
-.gnose-toggles-group,
-.gnose-automation-panel {
+.gnose-toggles-group {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -546,6 +546,39 @@
   accent-color: #c49850;
   cursor: pointer;
   margin: 0;
+}
+
+.card-automation-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 18px;
+  margin: 4px 0;
+  padding: 0;
+  box-sizing: border-box;
+  border: 0;
+  background: none;
+  color: var(--gold-light, #f6dc9a);
+  font: 16px/1 var(--font-game);
+  cursor: pointer;
+}
+
+.card-automation-toggle[hidden] { display: none; }
+
+.card-automation-toggle input {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: #c49850;
+  cursor: pointer;
+}
+
+.card-automation-toggle > span { min-width: 0; }
+
+.card-automation-toggle:focus-within {
+  outline: 2px solid var(--gold-light, #f6dc9a);
+  outline-offset: 2px;
 }
 
 .gnose-upgrades-tree {
@@ -888,3 +921,15 @@ body.is-playing .bg-landscape-layer {
   visibility: visible;
   transition-delay: 0s;
 }
+
+.automation-goal-control { display: grid; gap: 6px; margin: 12px 0; font-size: 12px; }
+.automation-goal-control select, .automation-goal-control input {
+  min-width: 0; width: 100%; padding: 8px; color: var(--text-primary, #eee5ce);
+  background: #15131d; border: 1px solid #65562f; border-radius: 4px; font: inherit;
+}
+.automation-goal-control p { margin: 0; color: #c5b889; line-height: 1.5; }
+.automation-goal-control [hidden] { display: none; }
+
+.btn-ritual-max { margin-top: 8px; padding: 6px 10px; border: 1px solid #776339; border-radius: 4px;
+  background: #24202b; color: #e8d7a1; font: inherit; cursor: pointer; }
+.btn-ritual-max:focus-visible { outline: 2px solid #ead08d; outline-offset: 2px; }

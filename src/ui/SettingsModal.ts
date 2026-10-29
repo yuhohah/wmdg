@@ -2,6 +2,7 @@ import { AudioManager } from '../systems/audio.js';
 
 export interface SettingsModalOptions {
   audio: AudioManager;
+  onOpen?: () => void;
   getLastSaveTime: () => number;
   onManualSave: () => void;
   onExportSave: () => void;
@@ -177,7 +178,9 @@ export class SettingsModal {
   }
 
   public open(): void {
+    this.modalEl?.classList.add('open');
     this.updateSaveStatus();
+    this.options.onOpen?.();
     if (this.volumeSliderEl) {
       this.volumeSliderEl.value = String(Math.round(this.options.audio.getVolume() * 100));
     }
@@ -190,7 +193,6 @@ export class SettingsModal {
     if (this.hapticsToggleEl && this.options.isHapticsEnabled) {
       this.hapticsToggleEl.checked = this.options.isHapticsEnabled();
     }
-    this.modalEl?.classList.add('open');
   }
 
   public close(): void {
@@ -214,7 +216,7 @@ export class SettingsModal {
   }
 
   public updateSaveStatus(): void {
-    if (!this.saveStatusTextEl) return;
+    if (!this.isOpen() || !this.saveStatusTextEl) return;
     const lastTime = this.options.getLastSaveTime();
     const diffSec = Math.floor((Date.now() - lastTime) / 1000);
     if (diffSec < 5) {

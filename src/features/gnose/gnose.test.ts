@@ -16,12 +16,12 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     gameState = new GameStateManager();
   });
 
-  it('initializes with locked gnose, 17 tree nodes across 4 tiers, and 4 mythological bosses', () => {
+  it('initializes with locked gnose, 20 tree nodes across 4 tiers, and 4 mythological bosses', () => {
     expect(gameState.isGnoseUnlocked()).toBe(false);
     expect(gameState.gnosePoints).toBe(0);
     expect(gameState.totalGnoseEarned).toBe(0);
     expect(gameState.gnoseResets).toBe(0);
-    expect(GNOSE_UPGRADES.length).toBe(17);
+    expect(GNOSE_UPGRADES.length).toBe(20);
     expect(GNOSE_BOSSES.length).toBe(4);
     expect(GNOSE_BOSSES.map((b) => b.id)).toEqual([
       'boss_anubis',
@@ -37,6 +37,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(gnoseUnlock?.cost).toBe(1e15);
     expect(gnoseUnlock?.prerequisiteId).toBe('unlock_relics');
 
+    gameState.unlocks.find(u => u.id === 'unlock_relics')!.unlocked = true;
     gameState.faithPoints = 1e15;
     expect(gameState.buyUnlock(gnoseUnlock!)).toBe(true);
     expect(gameState.isGnoseUnlocked()).toBe(true);
@@ -45,8 +46,8 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
   it('calculates Gnose gain on the DodecaDragons sub-exponential curve', () => {
     expect(calculateGnoseToGet(9.99e14)).toBe(0);
     expect(calculateGnoseToGet(1e15)).toBe(1);
-    expect(calculateGnoseToGet(1e18)).toBe(Math.floor(Math.pow(1e3, 0.15))); // 2
-    expect(calculateGnoseToGet(1e25)).toBe(Math.floor(Math.pow(1e10, 0.15))); // 31
+    expect(calculateGnoseToGet(1e18)).toBe(Math.floor(Math.pow(1e3, 0.25))); // 2
+    expect(calculateGnoseToGet(1e25)).toBe(Math.floor(Math.pow(1e10, 0.25))); // 31
     expect(calculateGnoseToGet(1e25, 0.17)).toBe(Math.floor(Math.pow(1e10, 0.17)));
   });
 
@@ -112,7 +113,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
   });
 
   it('enforces Guardian Boss locks on Tiers II, III, IV and applies Memória Hermética and Cripta Eterna on reset', () => {
-    gameState.gnosePoints = 150;
+    gameState.gnosePoints = GNOSE_UPGRADES.reduce((sum, u) => sum + u.cost, 0);
     gameState.totalGnoseEarned = 150;
 
     expect(gameState.buyGnoseUpgrade('gn_init_faith')).toBe(true);
@@ -128,10 +129,10 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(gameState.isGnoseTierUnlocked(2)).toBe(true);
     expect(gameState.buyGnoseUpgrade('gn_keep_relics')).toBe(true);
 
-    // Memória Hermética unlocks earlier Selos immediately and enables Convert Max at 0 followers
+    // Memória Hermética now opens only Encarnação and Converter Máximo.
     expect(gameState.isIncarnationUnlocked()).toBe(true);
-    expect(gameState.isFervorUpgradesUnlocked()).toBe(true);
-    expect(gameState.isRelicsUnlocked()).toBe(true);
+    expect(gameState.isFervorUpgradesUnlocked()).toBe(false);
+    expect(gameState.isRelicsUnlocked()).toBe(false);
     expect(gameState.isConvertMaxUnlocked()).toBe(true);
 
     // Upgrade a relic, then perform Gnose reset
@@ -140,11 +141,11 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     const res = gameState.performGnoseReset();
     expect(res.success).toBe(true);
 
-    // Starts with 1000 Fé (gn_init_faith), keeps Selos open (gn_memoria_selos), keeps Relics (gn_keep_relics)
+    // Starts with 1000 Fé (gn_init_faith), keeps only Encarnação open (gn_memoria_selos), keeps Relics (gn_keep_relics)
     expect(gameState.faithPoints).toBe(1000);
     expect(gameState.isIncarnationUnlocked()).toBe(true);
-    expect(gameState.isFervorUpgradesUnlocked()).toBe(true);
-    expect(gameState.isRelicsUnlocked()).toBe(true);
+    expect(gameState.isFervorUpgradesUnlocked()).toBe(false);
+    expect(gameState.isRelicsUnlocked()).toBe(false);
     expect(gameState.relicUpgrades[0].level).toBe(15);
   });
 
@@ -281,15 +282,15 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(boostedFu1).toBeGreaterThan(normalFu1);
   });
 
-  it('applies Emanação to faith without unrelated resource multipliers', () => {
+  it('grants the first permanent follower synergy through Emanação', () => {
     gameState.followers[0].count = 10;
     const baseFpc = gameState.getFaithPerClick();
     const baseFps = gameState.getFaithPerSecond();
 
     gameState.unlockedGnoseUpgrades.add('gn_init_faith');
 
-    expect(gameState.getFaithPerClick()).toBe(baseFpc);
-    expect(gameState.getFaithPerSecond()).toBeCloseTo(baseFps, 5);
+    expect(gameState.getFaithPerClick()).toBeCloseTo(baseFpc * 4 * (1 + Math.sqrt(10)), 5);
+    expect(gameState.getFaithPerSecond()).toBeCloseTo(baseFps * 4 * (1 + Math.sqrt(10)), 5);
   });
 
   it('makes the tier I autobuyers free after Olho do Infinito', () => {
@@ -297,7 +298,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
       u.unlocked = true;
     });
     gameState.unlockedGnoseUpgrades.add('gn_automation');
-    gameState.unlockedGnoseUpgrades.add('gn_automation');
+    gameState.unlockedGnoseUpgrades.add('gn_ritual_automation');
     gameState.unlockedGnoseUpgrades.add('gn_omniscience');
 
     gameState.faithPoints = 5000;

@@ -24,15 +24,25 @@ export interface PlayerBehavior {
   absenceMaxSec: number;
 }
 
-export const PLAYER_BEHAVIORS: Record<PlayerArchetype, Readonly<PlayerBehavior>> = {
-  active: {
+const INTENSE_BEHAVIOR: Readonly<PlayerBehavior> = {
     name: 'Ativo (presença contínua)', initialClickCps: 5, routineClickCps: 2,
     combatClickCps: 5, maxInteractionCps: 5, decisionDelaySec: 3,
     miracleCatchChance: 0.95, miracleResponseSec: 1, riftResponseSec: 0.3,
     blessingTargetSec: 60, blessingMode: 'maintain', sphereManualUntilSec: Infinity, postGnoseRecoveryClicks: false, blessingManualUntilSec: Infinity,
     routineBurstEverySec: Infinity, routineBurstDurationSec: Infinity,
     initialVisitDurationSec: Infinity, visitDurationSec: Infinity, absenceMinSec: 0, absenceMaxSec: 0,
-  },
+  };
+
+/** Hypothesis for the campaign acceptance suite; intense active remains unchanged. */
+export const REFERENCE_BEHAVIOR: Readonly<PlayerBehavior> = {
+  ...INTENSE_BEHAVIOR, name: 'Ativo de referência', initialClickCps: 2,
+  routineClickCps: 2, routineBurstEverySec: 60, routineBurstDurationSec: 10,
+  miracleCatchChance: 0.7,
+};
+
+export const PLAYER_BEHAVIORS: Record<PlayerArchetype, Readonly<PlayerBehavior>> = {
+  reference: REFERENCE_BEHAVIOR,
+  active: INTENSE_BEHAVIOR,
   casual: {
     name: 'Casual (8 min de jogo a cada 20 min)', initialClickCps: 2, routineClickCps: 1,
     combatClickCps: 3.5, maxInteractionCps: 3.5, decisionDelaySec: 5,
@@ -66,6 +76,7 @@ export function routineClicksAvailable(behavior: Readonly<PlayerBehavior>, nowSe
 }
 
 export function describeBehavior(profile: PlayerArchetype): string {
+  if (profile === 'reference') return 'Referência: 2 cliques/s em rajadas de 10 s por minuto, 70% dos milagres e orçamento compartilhado de compras, Bênção e combate.';
   if (profile === 'active') return 'Ativo: presença contínua, cliques rotineiros e manutenção manual do 2×.';
   if (profile === 'casual') return 'Casual: sessões de 8 min a cada 20 min (12 min ausente); cliques contínuos a 1/s durante a presença, compras/prestígios e manutenção manual do 2× até 6 s de carga.';
   return 'AFK: compras e prestígios contínuos; cliques na Esfera e ativação manual do 2× antes dos 10 min de tempo total; após Gnose, permite apenas cliques de recuperação até haver Fé para o primeiro fiel, sem reativar o 2× manual.';
@@ -100,7 +111,7 @@ export class VisitSchedule {
       return 'arrive';
     }
     this.nextTransitionSec = nowSec + this.behavior.absenceMinSec
-      + this.random() * (this.behavior.absenceMaxSec - this.behavior.absenceMinSec);
+      + (this.behavior.absenceMaxSec === this.behavior.absenceMinSec ? 0 : this.random() * (this.behavior.absenceMaxSec - this.behavior.absenceMinSec));
     return 'leave';
   }
 }

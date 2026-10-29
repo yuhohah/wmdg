@@ -170,7 +170,7 @@ export class TestMenu {
             </div>
             <div class="test-grid">
               <button id="run-benchmark-btn" class="test-btn test-action-btn test-highlight" data-action="run-progression-benchmark" style="grid-column: 1 / -1; background: linear-gradient(135deg, #b45309, #d97706); color: #fff; font-weight: bold; padding: 10px;">
-                ${icon('bolt')} Simular Curva de Progressão (Ativo vs Casual vs AFK)
+                ${icon('bolt')} Simular Curva de Progressão (Referência vs Ativo intenso vs Casual vs AFK)
               </button>
             </div>
             <div id="benchmark-results-container" style="display: none; margin-top: 10px; max-height: 280px; overflow-y: auto; background: rgba(0,0,0,0.5); padding: 10px; border: 1px solid #d97706; border-radius: 6px;"></div>
@@ -250,7 +250,7 @@ export class TestMenu {
         const btn = this.overlayEl?.querySelector<HTMLButtonElement>('#run-benchmark-btn');
         if (container) {
           container.style.display = 'block';
-          container.innerHTML = `<div style="color: #fbbf24; text-align: center; padding: 12px;">${icon('hourglass')} Preparando simulação por sessões (Ativo, Casual, AFK)...</div>`;
+          container.innerHTML = `<div style="color: #fbbf24; text-align: center; padding: 12px;">${icon('hourglass')} Preparando simulação por sessões (Referência, Ativo intenso, Casual, AFK)...</div>`;
           if (btn) btn.disabled = true;
 
           try {
@@ -263,7 +263,7 @@ export class TestMenu {
             worker.onmessage = (event: MessageEvent<BenchmarkWorkerMessage>) => {
               const message = event.data;
               if (message.kind === 'progress') {
-                const names = { active: 'Ativo', casual: 'Casual', afk: 'AFK' };
+                const names = { reference: 'Ativo de referência', active: 'Ativo', casual: 'Casual', afk: 'AFK' };
                 container.textContent = `Simulando ${names[message.profile]} com visitas e passos de 0,1 s...`;
               } else {
                 if (message.kind === 'done') container.innerHTML = formatHtmlReport(message.report);

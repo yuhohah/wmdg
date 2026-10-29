@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ProgressionSimulator } from './ProgressionSimulator.js';
-import { PLAYER_BEHAVIORS, manualBlessingAllowed, manualSphereAllowed, VisitSchedule } from './behavior.js';
+import { PLAYER_BEHAVIORS, REFERENCE_BEHAVIOR, manualBlessingAllowed, manualSphereAllowed, VisitSchedule } from './behavior.js';
 import { ProgressTracker } from './ProgressTracker.js';
 import { GNOSE_UPGRADES } from '../config/gnose.js';
 import { GameStateManager } from '../core/GameState.js';
@@ -150,7 +150,7 @@ describe('Reference progression simulation', () => {
     expect(recovery.every(e => e.timeSec < recruitment!.timeSec)).toBe(true);
     expect(result.status).toBe('time_limit');
     expect(result.blockedReason).toBeUndefined();
-    const report = { timestamp: 0, results: { active: result, casual: result, afk: result } };
+    const report = { timestamp: 0, results: { reference: result, active: result, casual: result, afk: result } };
     expect(formatTerminalReport(report)).toContain('Cliques de recuperação após Gnose');
     expect(formatHtmlReport(report)).toContain('Cliques de recuperação após Gnose');
   });
@@ -225,7 +225,7 @@ describe('Reference progression simulation', () => {
     expect(result.completed).toBe(false);
     expect(result.status).toBe('time_limit');
     expect(result.summaryScore).toBe('Incompleto');
-    const report = { timestamp: 0, results: { active: result, casual: result, afk: result } };
+    const report = { timestamp: 0, results: { reference: result, active: result, casual: result, afk: result } };
     expect(formatTerminalReport(report)).toContain('Incompleto');
     expect(formatHtmlReport(report)).toContain('Incompleto');
   });
@@ -262,6 +262,30 @@ describe('Reference progression simulation', () => {
     expect(schedule.update(1680)).toBe('leave');
   });
 
+  it('limits reference sphere clicks to ten-second bursts within the shared action budget', () => {
+    const g = new GameStateManager(); g.followers[0].count = 10;
+    const events: BenchmarkEvent[] = [];
+    const result = ProgressionSimulator.runArchetype('active', { initialSave: g.buildSaveData(), maxDurationSec: 180,
+      behavior: REFERENCE_BEHAVIOR, onEvent: event => events.push(event) });
+    const clicks = events.filter(e => e.action === 'sphere');
+    expect(clicks.length).toBeGreaterThan(0);
+    expect(clicks.every(e => (e.timeSec + 1e-8) % 60 < 10 + 1e-6)).toBe(true);
+    expect(result.sphereClicks).toBeLessThanOrEqual(60);
+    expect(result.manualActions).toBeLessThanOrEqual(result.presentTimeSec * REFERENCE_BEHAVIOR.maxInteractionCps + 1);
+  });
+
+  it.each(['hidden', 'save'] as const)('uses actual %s absence with no manual actions or duplicate integration', absenceMode => {
+    const g = new GameStateManager(); g.followers[0].count = 10;
+    const events: BenchmarkEvent[] = [];
+    const result = ProgressionSimulator.runArchetype('casual', { initialSave: g.buildSaveData(), maxDurationSec: 1250,
+      absenceMode, onEvent: event => events.push(event) });
+    expect(result.visits).toBe(2);
+    expect(events.filter(e => e.kind === 'action').every(e => e.present)).toBe(true);
+    expect(result.progression.income.passive).toBeGreaterThan(0);
+    expect(result.presentTimeSec + result.awayTimeSec).toBeCloseTo(1250, 5);
+    expect(result.simulatedTickSeconds).toBeCloseTo(1250, 5);
+  });
+
   it('rejects coarse integration instead of silently changing the model', () => {
     expect(() => ProgressionSimulator.runArchetype('active', { stepSec: 5 })).toThrow();
   });
@@ -281,12 +305,20 @@ describe('Reference progression simulation', () => {
     expect(fine.sphereClicks).toBe(coarse.sphereClicks);
   });
 
-  it('completes the active campaign through legal actions without a prescribed boss timetable', () => {
-    const result = ProgressionSimulator.runArchetype('active', { maxDurationSec: 18 * 3600 });
+  it('completes the expanded active campaign through legal actions without a prescribed boss timetable', () => {
+    // Separate seal/automation purchases and weaker initial rituals extend the campaign.
+    const result = ProgressionSimulator.runArchetype('active', { maxDurationSec: 36 * 3600 });
     expect(result.status).toBe('completed');
     expect(result.completed).toBe(true);
     expect(result.gnoseUpgradesBought).toBe(GNOSE_UPGRADES.length);
     expect(result.bossesDefeated).toBe(4);
+    const won = result.progression.combat.filter(b => b.result === 'won');
+    expect(won).toHaveLength(4);
+    for (const battle of won) {
+      expect(battle.passiveHpFraction + battle.sphereHpFraction + battle.riftHpFraction).toBeCloseTo(1, 8);
+      expect(battle.endSec).toBeGreaterThan(battle.startSec);
+    }
+    expect(result.actionsByType.automation_toggle ?? 0).toBe(0); // Objective-aware automation needs no manual pausing.
     expect(result.milestones.at(-1)?.id).toBe('boss_tiamat');
     expect(result.milestones.every((m, i, all) => i === 0 || m.gameTimeSec >= all[i - 1].gameTimeSec)).toBe(true);
     expect(Object.values(result.finalResources).every(Number.isFinite)).toBe(true);

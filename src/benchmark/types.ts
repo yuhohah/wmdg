@@ -1,7 +1,7 @@
-export type PlayerArchetype = 'active' | 'casual' | 'afk';
+export type PlayerArchetype = 'reference' | 'active' | 'casual' | 'afk';
 
 export type ManualAction = 'sphere' | 'blessing' | 'miracle' | 'rift' | 'follower'
-  | 'fervor' | 'relic' | 'unlock' | 'incarnation' | 'transmutation' | 'gnose' | 'gnose_confirm' | 'gnose_upgrade' | 'challenge';
+  | 'fervor' | 'relic' | 'unlock' | 'incarnation' | 'transmutation' | 'gnose' | 'gnose_confirm' | 'gnose_upgrade' | 'challenge' | 'automation_toggle' | 'goal';
 
 export interface BenchmarkEvent {
   timeSec: number;
@@ -12,6 +12,12 @@ export interface BenchmarkEvent {
 
 export interface SimulationOptions {
   seed?: number;
+  behavior?: Partial<import('./behavior.js').PlayerBehavior>;
+  absenceMode?: 'visible' | 'hidden' | 'save';
+  stopAfterUpgrade?: string;
+  resetPolicy?: 'immediate' | 'short' | 'medium' | 'long';
+  purchasePriority?: 'cost' | 'comfort' | 'production';
+  onSnapshot?: (timeSec: number, save: import('../systems/saveSystem.js').SaveData) => void;
   maxDurationSec?: number;
   /** Numerical reference is at most 100 ms, matching the normal game loop. */
   stepSec?: number;
@@ -41,6 +47,7 @@ export interface DeadZone {
 }
 
 export interface ArchetypeBenchmarkResult {
+  progression: import('./CampaignMetrics.js').CampaignMetricsResult;
   status: 'completed' | 'time_limit' | 'blocked';
   blockedReason?: string;
   completed: boolean;

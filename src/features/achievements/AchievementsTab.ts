@@ -65,8 +65,8 @@ export class AchievementsTab {
   }
 
   public openModal(): void {
-    this.renderList();
     this.modalEl?.classList.add('open');
+    this.renderList();
   }
 
   public closeModal(): void {
@@ -90,7 +90,7 @@ export class AchievementsTab {
   }
 
   public renderList(): void {
-    if (!this.achievementsListEl) return;
+    if (!this.isModalOpen() || !this.achievementsListEl) return;
     this.achievementsListEl.innerHTML = '';
     const state = this.gameState.getSnapshot();
 

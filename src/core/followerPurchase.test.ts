@@ -46,7 +46,7 @@ describe('Follower purchase production preview', () => {
     game.unlockedGnoseUpgrades.add('gn_init_faith');
     expect(game.getFaithPerSecond()).toBe(0);
     const preview = game.getFollowerPurchaseFaithGain(1);
-    expect(preview).toBe(1);
+    expect(preview).toBe(8);
     expect(game.buyOneFollower()).toBe(true);
     expect(game.getFaithPerSecond()).toBe(preview);
   });

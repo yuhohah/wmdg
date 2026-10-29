@@ -36,6 +36,7 @@ export class StatsTab {
   }
 
   public updateUI(): void {
+    if (!document.getElementById('settings-modal')?.classList.contains('open')) return;
     const totalFaith = this.gameState.totalFaithAccumulated;
     const fpc = this.gameState.getFaithPerClick();
     const fps = this.gameState.getFaithPerSecond();

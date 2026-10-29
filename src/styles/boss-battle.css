@@ -48,6 +48,126 @@
   opacity: 0.75;
 }
 
+/* Each unopened tier is sealed over its own grid, leaving its Guardian reachable. */
+.gnose-tier-content {
+  position: relative;
+  isolation: isolate;
+}
+
+.gnose-tier-sealed .gnose-tier-content {
+  min-height: 230px;
+  overflow: hidden;
+  border: 1px solid var(--line-faint, #5a422d);
+  background: #100e0b;
+}
+
+.gnose-tier-sealed .gnose-tier-grid {
+  min-height: 230px;
+  filter: blur(7px);
+  opacity: 0.22;
+  pointer-events: none;
+  user-select: none;
+}
+
+.gnose-tier-seal {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.gnose-seal-chain {
+  position: absolute;
+  top: calc(50% - 9px);
+  left: -15%;
+  width: 130%;
+  height: 18px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='18' viewBox='0 0 32 18'%3E%3Crect x='1' y='3' width='24' height='12' rx='6' fill='%23100e0b' stroke='%23988459' stroke-width='2'/%3E%3Cpath d='M6 5h14M6 13h14' stroke='%234e422d'/%3E%3Crect x='20' y='6' width='16' height='6' rx='3' fill='%23100e0b' stroke='%23b09a6d' stroke-width='2'/%3E%3C/svg%3E") repeat-x center;
+  pointer-events: none;
+}
+
+.gnose-seal-chain-left { transform: rotate(13deg); }
+.gnose-seal-chain-right { transform: rotate(-13deg); }
+
+.gnose-tier-seal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  width: min(82%, 340px);
+  padding: 12px 16px;
+  box-sizing: border-box;
+  background: #14110e;
+  border: 1px solid #6f5c38;
+  box-shadow: 0 0 0 4px #100e0b, inset 0 0 0 3px #211b12;
+  color: #cbb68c;
+  text-align: center;
+  font: 16px/1.2 var(--font-game);
+}
+
+.gnose-tier-padlock {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+}
+
+.gnose-tier-padlock .ico { width: 40px; height: 40px; }
+
+.gnose-tier-seal-title {
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: #ab9365;
+}
+
+html .gnose-tier-seal .btn-challenge-guardian {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 20px;
+  background: #302515 !important;
+  border-color: #ad8c4d !important;
+}
+
+html .gnose-tier-seal .btn-challenge-guardian:disabled {
+  background: #1c1913 !important;
+  border-color: #66583d !important;
+  color: #b8aa8b !important;
+  opacity: 1;
+}
+
+.gnose-tier-seal .btn-challenge-guardian:focus-visible {
+  outline: 2px solid #f6dc9a;
+  outline-offset: 3px;
+}
+
+.gnose-guardian-requirement,
+.gnose-guardian-power {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.gnose-guardian-power { color: #99896c; }
+
+@media (max-width: 480px) {
+  .gnose-tier-seal { padding: 10px; }
+  .gnose-tier-seal-content { padding: 12px; }
+  .gnose-tier-seal-title { letter-spacing: 1px; }
+}
+
+@media (max-width: 860px) {
+  .gnose-tier-sealed .gnose-tier-content,
+  .gnose-tier-sealed .gnose-tier-grid { min-height: 260px; }
+  html .gnose-tier-seal .btn-challenge-guardian { min-height: 64px; }
+}
+
 .gnose-curse-banner {
   display: flex;
   align-items: center;

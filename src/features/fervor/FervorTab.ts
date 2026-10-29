@@ -1,3 +1,5 @@
+import { AutomationToggle } from '../../ui/AutomationToggle.js';
+import { setText } from '../../ui/dom.js';
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { FervorUpgrade } from '../../types.js';
@@ -13,6 +15,7 @@ export interface FervorTabOptions {
 
 export class FervorTab {
   private options: FervorTabOptions;
+  private automation: AutomationToggle;
 
   private listEl: HTMLElement | null = null;
   private hudDividerEl: HTMLElement | null = null;
@@ -20,6 +23,11 @@ export class FervorTab {
 
   constructor(options: FervorTabOptions) {
     this.options = options;
+    this.automation = new AutomationToggle('auto-fervor', {
+      isUnlocked: () => options.gameState.hasGnoseUpgrade('gn_ritual_automation'),
+      isEnabled: () => options.gameState.autoFervorEnabled,
+      setEnabled: enabled => { options.gameState.autoFervorEnabled = enabled; },
+    });
     this.initElements();
   }
 
@@ -29,8 +37,8 @@ export class FervorTab {
     this.hudItemEl = document.getElementById('hud-fervor-item');
   }
 
-  public buyUpgrade(upg: FervorUpgrade): void {
-    const success = this.options.gameState.buyFervorUpgrade(upg);
+  public buyUpgrade(upg: FervorUpgrade, bulk = false): void {
+    const success = bulk ? this.options.gameState.buyMaxFervorUpgrade(upg) > 0 : this.options.gameState.buyFervorUpgrade(upg);
     if (success) {
       this.options.triggerHaptic(15);
       this.options.audio.playTone(720, 'sine', 0.18);
@@ -84,6 +92,13 @@ export class FervorTab {
         </div>
       `;
 
+      if (this.options.gameState.hasGnoseUpgrade('gn_memoria_selos')) {
+        const bulk = document.createElement('button');
+        bulk.className = 'btn-ritual-max'; bulk.textContent = 'Ritualizar máximo';
+        bulk.addEventListener('click', event => { event.stopPropagation(); this.buyUpgrade(upg, true); });
+        card.appendChild(bulk);
+      }
+
       card.addEventListener('click', () => {
         this.buyUpgrade(upg);
       });
@@ -93,6 +108,13 @@ export class FervorTab {
   }
 
   public updateButtonStates(): void {
+    const resonance = document.getElementById('fervor-resonance');
+    if (resonance) setText(resonance, `Ressonância do pico: ×${formatNumber(this.options.gameState.getFervorResonanceMultiplier())} Fé`);
+    this.automation.update();
+    // The relic autobuyer can restore Phoenix while this card is already visible.
+    if (this.options.gameState.isPhoenixRelicUnlocked() && !document.getElementById('card-fu_relics')) {
+      this.renderList();
+    }
     const fervor = this.options.gameState.fervorPoints;
 
     this.options.gameState.fervorUpgrades.forEach((upg) => {
@@ -107,11 +129,11 @@ export class FervorTab {
         }
         const multTagEl = card.querySelector('.fervor-mult-tag');
         if (multTagEl) {
-          multTagEl.textContent = `x${mult.toFixed(2)}`;
+          setText(multTagEl, `x${mult.toFixed(2)}`);
         }
         const costSpanEls = card.querySelectorAll('.cost-tag span');
         if (costSpanEls.length >= 2) {
-          costSpanEls[1].textContent = `${formatNumber(cost)} Fervor`;
+          setText(costSpanEls[1], `${formatNumber(cost)} Fervor`);
         }
       }
     });

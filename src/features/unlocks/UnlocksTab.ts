@@ -75,7 +75,7 @@ export class UnlocksTab {
       <div class="unlock-btn-badge">${icon('unlock')} DESBLOQUEAR NOVA MECÂNICA</div>
       <div class="unlock-btn-main">
         <span class="unlock-btn-name">${currentUnlock.name}</span>
-        <span class="unlock-btn-cost">${formatNumber(currentUnlock.cost)} Fé</span>
+        <span class="unlock-btn-cost">${currentUnlock.id === 'unlock_gnose' ? 'Atingir ' : ''}${formatNumber(currentUnlock.cost)} Fé${currentUnlock.id === 'unlock_gnose' ? ' · sem gasto' : ''}</span>
       </div>
     `;
 

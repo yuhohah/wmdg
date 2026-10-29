@@ -253,7 +253,7 @@ export class BossBattleModal {
     });
   }
 
-  private isOpen(): boolean {
+  public isOpen(): boolean {
     return this.overlayEl?.style.display === 'flex';
   }
 
@@ -362,6 +362,7 @@ export class BossBattleModal {
   }
 
   public updateUI(): void {
+    if (!this.isOpen()) return;
     const battle = this.options.gameState.activeBossBattle;
     if (!battle) {
       if (this.isOpen()) this.close();

@@ -34,14 +34,6 @@ export class GnoseTab {
   private gnoseResetsValEl: HTMLElement | null = null;
 
   private confirmToggleEl: HTMLInputElement | null = null;
-  private automationPanelEl: HTMLElement | null = null;
-  private autoFollowersWrapEl: HTMLElement | null = null;
-  private autoFollowersToggleEl: HTMLInputElement | null = null;
-  private autoFervorWrapEl: HTMLElement | null = null;
-  private autoFervorToggleEl: HTMLInputElement | null = null;
-  private autoRelicsWrapEl: HTMLElement | null = null;
-  private autoRelicsToggleEl: HTMLInputElement | null = null;
-
   private treeContainerEl: HTMLElement | null = null;
 
   constructor(options: GnoseTabOptions) {
@@ -52,8 +44,6 @@ export class GnoseTab {
       notifications: options.notifications,
       spawnFloatingText: options.spawnFloatingText,
       onBattleEnded: () => {
-        this.renderTree();
-        this.updateUI();
         this.options.onUpgradePurchased?.(GNOSE_UPGRADES[0]);
       }
     });
@@ -74,14 +64,6 @@ export class GnoseTab {
     this.gnoseResetsValEl = document.getElementById('gnose-resets-val');
 
     this.confirmToggleEl = document.getElementById('gnose-confirm-toggle') as HTMLInputElement | null;
-    this.automationPanelEl = document.getElementById('gnose-automation-panel');
-    this.autoFollowersWrapEl = document.getElementById('gnose-auto-followers-wrap');
-    this.autoFollowersToggleEl = document.getElementById('gnose-auto-followers-toggle') as HTMLInputElement | null;
-    this.autoFervorWrapEl = document.getElementById('gnose-auto-fervor-wrap');
-    this.autoFervorToggleEl = document.getElementById('gnose-auto-fervor-toggle') as HTMLInputElement | null;
-    this.autoRelicsWrapEl = document.getElementById('gnose-auto-relics-wrap');
-    this.autoRelicsToggleEl = document.getElementById('gnose-auto-relics-toggle') as HTMLInputElement | null;
-
     this.treeContainerEl = document.getElementById('gnose-upgrades-tree');
   }
 
@@ -92,18 +74,6 @@ export class GnoseTab {
 
     this.confirmToggleEl?.addEventListener('change', () => {
       this.options.gameState.confirmGnoseReset = !!this.confirmToggleEl?.checked;
-    });
-
-    this.autoFollowersToggleEl?.addEventListener('change', () => {
-      this.options.gameState.autoFollowersEnabled = !!this.autoFollowersToggleEl?.checked;
-    });
-
-    this.autoFervorToggleEl?.addEventListener('change', () => {
-      this.options.gameState.autoFervorEnabled = !!this.autoFervorToggleEl?.checked;
-    });
-
-    this.autoRelicsToggleEl?.addEventListener('change', () => {
-      this.options.gameState.autoRelicsEnabled = !!this.autoRelicsToggleEl?.checked;
     });
   }
 
@@ -117,19 +87,19 @@ export class GnoseTab {
     if (this.options.gameState.confirmGnoseReset) {
       const keepSelos = this.options.gameState.hasGnoseUpgrade('gn_memoria_selos');
       const keepRelics = this.options.gameState.hasGnoseUpgrade('gn_keep_relics');
-      const details = [
-        `Você receberá +${formatNumber(toGet)} Gnose.`,
+      const details = () => [
+        `Você receberá +${formatNumber(this.options.gameState.getGnoseToGet())} Gnose. Perderá ${formatNumber(this.options.gameState.faithPoints)} Fé, ${this.options.gameState.getTotalFollowersCount()} Fiéis, ${formatNumber(this.options.gameState.fervorPoints)} Fervor, ${formatNumber(this.options.gameState.relicPoints)} Fragmentos, ${this.options.gameState.fervorUpgrades.reduce((sum, u) => sum + u.level, 0)} níveis de Ritos e o Avatar atual (estágio ${this.options.gameState.incarnationStage}). Os picos deste ciclo também zeram.`,
         keepSelos
-          ? 'Seus Selos permanecerão abertos (Memória Hermética).'
+          ? 'Memória Hermética preserva somente o Selo da Encarnação.'
           : 'Fé, Fiéis, Fervor, Relíquias e os Selos iniciais serão reiniciados.',
-        keepRelics ? 'Os níveis de suas Relíquias serão preservados (Cripta Eterna).' : ''
+        keepRelics ? 'Os níveis de suas Relíquias serão preservados (Cripta Eterna).' : `Os ${this.options.gameState.relicUpgrades.reduce((sum, r) => sum + r.level, 0)} níveis de Relíquias serão perdidos.`
       ]
         .filter(Boolean)
         .join(' ');
 
       const confirmed = await cultDialog(
         'Ascensão Gnóstica',
-        `Dissolver o culto terreno para ascender no Nous? ${details}`,
+        () => `Dissolver o culto terreno para ascender no Nous? ${details()}`,
         'Ascender',
         'Cancelar'
       );
@@ -211,6 +181,7 @@ export class GnoseTab {
     tiersToRender.forEach((tier) => {
       const tierSection = document.createElement('div');
       tierSection.className = 'gnose-tier-section';
+      tierSection.dataset.tier = String(tier);
 
       const tierHeader = document.createElement('div');
       tierHeader.className = 'gnose-tier-header';
@@ -218,6 +189,7 @@ export class GnoseTab {
       const unlockedCount = tierUpgrades.filter((u) => gs.hasGnoseUpgrade(u.id)).length;
 
       let guardianBadgeHtml = '';
+      let guardianSealHtml = '';
       if (tier === 2 || tier === 3 || tier === 4) {
         const guardian = gs.getBossForTier(tier);
         if (guardian) {
@@ -242,10 +214,20 @@ export class GnoseTab {
               tier >= 3 && !canChallenge
                 ? ` [Requer Tier ${prevTier === 2 ? 'II' : 'III'}: ${prevTierOwned}/2 nós]`
                 : '';
-            guardianBadgeHtml = `
-              <button type="button" class="btn-challenge-guardian ${canChallenge ? 'ready' : 'locked'}" data-boss-id="${guardian.id}" ${canChallenge ? '' : 'disabled'}>
-                ${icon('swords')} <span class="gnose-guardian-label">Desafiar ${guardian.name} (${guardian.mythology})${gateHint} — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s · ${etaSec})</span>
-              </button>
+            guardianSealHtml = `
+              <div class="gnose-tier-seal" role="group" aria-label="Tier bloqueado por ${guardian.name}">
+                <span class="gnose-seal-chain gnose-seal-chain-left" aria-hidden="true"></span>
+                <span class="gnose-seal-chain gnose-seal-chain-right" aria-hidden="true"></span>
+                <div class="gnose-tier-seal-content">
+                  <span class="gnose-tier-padlock" aria-hidden="true">${icon('lock')}</span>
+                  <span class="gnose-tier-seal-title">CONHECIMENTO SELADO</span>
+                  <button type="button" class="btn-challenge-guardian ${canChallenge ? 'ready' : 'locked'}" data-boss-id="${guardian.id}" ${canChallenge ? '' : 'disabled'}>
+                    ${icon('swords')} <span class="gnose-guardian-label">Desafiar ${guardian.name}</span>
+                  </button>
+                  <span class="gnose-guardian-requirement">${gateHint.trim() || 'Vença o Guardião para revelar os upgrades.'}</span>
+                  <span class="gnose-guardian-power">Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} · -${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s · ${etaSec}</span>
+                </div>
+              </div>
             `;
           }
         }
@@ -259,21 +241,17 @@ export class GnoseTab {
         </div>
       `;
 
-      const challengeBtn = tierHeader.querySelector<HTMLButtonElement>('.btn-challenge-guardian');
-      challengeBtn?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const bossId = challengeBtn.getAttribute('data-boss-id');
-        if (bossId) {
-          this.bossBattleModal.openForBoss(bossId);
-        }
-      });
-
       tierSection.appendChild(tierHeader);
 
       const tierGrid = document.createElement('div');
       tierGrid.className = 'gnose-tier-grid';
 
       const isTierUnlocked = gs.isGnoseTierUnlocked(tier);
+      if (!isTierUnlocked) {
+        tierGrid.inert = true;
+        tierGrid.setAttribute('aria-hidden', 'true');
+        tierSection.classList.add('gnose-tier-sealed');
+      }
 
       tierUpgrades.forEach((upg) => {
         const isUnlocked = gs.hasGnoseUpgrade(upg.id);
@@ -293,7 +271,7 @@ export class GnoseTab {
         nodeEl.disabled = !gs.canBuyGnoseUpgrade(upg);
         nodeEl.className = `cult-action-card gnose-tree-node ${stateClass}`;
         nodeEl.id = `card-${upg.id}`;
-        nodeEl.title = upg.desc;
+        nodeEl.title = isTierUnlocked ? upg.desc : '';
 
         const statusBadge = isUnlocked
           ? `<span class="gnose-node-badge unlocked">ASSIMILADO</span>`
@@ -319,7 +297,19 @@ export class GnoseTab {
         tierGrid.appendChild(nodeEl);
       });
 
-      tierSection.appendChild(tierGrid);
+      const tierContent = document.createElement('div');
+      tierContent.className = 'gnose-tier-content';
+      tierContent.appendChild(tierGrid);
+      if (guardianSealHtml) {
+        tierContent.insertAdjacentHTML('beforeend', guardianSealHtml);
+        const challengeBtn = tierContent.querySelector<HTMLButtonElement>('.btn-challenge-guardian');
+        challengeBtn?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const bossId = challengeBtn.getAttribute('data-boss-id');
+          if (bossId) this.bossBattleModal.openForBoss(bossId);
+        });
+      }
+      tierSection.appendChild(tierContent);
       this.treeContainerEl!.appendChild(tierSection);
     });
 
@@ -400,45 +390,6 @@ export class GnoseTab {
       if (this.confirmToggleEl.checked !== (gs.confirmGnoseReset)) this.confirmToggleEl.checked = gs.confirmGnoseReset;
     }
 
-    const hasAutomation = gs.hasGnoseUpgrade('gn_automation');
-    const free = gs.hasGnoseUpgrade('gn_omniscience');
-    const updateAutomation = (el: HTMLElement | null, text: string, hint: string) => {
-      if (!el) return;
-      this.setText(el.querySelector('span'), text);
-      if (el.title !== hint) el.title = hint;
-    };
-    updateAutomation(this.autoFollowersWrapEl, `Auto-Fiéis · ${free ? 'gratuito' : 'pago'}`,
-      free ? 'Recruta o máximo acessível sem gastar Fé.'
-        : 'Reserva 25% da Fé/s; a verba acumula até 10% do saldo. Sem fiéis, compra o primeiro pelo custo normal.');
-    updateAutomation(this.autoFervorWrapEl, `Auto-Ritos · ${free ? 'gratuito' : 'pago'}`,
-      free ? 'Até 50 níveis por Rito/s, sem gastar Fervor.'
-        : 'Reserva 25% do Fervor/s; a verba acumula até 10% do saldo, comprando os Ritos mais baratos.');
-    updateAutomation(this.autoRelicsWrapEl, `Auto-Relíquias · ${gs.getAutoRelicsFraction() * 100}%/s`,
-      'Gera uma fração da Transmutação atual sem gastar Fé nem reiniciar o saldo.');
-
-
-    if (this.automationPanelEl) {
-      this.setDisplay(this.automationPanelEl, hasAutomation ? 'flex' : 'none');
-    }
-    if (this.autoFollowersWrapEl) {
-      this.setDisplay(this.autoFollowersWrapEl, hasAutomation ? 'flex' : 'none');
-    }
-    if (this.autoFollowersToggleEl) {
-      if (this.autoFollowersToggleEl.checked !== (gs.autoFollowersEnabled)) this.autoFollowersToggleEl.checked = gs.autoFollowersEnabled;
-    }
-    if (this.autoFervorWrapEl) {
-      this.setDisplay(this.autoFervorWrapEl, hasAutomation ? 'flex' : 'none');
-    }
-    if (this.autoFervorToggleEl) {
-      if (this.autoFervorToggleEl.checked !== (gs.autoFervorEnabled)) this.autoFervorToggleEl.checked = gs.autoFervorEnabled;
-    }
-    if (this.autoRelicsWrapEl) {
-      this.setDisplay(this.autoRelicsWrapEl, hasAutomation ? 'flex' : 'none');
-    }
-    if (this.autoRelicsToggleEl) {
-      if (this.autoRelicsToggleEl.checked !== (gs.autoRelicsEnabled)) this.autoRelicsToggleEl.checked = gs.autoRelicsEnabled;
-    }
-
     // Update curse banner countdown
     const curseBanner = document.getElementById('gnose-curse-banner');
     const curseTimerVal = document.getElementById('gnose-curse-timer-val');
@@ -449,15 +400,14 @@ export class GnoseTab {
       this.setText(curseTimerVal, `${Math.ceil(gs.bossCurseTimerSec)}s`);
     }
 
-    // Update active boss battle modal if open
-    this.bossBattleModal.updateUI();
-
     this.updateNodeStates();
   }
 
   public updateNodeStates(): void {
     const gs = this.options.gameState;
     GNOSE_UPGRADES.forEach((upg) => {
+      // Covered grids stay static until the victory callback rebuilds the tier.
+      if (!gs.isGnoseTierUnlocked(upg.tier)) return;
       const nodeEl = document.getElementById(`card-${upg.id}`);
       if (!nodeEl) return;
 
@@ -516,7 +466,12 @@ export class GnoseTab {
         const label = boss.unlocksTier === 'endgame'
           ? `Desafiar ${boss.name} — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s · ${etaSec})`
           : `Desafiar ${boss.name} (${boss.mythology})${gateHint} — Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} (-${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s · ${etaSec})`;
-        this.setText(btn.querySelector('.gnose-guardian-label'), label);
+        const seal = btn.closest('.gnose-tier-seal');
+        this.setText(btn.querySelector('.gnose-guardian-label'), seal ? `Desafiar ${boss.name}` : label);
+        if (seal) {
+          this.setText(seal.querySelector('.gnose-guardian-requirement'), gateHint.trim() || 'Vença o Guardião para revelar os upgrades.');
+          this.setText(seal.querySelector('.gnose-guardian-power'), `Poder: ×${breakdown.totalResourceMultiplier.toFixed(2)} · -${(breakdown.passiveHpFractionPerSec * 100).toFixed(1)}%/s · ${etaSec}`);
+        }
       });
 
       const endgameLockHint = this.treeContainerEl.querySelector<HTMLElement>('#gnose-endgame-lock-hint');

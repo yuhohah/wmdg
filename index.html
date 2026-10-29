@@ -198,6 +198,21 @@
                     </div>
                   </div>
 
+                  <div class="automation-goal-control">
+                    <label for="automation-goal">Objetivo do culto</label>
+                    <select id="automation-goal">
+                      <option value="automatic">Próximo avanço</option>
+                      <option value="next_seal">Próximo Selo</option>
+                      <option value="avatar">Próximo Avatar</option>
+                      <option value="gnose">Gnose desejada</option>
+                    </select>
+                    <input id="automation-gnose-target" type="number" min="1" step="1" value="1" aria-label="Gnose desejada" hidden />
+                    <p id="automation-goal-status" aria-live="polite"></p>
+                  </div>
+                  <label class="card-automation-toggle" id="auto-followers-wrap" hidden>
+                    <input type="checkbox" id="auto-followers-toggle" checked />
+                    <span>Auto-Fiéis</span>
+                  </label>
                   <div class="followers-controls">
                     <!-- Buy 1 Button -->
                     <button id="btn-convert-one" class="btn-follower-action btn-convert-primary">
@@ -257,6 +272,11 @@
                       <div class="fervor-rate-tag" id="fervor-rate-counter">+0 Fervor/s</div>
                     </div>
                   </div>
+                  <p id="fervor-resonance" class="fervor-resonance">Ressonância do pico: ×1 Fé</p>
+                  <label class="card-automation-toggle" id="auto-fervor-wrap" hidden>
+                    <input type="checkbox" id="auto-fervor-toggle" checked />
+                    <span>Auto-Ritos</span>
+                  </label>
                   <div class="card-list" id="fervor-upgrades-list"></div>
                 </div>
               </div>
@@ -310,7 +330,7 @@
                   <div class="incarnation-blessing-panel" id="incarnation-blessing-panel">
                     <div class="incarnation-blessing-header">
                       <span class="incarnation-blessing-title">✦ BÊNÇÃO 2× FÉ</span>
-                      <span class="incarnation-blessing-status" id="incarnation-blessing-status">INATIVA (Clique no Altar para +2s)</span>
+                      <span class="incarnation-blessing-status" id="incarnation-blessing-status">INATIVA (Clique no Altar para +10s)</span>
                     </div>
                     <div class="incarnation-blessing-track">
                       <div class="incarnation-blessing-fill" id="incarnation-blessing-fill" style="width: 0%;"></div>
@@ -356,6 +376,10 @@
                       <span class="relic-monument-desc">As Above, So Below — Transmutações Alquímicas</span>
                     </div>
                   </div>
+                  <label class="card-automation-toggle" id="auto-transmutation-wrap" hidden>
+                    <input type="checkbox" id="auto-transmutation-toggle" checked />
+                    <span>Auto-Transmutação</span>
+                  </label>
                   <!-- Conversion Section -->
                   <div class="relics-convert-section">
                     <button id="btn-convert-relics" class="btn-convert-relics" disabled>
@@ -374,6 +398,10 @@
                     </div>
                   </div>
 
+                  <label class="card-automation-toggle" id="auto-relic-upgrades-wrap" hidden>
+                    <input type="checkbox" id="auto-relic-upgrades-toggle" checked />
+                    <span>Auto-Relíquias</span>
+                  </label>
                   <!-- Mythological Relics Upgrades List -->
                   <div class="card-list" id="relic-upgrades-list"></div>
                 </div>
@@ -413,7 +441,7 @@
                           <span id="gnose-total-val" class="gnose-stat-val">0</span>
                         </div>
                         <div class="gnose-stat-box">
-                          <span class="gnose-stat-label">BÔNUS</span>
+                          <span class="gnose-stat-label">GNOSE HISTÓRICA</span>
                           <span id="gnose-passive-mult-val" class="gnose-stat-val">×1</span>
                         </div>
                         <div class="gnose-stat-box">
@@ -423,6 +451,7 @@
                       </div>
                     </div>
 
+                    <p class="gnose-req-hint">Cada nó assimilado dá produção ×4 permanente, além de seu efeito próprio.</p>
                     <div class="gnose-controls-row">
                       <span class="gnose-req-hint" id="gnose-req-hint">Requer 1Q Fé</span>
                       <div class="gnose-toggles-group">
@@ -430,20 +459,6 @@
                           <input type="checkbox" id="gnose-confirm-toggle" checked />
                           <span>Confirmar</span>
                         </label>
-                        <div class="gnose-automation-panel" id="gnose-automation-panel" style="display: none;">
-                          <label class="gnose-toggle-label" id="gnose-auto-followers-wrap" style="display: none;">
-                            <input type="checkbox" id="gnose-auto-followers-toggle" checked />
-                            <span>Auto-Fiéis</span>
-                          </label>
-                          <label class="gnose-toggle-label" id="gnose-auto-fervor-wrap" style="display: none;">
-                            <input type="checkbox" id="gnose-auto-fervor-toggle" checked />
-                            <span>Auto-Fervor</span>
-                          </label>
-                          <label class="gnose-toggle-label" id="gnose-auto-relics-wrap" style="display: none;">
-                            <input type="checkbox" id="gnose-auto-relics-toggle" checked />
-                            <span>Auto-Relíquias</span>
-                          </label>
-                        </div>
                       </div>
                     </div>
                   </div>

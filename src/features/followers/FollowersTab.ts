@@ -1,3 +1,6 @@
+import type { AutomationGoal } from '../../types.js';
+import { AutomationToggle } from '../../ui/AutomationToggle.js';
+import { setText } from '../../ui/dom.js';
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { FollowersArena } from '../../ui/followersArena.js';
@@ -19,6 +22,7 @@ export interface FollowersTabOptions {
 export class FollowersTab {
   private options: FollowersTabOptions;
   public arena: FollowersArena | null = null;
+  private automation: AutomationToggle;
 
   private totalCountEl: HTMLElement | null = null;
   private rateBadgeEl: HTMLElement | null = null;
@@ -33,6 +37,11 @@ export class FollowersTab {
 
   constructor(options: FollowersTabOptions) {
     this.options = options;
+    this.automation = new AutomationToggle('auto-followers', {
+      isUnlocked: () => options.gameState.hasGnoseUpgrade('gn_automation'),
+      isEnabled: () => options.gameState.autoFollowersEnabled,
+      setEnabled: enabled => { options.gameState.autoFollowersEnabled = enabled; },
+    });
     this.initElements();
     this.bindEvents();
   }
@@ -64,6 +73,13 @@ export class FollowersTab {
   }
 
   private bindEvents(): void {
+    document.getElementById('automation-goal')?.addEventListener('change', event => {
+      this.options.gameState.automationGoal = (event.target as HTMLSelectElement).value as AutomationGoal;
+    });
+    document.getElementById('automation-gnose-target')?.addEventListener('change', event => {
+      const value = Number((event.target as HTMLInputElement).value);
+      if (Number.isFinite(value)) this.options.gameState.automationGnoseTarget = Math.max(1, Math.floor(value));
+    });
     this.btnConvertOneEl?.addEventListener('click', () => {
       this.buyOneFollower();
     });
@@ -112,6 +128,7 @@ export class FollowersTab {
   }
 
   public updateUI(): void {
+    this.automation.update();
     const devotee = this.options.gameState.followers[0];
     if (!devotee) return;
 
@@ -120,18 +137,18 @@ export class FollowersTab {
     const ratePerFollower = this.options.gameState.getFollowerPurchaseFaithGain(1);
 
     if (this.totalCountEl) {
-      this.totalCountEl.textContent = formatNumber(totalCount);
+      setText(this.totalCountEl, formatNumber(totalCount));
     }
     if (this.rateBadgeEl) {
-      this.rateBadgeEl.textContent = `+${formatNumber(followerOutput)} Fé/s`;
+      setText(this.rateBadgeEl, `+${formatNumber(followerOutput)} Fé/s`);
     }
     if (this.convertOneBenefitEl) {
-      this.convertOneBenefitEl.textContent = `+${formatNumber(ratePerFollower)} Fé/s`;
+      setText(this.convertOneBenefitEl, `+${formatNumber(ratePerFollower)} Fé/s`);
     }
 
     const costOne = this.options.gameState.getItemCost(devotee);
     if (this.convertOneCostValEl) {
-      this.convertOneCostValEl.textContent = `${formatNumber(costOne)} Fé`;
+      setText(this.convertOneCostValEl, `${formatNumber(costOne)} Fé`);
     }
     if (this.btnConvertOneEl) {
       this.btnConvertOneEl.disabled = this.options.gameState.faithPoints < costOne;
@@ -148,10 +165,10 @@ export class FollowersTab {
       if (!this.options.gameState.isConvertMaxUnlocked()) {
         this.btnConvertMaxEl.classList.add('locked');
         this.btnConvertMaxEl.disabled = true;
-        this.convertMaxTitleEl.textContent = 'CONVERTER MÁXIMO';
-        this.convertMaxSubEl.textContent = `Desbloqueia com 25 Fiéis (${totalCount}/25)`;
-        this.convertMaxCostLabelEl.textContent = 'BLOQUEADO';
-        this.convertMaxCostValEl.textContent = '';
+        setText(this.convertMaxTitleEl, 'CONVERTER MÁXIMO');
+        setText(this.convertMaxSubEl, `Desbloqueia com 25 Fiéis (${totalCount}/25)`);
+        setText(this.convertMaxCostLabelEl, 'BLOQUEADO');
+        setText(this.convertMaxCostValEl, '');
       } else {
         this.btnConvertMaxEl.classList.remove('locked');
         const discount = calculateCostDiscountMultiplier(this.options.gameState.achievements);
@@ -166,16 +183,16 @@ export class FollowersTab {
 
         if (maxCount > 0) {
           this.btnConvertMaxEl.disabled = false;
-          this.convertMaxTitleEl.textContent = 'CONVERTER MÁXIMO';
-          this.convertMaxSubEl.textContent = `+${formatNumber(extraRate)} Fé/s`;
-          this.convertMaxCostLabelEl.textContent = 'CUSTO:';
-          this.convertMaxCostValEl.textContent = `${formatNumber(totalCost)} Fé`;
+          setText(this.convertMaxTitleEl, 'CONVERTER MÁXIMO');
+          setText(this.convertMaxSubEl, `+${formatNumber(extraRate)} Fé/s`);
+          setText(this.convertMaxCostLabelEl, 'CUSTO:');
+          setText(this.convertMaxCostValEl, `${formatNumber(totalCost)} Fé`);
         } else {
           this.btnConvertMaxEl.disabled = true;
-          this.convertMaxTitleEl.textContent = 'CONVERTER MÁXIMO';
-          this.convertMaxSubEl.textContent = '+0 Fé/s';
-          this.convertMaxCostLabelEl.textContent = 'CUSTO:';
-          this.convertMaxCostValEl.textContent = `${formatNumber(costOne)} Fé`;
+          setText(this.convertMaxTitleEl, 'CONVERTER MÁXIMO');
+          setText(this.convertMaxSubEl, '+0 Fé/s');
+          setText(this.convertMaxCostLabelEl, 'CUSTO:');
+          setText(this.convertMaxCostValEl, `${formatNumber(costOne)} Fé`);
         }
       }
     }
@@ -184,16 +201,27 @@ export class FollowersTab {
   }
 
   public updateRealtime(): void {
+    const goalSelect = document.getElementById('automation-goal') as HTMLSelectElement | null;
+    if (goalSelect && document.activeElement !== goalSelect) goalSelect.value = this.options.gameState.automationGoal;
+    const amountInput = document.getElementById('automation-gnose-target') as HTMLInputElement | null;
+    if (amountInput) {
+      amountInput.hidden = this.options.gameState.automationGoal !== 'gnose';
+      if (document.activeElement !== amountInput) amountInput.value = String(this.options.gameState.automationGnoseTarget);
+    }
+    const target = this.options.gameState.getAutomationTarget();
+    const reservation = this.options.gameState.getFollowerReservation();
+    const status = document.getElementById('automation-goal-status');
+    if (status) setText(status, `${target.label} · ${Number.isFinite(target.etaSec) ? Math.ceil(target.etaSec) + 's pela produção atual' : 'aguardando produção'}${reservation ? ' · poupando para ' + reservation.label : ''}`);
     const devotee = this.options.gameState.followers[0];
     if (!devotee) return;
     const followerOutput = this.options.gameState.getFaithPerSecond();
 
     if (this.rateBadgeEl) {
-      this.rateBadgeEl.textContent = `+${formatNumber(followerOutput)} Fé/s`;
+      setText(this.rateBadgeEl, `+${formatNumber(followerOutput)} Fé/s`);
     }
     if (this.convertOneBenefitEl) {
       const ratePerFollower = this.options.gameState.getFollowerPurchaseFaithGain(1);
-      this.convertOneBenefitEl.textContent = `+${formatNumber(ratePerFollower)} Fé/s`;
+      setText(this.convertOneBenefitEl, `+${formatNumber(ratePerFollower)} Fé/s`);
     }
   }
 

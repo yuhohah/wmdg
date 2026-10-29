@@ -9,7 +9,7 @@ self.addEventListener('message', (event: MessageEvent<Omit<SimulationOptions, 'o
       return ProgressionSimulator.runArchetype(profile, event.data);
     };
     const report: BenchmarkReport = {
-      timestamp: Date.now(), results: { active: run('active'), casual: run('casual'), afk: run('afk') },
+      timestamp: Date.now(), results: { reference: run('reference'), active: run('active'), casual: run('casual'), afk: run('afk') },
     };
     send({ kind: 'done', report });
   } catch (error) {

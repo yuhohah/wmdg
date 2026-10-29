@@ -32,7 +32,7 @@ export class FollowersArena {
   private dpr: number = 1;
   private onFollowerClickCallback?: (x: number, y: number) => void;
   private onMiracleClickCallback?: (clientX: number, clientY: number, walker: Walker) => void;
-  private miracleSpawnCooldown: number = 300; // ~5s after start
+  private miracleSpawnCooldown: number = 5; // ~5s after start
   private isPaused: boolean = false;
   private speedMultiplier: number = 1.0;
   private sheet: DevoteeSheet = getDevoteeSheet();
@@ -67,7 +67,7 @@ export class FollowersArena {
     const w = targetWalker || (available.length > 0 ? available[Math.floor(Math.random() * available.length)] : null);
     if (!w) return;
     w.isMiraclePlea = true;
-    w.miracleTimer = 900; // 15s at 60fps
+    w.miracleTimer = 15; // elapsed seconds
     w.state = 'pray';
     w.prayCycle = 0;
     w.stateTimer = 900;
@@ -276,7 +276,7 @@ export class FollowersArena {
     }
   }
 
-  private update(): void {
+  private update(elapsedSec: number): void {
     const pad = 24;
     const minY = Math.max(28, this.height * 0.12);
     const maxY = Math.max(minY + 20, this.height - 18);
@@ -352,9 +352,9 @@ export class FollowersArena {
 
       // Miracle plea updates
       if (w.isMiraclePlea) {
-        w.miracleTimer = (w.miracleTimer || 0) - timerStep;
+        w.miracleTimer = (w.miracleTimer || 0) - elapsedSec * this.speedMultiplier;
         w.state = 'pray';
-        w.stateTimer = Math.max(20, w.miracleTimer);
+        w.stateTimer = Math.max(20, w.miracleTimer * 60);
         if (Math.random() < 0.15) {
           this.spawnPrayerParticles(w, 1);
         }
@@ -374,10 +374,10 @@ export class FollowersArena {
     if (this.walkers.length > 0) {
       const hasActiveMiracle = this.walkers.some((w) => w.isMiraclePlea);
       if (!hasActiveMiracle) {
-        this.miracleSpawnCooldown -= timerStep;
+        this.miracleSpawnCooldown -= elapsedSec * this.speedMultiplier;
         if (this.miracleSpawnCooldown <= 0) {
           this.triggerMiraclePlea();
-          this.miracleSpawnCooldown = 2100 + Math.floor(Math.random() * 1800);
+          this.miracleSpawnCooldown = 35 + Math.random() * 30;
         }
       }
     }
@@ -494,9 +494,12 @@ export class FollowersArena {
   }
 
   private startLoop(): void {
-    const loop = () => {
+    let previousMs: number | undefined;
+    const loop = (nowMs: number) => {
+      const elapsedSec = previousMs === undefined ? 0 : Math.max(0, (nowMs - previousMs) / 1000);
+      previousMs = nowMs;
       if (!this.isPaused) {
-        this.update();
+        this.update(elapsedSec);
         if (this.isOnScreen) this.draw();
       }
       this.animFrameId = requestAnimationFrame(loop);

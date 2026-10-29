@@ -39,6 +39,10 @@ const MILESTONES = [
 ];
 
 const METRICS: Array<[string, (result: ArchetypeBenchmarkResult) => string]> = [
+  ['Maior intervalo permanente após Gnose', r => formatDuration(r.progression.maxPermanentGapSec)],
+  ['Maior intervalo relevante', r => formatDuration(r.progression.maxRelevantGapSec)],
+  ['Quedas após compras de produção', r => String(r.progression.productionDrops.length)],
+  ['Fé de milagres (%)', r => { const v = r.progression.income; return (100 * v.miracles / Math.max(1, v.passive + v.clicks + v.miracles)).toFixed(1); }],
   ['Situação', r => r.completed ? 'Concluído' : r.status === 'blocked' ? 'Bloqueado' : 'Incompleto (limite)'],
   ['Tempo decorrido', r => r.formattedTotalTime],
   ['Tempo presente', r => formatDuration(r.presentTimeSec)],
@@ -60,7 +64,7 @@ const METRICS: Array<[string, (result: ArchetypeBenchmarkResult) => string]> = [
 ];
 
 function rows(report: BenchmarkReport): string[][] {
-  const results = [report.results.active, report.results.casual, report.results.afk];
+  const results = [report.results.reference, report.results.active, report.results.casual, report.results.afk];
   return [
     ...MILESTONES.map(([id, name]) => [name, ...results.map(r => r.milestones.find(m => m.id === id)?.formattedTime ?? 'Não atingido')]),
     ...METRICS.map(([name, value]) => [name, ...results.map(value)]),
@@ -68,15 +72,15 @@ function rows(report: BenchmarkReport): string[][] {
 }
 
 export function formatTerminalReport(report: BenchmarkReport): string {
-  const first = report.results.active;
+  const first = report.results.reference;
   const line = '─'.repeat(112);
   const lines = [
     '\nSIMULAÇÃO DE PROGRESSÃO POR SESSÕES — CULT OF THE SPHERE',
     `Seed: ${first.seed} | passo máximo: ${first.stepSec}s | limite: ${formatDuration(first.maxDurationSec)}`,
     'Hipótese: jogo aberto e visível. Ausência do jogador mantém produção; ações manuais só durante visitas.',
-    ...(['active', 'casual', 'afk'] as const).map(describeBehavior),
+    ...(['reference', 'active', 'casual', 'afk'] as const).map(describeBehavior),
     line,
-    ['Marco / Métrica', 'Ativo', 'Casual', 'AFK'].map((s, i) => s.padEnd(i === 0 ? 35 : 23)).join(' | '),
+    ['Marco / Métrica', 'Referência', 'Ativo intenso', 'Casual', 'AFK'].map((s, i) => s.padEnd(i === 0 ? 35 : 23)).join(' | '),
     line,
     ...rows(report).map(row => row.map((s, i) => s.padEnd(i === 0 ? 35 : 23)).join(' | ')),
     line,
@@ -95,15 +99,15 @@ function escapeHtml(value: string): string {
 }
 
 export function formatHtmlReport(report: BenchmarkReport): string {
-  const first = report.results.active;
+  const first = report.results.reference;
   const cell = 'padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.15);text-align:left';
   return `<div style="font:13px monospace;color:#f8fafc;line-height:1.5">
     <h3>Simulação de progressão por sessões</h3>
     <p>Seed ${first.seed} · passo máximo ${first.stepSec}s · limite ${formatDuration(first.maxDurationSec)}.</p>
     <p>Jogo aberto e visível. Hipóteses de comportamento, não telemetria.</p>
-    ${(['active', 'casual', 'afk'] as const).map(profile => `<p>${escapeHtml(describeBehavior(profile))}</p>`).join('')}
+    ${(['reference', 'active', 'casual', 'afk'] as const).map(profile => `<p>${escapeHtml(describeBehavior(profile))}</p>`).join('')}
     <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">
-      <thead><tr>${['Marco / Métrica', 'Ativo', 'Casual', 'AFK'].map(name => `<th style="${cell}">${name}</th>`).join('')}</tr></thead>
+      <thead><tr>${['Marco / Métrica', 'Referência', 'Ativo intenso', 'Casual', 'AFK'].map(name => `<th style="${cell}">${name}</th>`).join('')}</tr></thead>
       <tbody>${rows(report).map(row => `<tr>${row.map(value => `<td style="${cell}">${escapeHtml(value)}</td>`).join('')}</tr>`).join('')}</tbody>
     </table></div>
     ${Object.values(report.results).filter(r => r.blockedReason).map(r => `<p><strong>${escapeHtml(r.archetypeName)} — bloqueado:</strong> ${escapeHtml(r.blockedReason!)}</p>`).join('')}

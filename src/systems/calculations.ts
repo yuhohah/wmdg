@@ -1,7 +1,7 @@
 import type { BuyableItem, FervorUpgrade, Achievement, BuffType } from '../types.js';
 
-export function calculateMiracleReward(faith: number, faithPerClick: number, faithPerSecond: number): number {
-  return Math.max(30, faithPerClick * 15, Math.floor(30 * faithPerSecond + 0.1 * faith));
+export function calculateMiracleReward(_faith: number, faithPerClick: number, faithPerSecond: number): number {
+  return Math.max(30, faithPerClick * 15, Math.floor(30 * faithPerSecond));
 }
 
 export function calculateItemCost(
@@ -221,7 +221,7 @@ export function calculateRelicFaithMultiplier(relicPoints: number, level: number
   return Math.pow(Math.log10(Math.max(0, relicPoints) + 1) + 1, level * 1.2);
 }
 
-export function calculateGnoseToGet(faith: number, gainExponent: number = 0.15): number {
+export function calculateGnoseToGet(faith: number, gainExponent: number = 0.25): number {
   if (faith < 1e15) return 0;
   return Math.max(1, Math.floor(Math.pow(faith / 1e15, gainExponent)));
 }

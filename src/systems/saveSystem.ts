@@ -10,6 +10,8 @@ export interface SaveData {
     totalFaithAccumulated: number;
     totalClicks: number;
     fervorPoints: number;
+    fervorPeakThisRun?: number;
+    relicPeakThisRun?: number;
     totalFervorGenerated?: number;
     incarnationStage: number;
     relicPoints: number;
@@ -24,6 +26,7 @@ export interface SaveData {
   unlocks: string[];
   achievements: string[];
   gnose?: GnoseSaveData;
+  progressionRevision?: number;
 }
 
 export class SaveSystem {

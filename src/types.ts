@@ -195,7 +195,12 @@ export interface BossCombatBreakdown {
   estimatedAltarSurvivalSec: number;
 }
 
+export type AutomationGoal = 'automatic' | 'next_seal' | 'avatar' | 'gnose';
+
 export interface GnoseSaveData {
+  automationAccumulatorSec?: number;
+  automationGoal?: AutomationGoal;
+  automationGnoseTarget?: number;
   gnosePoints: number;
   totalGnoseEarned: number;
   gnoseResets: number;
@@ -205,7 +210,10 @@ export interface GnoseSaveData {
   confirmReset: boolean;
   autoFollowersEnabled: boolean;
   autoFervorEnabled: boolean;
+  /** Passive transmutation unlocked by Olho do Infinito. */
   autoRelicsEnabled?: boolean;
+  autoRelicUpgradesEnabled?: boolean;
+  /** Legacy income budgets are accepted on import but no longer used. */
   autoFollowersBudget?: number;
   autoFervorBudget?: number;
 }

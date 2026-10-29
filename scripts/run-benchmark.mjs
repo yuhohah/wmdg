@@ -27,7 +27,7 @@ try {
   if (args.has('json')) console.log(JSON.stringify(reports, null, 2));
   else if (reports.length > 1) {
     console.log('DISTRIBUIÇÃO ENTRE SEEDS (somente campanhas concluídas; limites e bloqueios separados):');
-    for (const profile of ['active', 'casual', 'afk']) {
+    for (const profile of ['reference', 'active', 'casual', 'afk']) {
       const completed = reports.map(r => r.results[profile]).filter(r => r.completed).map(r => r.totalSimulatedTimeSec).sort((a, b) => a - b);
       const blocked = reports.filter(r => r.results[profile].status === 'blocked').length;
       const limited = reports.filter(r => r.results[profile].status === 'time_limit').length;
