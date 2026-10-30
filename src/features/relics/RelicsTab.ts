@@ -28,8 +28,6 @@ export class RelicsTab {
   private relicsToGetEl: HTMLElement | null = null;
   private relicsConvertCooldownEl: HTMLElement | null = null;
   private relicsCooldownLineEl: HTMLElement | null = null;
-  private relicsBalanceValEl: HTMLElement | null = null;
-  private relicsExtraValEl: HTMLElement | null = null;
   private relicUpgradesListEl: HTMLElement | null = null;
 
   constructor(options: RelicsTabOptions) {
@@ -55,8 +53,6 @@ export class RelicsTab {
     this.relicsToGetEl = document.getElementById('relics-to-get');
     this.relicsConvertCooldownEl = document.getElementById('relics-convert-cooldown');
     this.relicsCooldownLineEl = document.getElementById('relics-cooldown-line');
-    this.relicsBalanceValEl = document.getElementById('relics-balance-val');
-    this.relicsExtraValEl = document.getElementById('relics-extra-val');
     this.relicUpgradesListEl = document.getElementById('relic-upgrades-list');
   }
 
@@ -78,12 +74,15 @@ export class RelicsTab {
         window.innerHeight / 2,
         `+${formatNumber(result.gained)} FRAGMENTOS!`
       );
-      this.options.notifications.showCustomPopup(
-        'TRANSMUTAÇÃO',
-        `Sua Fé virou +${formatNumber(result.gained)} Fragmentos de deuses caídos.`,
-        'relics',
-        'TRANSMUTAÇÃO'
-      );
+      if (!this.options.gameState.hasSeenTransmutationNotification) {
+        this.options.notifications.showCustomPopup(
+          'TRANSMUTAÇÃO',
+          `Sua Fé virou +${formatNumber(result.gained)} Fragmentos de deuses caídos.`,
+          'relics',
+          'TRANSMUTAÇÃO'
+        );
+        this.options.gameState.hasSeenTransmutationNotification = true;
+      }
       this.updateUI();
       this.renderList();
       this.options.onRelicsTransmuted?.();
@@ -181,13 +180,6 @@ export class RelicsTab {
     }
     if (this.relicsCooldownLineEl) {
       this.relicsCooldownLineEl.style.display = cooldown > 0 ? 'block' : 'none';
-    }
-    if (this.relicsBalanceValEl) {
-      this.relicsBalanceValEl.textContent = formatNumber(this.options.gameState.relicPoints);
-    }
-    if (this.relicsExtraValEl) {
-      const extra = this.options.gameState.getRelicsRatePerSecond();
-      this.relicsExtraValEl.textContent = formatNumber(extra);
     }
 
     if (this.btnConvertRelicsEl) {

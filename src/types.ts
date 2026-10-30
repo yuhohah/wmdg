@@ -195,12 +195,8 @@ export interface BossCombatBreakdown {
   estimatedAltarSurvivalSec: number;
 }
 
-export type AutomationGoal = 'automatic' | 'next_seal' | 'avatar' | 'gnose';
-
 export interface GnoseSaveData {
   automationAccumulatorSec?: number;
-  automationGoal?: AutomationGoal;
-  automationGnoseTarget?: number;
   gnosePoints: number;
   totalGnoseEarned: number;
   gnoseResets: number;

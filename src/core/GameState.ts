@@ -1,6 +1,5 @@
 import type {
   BuyableItem,
-  AutomationGoal,
   FervorUpgrade,
   Achievement,
   MechanicUnlock,
@@ -87,8 +86,6 @@ export class GameStateManager {
   public activeBossBattle: ActiveBossBattle | null = null;
   private riftIdCounter: number = 0;
 
-  public automationGoal: AutomationGoal = 'automatic';
-  public automationGnoseTarget = 1;
   public confirmGnoseReset: boolean = true;
   public autoFollowersEnabled: boolean = true;
   public autoFervorEnabled: boolean = true;
@@ -98,6 +95,9 @@ export class GameStateManager {
 
   // Onboarding & Intro Sequence
   public hasSeenIntro: boolean = false;
+  public seenCardTutorials: Set<string> = new Set();
+  public nerdsEnabled: boolean = false;
+  public hasSeenTransmutationNotification: boolean = false;
 
   // Optional callback when an active boss battle concludes during tick or click
   public onBossBattleFinished?: (result: { boss: GnoseBoss; victory: boolean }) => void;
@@ -121,6 +121,9 @@ export class GameStateManager {
     this.bestRelicsToGet = 0;
     this.relicConvertCooldown = 0;
     this.hasSeenIntro = false;
+    this.seenCardTutorials.clear();
+    this.nerdsEnabled = false;
+    this.hasSeenTransmutationNotification = false;
 
     this.gnosePoints = 0;
     this.totalGnoseEarned = 0;
@@ -131,8 +134,6 @@ export class GameStateManager {
     this.activeBossBattle = null;
     this.riftIdCounter = 0;
 
-    this.automationGoal = 'automatic';
-    this.automationGnoseTarget = 1;
     this.confirmGnoseReset = true;
     this.autoFollowersEnabled = true;
     this.autoFervorEnabled = true;
@@ -663,6 +664,10 @@ export class GameStateManager {
 
   /** Manual purchases, automation and UI use the same effective exponential cost. */
   public getFervorUpgradeCost(upg: FervorUpgrade): number {
+    return calculateFervorUpgradeCost(upg, this.getFervorUpgradeCostMultiplier(upg));
+  }
+
+  public getFervorUpgradeCostMultiplier(upg: FervorUpgrade): number {
     let scale = upg.costMultiplier;
     if (upg.id === 'fu_prod' && this.hasGnoseUpgrade('gn_init_fervor')) scale -= GNOSE_FORMULAS.ritualCostStep;
     if (upg.id === 'fu_relics' && this.hasGnoseUpgrade('gn_relic_gain')) scale -= GNOSE_FORMULAS.relicCostStep;
@@ -670,7 +675,7 @@ export class GameStateManager {
     if (upg.id === 'fu_relics' && this.hasGnoseUpgrade('gn_perfect_opus')) scale -= GNOSE_FORMULAS.perfectRelicCostStep;
     if (upg.id === 'fu_prod' && this.hasGnoseUpgrade('gn_empyrean_fire')) scale -= GNOSE_FORMULAS.empyreanRitualCostStep;
     if (this.hasGnoseUpgrade('gn_apotheosis')) scale -= GNOSE_FORMULAS.ritualCostStep;
-    return calculateFervorUpgradeCost(upg, Math.max(1.01, scale));
+    return Math.max(1.01, scale);
   }
 
   /** Only formula coefficients change; production retains the same level exponent. */
@@ -949,54 +954,6 @@ export class GameStateManager {
     }
   }
 
-  public getAutomationTarget(): { id: string; label: string; faith: number; etaSec: number } {
-    const targets: Array<{ id: string; label: string; faith: number }> = [];
-    if (this.automationGoal === 'automatic' || this.automationGoal === 'next_seal') {
-      const seal = this.unlocks.find(u => !u.unlocked && (!u.prerequisiteId || this.unlocks.some(p => p.id === u.prerequisiteId && p.unlocked)));
-      if (seal?.costCurrency === 'faith') targets.push({ id: seal.id, label: seal.name, faith: seal.cost });
-    }
-    if ((this.automationGoal === 'automatic' || this.automationGoal === 'avatar') && this.isIncarnationUnlocked()) {
-      const avatar = INCARNATION_STAGES.find(s => s.stage === this.incarnationStage + 1);
-      if (avatar && this.canAccessIncarnationStage(avatar.stage)) targets.push({ id: `avatar-${avatar.stage}`, label: avatar.name, faith: this.getIncarnationStageCost(avatar) });
-    }
-    if ((this.automationGoal === 'automatic' || this.automationGoal === 'gnose') && this.isGnoseUnlocked()) {
-      const next = GNOSE_UPGRADES.filter(u => !this.hasGnoseUpgrade(u.id) && this.isGnoseTierUnlocked(u.tier)
-        && u.prerequisites.every(id => this.hasGnoseUpgrade(id))).sort((a, b) => a.cost - b.cost)[0];
-      const amount = this.automationGoal === 'gnose' ? this.automationGnoseTarget : Math.max(1, (next?.cost ?? 1) - this.gnosePoints);
-      targets.push({ id: `gnose-${amount}`, label: `${amount} Gnose`, faith: 1e15 * amount ** (1 / this.getGnoseGainExponent()) });
-    }
-    const target = targets.sort((a, b) => a.faith - b.faith)[0] ?? { id: 'production', label: 'Produção livre', faith: Infinity };
-    const rate = this.getFaithPerSecond();
-    return { ...target, etaSec: target.faith <= this.faithPoints ? 0 : rate > 0 ? (target.faith - this.faithPoints) / rate : Infinity };
-  }
-
-  public getFollowerReservation(): { label: string; faith: number; etaSec: number } | undefined {
-    const goal = this.getAutomationTarget();
-    if (!Number.isFinite(goal.faith)) return undefined;
-    if (goal.etaSec <= 180) return goal;
-    const rate = this.getFaithPerSecond();
-    if (rate <= 0) return undefined;
-    const milestones: Array<{ label: string; faith: number }> = [];
-    const seal = this.unlocks.find(u => !u.unlocked && (!u.prerequisiteId || this.unlocks.some(p => p.id === u.prerequisiteId && p.unlocked)));
-    if (seal?.costCurrency === 'faith') milestones.push({ label: seal.name, faith: seal.cost });
-    const avatar = INCARNATION_STAGES.find(s => s.stage === this.incarnationStage + 1);
-    if (avatar && this.isIncarnationUnlocked() && this.canAccessIncarnationStage(avatar.stage)) milestones.push({ label: avatar.name, faith: this.getIncarnationStageCost(avatar) });
-    return milestones.filter(m => m.faith <= goal.faith).map(m => ({ ...m, etaSec: Math.max(0, (m.faith - this.faithPoints) / rate) }))
-      .filter(m => m.etaSec <= 180).sort((a, b) => a.faith - b.faith)[0];
-  }
-
-  /** The same investment rule is consumed by automation and the benchmark. */
-  public shouldInvestInFollower(count = 1, cost = this.getItemCost(this.followers[0])): boolean {
-    if (this.getTotalFollowersCount() === 0) return true;
-    if (this.getFollowerReservation()) return false;
-    const target = this.getAutomationTarget();
-    if (!Number.isFinite(target.faith)) return true;
-    if (target.etaSec <= 180) return false;
-    const rate = this.getFaithPerSecond();
-    const after = rate + this.getFollowerPurchaseFaithGain(count);
-    return after > 0 && (target.faith - this.faithPoints + cost) / after < target.etaSec;
-  }
-
   public canAccessIncarnationStage(stage: number): boolean {
     return stage < 5 || this.hasGnoseUpgrade('gn_apotheosis');
   }
@@ -1036,7 +993,7 @@ export class GameStateManager {
         let available = this.faithPoints;
         for (let bought = 0; bought < 10000; bought++) {
           const cost = this.getItemCost(devotee);
-          if (available < cost || (!free && !this.shouldInvestInFollower(1, cost))) break;
+          if (available < cost) break;
           available -= cost;
           if (!free) this.faithPoints -= cost;
           devotee.count++;
@@ -1339,7 +1296,10 @@ export class GameStateManager {
         totalRelicsGenerated: this.totalRelicsGenerated,
         bestRelicsToGet: this.bestRelicsToGet,
         incarnationBoostTimer: this.incarnationBoostTimer,
-        hasSeenIntro: this.hasSeenIntro
+        hasSeenIntro: this.hasSeenIntro,
+        seenCardTutorials: Array.from(this.seenCardTutorials),
+        nerdsEnabled: this.nerdsEnabled,
+        hasSeenTransmutationNotification: this.hasSeenTransmutationNotification
       },
       followers: this.followers.map((f) => ({ id: f.id, count: f.count })),
       fervorUpgrades: this.fervorUpgrades.map((u) => ({ id: u.id, level: u.level })),
@@ -1354,8 +1314,6 @@ export class GameStateManager {
         defeatedBosses: Array.from(this.defeatedBosses),
         bossCurseTimerSec: this.bossCurseTimerSec,
         automationAccumulatorSec: this.gnoseAutoAccumulatorSec,
-        automationGoal: this.automationGoal,
-        automationGnoseTarget: this.automationGnoseTarget,
         confirmReset: this.confirmGnoseReset,
         autoFollowersEnabled: this.autoFollowersEnabled,
         autoFervorEnabled: this.autoFervorEnabled,
@@ -1388,6 +1346,10 @@ export class GameStateManager {
       ? Math.max(0, Math.min(this.getMaxIncarnationBoost(), save.stats.incarnationBoostTimer))
       : 0;
     this.hasSeenIntro = typeof save.stats.hasSeenIntro === 'boolean' ? save.stats.hasSeenIntro : false;
+    this.nerdsEnabled = save.stats.nerdsEnabled === true;
+    this.seenCardTutorials = new Set(Array.isArray(save.stats.seenCardTutorials)
+      ? save.stats.seenCardTutorials.filter(id => typeof id === 'string') : []);
+    this.hasSeenTransmutationNotification = save.stats.hasSeenTransmutationNotification === true;
 
     if (Array.isArray(save.followers)) {
       save.followers.forEach((savedItem) => {
@@ -1459,8 +1421,6 @@ export class GameStateManager {
       this.bossCurseTimerSec =
         typeof save.gnose.bossCurseTimerSec === 'number' ? Math.max(0, save.gnose.bossCurseTimerSec) : 0;
       this.gnoseAutoAccumulatorSec = Number.isFinite(save.gnose.automationAccumulatorSec) ? Math.max(0, Math.min(1, save.gnose.automationAccumulatorSec!)) : 0;
-      this.automationGoal = ['automatic', 'next_seal', 'avatar', 'gnose'].includes(save.gnose.automationGoal ?? '') ? save.gnose.automationGoal! : 'automatic';
-      this.automationGnoseTarget = Number.isFinite(save.gnose.automationGnoseTarget) ? Math.max(1, Math.floor(save.gnose.automationGnoseTarget!)) : 1;
       this.confirmGnoseReset = typeof save.gnose.confirmReset === 'boolean' ? save.gnose.confirmReset : true;
       this.autoFollowersEnabled =
         typeof save.gnose.autoFollowersEnabled === 'boolean' ? save.gnose.autoFollowersEnabled : true;

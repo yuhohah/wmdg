@@ -159,7 +159,7 @@ class Simulation {
       bottleneckNotes: [
         this.options.absenceMode && this.options.absenceMode !== 'visible' ? `Ausência real via ${this.options.absenceMode}, com teto de 24 h e sem ações manuais.` : 'Jogo aberto e visível: a produção continua durante a ausência do jogador. Não simula aba oculta nem save offline.',
         describeBehavior(this.archetype),
-        'Gnose por menor custo entre nós elegíveis; Auto-Fiéis usa a mesma reserva por objetivo do jogo. Não é uma prova de estratégia ótima.',
+        'Gnose por menor custo entre nós elegíveis; Auto-Fiéis compra conforme o saldo disponível no jogo. Não é uma prova de estratégia ótima.',
         ...(this.blockedReason ? [this.blockedReason] : !completed ? [`Campanha não concluída no limite de ${formatDuration(this.horizon)}.`] : []),
       ],
     };
@@ -323,12 +323,6 @@ class Simulation {
     const desiredGnose = this.options.resetPolicy === 'immediate' ? 1 : Math.max(1, Math.ceil(
       this.options.resetPolicy === 'short' ? Math.min(remainingGnose, (nextGnose?.cost ?? 1) * 0.9)
         : remainingGnose * (this.options.resetPolicy === 'long' ? 1.05 : 1)));
-    if (nextGnose && nextGnose.cost > g.gnosePoints && g.isGnoseUnlocked()
-      && (g.automationGoal !== 'gnose' || g.automationGnoseTarget !== desiredGnose)) {
-      return decision(`goal-${desiredGnose}`, 'goal', () => {
-        g.automationGoal = 'gnose'; g.automationGnoseTarget = desiredGnose; return true;
-      });
-    }
     if (nextGnose && g.canBuyGnoseUpgrade(nextGnose)) {
       return decision(nextGnose.id, 'gnose_upgrade', () => g.buyGnoseUpgrade(nextGnose.id));
     }
@@ -382,7 +376,7 @@ class Simulation {
         return result.success;
       });
     }
-    if (g.shouldInvestInFollower() && !savingForUnlock && !savingForIncarnation && !savingForGnose && !(g.hasGnoseUpgrade('gn_automation') && g.autoFollowersEnabled)
+    if (!savingForUnlock && !savingForIncarnation && !savingForGnose && !(g.hasGnoseUpgrade('gn_automation') && g.autoFollowersEnabled)
       && g.faithPoints >= g.getItemCost(follower) && (g.gnoseResets === 0 || (fps > 0 && g.getItemCost(follower) / fps < 8))) {
       return decision('follower', 'follower', buyFollower);
     }

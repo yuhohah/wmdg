@@ -110,7 +110,7 @@ describe('unified seal automation and full-balance buyers', () => {
     }
   });
 
-  it('lets follower automation invest toward its goal and pause without enabling other automations', () => {
+  it('lets follower automation spend available Faith and pause without enabling other automations', () => {
     const g = cult();
     g.unlockedGnoseUpgrades.add('gn_automation');
     g.unlocks.forEach(u => u.unlocked = true);
@@ -123,7 +123,7 @@ describe('unified seal automation and full-balance buyers', () => {
     g.runGnoseAutomation();
     expect(g.getTotalFollowersCount()).toBeGreaterThan(1);
     expect(g.faithPoints).toBeLessThan(1000);
-    expect(g.shouldInvestInFollower()).toBe(false);
+    expect(g.faithPoints).toBeLessThan(g.getItemCost(g.followers[0]));
     expect(g.fervorPoints).toBe(1000);
     expect(g.relicPoints).toBe(1000);
     expect(g.fervorUpgrades.every(u => u.level === 0)).toBe(true);

@@ -3,6 +3,7 @@ import { AudioManager } from '../../systems/audio.js';
 import { NotificationManager } from '../../systems/notifications.js';
 import { calculateMiracleReward, formatNumber } from '../../systems/calculations.js';
 import { events, GameEvents } from '../../core/EventBus.js';
+import { effectEasing } from '../../ui/visualTiming.js';
 
 export interface SphereControllerOptions {
   gameState: GameStateManager;
@@ -70,12 +71,12 @@ export class SphereController {
           { transform: `rotate(${dir * swing * 0.15}deg)`, offset: 0.85 },
           { transform: 'rotate(0deg) scale(1)' },
         ],
-        { duration: isCrit ? 900 : 650, easing: 'ease-out' }
+        { duration: isCrit ? 900 : 650, easing: effectEasing(isCrit ? 900 : 650) }
       )
     );
     this.sphereGlobe.animate(
       [{ transform: 'scale(1)' }, { transform: 'scale(0.95)', offset: 0.3 }, { transform: 'scale(1.03)', offset: 0.65 }, { transform: 'scale(1)' }],
-      { duration: 340, easing: 'ease-out' }
+      { duration: 340, easing: effectEasing(340) }
     );
 
     const waves = isCrit ? 2 : 1;
@@ -84,7 +85,7 @@ export class SphereController {
       wave.classList.toggle('crit', isCrit);
       wave.animate(
         [{ transform: 'scale(0.4)', opacity: 1 }, { transform: `scale(${isCrit ? 1.55 : 1.35})`, opacity: 0 }],
-        { duration: 700, delay: i * 150, easing: 'cubic-bezier(0.15, 0.6, 0.35, 1)', fill: 'backwards' }
+        { duration: 700, delay: i * 150, easing: effectEasing(700), fill: 'backwards' }
       );
     }
   }

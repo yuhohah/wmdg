@@ -55,30 +55,32 @@ describe('progression invariants', () => {
     expect(reloaded.gnosePoints).toBe(migrated.gnosePoints);
   });
 
-  it('reserves an objective within 180 seconds and invests only to reduce its ETA', () => {
+  it('buys affordable followers even when Faith is close to the Gnose threshold', () => {
     const g = economy(); g.unlockedGnoseUpgrades.add('gn_automation');
-    g.automationGoal = 'gnose'; g.automationGnoseTarget = 1;
     g.faithPoints = 1e15 - 100 * g.getFaithPerSecond();
     const followers = g.getTotalFollowersCount(), balance = g.faithPoints;
     g.runGnoseAutomation();
-    expect(g.getTotalFollowersCount()).toBe(followers); expect(g.faithPoints).toBe(balance);
-    g.incarnationStage = 5;
-    g.faithPoints = 1e9;
-    expect(g.shouldInvestInFollower()).toBe(true);
-    g.runGnoseAutomation(); expect(g.getTotalFollowersCount()).toBeGreaterThan(followers);
-    const restored = new GameStateManager(); restored.applySaveData(g.buildSaveData());
-    expect(restored.automationGoal).toBe('gnose');
+    expect(g.getTotalFollowersCount()).toBeGreaterThan(followers);
+    expect(g.faithPoints).toBeLessThan(balance);
+    expect(g.faithPoints).toBeLessThan(g.getItemCost(g.followers[0]));
   });
 
-  it('reserves a nearby Avatar investment on the route to a distant Gnose objective', () => {
+  it('ignores removed goals in older saves while preserving automation controls', () => {
     const g = economy(); g.unlockedGnoseUpgrades.add('gn_automation');
-    g.automationGoal = 'gnose'; g.automationGnoseTarget = 1000;
     g.faithPoints = 2.5e6;
-    const followers = g.getTotalFollowersCount();
-    expect(g.getFollowerReservation()?.label).toBe('Avatar Consagrado');
-    g.runGnoseAutomation(); expect(g.getTotalFollowersCount()).toBe(followers);
-    expect(g.upgradeIncarnation()).toBe(true);
-    expect(g.automationGoal).toBe('gnose'); expect(g.automationGnoseTarget).toBe(1000);
+    g.autoFollowersEnabled = false;
+    const save = g.buildSaveData();
+    const legacy = { ...save, gnose: { ...save.gnose!, automationGoal: 'gnose', automationGnoseTarget: 1000 } };
+    const restored = new GameStateManager(); restored.applySaveData(legacy);
+    expect(restored.autoFollowersEnabled).toBe(false);
+    const followers = restored.getTotalFollowersCount();
+    restored.runGnoseAutomation();
+    expect(restored.getTotalFollowersCount()).toBe(followers);
+    restored.autoFollowersEnabled = true;
+    restored.runGnoseAutomation();
+    expect(restored.getTotalFollowersCount()).toBeGreaterThan(followers);
+    expect(restored.buildSaveData().gnose).not.toHaveProperty('automationGoal');
+    expect(restored.buildSaveData().gnose).not.toHaveProperty('automationGnoseTarget');
   });
 
   it('strengthens cycle Fervor smoothly through nodes and clears that power at Ascensão', () => {

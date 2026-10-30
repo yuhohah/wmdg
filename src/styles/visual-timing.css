@@ -1,0 +1,27 @@
+/* Decorative effects sample at 30 Hz; camera, drag and interface transitions stay native.
+   CSS easing applies between keyframes: counts below use each segment's duration. */
+.floating-faith-num {
+  /* Two 400 ms segments: 12 steps each. */
+  animation-timing-function: steps(12, end);
+}
+
+.incarnation-altar-aura {
+  /* Two 2 s segments. */
+  animation-timing-function: steps(60, end);
+}
+
+.btn-unlock-mechanic.affordable::after {
+  /* Two 1.2 s segments. */
+  animation-timing-function: steps(36, end);
+}
+
+.start-sphere-img {
+  /* One 4 s segment. */
+  animation-timing-function: steps(120, end);
+}
+
+.resource-item-faith .res-rate.boosted,
+#faith-per-sec-counter.boosted {
+  /* One 1.2 s segment. */
+  animation-timing-function: steps(36, end);
+}

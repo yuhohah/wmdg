@@ -28,16 +28,13 @@ Fragmentos are the remains of fallen divinities, obtained through Transmutação
 Gnose is the permanent currency earned through Ascensão Gnóstica and spent on the twenty nodes of the Árvore Hermética. Assimilated nodes strengthen production permanently; guardians, achievements and these nodes survive later ascensions.
 
 **Automações Gnósticas**
-Permanent purchases that independently automate recruitment, Ritos and Relic restoration, each with its own pause control. Recruitment reserves Fé for the chosen objective; Olho do Infinito makes automated recruitment and Ritos free and enables passive Transmutação.
+Permanent purchases that independently automate recruitment, Ritos and Relic restoration, each with its own pause control. Recruitment spends available Fé; Olho do Infinito makes automated recruitment and Ritos free and enables passive Transmutação.
 
 **Automação dos Selos**
 Ruptura Automática reopens eligible Selos after ascensions; Memória Hermética separately preserves Encarnação and enables bulk purchases. Cripta Eterna preserves restored Relic levels.
 
 **Pico do ciclo**
 The highest available balance of Fervor or Fragmentos reached in the current ascension, retained when spending that resource. Both peaks disappear at Ascensão, including when Cripta Eterna preserves Relic levels.
-
-**Objetivo do culto**
-The next Selo, Avatar or amount of Gnose the player wants to reach. Automation weighs recruitment against saving for this objective, and the player may change it at any time.
 
 **Ressonância dos nós**
 The permanent production strength granted by every assimilated Gnose node, in addition to its individual effect. It rewards purchases rather than repeated ascensions.

@@ -1,5 +1,6 @@
 import { INCARNATION_STAGES, IncarnationStage } from '../config/incarnation.js';
 import { getAvatarArt } from './pixelArt.js';
+import { VisualFrameClock, visualFrameScale } from './visualTiming.js';
 
 export interface IncarnationAltarOptions {
   onAltarClick?: (e?: MouseEvent) => void;
@@ -157,9 +158,9 @@ export class IncarnationAltar {
     }
   }
 
-  private spawnAmbientParticles(): void {
+  private spawnAmbientParticles(frameScale: number): void {
     if (this.particles.length > 40) return;
-    if (Math.random() > 0.35) return;
+    if (Math.random() >= 1 - 0.65 ** frameScale) return;
 
     const cx = this.width / 2;
     const cy = this.height * 0.5;
@@ -178,24 +179,25 @@ export class IncarnationAltar {
     });
   }
 
-  private update(): void {
-    this.rotationAngle += 0.006;
+  private update(elapsedSec: number): void {
+    const frameScale = visualFrameScale(elapsedSec);
+    this.rotationAngle += 0.006 * frameScale;
     if (this.pulsePhase > 0) {
-      this.pulsePhase -= 0.03;
+      this.pulsePhase -= 0.03 * frameScale;
       if (this.pulsePhase < 0) this.pulsePhase = 0;
     }
     if (this.flashAlpha > 0) {
-      this.flashAlpha -= 0.025;
+      this.flashAlpha -= 0.025 * frameScale;
       if (this.flashAlpha < 0) this.flashAlpha = 0;
     }
 
-    this.spawnAmbientParticles();
+    this.spawnAmbientParticles(frameScale);
 
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.life--;
+      p.x += p.vx * frameScale;
+      p.y += p.vy * frameScale;
+      p.life -= frameScale;
       p.alpha = Math.max(0, p.life / p.maxLife);
       if (p.life <= 0) {
         this.particles.splice(i, 1);
@@ -289,9 +291,13 @@ export class IncarnationAltar {
   }
 
   private startLoop(): void {
-    const loop = () => {
-      this.update();
-      if (this.isOnScreen) this.draw();
+    const clock = new VisualFrameClock();
+    const loop = (nowMs: number) => {
+      const elapsedSec = clock.tick(nowMs);
+      if (elapsedSec !== null) {
+        this.update(elapsedSec);
+        if (this.isOnScreen && document.visibilityState !== 'hidden') this.draw();
+      }
       this.animFrameId = requestAnimationFrame(loop);
     };
     this.animFrameId = requestAnimationFrame(loop);

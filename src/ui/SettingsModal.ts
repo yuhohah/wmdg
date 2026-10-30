@@ -10,6 +10,8 @@ export interface SettingsModalOptions {
   onResetSave: () => void;
   onToggleHaptics?: (enabled: boolean) => void;
   isHapticsEnabled?: () => boolean;
+  isNerdsEnabled?: () => boolean;
+  onToggleNerds?: (enabled: boolean) => void;
   onTriggerHaptic?: (pattern: number | number[]) => void;
 }
 
@@ -29,6 +31,7 @@ export class SettingsModal {
 
   // Haptics Controls
   private hapticsToggleEl: HTMLInputElement | null = null;
+  private nerdsToggleEl: HTMLInputElement | null = null;
 
   // Save Progress Controls
   private saveStatusTextEl: HTMLElement | null = null;
@@ -61,6 +64,7 @@ export class SettingsModal {
     this.musicIconOffEl = document.getElementById('music-icon-off');
 
     this.hapticsToggleEl = document.getElementById('haptics-toggle') as HTMLInputElement | null;
+    this.nerdsToggleEl = document.getElementById('nerds-toggle') as HTMLInputElement | null;
 
     this.saveStatusTextEl = document.getElementById('save-status-text');
     this.btnManualSaveEl = document.getElementById('btn-manual-save') as HTMLButtonElement | null;
@@ -70,6 +74,12 @@ export class SettingsModal {
   }
 
   private bindEvents(): void {
+    if (this.nerdsToggleEl) {
+      this.nerdsToggleEl.checked = this.options.isNerdsEnabled?.() ?? false;
+      this.nerdsToggleEl.addEventListener('change', () => {
+        this.options.onToggleNerds?.(this.nerdsToggleEl!.checked);
+      });
+    }
     // Open/Close triggers
     this.settingsBtn?.addEventListener('click', () => this.toggle());
 
@@ -178,6 +188,7 @@ export class SettingsModal {
   }
 
   public open(): void {
+    if (this.nerdsToggleEl) this.nerdsToggleEl.checked = this.options.isNerdsEnabled?.() ?? false;
     this.modalEl?.classList.add('open');
     this.updateSaveStatus();
     this.options.onOpen?.();

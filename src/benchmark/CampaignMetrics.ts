@@ -20,9 +20,6 @@ export class CampaignMetrics {
   public miracleFaith = 0;
   private purchases = { followers: 0, rituals: 0, relics: 0 };
   private previousCounts = { followers: 0, rituals: 0, relics: 0 };
-  private goals: CampaignMetricsResult['goals'] = [];
-  private currentGoal: { id: string; label: string; faith: number; episode: number } | undefined;
-  private nextGoalSample = 0;
   private combat: CampaignMetricsResult['combat'] = [];
   private advances: CampaignMetricsResult['advances'] = [];
   private seen = new Set<string>();
@@ -60,19 +57,6 @@ export class CampaignMetrics {
     const counts = { followers: game.getTotalFollowersCount(), rituals: game.fervorUpgrades.reduce((sum, u) => sum + u.level, 0), relics: game.relicUpgrades.reduce((sum, u) => sum + u.level, 0) };
     for (const key of ['followers', 'rituals', 'relics'] as const) this.purchases[key] += Math.max(0, counts[key] - this.previousCounts[key]);
     this.previousCounts = counts;
-    if (time >= this.nextGoalSample) {
-      this.nextGoalSample = time + 1;
-      const goal = game.getAutomationTarget();
-      const previous = this.goals.at(-1);
-      if (previous && previous.reachedSec === null && this.currentGoal && (game.faithPoints >= this.currentGoal.faith
-        || game.unlocks.some(u => u.id === this.currentGoal!.id && u.unlocked)
-        || (this.currentGoal.id.startsWith('avatar-') && game.incarnationStage >= Number(this.currentGoal.id.slice(7))))) previous.reachedSec = time;
-      if (this.currentGoal?.id !== goal.id || this.currentGoal?.episode !== game.gnoseResets) {
-        if (previous && previous.reachedSec === null) previous.cancelled = true;
-        this.goals.push({ label: goal.label, chosenSec: time, predictedSec: Number.isFinite(goal.etaSec) ? time + goal.etaSec : null, reachedSec: null, cancelled: false });
-        this.currentGoal = { ...goal, episode: game.gnoseResets };
-      }
-    }
     const previous = this.samples.at(-1);
     if (previous) this.integral += previous.fps * (time - previous.time);
     this.samples.push({ time, fps });
@@ -131,7 +115,7 @@ export class CampaignMetrics {
       for (const event of events.filter(e => e.timeSec >= start)) { max = Math.max(max, event.timeSec - last); last = event.timeSec; }
       return Math.max(max, time - last);
     };
-    return { version: 2, combat: this.combat, purchases: this.purchases, goals: this.goals, income: { passive: this.passiveFaith, clicks: this.clickFaith, miracles: this.miracleFaith }, advances: this.advances,
+    return { version: 2, combat: this.combat, purchases: this.purchases, goals: [], income: { passive: this.passiveFaith, clicks: this.clickFaith, miracles: this.miracleFaith }, advances: this.advances,
       maxPermanentGapSec: gap(this.advances.filter(e => e.category === 'permanent' || e.category === 'boss'), this.resets[0]?.resetSec ?? time),
       maxRelevantGapSec: gap(this.advances, 0), recoveries: this.resets, productionDrops: this.drops };
   }

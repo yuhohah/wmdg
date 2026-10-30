@@ -1,7 +1,7 @@
 export type PlayerArchetype = 'reference' | 'active' | 'casual' | 'afk';
 
 export type ManualAction = 'sphere' | 'blessing' | 'miracle' | 'rift' | 'follower'
-  | 'fervor' | 'relic' | 'unlock' | 'incarnation' | 'transmutation' | 'gnose' | 'gnose_confirm' | 'gnose_upgrade' | 'challenge' | 'automation_toggle' | 'goal';
+  | 'fervor' | 'relic' | 'unlock' | 'incarnation' | 'transmutation' | 'gnose' | 'gnose_confirm' | 'gnose_upgrade' | 'challenge' | 'automation_toggle';
 
 export interface BenchmarkEvent {
   timeSec: number;

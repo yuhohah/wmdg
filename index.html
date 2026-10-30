@@ -198,17 +198,6 @@
                     </div>
                   </div>
 
-                  <div class="automation-goal-control">
-                    <label for="automation-goal">Objetivo do culto</label>
-                    <select id="automation-goal">
-                      <option value="automatic">Próximo avanço</option>
-                      <option value="next_seal">Próximo Selo</option>
-                      <option value="avatar">Próximo Avatar</option>
-                      <option value="gnose">Gnose desejada</option>
-                    </select>
-                    <input id="automation-gnose-target" type="number" min="1" step="1" value="1" aria-label="Gnose desejada" hidden />
-                    <p id="automation-goal-status" aria-live="polite"></p>
-                  </div>
                   <label class="card-automation-toggle" id="auto-followers-wrap" hidden>
                     <input type="checkbox" id="auto-followers-toggle" checked />
                     <span>Auto-Fiéis</span>
@@ -242,9 +231,17 @@
               </div>
             </div>
 
-            <!-- DESBLOQUEIO DE NOVAS MECÂNICAS (BOTÃO DIRETO) -->
-            <div id="card-unlocks" class="board-unlock-anchor">
-              <div id="unlocks-list" class="unlock-btn-container"></div>
+            <!-- DESBLOQUEIO DE NOVAS MECÂNICAS -->
+            <div id="card-unlocks" class="dodeca-card board-unlock-anchor">
+              <div class="dodeca-card-header">
+                <div class="dodeca-card-title-group">
+                  <span class="dodeca-card-icon" data-icon="unlock"></span>
+                  <h3 class="dodeca-card-title">Desbloqueios</h3>
+                </div>
+              </div>
+              <div class="dodeca-card-body">
+                <div id="unlocks-list" class="unlock-btn-container"></div>
+              </div>
             </div>
 
             <!-- CARD 4: FERVOR SAGRADO -->
@@ -258,20 +255,6 @@
               </div>
               <div class="dodeca-card-body">
                 <div id="tab-fervor" class="tab-pane active" style="display: block;">
-                  <div class="fervor-header-card">
-                    <div class="fervor-header-row">
-                      <div class="fervor-badge-group">
-                        <div class="fervor-text-col">
-                          <span class="fervor-label">CHAMA DO CULTO</span>
-                          <div class="fervor-val-row">
-                            <span id="fervor-counter" class="fervor-val">0</span>
-                            <span class="fervor-unit">Fervor</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="fervor-rate-tag" id="fervor-rate-counter">+0 Fervor/s</div>
-                    </div>
-                  </div>
                   <p id="fervor-resonance" class="fervor-resonance">Ressonância do pico: ×1 Fé</p>
                   <label class="card-automation-toggle" id="auto-fervor-wrap" hidden>
                     <input type="checkbox" id="auto-fervor-toggle" checked />
@@ -371,11 +354,6 @@
               </div>
               <div class="dodeca-card-body">
                 <div id="tab-relics" class="tab-pane active" style="display: block;">
-                  <div class="relic-monument-banner">
-                    <div class="relic-monument-caption">
-                      <span class="relic-monument-desc">As Above, So Below — Transmutações Alquímicas</span>
-                    </div>
-                  </div>
                   <label class="card-automation-toggle" id="auto-transmutation-wrap" hidden>
                     <input type="checkbox" id="auto-transmutation-toggle" checked />
                     <span>Auto-Transmutação</span>
@@ -385,16 +363,8 @@
                     <button id="btn-convert-relics" class="btn-convert-relics" disabled>
                       Transmutar toda a Fé → +<span id="relics-to-get">0</span> Fragmentos
                     </button>
-                    <div class="relics-status-info">
-                      <div class="relics-balance-text">
-                        Você possui <span id="relics-balance-val">0</span> Fragmentos
-                      </div>
-                      <div class="relics-extra-rate-text">
-                        Geração passiva: +<span id="relics-extra-val">0</span> Fragmentos/s
-                      </div>
-                      <div class="relics-extra-rate-text" id="relics-cooldown-line" style="display: none;">
-                        O vaso esfria: <span id="relics-convert-cooldown">0</span>s
-                      </div>
+                    <div class="relics-extra-rate-text" id="relics-cooldown-line" style="display: none;">
+                      O vaso esfria: <span id="relics-convert-cooldown">0</span>s
                     </div>
                   </div>
 
@@ -528,7 +498,7 @@
       </div>
 
       <!-- Highly Visible Floating Speech Balloon ("Balão") with Arrow -->
-      <div id="spotlight-balloon" class="spotlight-balloon" role="dialog" aria-modal="false">
+      <div id="spotlight-balloon" class="spotlight-balloon" role="dialog" aria-modal="false" aria-labelledby="spotlight-balloon-title" aria-describedby="spotlight-balloon-desc spotlight-balloon-action-tip">
         <div class="spotlight-balloon-arrow" id="spotlight-balloon-arrow"></div>
         <div class="spotlight-balloon-header">
           <div class="spotlight-balloon-badge-group">
@@ -636,6 +606,16 @@
             <input type="checkbox" id="haptics-toggle" style="accent-color: var(--gold-accent);" checked>
           </div>
 
+        </div>
+
+        <div class="settings-group">
+          <label class="setting-item" for="nerds-toggle">
+            <div>
+              <div class="setting-name">Nerds</div>
+              <div class="setting-desc">Mostrar fórmulas de custo e bônus ao passar o mouse sobre compras e melhorias.</div>
+            </div>
+            <input type="checkbox" id="nerds-toggle" />
+          </label>
         </div>
 
         <div class="settings-section-subtitle">Status do Culto</div>

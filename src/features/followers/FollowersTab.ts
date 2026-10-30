@@ -1,4 +1,3 @@
-import type { AutomationGoal } from '../../types.js';
 import { AutomationToggle } from '../../ui/AutomationToggle.js';
 import { setText } from '../../ui/dom.js';
 import { GameStateManager } from '../../core/GameState.js';
@@ -73,13 +72,6 @@ export class FollowersTab {
   }
 
   private bindEvents(): void {
-    document.getElementById('automation-goal')?.addEventListener('change', event => {
-      this.options.gameState.automationGoal = (event.target as HTMLSelectElement).value as AutomationGoal;
-    });
-    document.getElementById('automation-gnose-target')?.addEventListener('change', event => {
-      const value = Number((event.target as HTMLInputElement).value);
-      if (Number.isFinite(value)) this.options.gameState.automationGnoseTarget = Math.max(1, Math.floor(value));
-    });
     this.btnConvertOneEl?.addEventListener('click', () => {
       this.buyOneFollower();
     });
@@ -201,17 +193,6 @@ export class FollowersTab {
   }
 
   public updateRealtime(): void {
-    const goalSelect = document.getElementById('automation-goal') as HTMLSelectElement | null;
-    if (goalSelect && document.activeElement !== goalSelect) goalSelect.value = this.options.gameState.automationGoal;
-    const amountInput = document.getElementById('automation-gnose-target') as HTMLInputElement | null;
-    if (amountInput) {
-      amountInput.hidden = this.options.gameState.automationGoal !== 'gnose';
-      if (document.activeElement !== amountInput) amountInput.value = String(this.options.gameState.automationGnoseTarget);
-    }
-    const target = this.options.gameState.getAutomationTarget();
-    const reservation = this.options.gameState.getFollowerReservation();
-    const status = document.getElementById('automation-goal-status');
-    if (status) setText(status, `${target.label} · ${Number.isFinite(target.etaSec) ? Math.ceil(target.etaSec) + 's pela produção atual' : 'aguardando produção'}${reservation ? ' · poupando para ' + reservation.label : ''}`);
     const devotee = this.options.gameState.followers[0];
     if (!devotee) return;
     const followerOutput = this.options.gameState.getFaithPerSecond();

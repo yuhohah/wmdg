@@ -23,8 +23,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 3440px;
-  height: 1920px;
+  width: 6880px;
+  height: 3840px;
   transform-origin: 0 0;
   will-change: transform;
 }
@@ -58,6 +58,9 @@
 .board-constellation-lines {
   position: absolute;
   inset: 0;
+  width: 3440px;
+  height: 1920px;
+  overflow: visible;
   pointer-events: none;
   z-index: 1;
   /* Slightly brighter stroke instead of a drop-shadow filter: a filter on this world-sized SVG
@@ -173,8 +176,8 @@
 /* Card Body */
 .dodeca-card-body {
   padding: 12px;
-  overflow-y: auto;
-  max-height: 580px;
+  overflow: visible;
+  max-height: none;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -341,11 +344,11 @@
   left: 1510px;
   top: 30px;
   width: 460px;
-  max-height: 520px;
+  max-height: none;
 }
 
 #card-achievements .dodeca-card-body {
-  max-height: 440px;
+  max-height: none;
 }
 
 /* ===================================================

@@ -15,8 +15,6 @@ export class HUDController {
   private followersCounterEl: HTMLElement | null = null;
   private sphereClickValEl: HTMLElement | null = null;
 
-  private fervorCounterEl: HTMLElement | null = null;
-  private fervorRateCounterEl: HTMLElement | null = null;
   private fervorCounterHudEl: HTMLElement | null = null;
   private fervorRateCounterHudEl: HTMLElement | null = null;
 
@@ -39,8 +37,6 @@ export class HUDController {
     this.followersCounterEl = document.getElementById('followers-counter');
     this.sphereClickValEl = document.getElementById('sphere-click-val');
 
-    this.fervorCounterEl = document.getElementById('fervor-counter');
-    this.fervorRateCounterEl = document.getElementById('fervor-rate-counter');
     this.fervorCounterHudEl = document.getElementById('fervor-counter-hud');
     this.fervorRateCounterHudEl = document.getElementById('fervor-rate-counter-hud');
 
@@ -104,9 +100,6 @@ export class HUDController {
   public updateCard(id: string): void {
     if (id === 'card-altar-sphere') {
       setText(this.sphereClickValEl, `+${formatNumber(this.gameState.getFaithPerClick())} Fé`);
-    } else if (id === 'card-fervor') {
-      setText(this.fervorCounterEl, formatNumber(Math.floor(this.gameState.fervorPoints)));
-      setText(this.fervorRateCounterEl, `+${formatNumber(this.gameState.getFervorRatePerSecond())} Fervor/s`);
     }
   }
 }

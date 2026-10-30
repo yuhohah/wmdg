@@ -90,14 +90,36 @@ export class BoardManager {
   private bindEvents(): void {
     if (!this.viewportEl || !this.worldEl) return;
 
-    // 1. Mouse Wheel Zoom (centered at mouse coordinates; allow native scroll inside scrollable card bodies)
-    this.viewportEl.addEventListener('wheel', (e: WheelEvent) => {
-      const target = e.target as HTMLElement | null;
-      const cardBody = target?.closest<HTMLElement>('.dodeca-card-body');
-      if (cardBody && cardBody.scrollHeight > cardBody.clientHeight + 2 && !e.ctrlKey) {
-        return;
-      }
+    this.cards.forEach((card) => {
+      // The sphere has no visible header.
+      if (card.id === 'card-altar-sphere') return;
+      const header = card.querySelector<HTMLElement>('.dodeca-card-header');
+      const body = card.querySelector<HTMLElement>('.dodeca-card-body');
+      if (!header || !body) return;
 
+      body.id ||= `${card.id}-body`;
+      const title = header.querySelector('.dodeca-card-title')?.textContent?.trim() ?? 'card';
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'dodeca-card-btn-toggle';
+      toggle.setAttribute('aria-controls', body.id);
+      const updateToggle = () => {
+        const collapsed = card.classList.contains('collapsed');
+        toggle.textContent = collapsed ? '+' : '−';
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+        toggle.setAttribute('aria-label', `${collapsed ? 'Expandir' : 'Minimizar'} ${title}`);
+        toggle.title = `${collapsed ? 'Expandir' : 'Minimizar'} ${title}`;
+      };
+      updateToggle();
+      toggle.addEventListener('click', () => {
+        card.classList.toggle('collapsed');
+        updateToggle();
+      });
+      header.appendChild(toggle);
+    });
+
+    // 1. Mouse Wheel Zoom (centered at mouse coordinates)
+    this.viewportEl.addEventListener('wheel', (e: WheelEvent) => {
       e.preventDefault();
       this.isCameraTransitioning = false;
 
@@ -152,15 +174,12 @@ export class BoardManager {
         if (pickedUp) return;
       }
 
-      // Filter out clicks on interactive controls or scrollable card bodies so taps and vertical touch scrolling work normally
-      const isCardHeader = !!target.closest('.dodeca-card-header');
-      const cardBody = target.closest<HTMLElement>('.dodeca-card-body');
-      const isScrollableCardBody = !!cardBody && cardBody.scrollHeight > cardBody.clientHeight + 2;
+      // Controls keep their clicks; the remaining card surface can pan the board.
       const isInteractive = !!target.closest(
         'button, a, input, select, textarea, canvas, label, [role="button"], .cult-action-card, .relic-action-card, .gnose-tree-node, .incarnation-altar-container, .board-quicknav-bar, .board-zoom-controls'
       );
 
-      if ((isInteractive || isScrollableCardBody) && !isCardHeader && e.button !== 1) {
+      if (isInteractive && e.button !== 1) {
         return;
       }
 
@@ -270,11 +289,14 @@ export class BoardManager {
 
     // 8. Window Resize: re-center active card inside safe viewport
     window.addEventListener('resize', () => {
-      if (this.currentFocusedCardId) {
-        this.centerOnCard(this.currentFocusedCardId, true);
-      } else {
-        this.applyTransform();
-      }
+      // Let responsive card sizes and overlap resolution settle before framing them.
+      window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+        if (this.currentFocusedCardId) {
+          this.centerOnCard(this.currentFocusedCardId, true);
+        } else {
+          this.applyTransform();
+        }
+      }));
     });
   }
 
@@ -355,7 +377,7 @@ export class BoardManager {
     const hudEl = document.querySelector<HTMLElement>('.top-hud-bar');
     const hudRect = hudEl?.getBoundingClientRect();
     const topSafe = hudRect && hudRect.height > 0
-      ? Math.min(130, Math.round(hudRect.bottom + 8))
+      ? Math.min(viewHeight / 2, Math.round(hudRect.bottom + 8))
       : (isMobile ? 54 : 76);
 
     const navEl = document.getElementById('board-quicknav-bar');
@@ -389,8 +411,9 @@ export class BoardManager {
     } else {
       const maxDesiredZoom = 1.0;
       const fitW = availW / cardWidth;
-      const fitH = availH / cardHeight;
-      targetZoom = Math.max(this.minZoom, Math.min(maxDesiredZoom, fitW, fitH));
+      targetZoom = Math.max(this.minZoom, Math.min(maxDesiredZoom, fitW));
+      // Frame the top of long cards at readable scale; pan the board to reach the rest.
+      cardCenterY = cardTop + Math.min(cardHeight, availH / targetZoom) / 2;
     }
 
     const safeCenterX = viewWidth / 2;

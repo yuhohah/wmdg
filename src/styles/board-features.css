@@ -117,7 +117,7 @@
   box-shadow: 0 0 34px rgba(255, 211, 107, 0.8), inset 0 0 24px rgba(255, 211, 107, 0.5);
 }
 
-/* Satellite cards: content-sized, long lists scroll inside the plate (580px body cap) */
+/* Satellite cards grow with their content; navigation happens on the board. */
 #card-incarnation,
 #card-relics,
 #card-followers,
@@ -128,9 +128,8 @@
 }
 
 #card-gnose .dodeca-card-body {
-  max-height: calc(100dvh - 240px);
-  overflow-y: auto;
-  overflow-x: hidden;
+  max-height: none;
+  overflow: visible;
 }
 
 /* Sanctum Gnosticum takes the Via Stellarum tower once held by the Pantheon */
@@ -145,17 +144,16 @@
   left: 2000px;
 }
 
-/* Unlock seal sits on the nave floor right below the oculus */
+/* Unlocks start below the oculus and can be rearranged by their header. */
 #card-unlocks {
   position: absolute;
   left: 1570px;
   top: 1110px;
-  width: 340px;
+  width: min(400px, calc(100vw - 16px));
   min-height: 0;
   z-index: 15;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
 }
 
 /* ===================================================
@@ -821,10 +819,9 @@
   #card-incarnation .dodeca-card-body,
   #card-relics .dodeca-card-body,
   #card-gnose .dodeca-card-body {
-    max-height: calc(100dvh - 240px);
-    overflow-y: auto;
-    overflow-x: hidden;
-    touch-action: pan-y;
+    max-height: none;
+    overflow: visible;
+    touch-action: none;
   }
 
   .btn-unlock-mechanic {
@@ -921,14 +918,6 @@ body.is-playing .bg-landscape-layer {
   visibility: visible;
   transition-delay: 0s;
 }
-
-.automation-goal-control { display: grid; gap: 6px; margin: 12px 0; font-size: 12px; }
-.automation-goal-control select, .automation-goal-control input {
-  min-width: 0; width: 100%; padding: 8px; color: var(--text-primary, #eee5ce);
-  background: #15131d; border: 1px solid #65562f; border-radius: 4px; font: inherit;
-}
-.automation-goal-control p { margin: 0; color: #c5b889; line-height: 1.5; }
-.automation-goal-control [hidden] { display: none; }
 
 .btn-ritual-max { margin-top: 8px; padding: 6px 10px; border: 1px solid #776339; border-radius: 4px;
   background: #24202b; color: #e8d7a1; font: inherit; cursor: pointer; }

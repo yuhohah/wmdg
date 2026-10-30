@@ -52,10 +52,9 @@ describe('Gnose tree revision', () => {
     expect(restored.faithPoints).toBe(1);
   });
 
-  it('recruits the maximum affordable followers when there is no eligible objective', () => {
+  it('recruits the maximum affordable followers with normal costs', () => {
     const g = new GameStateManager(); g.faithPoints = 1000;
     g.unlockedGnoseUpgrades.add('gn_automation');
-    g.automationGoal = 'gnose'; // Gnose is still locked: free investment.
     const reference = new GameStateManager(); reference.faithPoints = 1000;
     while (reference.buyOneFollower()) { /* manual reference */ }
     g.runGnoseAutomation();

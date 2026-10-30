@@ -37,8 +37,8 @@ export interface BoardLayoutHost {
   getViewport(): HTMLElement;
 }
 
-const WORLD_W = 3440;
-const WORLD_H = 1920;
+const WORLD_W = 6880;
+const WORLD_H = 3840;
 const GRID = 20;
 const GAP = 20;
 const SNAP_RADIUS = 90;
@@ -52,8 +52,8 @@ const STORAGE_KEY = 'cult_board_layout_v2';
 // Ray origin: center of the Sphere oculus
 const RAY_ORIGIN = { x: 1740, y: 854 };
 
-const DRAGGABLE_IDS = ['card-incarnation', 'card-relics', 'card-followers', 'card-fervor', 'card-gnose'];
-const FIXED_IDS = ['card-altar-sphere', 'card-unlocks'];
+const DRAGGABLE_IDS = ['card-incarnation', 'card-relics', 'card-followers', 'card-fervor', 'card-gnose', 'card-unlocks'];
+const FIXED_IDS = ['card-altar-sphere'];
 
 // Docking slots, anchored at the card's top-center so cards of different widths share a column
 // (cathedral landmarks: chancel, crypt, scriptorium, apex gallery, nave, hearth, tower)
@@ -70,6 +70,14 @@ const SLOTS: Point[] = [
   { x: 2860, y: 880 },
   { x: 2860, y: 1450 },
   { x: 2970, y: 120 },
+  { x: 4100, y: 440 },
+  { x: 4100, y: 1800 },
+  { x: 5400, y: 440 },
+  { x: 5400, y: 1800 },
+  { x: 1110, y: 2800 },
+  { x: 2860, y: 2800 },
+  { x: 4100, y: 2800 },
+  { x: 5400, y: 2800 },
 ];
 
 export class BoardLayout {
@@ -360,8 +368,8 @@ export class BoardLayout {
 
   private clamp(p: Point, size: { w: number; h: number }): Point {
     return {
-      x: Math.min(Math.max(0, p.x), Math.max(0, WORLD_W - size.w)),
-      y: Math.min(Math.max(0, p.y), Math.max(0, WORLD_H - size.h)),
+      x: Math.min(Math.max(0, p.x), Math.max(0, Math.max(WORLD_W, this.worldEl.offsetWidth) - size.w)),
+      y: Math.min(Math.max(0, p.y), Math.max(0, Math.max(WORLD_H, this.worldEl.offsetHeight) - size.h)),
     };
   }
 
@@ -509,6 +517,12 @@ export class BoardLayout {
     this.cards.forEach((card, id) => {
       if (!this.isVisible(card)) this.lastSizes.delete(id);
     });
+    // Long cards may spill beyond the original board. Extend camera bounds so their
+    // last rows remain reachable, without shrinking the world when a card is minimized.
+    const width = Math.max(WORLD_W, this.worldEl.offsetWidth, ...placed.map(r => r.x + r.w + GAP));
+    const height = Math.max(WORLD_H, this.worldEl.offsetHeight, ...placed.map(r => r.y + r.h + GAP));
+    this.worldEl.style.width = `${width}px`;
+    this.worldEl.style.height = `${height}px`;
     if (dirty) this.persist();
   }
 

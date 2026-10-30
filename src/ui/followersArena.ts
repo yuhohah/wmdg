@@ -1,4 +1,5 @@
 import { getDevoteeSheet, type DevoteeSheet } from './pixelArt.js';
+import { VisualFrameClock, visualFrameScale } from './visualTiming.js';
 
 export interface Walker {
   id: number;
@@ -281,8 +282,9 @@ export class FollowersArena {
     const minY = Math.max(28, this.height * 0.12);
     const maxY = Math.max(minY + 20, this.height - 18);
 
-    const speedScale = Math.min(this.speedMultiplier, 5);
-    const timerStep = Math.max(1, Math.min(10, Math.floor(this.speedMultiplier)));
+    const frameScale = visualFrameScale(elapsedSec);
+    const speedScale = Math.min(this.speedMultiplier, 5) * frameScale;
+    const timerStep = Math.max(1, Math.min(10, Math.floor(this.speedMultiplier))) * frameScale;
 
     for (const w of this.walkers) {
       w.stateTimer -= timerStep;
@@ -342,7 +344,7 @@ export class FollowersArena {
         w.prayCycle += 0.075 * speedScale;
         // Emit gentle sparks at deep reverence frames
         const frame = Math.floor(w.prayCycle) % 9;
-        if ((frame === 3 || frame === 5) && Math.random() < 0.25) {
+        if ((frame === 3 || frame === 5) && Math.random() < 1 - 0.75 ** frameScale) {
           this.spawnPrayerParticles(w, 1);
         }
       } else {
@@ -355,7 +357,7 @@ export class FollowersArena {
         w.miracleTimer = (w.miracleTimer || 0) - elapsedSec * this.speedMultiplier;
         w.state = 'pray';
         w.stateTimer = Math.max(20, w.miracleTimer * 60);
-        if (Math.random() < 0.15) {
+        if (Math.random() < 1 - 0.85 ** frameScale) {
           this.spawnPrayerParticles(w, 1);
         }
         if (w.miracleTimer <= 0) {
@@ -494,13 +496,12 @@ export class FollowersArena {
   }
 
   private startLoop(): void {
-    let previousMs: number | undefined;
+    const clock = new VisualFrameClock();
     const loop = (nowMs: number) => {
-      const elapsedSec = previousMs === undefined ? 0 : Math.max(0, (nowMs - previousMs) / 1000);
-      previousMs = nowMs;
-      if (!this.isPaused) {
+      const elapsedSec = clock.tick(nowMs);
+      if (elapsedSec !== null && !this.isPaused) {
         this.update(elapsedSec);
-        if (this.isOnScreen) this.draw();
+        if (this.isOnScreen && document.visibilityState !== 'hidden') this.draw();
       }
       this.animFrameId = requestAnimationFrame(loop);
     };

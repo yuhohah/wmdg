@@ -1,0 +1,198 @@
+/* Compact Gnose layout: useful upgrades fill rows; sealed tiers share a row. */
+#card-gnose .gnose-upgrades-tree {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+#card-gnose .gnose-tier-section:not(.gnose-tier-sealed),
+#card-gnose .gnose-curse-banner,
+#card-gnose .gnose-endgame-boss-bar {
+  grid-column: 1 / -1;
+}
+
+#card-gnose .gnose-tier-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+#card-gnose :is([data-tier='3'], [data-tier='4']) .gnose-tier-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#card-gnose .gnose-tree-node {
+  min-height: 0;
+  padding: 8px 10px;
+  gap: 6px;
+}
+
+#card-gnose .gnose-node-effect {
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+#card-gnose .gnose-node-badge {
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.3;
+}
+
+#card-gnose .gnose-tier-header {
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  font-size: 16px;
+  line-height: 1.3;
+  letter-spacing: 0.3px;
+}
+
+#card-gnose .gnose-tier-right {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+#card-gnose .gnose-guardian-badge {
+  font-size: 12px;
+  white-space: normal;
+}
+
+/* Locked upgrades no longer reserve a blurred grid behind an oversized seal. */
+#card-gnose .gnose-tier-sealed .gnose-tier-grid {
+  display: none;
+}
+
+#card-gnose .gnose-tier-sealed .gnose-tier-content {
+  min-height: 0;
+  overflow: visible;
+}
+
+#card-gnose .gnose-tier-seal {
+  position: relative;
+  padding: 10px;
+}
+
+#card-gnose .gnose-seal-chain {
+  display: none;
+}
+
+#card-gnose .gnose-tier-seal-content {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  width: 100%;
+  padding: 0;
+  gap: 6px 8px;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  text-align: left;
+}
+
+#card-gnose .gnose-tier-padlock,
+#card-gnose .gnose-tier-padlock .ico {
+  width: 24px;
+  height: 24px;
+}
+
+#card-gnose .gnose-tier-seal-title {
+  font-size: 12px;
+  letter-spacing: 0.6px;
+}
+
+#card-gnose .gnose-tier-seal :is(.btn-challenge-guardian, .gnose-guardian-requirement, .gnose-guardian-power) {
+  grid-column: 1 / -1;
+}
+
+html #card-gnose .gnose-tier-seal .btn-challenge-guardian {
+  min-height: 36px;
+  padding: 6px 8px;
+  font-size: 15px;
+  white-space: normal;
+}
+
+#card-gnose :is(.gnose-guardian-requirement, .gnose-guardian-power) {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+#card-gnose .gnose-reset-section {
+  gap: 6px;
+  padding: 8px;
+  margin-bottom: 12px;
+}
+
+#card-gnose .gnose-reset-section p {
+  margin: 0;
+}
+
+#card-gnose .gnose-req-hint {
+  white-space: normal;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+#card-gnose .btn-gnose-reset {
+  flex-basis: 200px;
+  white-space: normal;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+#card-gnose .gnose-stat-label {
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+#card-gnose .gnose-endgame-boss-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  margin-top: 0;
+  padding: 10px;
+  gap: 12px;
+}
+
+#card-gnose .gnose-endgame-title {
+  font-size: 15px;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+#card-gnose :is(.gnose-endgame-desc, .gnose-endgame-lock-hint) {
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+#card-gnose .gnose-endgame-action {
+  min-width: 0;
+}
+
+#card-gnose .endgame-ready {
+  white-space: normal;
+}
+
+@media (max-width: 860px) {
+  #card-gnose .gnose-upgrades-tree {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #card-gnose .gnose-tier-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #card-gnose .btn-gnose-reset {
+    flex-basis: auto;
+    padding: 8px;
+  }
+
+  #card-gnose .gnose-endgame-boss-bar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 360px) {
+  #card-gnose .gnose-tier-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

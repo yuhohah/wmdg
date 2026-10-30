@@ -271,7 +271,6 @@ export class GnoseTab {
         nodeEl.disabled = !gs.canBuyGnoseUpgrade(upg);
         nodeEl.className = `cult-action-card gnose-tree-node ${stateClass}`;
         nodeEl.id = `card-${upg.id}`;
-        nodeEl.title = isTierUnlocked ? upg.desc : '';
 
         const statusBadge = isUnlocked
           ? `<span class="gnose-node-badge unlocked">ASSIMILADO</span>`

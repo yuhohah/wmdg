@@ -22,6 +22,7 @@ import { AchievementsTab } from './features/achievements/AchievementsTab.js';
 import { StatsTab } from './features/stats/StatsTab.js';
 import { SphereController } from './features/sphere/SphereController.js';
 import { OnboardingGuide } from './ui/OnboardingGuide.js';
+import { FormulaTooltip } from './ui/FormulaTooltip.js';
 import { BoardManager } from './ui/BoardManager.js';
 import { hydrateIcons } from './ui/icons.js';
 import { cultDialog } from './ui/CultDialog.js';
@@ -54,6 +55,7 @@ class AppManager {
   public settingsModal: SettingsModal;
   public saveDataModal: SaveDataModal;
   public onboardingGuide: OnboardingGuide;
+  private formulaTooltip: FormulaTooltip;
   public board: BoardManager;
 
   // Feature Tabs
@@ -200,6 +202,7 @@ class AppManager {
       audio: this.audio
     });
 
+    this.formulaTooltip = new FormulaTooltip(this.gameState);
     this.settingsModal = new SettingsModal({
       audio: this.audio,
       onOpen: () => this.statsTab.updateUI(),
@@ -212,6 +215,11 @@ class AppManager {
         this.isHapticsEnabled = enabled;
       },
       isHapticsEnabled: () => this.isHapticsEnabled,
+      isNerdsEnabled: () => this.gameState.nerdsEnabled,
+      onToggleNerds: enabled => {
+        this.gameState.nerdsEnabled = enabled;
+        this.formulaTooltip.hide();
+      },
       onTriggerHaptic: (pattern) => this.triggerHaptic(pattern)
     });
 
@@ -281,6 +289,7 @@ class AppManager {
       this.cardUpdates.update();
       if (this.gnoseTab.bossBattleModal.isOpen()) this.gnoseTab.bossBattleModal.updateUI();
       this.onboardingGuide.update();
+      this.formulaTooltip.update();
     });
 
     events.on(GameEvents.GAME_TICK, () => {
@@ -290,6 +299,7 @@ class AppManager {
       if (this.gnoseTab.bossBattleModal.isOpen()) this.gnoseTab.bossBattleModal.updateUI();
       this.achievementsTab.updateRealtime();
       this.onboardingGuide.update();
+      this.formulaTooltip.update();
     });
   }
 
@@ -363,7 +373,6 @@ class AppManager {
     views.register('card-incarnation', () => this.incarnationTab.updateUI(), () => this.incarnationTab.updateRealtime());
     views.register('card-unlocks', () => this.unlocksTab.renderList(), () => this.unlocksTab.updateButtonStates());
     views.register('card-fervor', () => this.fervorTab.renderList(), () => {
-      this.hud.updateCard('card-fervor');
       this.fervorTab.updateButtonStates();
     });
     views.register('card-relics', () => this.relicsTab.renderList(), () => this.relicsTab.updateUI());

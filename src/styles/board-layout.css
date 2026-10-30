@@ -5,6 +5,25 @@
    =================================================== */
 
 /* ID specificity beats the global `.dodeca-card:hover { transform: none !important }` neutralizer */
+.dodeca-card-header {
+  gap: 12px;
+}
+
+.dodeca-card-title-group {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.dodeca-card-btn-toggle {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  background: var(--plate-raised);
+  border-color: var(--line-strong);
+  color: var(--gold-light);
+  font: 24px/1 var(--font-game);
+}
+
 #dodeca-board-world .dodeca-card.is-draggable-card {
   transform: var(--drag-offset, none) !important;
   transition: box-shadow 0.2s ease, border-color 0.2s ease !important;

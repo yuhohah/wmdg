@@ -1,0 +1,172 @@
+/* Readable UI type, serif item names, and pixel type for large decorative titles. */
+:root {
+  --font-game: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-decorative: 'Cult Pixel', monospace;
+  --font-heading: Georgia, 'Times New Roman', serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', monospace;
+  --bone-dim: #c6baa3;
+  --bone-mute: #ada18c;
+}
+
+body {
+  font-family: var(--font-game);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+button, input, textarea, select {
+  font-family: var(--font-game);
+}
+
+.panel-body, .dodeca-card-body, .cult-tooltip, .modal-slide-card,
+.mobile-inspect-sheet, .spotlight-balloon, .slide-card, .intro-modal-card, .cult-dialog {
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.cult-wordmark {
+  font-family: var(--font-decorative);
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: 0.5px;
+}
+
+.dodeca-card-title, .panel-title, .cult-tooltip-title, .modal-title,
+.mobile-sheet-title, .spotlight-balloon-title, .ach-popup-title,
+.unlocks-header-title, .relic-monument-title, .cult-dialog h2 {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0;
+  text-transform: none;
+  text-shadow: none;
+}
+
+/* These names and prompts previously used !important pixel-font shorthands. */
+html .cult-action-card .card-name {
+  font: 400 22px/1.25 var(--font-heading) !important;
+}
+
+.gnose-node-title, .boss-modal-name, .intro-title, .slide-title,
+.world-heading h1, .sacred-window-heading h2 {
+  font-family: var(--font-heading);
+  line-height: 1.2;
+  text-shadow: none;
+}
+
+/* The original VT323 stays at display sizes, outside dense reading and controls. */
+.dodeca-card-title, .panel-title, .world-heading h1, .sacred-window-heading h2,
+.intro-title {
+  font-family: var(--font-decorative);
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: 0.5px;
+}
+
+.slide-title {
+  font-family: var(--font-decorative);
+}
+
+.cult-action-card .card-desc, .cult-action-card .card-lore,
+.ach-desc, .cult-tooltip-lore, .relic-monument-desc,
+.unlocks-header-desc, .panel-section-info, .spotlight-balloon-desc,
+.spotlight-balloon-action-tip, .ach-popup-desc, .intro-paragraph,
+.relics-status-info, .relics-balance-text, .relics-extra-rate-text {
+  font-size: 16px;
+  line-height: 1.45;
+  letter-spacing: 0;
+  text-shadow: none;
+}
+
+html .setting-desc {
+  font: 400 16px/1.45 var(--font-game) !important;
+}
+
+html :is(.cost-tag, .cost-tag *, .relic-cost-tag, .relic-cost-tag *, .relic-benefit-text, .card-benefit) {
+  font: 500 16px/1.45 var(--font-game);
+  letter-spacing: 0;
+  text-shadow: none;
+}
+
+html .cult-action-card .card-click-hint {
+  font: 600 16px/1.35 var(--font-game) !important;
+  letter-spacing: 0;
+}
+
+/* Keep unavailable actions readable; borders and colors convey their state. */
+.cult-action-card.unaffordable .card-click-hint {
+  opacity: 1;
+}
+
+html :is(.btn-setting-action, .btn-setting-danger, .btn-slide-play,
+  .btn-convert-relics, .btn-buy-relic, .btn-unlock-action, .intro-btn-next,
+  .intro-btn-prev, .intro-btn-skip, .spotlight-balloon-skip, .cult-dialog button) {
+  font: 600 16px/1.4 var(--font-game) !important;
+  white-space: normal;
+}
+
+.btn-action-title, .setting-name {
+  font: 600 18px/1.35 var(--font-game);
+  text-shadow: none;
+}
+
+.btn-action-benefit, .btn-action-cost, .btn-action-cost .cost-val,
+.followers-stat-unit, .followers-stat-label, .incarnation-stat-label,
+.unlocks-stat-label, .stat-label, .panel-tab-btn {
+  font-size: 16px;
+  line-height: 1.4;
+  text-shadow: none;
+}
+
+.res-num, .res-rate, .stat-val, .followers-total-val, .fervor-val,
+.relic-level-badge, .card-count-badge, .gnose-stat-val, .board-zoom-level,
+.cost-val, #relics-to-get {
+  font-family: var(--font-game);
+  font-variant-numeric: lining-nums tabular-nums;
+  text-shadow: none;
+}
+
+.res-label {
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.6px;
+}
+
+.res-num {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.res-rate {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.resource-item {
+  grid-template-rows: minmax(14px, auto) minmax(27px, auto) minmax(16px, auto) !important;
+}
+
+.quicknav-btn {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.card-footer-row, .btn-follower-action, .btn-incarnation-upgrade {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 860px) {
+  .resource-item {
+    /* The sans-serif counters need more room than the former narrow pixel type. */
+    flex: 1 1 120px !important;
+    grid-template-rows: minmax(12px, auto) minmax(21px, auto) minmax(15px, auto) !important;
+  }
+
+  .res-label {
+    font-size: 10px;
+    letter-spacing: 0;
+  }
+}

@@ -6,6 +6,7 @@ import { formatNumber } from '../../systems/calculations.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 import type { GnoseBoss } from '../../types.js';
 import { icon, iconOrText } from '../../ui/icons.js';
+import { effectEasing } from '../../ui/visualTiming.js';
 
 export interface BossBattleModalOptions {
   gameState: GameStateManager;
@@ -266,7 +267,7 @@ export class BossBattleModal {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const target = this.bossPortraitEl?.hidden ? this.bossFallbackEl : this.bossPortraitEl;
     target?.getAnimations().forEach(animation => animation.cancel());
-    target?.animate([{ filter: 'brightness(1.5)' }, { filter: 'brightness(1)' }], { duration: 180 });
+    target?.animate([{ filter: 'brightness(1.5)' }, { filter: 'brightness(1)' }], { duration: 180, easing: effectEasing(180) });
   }
 
   public openForBoss(bossId: string): boolean {
