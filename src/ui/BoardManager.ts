@@ -1,3 +1,5 @@
+import { BoardLayout } from './BoardLayout.js';
+
 export class BoardManager {
   private viewportEl: HTMLElement | null = null;
   private worldEl: HTMLElement | null = null;
@@ -37,8 +39,25 @@ export class BoardManager {
   private quickNavBtns = new Map<string, HTMLButtonElement>();
   public currentFocusedCardId: string = 'card-altar-sphere';
 
+  // Drag & drop arrangement of the satellite cards
+  private layout: BoardLayout | null = null;
+
   constructor() {
     this.initElements();
+    if (this.viewportEl && this.worldEl) {
+      const viewportEl = this.viewportEl;
+      this.layout = new BoardLayout({
+        getZoom: () => this.zoom,
+        getPan: () => ({ x: this.panX, y: this.panY }),
+        panBy: (dx, dy) => {
+          this.isCameraTransitioning = false;
+          this.panX += dx;
+          this.panY += dy;
+          this.applyTransform();
+        },
+        getViewport: () => viewportEl,
+      }, this.worldEl);
+    }
     this.bindEvents();
     window.requestAnimationFrame(() => {
       this.centerOnCard('card-altar-sphere', true);
@@ -71,14 +90,36 @@ export class BoardManager {
   private bindEvents(): void {
     if (!this.viewportEl || !this.worldEl) return;
 
-    // 1. Mouse Wheel Zoom (centered at mouse coordinates; allow native scroll inside scrollable card bodies)
-    this.viewportEl.addEventListener('wheel', (e: WheelEvent) => {
-      const target = e.target as HTMLElement | null;
-      const cardBody = target?.closest<HTMLElement>('.dodeca-card-body');
-      if (cardBody && cardBody.scrollHeight > cardBody.clientHeight + 2 && !e.ctrlKey) {
-        return;
-      }
+    this.cards.forEach((card) => {
+      // The sphere has no visible header.
+      if (card.id === 'card-altar-sphere') return;
+      const header = card.querySelector<HTMLElement>('.dodeca-card-header');
+      const body = card.querySelector<HTMLElement>('.dodeca-card-body');
+      if (!header || !body) return;
 
+      body.id ||= `${card.id}-body`;
+      const title = header.querySelector('.dodeca-card-title')?.textContent?.trim() ?? 'card';
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'dodeca-card-btn-toggle';
+      toggle.setAttribute('aria-controls', body.id);
+      const updateToggle = () => {
+        const collapsed = card.classList.contains('collapsed');
+        toggle.textContent = collapsed ? '+' : '−';
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+        toggle.setAttribute('aria-label', `${collapsed ? 'Expandir' : 'Minimizar'} ${title}`);
+        toggle.title = `${collapsed ? 'Expandir' : 'Minimizar'} ${title}`;
+      };
+      updateToggle();
+      toggle.addEventListener('click', () => {
+        card.classList.toggle('collapsed');
+        updateToggle();
+      });
+      header.appendChild(toggle);
+    });
+
+    // 1. Mouse Wheel Zoom (centered at mouse coordinates)
+    this.viewportEl.addEventListener('wheel', (e: WheelEvent) => {
       e.preventDefault();
       this.isCameraTransitioning = false;
 
@@ -110,6 +151,7 @@ export class BoardManager {
       this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
       if (this.activePointers.size === 2) {
+        this.layout?.cancelPending();
         const pts = Array.from(this.activePointers.values());
         this.initialPinchDistance = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
         this.initialPinchZoom = this.zoom;
@@ -123,16 +165,21 @@ export class BoardManager {
         return;
       }
 
-      // Filter out clicks on interactive controls or scrollable card bodies so taps and vertical touch scrolling work normally
       const target = e.target as HTMLElement;
-      const isCardHeader = !!target.closest('.dodeca-card-header');
-      const cardBody = target.closest<HTMLElement>('.dodeca-card-body');
-      const isScrollableCardBody = !!cardBody && cardBody.scrollHeight > cardBody.clientHeight + 2;
+
+      // Card headers pick the card up (mouse instantly, touch on long press) instead of panning the board
+      const headerCard = this.layout?.getHeaderCard(target);
+      if (headerCard && this.layout) {
+        const pickedUp = this.layout.beginPress(headerCard, e, () => this.cancelPan());
+        if (pickedUp) return;
+      }
+
+      // Controls keep their clicks; the remaining card surface can pan the board.
       const isInteractive = !!target.closest(
         'button, a, input, select, textarea, canvas, label, [role="button"], .cult-action-card, .relic-action-card, .gnose-tree-node, .incarnation-altar-container, .board-quicknav-bar, .board-zoom-controls'
       );
 
-      if ((isInteractive || isScrollableCardBody) && !isCardHeader && e.button !== 1) {
+      if (isInteractive && e.button !== 1) {
         return;
       }
 
@@ -236,18 +283,57 @@ export class BoardManager {
       this.centerOnCard('card-altar-sphere');
     });
 
+    document.getElementById('btn-layout-reset')?.addEventListener('click', () => {
+      this.layout?.resetLayout();
+    });
+
     // 8. Window Resize: re-center active card inside safe viewport
     window.addEventListener('resize', () => {
-      if (this.currentFocusedCardId) {
-        this.centerOnCard(this.currentFocusedCardId, true);
-      } else {
-        this.applyTransform();
-      }
+      // Let responsive card sizes and overlap resolution settle before framing them.
+      window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+        if (this.currentFocusedCardId) {
+          this.centerOnCard(this.currentFocusedCardId, true);
+        } else {
+          this.applyTransform();
+        }
+      }));
     });
+  }
+
+  // Abort an in-progress pan (a long press turned it into a card drag) and undo its small drift
+  private cancelPan(): void {
+    if (this.activePointerId !== null) {
+      try {
+        this.viewportEl?.releasePointerCapture(this.activePointerId);
+      } catch {
+        // pointer capture might already be released
+      }
+    }
+    if (this.hasMoved) {
+      this.panX = this.initialPanX;
+      this.panY = this.initialPanY;
+      this.applyTransform();
+    }
+    this.isPointerDown = false;
+    this.activePointerId = null;
+    this.hasMoved = false;
+    this.viewportEl?.classList.remove('is-dragging');
+  }
+
+  // Keep the camera centre inside the play area so panning never drifts off into the void
+  private clampPan(): void {
+    if (!this.viewportEl || !this.worldEl) return;
+    const halfW = (this.viewportEl.clientWidth || window.innerWidth) / 2;
+    const halfH = (this.viewportEl.clientHeight || window.innerHeight) / 2;
+    const centerX = Math.min(this.worldEl.offsetWidth, Math.max(0, (halfW - this.panX) / this.zoom));
+    const centerY = Math.min(this.worldEl.offsetHeight, Math.max(0, (halfH - this.panY) / this.zoom));
+    this.panX = halfW - centerX * this.zoom;
+    this.panY = halfH - centerY * this.zoom;
   }
 
   private applyTransform(): void {
     if (!this.worldEl) return;
+    this.clampPan();
     this.worldEl.style.setProperty('transform', `translate3d(${this.panX}px, ${this.panY}px, 0) scale(${this.zoom})`, 'important');
   }
 
@@ -291,7 +377,7 @@ export class BoardManager {
     const hudEl = document.querySelector<HTMLElement>('.top-hud-bar');
     const hudRect = hudEl?.getBoundingClientRect();
     const topSafe = hudRect && hudRect.height > 0
-      ? Math.min(130, Math.round(hudRect.bottom + 8))
+      ? Math.min(viewHeight / 2, Math.round(hudRect.bottom + 8))
       : (isMobile ? 54 : 76);
 
     const navEl = document.getElementById('board-quicknav-bar');
@@ -325,8 +411,9 @@ export class BoardManager {
     } else {
       const maxDesiredZoom = 1.0;
       const fitW = availW / cardWidth;
-      const fitH = availH / cardHeight;
-      targetZoom = Math.max(this.minZoom, Math.min(maxDesiredZoom, fitW, fitH));
+      targetZoom = Math.max(this.minZoom, Math.min(maxDesiredZoom, fitW));
+      // Frame the top of long cards at readable scale; pan the board to reach the rest.
+      cardCenterY = cardTop + Math.min(cardHeight, availH / targetZoom) / 2;
     }
 
     const safeCenterX = viewWidth / 2;

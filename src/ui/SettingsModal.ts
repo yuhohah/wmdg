@@ -2,6 +2,7 @@ import { AudioManager } from '../systems/audio.js';
 
 export interface SettingsModalOptions {
   audio: AudioManager;
+  onOpen?: () => void;
   getLastSaveTime: () => number;
   onManualSave: () => void;
   onExportSave: () => void;
@@ -9,6 +10,8 @@ export interface SettingsModalOptions {
   onResetSave: () => void;
   onToggleHaptics?: (enabled: boolean) => void;
   isHapticsEnabled?: () => boolean;
+  isNerdsEnabled?: () => boolean;
+  onToggleNerds?: (enabled: boolean) => void;
   onTriggerHaptic?: (pattern: number | number[]) => void;
 }
 
@@ -28,6 +31,7 @@ export class SettingsModal {
 
   // Haptics Controls
   private hapticsToggleEl: HTMLInputElement | null = null;
+  private nerdsToggleEl: HTMLInputElement | null = null;
 
   // Save Progress Controls
   private saveStatusTextEl: HTMLElement | null = null;
@@ -60,6 +64,7 @@ export class SettingsModal {
     this.musicIconOffEl = document.getElementById('music-icon-off');
 
     this.hapticsToggleEl = document.getElementById('haptics-toggle') as HTMLInputElement | null;
+    this.nerdsToggleEl = document.getElementById('nerds-toggle') as HTMLInputElement | null;
 
     this.saveStatusTextEl = document.getElementById('save-status-text');
     this.btnManualSaveEl = document.getElementById('btn-manual-save') as HTMLButtonElement | null;
@@ -69,6 +74,12 @@ export class SettingsModal {
   }
 
   private bindEvents(): void {
+    if (this.nerdsToggleEl) {
+      this.nerdsToggleEl.checked = this.options.isNerdsEnabled?.() ?? false;
+      this.nerdsToggleEl.addEventListener('change', () => {
+        this.options.onToggleNerds?.(this.nerdsToggleEl!.checked);
+      });
+    }
     // Open/Close triggers
     this.settingsBtn?.addEventListener('click', () => this.toggle());
 
@@ -177,7 +188,10 @@ export class SettingsModal {
   }
 
   public open(): void {
+    if (this.nerdsToggleEl) this.nerdsToggleEl.checked = this.options.isNerdsEnabled?.() ?? false;
+    this.modalEl?.classList.add('open');
     this.updateSaveStatus();
+    this.options.onOpen?.();
     if (this.volumeSliderEl) {
       this.volumeSliderEl.value = String(Math.round(this.options.audio.getVolume() * 100));
     }
@@ -190,7 +204,6 @@ export class SettingsModal {
     if (this.hapticsToggleEl && this.options.isHapticsEnabled) {
       this.hapticsToggleEl.checked = this.options.isHapticsEnabled();
     }
-    this.modalEl?.classList.add('open');
   }
 
   public close(): void {
@@ -214,7 +227,7 @@ export class SettingsModal {
   }
 
   public updateSaveStatus(): void {
-    if (!this.saveStatusTextEl) return;
+    if (!this.isOpen() || !this.saveStatusTextEl) return;
     const lastTime = this.options.getLastSaveTime();
     const diffSec = Math.floor((Date.now() - lastTime) / 1000);
     if (diffSec < 5) {

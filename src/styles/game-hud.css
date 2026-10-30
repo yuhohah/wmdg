@@ -1,47 +1,46 @@
 /* Pixel RPG HUD: framed wood, parchment records and illustrated counters. */
-:root {
-  --font-game: 'JetBrains Mono', monospace;
-  --ink: #38271f;
-  --ink-muted: #66503b;
-  --paper: #d8bf8d;
-  --wood-frame: none;
-  --paper-surface: linear-gradient(#d8bf8de6, #d8bf8de6);
-  --icon-faith: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 1v3.5M12 19.5V23M1 12h3.5M19.5 12H23' stroke='%23eed182' stroke-width='1.4'/%3E%3Ccircle cx='12' cy='12' r='9.5' stroke='%231c120c' stroke-width='1.3'/%3E%3Cellipse cx='12' cy='12' rx='7.2' ry='2.8' stroke='%231c120c' stroke-width='1.4' transform='rotate(-35 12 12)'/%3E%3Cellipse cx='12' cy='12' rx='7.2' ry='2.8' stroke='%23caa04a' stroke-width='0.9' transform='rotate(35 12 12)'/%3E%3Ccircle cx='12' cy='12' r='3.5' fill='%23caa04a' stroke='%231c120c' stroke-width='1'/%3E%3Ccircle cx='12' cy='12' r='1.3' fill='%231c120c'/%3E%3C/g%3E%3C/svg%3E");
-  --icon-fervor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2.5c1.8 3.2 4.2 4.8 5.2 7.8 1.1 3.2 0.4 5.8-1.4 7.2H8.2C6.4 16.1 5.7 13.5 6.8 10.3c1-3 3.4-4.6 5.2-7.8z' fill='%23aa351b' stroke='%231c110d' stroke-width='1.3'/%3E%3Cpath d='M12 6c1.2 2.2 2.6 3.5 3 5.5 0.5 2.2-0.1 3.8-1.4 4.5H10.4c-1.3-0.7-1.9-2.3-1.4-4.5 0.4-2 1.8-3.3 3-5.5z' fill='%23e87c24'/%3E%3Cpath d='M5.5 17.5h13l-1.8 4.5H7.3L5.5 17.5z' fill='%23362017' stroke='%231c110d' stroke-width='1.3'/%3E%3C/g%3E%3C/svg%3E");
-  --icon-relic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8.5' r='4.6' fill='%23caa049' stroke='%2318111e' stroke-width='1.3'/%3E%3Ccircle cx='12' cy='8.5' r='3.1' fill='%235e326e' stroke='%23a874be' stroke-width='0.8'/%3E%3Cpath d='M5.5 22.5h13l-1.8-3.6H7.3L5.5 22.5z' fill='%2338261e' stroke='%2318111e' stroke-width='1.3'/%3E%3C/g%3E%3C/svg%3E");
-  --icon-book: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5c3-1.2 6.8-1.2 9.2 0.9v13.2c-2.4-2.1-6.2-2.1-9.2-0.9V4.5z' fill='%23d6b77e' stroke='%2318110b' stroke-width='1.2'/%3E%3Cpath d='M21.5 4.5c-3-1.2-6.8-1.2-9.2 0.9v13.2c2.4-2.1 6.2-2.1 9.2-0.9V4.5z' fill='%23e2c892' stroke='%2318110b' stroke-width='1.2'/%3E%3Cline x1='12' y1='5.5' x2='12' y2='18.5' stroke='%2318110b' stroke-width='1.4'/%3E%3C/g%3E%3C/svg%3E");
-  --icon-follower: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='%2318110b' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l-4 5v3h8V8l-4-5z' fill='%23334155'/%3E%3Cpath d='M6 21l2-10h8l2 10H6z' fill='%23475569'/%3E%3C/g%3E%3C/svg%3E");
-}
+@font-face { font-family:'Cult Pixel'; src:url('/assets/hud/vt323.ttf') format('truetype'); font-display:swap; }
+:root { --font-game:'Cult Pixel',monospace; --ink:#38271f; --ink-muted:#66503b; --paper:#d8bf8d; --wood-frame:url('/assets/hud/wood-frame.svg'); --paper-surface:linear-gradient(#d8bf8de6,#d8bf8de6),url('/assets/hud/parchment.png'); }
 html,body { background:#211a18; }
-.bg-landscape-layer { position:absolute; inset:-10px; background:radial-gradient(ellipse at 50% 35%, #3a2a1d 0%, #18120e 75%); opacity:0.18; pointer-events:none; z-index:1; display:block; filter:blur(4px) contrast(0.80) brightness(0.8); }
+.bg-landscape-layer { position:absolute; inset:0; background:url('/assets/cult_bg_landscape.jpg') center / cover no-repeat; opacity:0.18; pointer-events:none; z-index:1; display:block; filter:contrast(1.15) brightness(0.8); }
 .bg-overlay-gradient { background:repeating-linear-gradient(0deg,#231b18 0 3px,#281f1b 3px 7px,#241b18 7px 11px); }
 #gameplay-screen { padding:84px 20px 14px; gap:0; display:flex; flex-direction:column; height:100%; box-sizing:border-box; overflow:hidden; }
 .top-hud-bar { position:absolute; top:20px; left:38px; width:calc(100% - 76px); height:52px; padding:0; background:none; border:0; pointer-events:none; z-index:40; }
 .top-hud-bar button,.top-hud-bar a { pointer-events:auto; }
-.cult-wordmark { font-family:var(--font-game); font-size:20px; line-height:.85; letter-spacing:1px; text-shadow:2px 2px #17110f; padding:8px 12px; background:#261e1be6; border:2px solid #655038; }
-.cult-mark { display:block; width:30px; height:30px; font-size:0; background:var(--icon-faith) center / contain no-repeat; }
+.cult-wordmark { font-family:var(--font-game); font-size:20px; line-height:.85; letter-spacing:1px; text-shadow:2px 2px #17110f; padding:8px 12px; background:#261e1be6; border:8px solid transparent; border-image:var(--wood-frame) 8 / 8px / 0 stretch; }
+.cult-mark { display:block; width:30px; height:30px; font-size:0; background:url('/assets/hud/faith.svg') center / contain no-repeat; }
 .resources-hud-card { top:0; padding:0; }
 .resources-hud-header,.resource-divider,.res-unit,.res-dash { display:none!important; }
 .resources-hud-row { gap:12px; }
-.resource-item { position:relative; display:grid; grid-template-columns:34px auto; grid-template-rows:28px 16px; gap:0 8px; min-width:154px; padding:4px 12px 4px 8px; border:2px solid #655038; background:#28211eea; }
+.resource-item { position:relative; display:grid; grid-template-columns:34px auto; grid-template-rows:28px 16px; gap:0 8px; min-width:154px; padding:4px 12px 4px 8px; border:8px solid transparent; border-image:var(--wood-frame) 8 / 8px / 0 stretch; background:#28211eea; }
 .res-name { grid-column:1; grid-row:1 / 3; width:34px; min-width:0; height:40px; font-size:0; align-self:center; }
-.res-name::before { content:''; display:block; width:34px; height:34px; background:var(--icon-faith) center / contain no-repeat; }
-.resource-item-fervor .res-name::before { background-image:var(--icon-fervor); }
-.resource-item-relic .res-name::before { background-image:var(--icon-relic); }
-.resource-item-followers .res-name::before { background-image:var(--icon-follower); }
+.res-name::before { content:''; display:block; width:34px; height:34px; background:url('/assets/hud/faith.svg') center / contain no-repeat; }
+.resource-item-fervor .res-name::before { background-image:url('/assets/hud/fervor.svg'); }
+.resource-item-relic .res-name::before { background-image:url('/assets/hud/relic.svg'); }
+.resource-item-followers .res-name::before { background-image:url('/assets/procession/follower-0.png'); }
 .res-num { font:32px/.9 var(--font-game); color:#ffe2a2; text-shadow:2px 2px #120d0c; font-variant-numeric:tabular-nums; }
 .res-rate { grid-column:2; font:18px/1 var(--font-game); color:#bba780; }
 .resource-item-fervor .res-num { color:#f2a16c; }
 .resource-item-relic .res-num { color:#c7a8db; }
 #fervor-counter-hud { color:#f2a16c; }
 #relic-counter-hud { color:#c7a8db; }
-.icon-btn-gold,.panel-toggle-btn { border:2px solid #655038; background:#3f3025; border-radius:0; box-shadow:2px 3px #15100f; color:#eed29a; }
+.icon-btn-gold,.panel-toggle-btn { border:6px solid transparent; border-image:var(--wood-frame) 8 / 6px / 0 stretch; background:#3f3025; border-radius:0; box-shadow:2px 3px #15100f; color:#eed29a; }
 .icon-btn-gold { width:44px; height:44px; }
 .icon-btn-gold svg { visibility:hidden; position:absolute; }
-.icon-btn-gold::before { content:''; display:block; width:24px; height:24px; background:var(--icon-book) center / contain no-repeat; }
-#music-quick-btn:has(#music-icon-off[style*='block'])::before { opacity:.4; }
+.icon-btn-gold::before { content:''; display:block; width:24px; height:24px; background:url('/assets/hud/settings.svg') center / contain no-repeat; }
+#music-quick-btn::before { background-image:url('/assets/hud/music.svg'); }
 #music-quick-btn.muted::before { opacity:.4; }
 .top-right-group { gap:10px; }
+.procession-world { border:8px solid transparent; border-image:var(--wood-frame) 8 / 8px / 0 stretch; height:49%; min-height:270px; }
+.church-world { border:8px solid transparent; border-image:var(--wood-frame) 8 / 8px / 0 stretch; --world-h:52%; --world-min:200px; }
+.art-review .procession-world { height:47%; }
+.art-review .church-world { --world-h:47%; }
+.world-heading { top:88px; left:18px; padding:8px 13px 10px; background:#231e1bba; border-left:3px solid #b48b4e; }
+.world-heading .world-eyebrow { font:16px/1 var(--font-game); letter-spacing:1px; color:#d4b57d; }
+.world-heading h1 { font:26px/1 var(--font-game); margin-top:4px; color:#f6dfb2; }
+.world-status { top:88px; right:20px; font:18px var(--font-game); text-shadow:2px 2px #161219; }
+.world-footer { font:16px var(--font-game); left:18px; right:18px; bottom:8px; }
+.prophet-label { font:16px var(--font-game); letter-spacing:0; bottom:-20px; }
 
 /* 50/50 ERGONOMIC SPLIT CONTAINER */
 .gameplay-split-container,
@@ -59,18 +58,101 @@ html,body { background:#211a18; }
   box-sizing: border-box;
 }
 
+/* LEFT COLUMN: 50% WIDTH WORLD & ALTAR SPHERE */
+.gameplay-world-column {
+  flex: 1 1 50%;
+  width: 50%;
+  max-width: 50%;
+  min-width: 320px;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.gameplay-world-column .church-world {
+  flex: 1 1 52%;
+  height: 52%;
+  min-height: 200px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  border: 8px solid transparent;
+  border-image: var(--wood-frame) 8 / 8px / 0 stretch;
+  border-radius: 4px;
+  box-shadow: 4px 6px #120d0b;
+}
+
+.gameplay-world-column .center-frame {
+  flex: 1 1 48%;
+  height: 48%;
+  min-height: 200px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  border: 10px solid transparent;
+  border-image: var(--wood-frame) 8 / 10px / 0 stretch;
+  border-radius: 4px;
+  background: radial-gradient(ellipse at center, #45362c, #211c1a 72%);
+  box-shadow: 4px 6px #120d0b;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+/* RIGHT COLUMN: 50% WIDTH UNIFIED PROGRESSION HUB */
+.side-panel-unified,
+.side-panel {
+  flex: 1 1 50%;
+  width: 50%;
+  max-width: 50%;
+  min-width: 340px;
+  height: 100%;
+  min-height: 0;
+  border: 12px solid transparent;
+  border-image: var(--wood-frame) 8 / 12px / 0 stretch;
+  border-radius: 0;
+  background: var(--paper);
+  box-shadow: 4px 6px #120d0b;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), margin 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+.side-panel-unified.collapsed,
+.side-panel-right.collapsed {
+  transform: translateX(110%);
+  margin-left: -50%;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  min-width: 0;
+  max-width: 0;
+}
+
 .panel-header { background:#4e3427; border-bottom:3px solid #271b16; padding:7px 10px 8px; min-height:52px; display:flex; align-items:center; justify-content:space-between; }
 .panel-tag { display:none; }
 .panel-title-group { display:flex; flex-direction:row; align-items:center; gap:9px; }
-.panel-title-group::before { content:''; width:27px; height:27px; flex-shrink:0; background:var(--icon-book) center / contain no-repeat; }
+.panel-title-group::before { content:''; width:27px; height:27px; flex-shrink:0; background:url('/assets/hud/book.svg') center / contain no-repeat; }
 .panel-title-group.text-right { text-align:left; }
 .panel-title { font:27px/1 var(--font-game); color:#f2d297; text-transform:none; text-shadow:2px 2px #2c1b15; letter-spacing:0; }
-.panel-body { background-color:var(--paper); background-image:var(--paper-surface); background-position:center; background-repeat:no-repeat; padding:13px 14px; color:var(--ink); font:18px/1.1 var(--font-game); flex:1; min-height:0; overflow-y:auto; }
+.side-panel-left .panel-title-group::before { background-image:url('/assets/procession/follower-0.png'); }
+.panel-body { background-color:var(--paper); background-image:linear-gradient(#d8bf8de6,#d8bf8de6),url('/assets/hud/parchment.png'); background-size:auto,1024px 1024px; background-position:center; background-repeat:no-repeat; padding:13px 14px; color:var(--ink); font:18px/1.1 var(--font-game); flex:1; min-height:0; overflow-y:auto; }
 
 /* TABS NAVIGATION */
 .panel-tabs-bar { padding:5px 6px 0; background:#745137; gap:4px; border-bottom:3px solid #9a7447; display:flex; flex-wrap:wrap; }
 .panel-tab-btn { flex:1 1 auto; min-width:68px; border:2px solid #3c281e; border-bottom:0; border-radius:0; background:#a48658; color:#39291e; font:19px/1 var(--font-game); padding:6px 10px; box-shadow:inset 2px 2px #cbb17a; transition:none; text-align:center; }
 .panel-tab-btn.active { background:#dec495; border-color:#352319; color:#39271b; box-shadow:inset 2px 2px #f0dbaa; }
+.panel-tab-btn:hover:not(.active) { background:#c4a36b; color:#2c211b; }
 
 .followers-tab-header { background:none; border:0; border-bottom:2px dashed #a78a59; border-radius:0; padding:0 0 10px; box-shadow:none; }
 .followers-stat-label,.incarnation-stat-label,.unlocks-stat-label { color:#6a4c2c; font:17px/1 var(--font-game); letter-spacing:0; }
@@ -80,11 +162,11 @@ html,body { background:#211a18; }
 .followers-controls { margin-top:14px; gap:13px; display:flex; flex-direction:column; }
 
 /* ACTION BUTTONS WITH BALANCED SPACING */
-.btn-follower-action { border:2px solid #3b281d; border-radius:0; padding:10px 14px; min-height:66px; gap:12px; background:#775132; color:#ffdf9c; box-shadow:0 3px #3b281d; transition:none; display:flex; align-items:center; justify-content:space-between; width:100%; box-sizing:border-box; }
-.btn-follower-action::before { content:''; width:28px; height:32px; flex-shrink:0; background:var(--icon-book) center / contain no-repeat; }
+.btn-follower-action { border:7px solid transparent; border-image:var(--wood-frame) 8 / 7px / 0 stretch; border-radius:0; padding:10px 14px; min-height:66px; gap:12px; background:#775132; color:#ffdf9c; box-shadow:0 3px #3b281d; transition:none; display:flex; align-items:center; justify-content:space-between; width:100%; box-sizing:border-box; }
+.btn-follower-action::before { content:''; width:28px; height:32px; flex-shrink:0; background:url('/assets/hud/book.svg') center / contain no-repeat; }
 .btn-convert-primary { background:#754333; }
 .btn-convert-max:not(.locked) { background:#625032; border-color:transparent; }
-.btn-convert-primary::before { background-image:var(--icon-follower); }
+.btn-convert-primary::before { background-image:url('/assets/procession/follower-0.png'); }
 .btn-action-main { flex:1 1 auto; text-align:left; display:flex; flex-direction:column; gap:2px; }
 .btn-action-title { font:21px/1 var(--font-game); letter-spacing:0; text-transform:none; color:#ffe5ad; text-shadow:1px 2px #3c241e; }
 .btn-action-benefit { font:18px/1 var(--font-game); color:#c6d293; }
@@ -101,7 +183,7 @@ html,body { background:#211a18; }
 .cult-action-card .card-name { font:21px var(--font-game)!important; color:#39291f!important; font-weight:400!important; }
 .cult-action-card .card-desc,.cult-action-card .card-lore { font:17px/1.15 var(--font-game); color:#6a523c; }
 .cult-action-card .card-benefit { color:#49613a; }
-.cult-action-card .card-click-hint { border:2px solid #3b281d; border-radius:0; background:#775132; color:#ffe1a2; font:18px/1 var(--font-game)!important; font-weight:400!important; padding:5px 8px!important; }
+.cult-action-card .card-click-hint { border:5px solid transparent; border-image:var(--wood-frame) 8 / 5px / 0 stretch; border-radius:0; background:#775132; color:#ffe1a2; font:18px/1 var(--font-game)!important; font-weight:400!important; padding:5px 8px!important; }
 .cult-action-card.unaffordable .card-click-hint { color:#bdb09c; background:#756b5b; opacity:1; }
 .cult-action-card .card-count-badge,.cult-action-card .card-status-badge { font:16px var(--font-game); border-radius:0; color:#54432e!important; }
 .ach-progress-label,.ach-progress-pct { font:16px var(--font-game); color:#5f482f; }
@@ -110,11 +192,12 @@ html,body { background:#211a18; }
 .btn-convert-max.locked,.btn-convert-max:not(.locked):disabled { background:#8b7d64; border-color:transparent; opacity:1; }
 .btn-convert-max.locked .btn-action-title,.btn-convert-max.locked .btn-action-benefit { color:#e8dbbf; }
 .btn-convert-max.locked #convert-max-cost-label { color:#e8dbbf!important; }
+.btn-convert-primary:hover:not(:disabled),.btn-convert-max:not(.locked):hover:not(:disabled) { transform:none; box-shadow:0 3px #3b281d; border-color:transparent; background:#88563c; }
 .unlocks-header-title { font:26px/1 var(--font-game); color:#38271f; }
 .unlocks-header-desc,.panel-section-info { font:18px/1.1 var(--font-game); color:#6a523c; margin:5px 0 10px; }
 
 /* CENTER FRAME STYLING */
-.center-frame { border:2px solid #655038; border-radius:0; background:radial-gradient(ellipse at center,#45362c,#211c1a 72%); box-shadow:4px 6px #120d0b; padding:10px 14px; }
+.center-frame { border:10px solid transparent; border-image:var(--wood-frame) 8 / 10px / 0 stretch; border-radius:0; background:radial-gradient(ellipse at center,#45362c,#211c1a 72%); box-shadow:4px 6px #120d0b; padding:10px 14px; }
 .center-frame::before { content:''; position:absolute; inset:6px; border:2px solid #655038; pointer-events:none; }
 .sacred-window-heading { z-index:1; text-align:center; }
 .sacred-window-heading .world-eyebrow { font:16px var(--font-game); letter-spacing:1px; color:#d4b57d; }
@@ -122,7 +205,7 @@ html,body { background:#211a18; }
 .sacred-window-heading p { font:16px var(--font-game); color:#a48b6c; margin:0; }
 .sphere-wrapper { background:repeating-conic-gradient(from 0deg,#927248 0deg 2deg,transparent 2deg 30deg); border:5px double #8b6b44; border-radius:50%; box-shadow:0 0 0 6px #241b17,0 0 0 8px #664b31; width:160px; height:160px; position:relative; }
 .divine-sphere-btn {
-  background: radial-gradient(circle at 35% 30%, #fffbe8 0%, #fed7aa 15%, #f59e0b 35%, #b45309 60%, #451a03 85%, #180902 100%);
+  background: radial-gradient(circle at center, rgba(30, 24, 20, 0.2) 0%, rgba(10, 8, 8, 0.8) 100%), url('/assets/board/armillary-sphere.svg') center / cover no-repeat;
   width: 134px;
   height: 134px;
   border-radius: 50%;
@@ -131,19 +214,33 @@ html,body { background:#211a18; }
   cursor: pointer;
   transition: transform 120ms var(--ease-out), filter 120ms var(--ease-out), box-shadow 120ms var(--ease-out);
 }
+.divine-sphere-btn canvas.sphere-pixel-art { display: none !important; }
+.sphere-wrapper:hover .divine-sphere-btn {
+  transform: scale(1.05);
+  filter: brightness(1.2) drop-shadow(0 0 22px rgba(220, 180, 110, 0.5));
+  border-color: #c49850;
+}
 .sphere-wrapper:active .divine-sphere-btn {
   transform: scale(0.95);
   filter: brightness(1.35);
 }
 .sphere-orbit-ring,.sphere-aura { display:none; }
-.sacred-window-footer { z-index:1; background:#4a3326; border:2px solid #655038; padding:4px 18px; text-align:center; }
+.sacred-window-footer { z-index:1; background:#4a3326; border:6px solid transparent; border-image:var(--wood-frame) 8 / 6px / 0 stretch; padding:4px 18px; text-align:center; }
 .sacred-window-footer span { font:22px/1 var(--font-game); letter-spacing:0; color:#f4d596; text-shadow:2px 2px #271b15; }
 .sacred-window-footer p { font:16px/1 var(--font-game); color:#b49b78; margin-top:2px; }
+.art-review-controls { justify-content:center; font:16px var(--font-game); letter-spacing:0; }
+.art-review-controls button,.art-review-controls a { font:16px var(--font-game); border-radius:0; padding:3px 10px; }
 .custom-scrollbar::-webkit-scrollbar-track { background:#b49562; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background:#755033; border:1px solid #4c3223; border-radius:0; }
 
+@media (hover:hover) and (pointer:fine) {
+  .btn-follower-action:not(:disabled):hover { background:#88563c; box-shadow:0 3px #3b281d; }
+  .cult-action-card:hover:not(.unaffordable) { transform:none; background:#e1c998; border-color:#96744b; box-shadow:none; }
+}
+
 @media (max-height:760px) and (min-width:861px) {
   #gameplay-screen { padding-top:76px; }
+  .church-world { --world-min:180px; }
   .center-frame { padding:6px 10px; }
   .sacred-window-heading h2 { font-size:26px; }
   .sacred-window-heading p { display:none; }
@@ -158,6 +255,7 @@ html,body { background:#211a18; }
   .btn-action-cost .cost-val { font-size:18px; }
   .btn-action-benefit { font-size:16px; }
   .followers-controls { margin-top:8px; gap:8px; }
+  .world-footer { font-size:14px; }
 }
 
 @media (max-width:860px) {
@@ -168,4 +266,7 @@ html,body { background:#211a18; }
   .res-name,.res-name::before { width:24px; height:24px; }
   .res-num { font-size:26px; }
   .resources-hud-row { gap:5px; }
+  .world-heading { top:12px; }
+  .procession-world { min-height:230px; }
+  .church-world { --world-min:200px; }
 }

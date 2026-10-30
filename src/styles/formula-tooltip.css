@@ -1,0 +1,34 @@
+.formula-tooltip {
+  position: fixed;
+  z-index: 12000;
+  width: min(440px, calc(100vw - 16px));
+  max-height: calc(100dvh - 16px);
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid var(--line-strong);
+  background: var(--plate-solid);
+  color: var(--bone);
+  box-shadow: 0 8px 24px #0008;
+  pointer-events: none;
+}
+
+.formula-tooltip[hidden] {
+  display: none;
+}
+
+.formula-tooltip-label {
+  margin-bottom: 4px;
+  font: 600 12px/1.3 var(--font-game);
+  color: var(--gold-light);
+}
+
+.formula-tooltip-label:not(:first-child) {
+  margin-top: 10px;
+}
+
+.formula-tooltip code {
+  display: block;
+  font: 14px/1.5 var(--font-mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,13 @@
+Generated with the built-in image_gen tool.
+
+Use case: stylized-concept.
+Asset type: standalone boss portrait concept for the existing 2D game A Entidade Divina.
+Primary request: Anubis, the Weigher of Souls, first boss of the game's Gnose progression. In the Hall of Two Truths the ancient jackal-headed deity raises the scales to weigh the cult's heart against the cosmic feather.
+Subject: one imposing slender jackal-headed Egyptian deity, erect pointed ears, dignified severe posture, finely engraved Egyptian collar and pleated ceremonial robes. A clearly readable large suspended balance in front of his torso, a small stylized symbolic heart in one pan and a single feather in the opposite pan. Non-graphic imagery.
+Style/medium: authentic Renaissance hermetic copperplate engraving and sixteenth-century woodcut, inspired by Albrecht Durer and Robert Fludd cosmography; razor-sharp contour lines, parallel hatching, intricate cross-hatching and stippling, controlled chiaroscuro, no painterly rendering.
+Composition/framing: 1:1 square portrait, centered subject from head to below waist, entire ears and balance visible within generous safe margins, strong silhouette readable at game UI size. A restrained broken armillary halo behind his head, fine celestial meridians and sparse stars, broad empty black corners for flexible cropping. No border.
+Color palette: pure black background #000000, bone-white and cool silver ink; tarnished gold accents restricted to less than five percent of image area, only on the scale and collar.
+Lighting/mood: solemn, ancient, cosmic, ominous and sacred.
+Constraints: finished illustration only, no mockup, no labels, no typography, no watermark, no interface elements, no HP bar. Precisely drawn scale chains and simple balanced composition.
+Avoid: 3D rendering, CGI, plastic, modern digital gradients, airbrush, photography, anime, cartoons, saturated neon, rainbow colors, blur, modern clothing, white frame padding.
+

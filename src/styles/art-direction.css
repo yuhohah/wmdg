@@ -1,4 +1,4 @@
-/* Cult of the Sphere — desktop art pass. */
+/* Cult of the Sphere — desktop art pass. Imported last to keep existing controls intact. */
 :root {
   --bg-dark: #101114;
   --bg-panel: #171719;
@@ -26,8 +26,149 @@
 .resource-divider { width:1px; height:20px; background:var(--border-mid); }
 .icon-btn-gold { border-radius:4px; width:36px; height:36px; }
 #gameplay-screen { flex-direction:column; justify-content:flex-start; gap:16px; padding:16px 28px 20px; min-height:0; }
+.procession-world { width:100%; height:46%; min-height:260px; flex-shrink:0; position:relative; overflow:hidden; border:1px solid #605039; background:#26344d; isolation:isolate; }
+.church-world { width:100%; --world-h:46%; --world-min:260px; flex-shrink:0; position:relative; overflow:hidden; border:1px solid #605039; background:#26344d; isolation:isolate; }
+.world-landscape { position:absolute; inset:0; image-rendering:pixelated; pointer-events:none; }
+.world-parallax { position:absolute; inset:0; }
+.world-parallax-sky { clip-path:inset(0 0 57%); }
+.world-parallax-hills { clip-path:inset(43% 0 31%); }
+.world-parallax-road { clip-path:inset(69% 0 12%); }
+.world-parallax-foreground { clip-path:inset(88% 0 0); }
+.world-parallax-track { display:flex; width:400%; height:100%; animation:procession-travel 240s linear infinite; }
+.world-parallax-hills .world-parallax-track { animation-duration:120s; }
+.world-parallax-road .world-parallax-track { animation-duration:32s; }
+.world-parallax-foreground .world-parallax-track { animation-duration:22s; }
+.world-parallax-tile { flex:0 0 25%; height:100%; background:url('/assets/procession/landscape.png') center / 100% 100% no-repeat; }
+.world-parallax-tile:nth-child(even) { transform:scaleX(-1); }
+.world-veil { position:absolute; inset:0; background:linear-gradient(180deg,#1016247a,transparent 40%,#11131818 78%,#101114aa); pointer-events:none; }
+.world-heading { position:absolute; top:22px; left:26px; z-index:3; }
 .world-eyebrow { display:block; color:#d9ba7a; font-size:9px; font-weight:700; letter-spacing:3px; }
+.world-heading h1 { font-family:var(--font-heading); font-size:clamp(18px,1.7vw,27px); font-weight:400; color:#f2e4ca; margin-top:8px; text-shadow:0 2px 6px #10131c; }
+.world-status { position:absolute; top:26px; right:26px; display:flex; align-items:center; gap:8px; font-size:10px; color:#ddd0b7; }
+.status-light { width:5px; height:5px; background:#ddbb6e; box-shadow:0 0 8px #ddbb6e; }
+.world-footer { position:absolute; left:26px; right:26px; bottom:12px; display:flex; justify-content:space-between; gap:12px; font-size:10px; color:#c4b79d; z-index:4; pointer-events:none; }
+.prophet-position { position:absolute; left:72%; bottom:18%; height:128px; width:120px; z-index:3; }
+.prophet-sprite { height:128px; width:auto; image-rendering:pixelated; transform-origin:50% 95%; animation:pilgrim-step 920ms linear infinite; }
+.prophet-label { position:absolute; bottom:-18px; left:8px; font-size:8px; letter-spacing:2px; color:#e2c084; white-space:nowrap; }
+.world-sphere { position:absolute; left:78px; top:26px; width:38px; height:38px; filter:drop-shadow(0 0 9px #e9be72); transition:opacity 120ms var(--ease-out); }
+.sphere-pixel-art { display:block; width:100%; height:100%; image-rendering:pixelated; pointer-events:none; }
+.procession-entourage { position:absolute; left:12%; right:31%; bottom:18%; height:120px; display:flex; align-items:flex-end; justify-content:flex-end; gap:clamp(6px,1.5vw,22px); z-index:2; }
+.procession-member { flex:0 1 76px; min-width:24px; display:flex; justify-content:center; position:relative; }
+.procession-member img { height:112px; width:auto; max-width:130px; image-rendering:pixelated; transform-origin:50% 95%; animation:pilgrim-step var(--stride-duration,850ms) linear infinite; }
+.procession-member { animation:pilgrim-sway 4s linear var(--march-delay,0s) infinite; }
+.procession-member::before,.prophet-position::before { content:''; position:absolute; bottom:-3px; left:20%; width:60%; height:7px; border-radius:50%; background:#11131a66; }
+.procession-member { --sprite-height:112px; }
+.prophet-position { --sprite-height:128px; }
+.walk-viewport { display:none; position:absolute; left:50%; bottom:calc(var(--sprite-height) * -4 / 56); height:calc(var(--sprite-height) * 72 / 56); aspect-ratio:64 / 72; overflow:hidden; transform:translateX(-50%); pointer-events:none; }
+.prophet-position .walk-viewport { bottom:calc(var(--sprite-height) * -4 / 64); height:calc(var(--sprite-height) * 72 / 64); }
+.walk-ready > .walk-viewport { display:block; }
+.walk-ready > img { opacity:0; animation:none; }
+.procession-member .walk-strip,.prophet-position .walk-strip { display:block; height:100%; width:900%; max-width:none; image-rendering:pixelated; animation:walk-frames 850ms steps(9,end) infinite; }
+[data-art-era='late'] .walk-ready > .walk-viewport { display:none; }
+[data-art-era='late'] .walk-ready > img { opacity:1; }
+.new-recruit { animation:recruit-arrival 250ms var(--ease-out) both; }
+.ritual-sigil { position:absolute; left:72%; bottom:12%; font-size:110px; color:#f3d392; line-height:1; opacity:0; pointer-events:none; transform:scale(.95); transition:opacity 200ms var(--ease-out),transform 200ms var(--ease-out); z-index:1; }
+.miracle-active .ritual-sigil { opacity:.85; transform:scale(1); }
+.faith-response .world-sphere { opacity:.65; }
+.ascended-monastery { position:absolute; right:15%; top:16%; height:45%; width:auto; image-rendering:pixelated; filter:brightness(.65); z-index:1; }
+/* Church scene: the stage keeps the background's 400×192 grid, so overlays stay pinned to the art.
+   Tall phones use the cover scale and are cropped sideways. On short or large windows the stage is smaller than the
+   cover: its scale is capped so that, below the HUD's bottom edge (`--hud-bottom`, measured by the church scene), the
+   art from y 12 (the tier-3 bell tower's top) down to y 152 (the front of the yard, plus an 8px margin) fits. The scale
+   never drops below 0.4px per art pixel, a safety net for a world whose container height has not resolved.
+   The backdrop fills the world around the stage. */
+.church-world { container-type:size; background:#1b2a3d; height:max(var(--world-h), var(--world-min)); min-height:0; --hud-bottom:0px; --art-scale:max(0.4px, min(max(100cqw / 400, 100cqh / 192), calc((100cqh - var(--hud-bottom) - 8px) / 140))); --stage-top:max(calc(var(--hud-bottom) - 12 * var(--art-scale)), min(0px, calc(100cqh - 152 * var(--art-scale)))); }
+/* Capped stages sit with y 12 at the HUD's bottom edge; uncapped ones (phones) are cropped sky first, so art down to y 152 stays visible. */
+/* The outer art columns (x 0 and 399) are near-white generation artifacts, so the stage is clipped by two art pixels (a fractional scale would otherwise show a sliver of them). */
+.church-stage { position:absolute; left:50%; top:var(--stage-top); width:calc(400 * var(--art-scale)); aspect-ratio:400 / 192; transform:translateX(-50%); clip-path:inset(0 calc(2 * var(--art-scale))); }
+/* Everything around the stage: the art's dark letterbox colour above and below it, and beside it hard-stop gradients
+   sampled from the art's columns x 1 and x 398 of each tier (sky, hills, grass bands), so the gutters read as the scene
+   continuing. Regenerate the gradients if the tier backgrounds change. */
+.church-backdrop { position:absolute; inset:0; background:var(--edge-left) left var(--stage-top) / 50% calc(192 * var(--art-scale)) no-repeat, var(--edge-right) right var(--stage-top) / 50% calc(192 * var(--art-scale)) no-repeat, #0b0e1d; pointer-events:none; }
+.church-world[data-church-tier='0'] { --edge-left:linear-gradient(#050912 5.73%, #11365e 5.73% 38.02%, #1e4770 38.02% 48.44%, #0c2d4d 48.44% 83.33%, #0f3055 83.33% 84.38%, #0c2d4d 84.38% 86.46%, #041c26 86.46% 93.23%, #09212f 93.23% 94.79%, #050912 94.79%); --edge-right:linear-gradient(#050912 5.21%, #194068 5.21% 7.29%, #1e4770 7.29% 9.9%, #11365e 9.9% 33.33%, #1e4770 33.33% 55.21%, #11365e 55.21% 64.58%, #0f3055 64.58% 66.15%, #0d2746 66.15% 91.15%, #1a3642 91.15% 92.71%, #092a32 92.71% 93.75%, #09212f 93.75% 94.79%, #050912 94.79%); }
+.church-world[data-church-tier='1'] { --edge-left:linear-gradient(#060c19 0.52%, #071420 0.52% 5.73%, #16375d 5.73% 14.58%, #153255 14.58% 24.48%, #16375d 24.48% 25.52%, #153255 25.52% 33.33%, #16375d 33.33% 38.54%, #1d3f65 38.54% 41.67%, #1c3d63 41.67% 45.31%, #1d3f65 45.31% 46.35%, #1f4168 46.35% 49.48%, #133153 49.48% 51.56%, #153255 51.56% 53.65%, #133153 53.65% 57.29%, #143051 57.29% 65.1%, #122f4e 65.1% 69.27%, #143051 69.27% 73.96%, #122f4e 73.96% 82.81%, #143051 82.81% 84.9%, #193252 84.9% 86.46%, #0e262f 86.46% 87.5%, #0f2a31 87.5% 88.54%, #0f2c34 88.54% 95.31%, #091b27 95.31%); --edge-right:linear-gradient(#080b16 6.25%, #1a3a60 6.25% 7.81%, #1d3f65 7.81% 8.85%, #1c3d63 8.85% 9.9%, #16375d 9.9% 12.5%, #153255 12.5% 13.54%, #133153 13.54% 29.17%, #153255 29.17% 30.73%, #16375d 30.73% 32.29%, #1a3a60 32.29% 33.33%, #1c3d63 33.33% 34.38%, #1a3a60 34.38% 35.42%, #16375d 35.42% 44.79%, #1a3a60 44.79% 53.13%, #1c3d63 53.13% 54.17%, #1d3f65 54.17% 55.21%, #16375d 55.21% 57.81%, #15355c 57.81% 60.94%, #153255 60.94% 65.1%, #143051 65.1% 66.15%, #122f4e 66.15% 67.71%, #122e4a 67.71% 69.79%, #132946 69.79% 89.06%, #0f2a39 89.06% 90.1%, #0f2c34 90.1% 91.15%, #0f2d37 91.15% 92.19%, #0f2c34 92.19% 94.79%, #080b16 94.79%); }
+.church-world[data-church-tier='2'] { --edge-left:linear-gradient(#090c1a 0.52%, #0d0e1e 0.52% 1.56%, #0c1523 1.56% 2.6%, #0d0e1e 2.6% 4.17%, #0c1523 4.17% 5.21%, #183254 5.21% 6.25%, #19365d 6.25% 7.29%, #183254 7.29% 34.38%, #19365d 34.38% 36.98%, #1e3c61 36.98% 47.92%, #183254 47.92% 71.35%, #18314f 71.35% 86.46%, #1b2f3b 86.46% 95.83%, #132c34 95.83%); --edge-right:linear-gradient(#090c1a 5.21%, #183254 5.21% 6.77%, #19365d 6.77% 10.42%, #183254 10.42% 14.06%, #18314f 14.06% 19.27%, #183254 19.27% 31.25%, #19365d 31.25% 32.81%, #1e3c61 32.81% 34.9%, #19365d 34.9% 36.98%, #183254 36.98% 44.27%, #19365d 44.27% 52.6%, #1e3c61 52.6% 55.21%, #19365d 55.21% 58.33%, #183254 58.33% 65.63%, #18314f 65.63% 73.44%, #1b2941 73.44% 89.06%, #1b2f3b 89.06% 92.71%, #132c34 92.71% 94.79%, #090c1a 94.79%); }
+.church-world[data-church-tier='3'] { --edge-left:linear-gradient(#0b0e1d 0.52%, #0f1d2b 0.52% 5.21%, #1c3252 5.21% 34.38%, #1d375c 34.38% 35.42%, #223d62 35.42% 42.71%, #1d375c 42.71% 45.31%, #223d62 45.31% 48.96%, #1d375c 48.96% 50%, #1c3252 50% 85.94%, #202b43 85.94%); --edge-right:linear-gradient(#0b0e1d 5.21%, #1c3252 5.21% 31.25%, #1d375c 31.25% 38.02%, #1c3252 38.02% 47.92%, #1d375c 47.92% 51.04%, #223d62 51.04% 54.69%, #1d375c 54.69% 59.38%, #1c3252 59.38% 73.44%, #202b43 73.44% 91.15%, #182c37 91.15% 94.79%, #0b0e1d 94.79%); }
+.church-background { position:absolute; inset:0; width:100%; height:100%; image-rendering:pixelated; pointer-events:none; }
+/* The altar's Esfera is the god's likeness, not a control: Fé is channelled through the Relicário's Esfera, and this one only glows back. */
+/* Each tier's background has its own altar on the sanctuary dais, so the Esfera's centre is set per tier to rest in that altar's
+   cradle: the drawn orb's bottom edge sits 10/32 of the box width below the centre (y 116 on the ruined pillar, y 121 in the
+   tier-1 cradle, y 113.5 in the carved altar that tiers 2 and 3 share). */
+.church-sphere { position:absolute; left:var(--sphere-x); top:var(--sphere-y); aspect-ratio:1; transform:translate(-50%,-50%); z-index:2; pointer-events:none; transition:filter 120ms var(--ease-out); }
+.church-sphere canvas { display:block; width:100%; height:100%; image-rendering:pixelated; pointer-events:none; }
+.church-sphere[data-location='ruins'] { width:4%; filter:brightness(.75) drop-shadow(0 0 6px #e9be72); animation:ruin-glow 3.2s ease-in-out infinite; }
+.church-sphere[data-location='altar'] { width:5%; filter:drop-shadow(0 0 10px #e9be72); }
+.church-world[data-church-tier='0'] { --sphere-x:26%; --sphere-y:57.81%; }
+.church-world[data-church-tier='1'] { --sphere-x:28.13%; --sphere-y:59.77%; }
+.church-world[data-church-tier='2'] { --sphere-x:28.88%; --sphere-y:55.86%; }
+.church-world[data-church-tier='3'] { --sphere-x:28.88%; --sphere-y:55.86%; }
+.faith-response .church-sphere { filter:brightness(1.35) drop-shadow(0 0 14px #f3d392); }
+/* The Bênção button sits in the Relicário under the clickable Esfera, so the boost is triggered where Fé is channelled. */
+/* It hangs like a plaque over the bottom of the Esfera's ring, so it needs no extra height in a short Relicário. */
 .sphere-presentation-area { position:relative; }
+.church-blessing { position:absolute; left:50%; bottom:-8px; z-index:3; transform:translateX(-50%); overflow:hidden; box-sizing:border-box; width:7em; padding:2px 6px; border:2px solid #8d6c40; border-radius:0; background:#30241b; box-shadow:0 2px #1a120c; color:#c9a874; font:18px/1 var(--font-game); white-space:nowrap; cursor:pointer; transition:filter 120ms var(--ease-out); }
+.church-blessing[hidden] { display:none; }
+.church-blessing-fill { position:absolute; inset:0; background:#8c6a36; transform:scaleX(var(--blessing-fill, 0)); transform-origin:left; transition:transform 120ms linear; }
+.church-blessing-label { position:relative; }
+.church-blessing.active { border-color:#c39a58; color:#ffdea0; }
+.church-blessing.faith-response { filter:brightness(1.35) drop-shadow(0 0 6px #f3d392); }
+.church-blessing:active { transform:translateX(-50%) translateY(1px); box-shadow:0 1px #1a120c; }
+.church-blessing:focus-visible { outline:2px solid #edc886; outline-offset:3px; }
+/* The protagonist stands on the sanctuary dais beside the altar (x 150), mirrored to face the Esfera. Feet sit 4px above the 72px
+   canvas bottom (2 art px at this height), on the dais top at y 137, or y 134 on the lower, ruined dais of tier 0. */
+.church-protagonist { position:absolute; left:37.5%; bottom:27.6%; height:19%; aspect-ratio:64 / 72; transform:translateX(-50%); z-index:2; pointer-events:none; }
+.church-world[data-church-tier='0'] .church-protagonist { bottom:29.17%; }
+.protagonist-viewport { position:absolute; inset:0; overflow:hidden; transform:scaleX(-1); }
+.protagonist-strip { position:absolute; top:0; left:0; display:block; height:100%; width:1600%; max-width:none; image-rendering:pixelated; animation:walk-frames 2400ms steps(16,end) infinite; }
+.church-protagonist[data-look='5'] .protagonist-viewport { filter:drop-shadow(0 0 3px #f3d392aa); }
+.protagonist-strip-outgoing { animation:walk-frames 2400ms steps(16,end) infinite, church-fade-out 900ms var(--ease-out) forwards; }
+.church-protagonist.transforming .protagonist-strip:not(.protagonist-strip-outgoing) { animation:walk-frames 2400ms steps(16,end) infinite, protagonist-fade-in 900ms var(--ease-out) both; }
+.church-protagonist.transforming::before { content:''; position:absolute; inset:-30% -60%; z-index:-1; background:radial-gradient(ellipse at 50% 60%, #f6dc9ccc, #e9be7255 40%, transparent 70%); animation:protagonist-glow 1200ms var(--ease-out) forwards; }
+@keyframes protagonist-fade-in { from { opacity:0; } to { opacity:1; } }
+@keyframes protagonist-glow { 0% { opacity:0; transform:scale(.6); } 35% { opacity:1; transform:scale(1); } 100% { opacity:0; transform:scale(1.15); } }
+.church-world .ritual-sigil { left:23%; bottom:16%; }
+/* Stacking over the background: crowd 1, dust 2, yard 3, detail props 4. The crowd stays behind everything the player reads. */
+.church-crowd { position:absolute; inset:0; width:100%; height:100%; z-index:1; image-rendering:pixelated; pointer-events:none; }
+.church-crowd[hidden] { display:none; }
+.church-followers { position:absolute; inset:0; z-index:3; pointer-events:none; }
+.church-follower { position:absolute; width:8%; aspect-ratio:64 / 72; transform:translate(-50%,-94.4%); }
+.church-follower::before { content:''; position:absolute; bottom:3%; left:25%; width:50%; height:6%; border-radius:50%; background:#0c101866; }
+.church-follower-sprite { position:absolute; inset:0; overflow:hidden; }
+.church-follower[data-facing='left'] .church-follower-sprite { scale:-1 1; }
+.church-follower-sprite img { display:block; height:100%; width:900%; max-width:none; image-rendering:pixelated; animation:walk-frames 2400ms steps(9) infinite; }
+.church-follower .church-plea { left:50%; bottom:100%; transform:translateX(-50%); pointer-events:auto; animation:plea-appear 220ms var(--ease-out); }
+@keyframes plea-appear { from { opacity:0; transform:translate(-50%,4px); } }
+@keyframes ruin-glow { 0%,100% { opacity:.45; } 50% { opacity:.8; } }
+/* Tier restoration: the old tier fades out through dust while sparkles mark the restored parts. */
+.church-background-outgoing { z-index:1; animation:church-fade-out 1100ms var(--ease-out) forwards; }
+.church-backdrop-outgoing { animation:church-fade-out 1100ms var(--ease-out) forwards; }
+.church-dust { position:absolute; inset:10% 20% 8% 20%; z-index:2; pointer-events:none; background:radial-gradient(ellipse at 50% 60%, #b9a58a99, #8a7a6655 45%, transparent 70%); filter:blur(6px); opacity:0; animation:church-dust 1300ms ease-out forwards; }
+/* Props draw over the yard (z 3) so a crowd of followers never buries them. */
+.church-prop { position:absolute; z-index:4; transform:translate(-50%,-100%); image-rendering:pixelated; pointer-events:none; }
+.church-prop[hidden] { display:none; }
+.church-prop-new { animation:church-prop-rise 700ms var(--ease-out) both; }
+@keyframes church-prop-rise { from { opacity:0; transform:translate(-50%,-92%); } to { opacity:1; transform:translate(-50%,-100%); } }
+.church-sparkle { position:absolute; z-index:3; pointer-events:none; transform:translate(-50%,-50%) scale(0); color:#f6dc9c; font-size:clamp(10px, 2.4cqw, 22px); text-shadow:0 0 6px #f3d392, 0 0 12px #e9be72; animation:church-sparkle 900ms var(--ease-out) both; }
+@keyframes church-fade-out { from { opacity:1; } to { opacity:0; } }
+@keyframes church-dust { 0% { opacity:0; transform:scale(.9); } 30% { opacity:1; } 100% { opacity:0; transform:scale(1.1) translateY(-4%); } }
+@keyframes church-sparkle { 0% { opacity:0; transform:translate(-50%,-50%) scale(0) rotate(0); } 40% { opacity:1; transform:translate(-50%,-50%) scale(1.2) rotate(20deg); } 100% { opacity:0; transform:translate(-50%,-50%) scale(.6) rotate(45deg); } }
+[data-art-era='late'] .world-landscape { filter:brightness(.7) saturate(.7); }
+[data-art-era='late'] .world-parallax-track { animation-play-state:paused; }
+[data-art-era='late'] .procession-member { animation:none; }
+[data-art-era='late'] .world-veil { background:linear-gradient(180deg,#27152b88,transparent 55%,#13101c55); }
+[data-art-era='late'] .prophet-sprite,[data-art-era='late'] .procession-member img { animation:ritual-bow 3s steps(3,end) infinite; }
+[data-art-era='late'] .world-sphere { width:112px; height:112px; left:12px; top:-128px; filter:drop-shadow(0 0 14px #a889ce); }
+[data-art-era='late'] .ritual-sigil { color:#a58ac2; }
+[data-art-era='late'] .world-status .status-light { background:#ab85cc; box-shadow:0 0 8px #ab85cc; }
+.gameplay-3frame-container { flex:1; min-height:0; height:auto; gap:18px; }
+.side-panel { flex:1; min-width:280px; width:auto; max-width:none; height:100%; align-self:stretch; border-radius:4px; border-width:1px; box-shadow:none; backdrop-filter:none; }
+.panel-header { padding:12px 16px; background:#1e1c1b; }
+.panel-title { font-size:15px; font-weight:400; letter-spacing:.4px; color:#f0dfb6; }
+.panel-tag { font-family:var(--font-mono); font-size:8px; letter-spacing:2px; color:#ac9877; }
+.panel-body { min-height:0; padding:12px 16px; }
+.panel-tabs-bar { background:#151516; }
+.panel-tab-btn { border-radius:3px; font-family:inherit; font-size:11px; letter-spacing:0; }
+.panel-tab-btn.active { background:#302821; color:#efcf91; border-color:#705b3a; box-shadow:none; }
 .center-frame { flex:0 0 30%; min-width:260px; max-width:420px; border:1px solid #655034; border-radius:4px; background:radial-gradient(ellipse at center,#30261f40,#151416 70%); margin:0; justify-content:space-between; padding:18px 12px 16px; overflow:hidden; }
 .center-frame-content { flex:1; display:flex; align-items:center; justify-content:center; width:100%; min-height:0; }
 .sacred-window-heading { text-align:center; }
@@ -43,11 +184,92 @@
 .sphere-orbit-ring { border-color:#705a354d; width:176px; height:176px; animation:none; }
 .sphere-orbit-ring.ring-2 { width:200px; height:200px; border-style:dashed; }
 .sphere-aura { width:190px; height:190px; background:radial-gradient(circle,#bd8e3620,transparent 70%); animation:none; }
+.sphere-satellites-orbit { display:none; }
+.sphere-satellite-node.state-locked { display:none; }
+.sphere-satellite-node.state-unlocked:hover,.sphere-satellite-node.state-unlocked:active { transform:rotate(var(--node-angle)) translateY(-110px); }
+.satellite-sprite-view { width:24px; height:24px; background-size:144px 48px; }
+.satellite-sprite-view.frame-0 { background-position:0 -24px; }
+.satellite-sprite-view.frame-1 { background-position:-24px -24px; }
+.satellite-sprite-view.frame-2 { background-position:-48px -24px; }
+.satellite-sprite-view.frame-3 { background-position:-72px -24px; }
+.satellite-sprite-view.frame-4 { background-position:-96px -24px; }
+.satellite-sprite-view.frame-5 { background-position:-120px -24px; }
+.miracle-plea { position:absolute; bottom:calc(100% + 8px); white-space:nowrap; color:#ffdea0; background:#30241b; border:1px solid #c39a58; border-radius:3px; padding:8px; font-size:9px; cursor:pointer; box-shadow:0 0 14px #d8a64b33; z-index:5; }
+.miracle-request .world-parallax-track,.miracle-request .procession-member,.miracle-request .procession-member img,.miracle-request .prophet-sprite,.miracle-request .walk-strip { animation-play-state:paused; }
+.followers-arena-wrapper { display:none; }
 .followers-controls { margin-top:12px; }
 .cult-action-card,.btn-follower-action { border-radius:3px; box-shadow:none; }
 .btn-convert-primary { background:linear-gradient(100deg,#542d2b,#342321); border-color:#966647; }
 .btn-action-title { font-family:inherit; font-size:12px; }
-.divine-sphere-btn:focus-visible { outline:2px solid #edc886; outline-offset:5px; }
+.art-review-controls[hidden] { display:none; }
+.art-review-controls { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:12px; flex-shrink:0; color:#ad9d84; font-size:9px; letter-spacing:1px; }
+.art-review-controls button,.art-review-controls a { padding:7px 12px; background:#1f1c1c; border:1px solid #574735; color:#ddcba8; cursor:pointer; font:inherit; letter-spacing:0; text-decoration:none; border-radius:3px; }
+.art-review-controls button[aria-pressed='true'] { border-color:#c5a366; background:#3a2c24; }
+.art-review #spotlight-tour-overlay { display:none!important; }
+.art-review .procession-world { height:44%; }
+.art-review .church-world { --world-h:44%; }
+.art-review .panel-toggle-btn,.art-review .panel-expand-strip { display:none; }
+.scene-paused * { animation-play-state:paused!important; }
+.divine-sphere-btn:focus-visible,.art-review-controls button:focus-visible { outline:2px solid #edc886; outline-offset:5px; }
+@keyframes procession-travel { to { transform:translateX(-50%); } }
+@keyframes walk-frames { to { transform:translateX(-100%); } }
+@keyframes pilgrim-step {
+  0%,50%,100% { transform:translateY(0) rotate(0deg) scaleY(1); }
+  12.5% { transform:translateY(-2px) rotate(-1.5deg) scaleY(1.015); }
+  25% { transform:translateY(-4px) rotate(-2deg) scaleY(1); }
+  37.5% { transform:translateY(-1px) rotate(-1deg) scaleY(.985); }
+  62.5% { transform:translateY(-2px) rotate(1.5deg) scaleY(1.015); }
+  75% { transform:translateY(-4px) rotate(2deg) scaleY(1); }
+  87.5% { transform:translateY(-1px) rotate(1deg) scaleY(.985); }
+}
+@keyframes pilgrim-sway { 0%,100% { transform:translateX(-3px); } 50% { transform:translateX(3px); } }
+@keyframes ritual-bow { 0%,100% { transform:rotate(0); } 50% { transform:rotate(5deg); } }
+@keyframes recruit-arrival { from { opacity:0; transform:translateX(-24px); } to { opacity:1; transform:translateX(0); } }
+@media (hover:hover) and (pointer:fine) { .divine-sphere-btn:hover { filter:brightness(1.15) drop-shadow(0 0 16px #b8874540); } .church-blessing:hover { filter:brightness(1.2); } }
 @media (prefers-reduced-motion:reduce) {
+  .world-parallax-track,.prophet-sprite,.procession-member,.procession-member img,.walk-strip,.new-recruit,.church-sphere,.church-follower-sprite img,.church-plea { animation:none!important; }
+  .church-blessing-fill { transition:none; }
+  .church-dust,.church-sparkle { display:none; }
+  .church-prop-new { animation:none; }
+  .protagonist-strip { animation:none!important; }
+  .protagonist-strip-outgoing,.church-protagonist.transforming::before { display:none; }
+  .church-background-outgoing,.church-backdrop-outgoing { animation-duration:200ms!important; }
+  .walk-ready > .walk-viewport { display:none; }
+  .walk-ready > img { opacity:1; }
+  .ritual-sigil { transform:none!important; transition:opacity 120ms; }
   .sphere-wrapper * { animation:none!important; }
+}
+@media (max-height:760px) and (min-width:861px) {
+  .procession-world { min-height:225px; height:42%; }
+  .church-world { --world-min:225px; --world-h:42%; }
+  .art-review .procession-world { height:40%; }
+  .art-review .church-world { --world-h:40%; }
+  .prophet-sprite { height:104px; }
+  .prophet-position { height:104px; }
+  [data-art-era='late'] .world-sphere { width:80px; height:80px; top:-70px; }
+  .procession-member img { height:88px; }
+  .procession-member { --sprite-height:88px; }
+  .prophet-position { --sprite-height:104px; }
+  .sacred-window-heading h2 { font-size:22px; }
+  .center-frame { padding:12px; }
+}
+/* Preserve existing narrow-screen navigation; desktop is the approval target. */
+@media (max-width:860px) {
+  .cult-wordmark { font-size:9px; }
+  .resources-hud-card { position:static; transform:none; }
+  .resources-hud-row { gap:8px; }
+  .procession-world { min-height:220px; height:32%; }
+  .church-world { --world-min:220px; --world-h:32%; }
+  .world-heading { left:12px; top:12px; }
+  .world-status { display:none; }
+  .world-footer { left:12px; right:12px; font-size:8px; }
+  .prophet-sprite { height:80px; }
+  .prophet-position { height:80px; left:70%; }
+  .procession-member img { height:64px; }
+  .procession-member { --sprite-height:64px; }
+  .prophet-position { --sprite-height:80px; }
+  .world-sphere { left:49px; top:14px; width:28px; height:28px; }
+  [data-art-era='late'] .world-sphere { width:65px; height:65px; top:-68px; left:0; }
+  .sacred-window-heading p { display:none; }
+  .center-frame { flex:1; }
 }

@@ -1,4 +1,6 @@
 import { INCARNATION_STAGES, IncarnationStage } from '../config/incarnation.js';
+import { getAvatarArt } from './pixelArt.js';
+import { VisualFrameClock, visualFrameScale } from './visualTiming.js';
 
 export interface IncarnationAltarOptions {
   onAltarClick?: (e?: MouseEvent) => void;
@@ -21,7 +23,6 @@ export class IncarnationAltar {
   private container: HTMLElement | null;
   private canvas: HTMLCanvasElement | null;
   private ctx: CanvasRenderingContext2D | null = null;
-  private nameEl: HTMLElement | null = null;
   private titleEl: HTMLElement | null = null;
   private loreEl: HTMLElement | null = null;
 
@@ -35,13 +36,13 @@ export class IncarnationAltar {
   private rotationAngle: number = 0;
   private pulsePhase: number = 0;
   private flashAlpha: number = 0;
+  private isOnScreen: boolean = true;
   private options: IncarnationAltarOptions;
 
   constructor(containerId: string = 'incarnation-altar-container', options: IncarnationAltarOptions = {}) {
     this.options = options;
     this.container = document.getElementById(containerId);
     this.canvas = document.getElementById('incarnation-altar-canvas') as HTMLCanvasElement | null;
-    this.nameEl = document.getElementById('incarnation-altar-name');
     this.titleEl = document.getElementById('incarnation-altar-title');
     this.loreEl = document.getElementById('incarnation-altar-lore');
 
@@ -69,6 +70,13 @@ export class IncarnationAltar {
     if (typeof ResizeObserver !== 'undefined' && this.container) {
       const ro = new ResizeObserver(() => this.resize());
       ro.observe(this.container);
+    }
+
+    // Skip drawing while the altar is panned off-screen or its card is still sealed
+    if (typeof IntersectionObserver !== 'undefined') {
+      new IntersectionObserver((entries) => {
+        this.isOnScreen = entries[entries.length - 1].isIntersecting;
+      }).observe(this.canvas);
     }
   }
 
@@ -110,7 +118,6 @@ export class IncarnationAltar {
     const stageData: IncarnationStage | undefined = INCARNATION_STAGES.find((s) => s.stage === stageNumber);
 
     if (stageData) {
-      if (this.nameEl) this.nameEl.textContent = `Estágio ${stageData.stage}: ${stageData.name}`;
       if (this.titleEl) this.titleEl.textContent = stageData.title;
       if (this.loreEl) this.loreEl.textContent = `"${stageData.lore}"`;
     }
@@ -131,7 +138,7 @@ export class IncarnationAltar {
   private spawnBurstParticles(count: number): void {
     const cx = this.width / 2;
     const cy = this.height * 0.45;
-    const colors = ['#f4deb3', '#e4c382', '#ffd700', '#d88b48', '#ffffff'];
+    const colors = getAvatarArt(this.currentStage).particleColors;
 
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
@@ -151,13 +158,13 @@ export class IncarnationAltar {
     }
   }
 
-  private spawnAmbientParticles(): void {
+  private spawnAmbientParticles(frameScale: number): void {
     if (this.particles.length > 40) return;
-    if (Math.random() > 0.35) return;
+    if (Math.random() >= 1 - 0.65 ** frameScale) return;
 
     const cx = this.width / 2;
     const cy = this.height * 0.5;
-    const colors = ['#f4deb3', '#c49850', '#e5d4b4'];
+    const colors = getAvatarArt(this.currentStage).particleColors;
 
     this.particles.push({
       x: cx + (Math.random() - 0.5) * (this.width * 0.6),
@@ -172,24 +179,25 @@ export class IncarnationAltar {
     });
   }
 
-  private update(): void {
-    this.rotationAngle += 0.006;
+  private update(elapsedSec: number): void {
+    const frameScale = visualFrameScale(elapsedSec);
+    this.rotationAngle += 0.006 * frameScale;
     if (this.pulsePhase > 0) {
-      this.pulsePhase -= 0.03;
+      this.pulsePhase -= 0.03 * frameScale;
       if (this.pulsePhase < 0) this.pulsePhase = 0;
     }
     if (this.flashAlpha > 0) {
-      this.flashAlpha -= 0.025;
+      this.flashAlpha -= 0.025 * frameScale;
       if (this.flashAlpha < 0) this.flashAlpha = 0;
     }
 
-    this.spawnAmbientParticles();
+    this.spawnAmbientParticles(frameScale);
 
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.life--;
+      p.x += p.vx * frameScale;
+      p.y += p.vy * frameScale;
+      p.life -= frameScale;
       p.alpha = Math.max(0, p.life / p.maxLife);
       if (p.life <= 0) {
         this.particles.splice(i, 1);
@@ -202,111 +210,94 @@ export class IncarnationAltar {
     const ctx = this.ctx;
     const w = this.width;
     const h = this.height;
-    const cx = w / 2;
-    const cy = h * 0.48;
+    const art = getAvatarArt(this.currentStage);
+    const sprite = art.sprite;
+
+    // Whole pixels only: the avatar is scaled by an integer factor
+    const scale = Math.max(3, Math.floor((h - 26) / sprite.height));
+    const spriteW = sprite.width * scale;
+    const spriteH = sprite.height * scale;
+    const left = Math.round((w - spriteW) / 2);
+    const floor = h - 12;
+    const breath = Math.sin(this.rotationAngle * 6) > 0.55 ? scale : 0;
+    const top = floor - spriteH - breath;
+    const headX = w / 2;
+    const headY = top + 9 * scale;
 
     ctx.clearRect(0, 0, w, h);
+    ctx.imageSmoothingEnabled = false;
 
-    // 1. Concentric Hermetic Astrolabe Rings behind/over the altar
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(this.rotationAngle);
-
-    const baseRadius = Math.min(w, h) * 0.42;
-
-    // Outer sacred ring
-    ctx.strokeStyle = 'rgba(216, 191, 141, 0.22)';
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.arc(0, 0, baseRadius, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Intermediate dashed zodiac ring
-    ctx.setLineDash([4, 6]);
-    ctx.strokeStyle = 'rgba(216, 191, 141, 0.16)';
-    ctx.beginPath();
-    ctx.arc(0, 0, baseRadius * 0.85, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // 4 cardinal rays
-    ctx.strokeStyle = 'rgba(216, 191, 141, 0.18)';
-    ctx.lineWidth = 1;
-    for (let i = 0; i < 4; i++) {
-      const a = (i * Math.PI) / 2;
-      ctx.beginPath();
-      ctx.moveTo(Math.cos(a) * (baseRadius * 0.7), Math.sin(a) * (baseRadius * 0.7));
-      ctx.lineTo(Math.cos(a) * (baseRadius * 1.05), Math.sin(a) * (baseRadius * 1.05));
-      ctx.stroke();
-    }
-
-    ctx.restore();
-
-    // Procedural central divine sphere
-    ctx.save();
-    ctx.translate(cx, cy);
-    const orbRadius = baseRadius * 0.46;
-    const grad = ctx.createRadialGradient(-orbRadius * 0.25, -orbRadius * 0.25, 2, 0, 0, orbRadius);
-    grad.addColorStop(0, '#fffbe8');
-    grad.addColorStop(0.3, '#d8aa50');
-    grad.addColorStop(0.7, '#784618');
-    grad.addColorStop(1, '#1b120c');
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(0, 0, orbRadius, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = 'rgba(244, 222, 179, 0.5)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Astrological orbit ring around orb
-    ctx.strokeStyle = 'rgba(216, 191, 141, 0.35)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, orbRadius * 1.25, orbRadius * 0.45, this.rotationAngle * 1.5, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.restore();
-
-    // 2. Click pulse wave if active
-    if (this.pulsePhase > 0) {
+    // 1. Stage aura behind the figure
+    if (art.aura === 'solar') {
       ctx.save();
-      const waveRadius = (1 - this.pulsePhase) * (baseRadius * 1.3);
-      ctx.strokeStyle = `rgba(244, 222, 179, ${this.pulsePhase * 0.6})`;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(cx, cy, waveRadius, 0, Math.PI * 2);
-      ctx.stroke();
+      ctx.translate(headX, headY);
+      ctx.rotate(this.rotationAngle);
+      ctx.fillStyle = 'rgba(255, 211, 107, 0.35)';
+      for (let i = 0; i < 12; i++) {
+        ctx.rotate(Math.PI / 6);
+        ctx.fillRect(-scale / 2, -spriteH * 0.62, scale, spriteH * (i % 2 ? 0.22 : 0.32));
+      }
       ctx.restore();
-    }
-
-    // 3. Ethereal Particles / Sparks
-    for (const p of this.particles) {
-      ctx.save();
-      ctx.fillStyle = p.color;
-      ctx.globalAlpha = p.alpha;
-      ctx.shadowColor = p.color;
-      ctx.shadowBlur = 4;
+    } else if (art.aura === 'eclipse') {
+      const r = 11 * scale;
+      ctx.fillStyle = 'rgba(184, 176, 224, 0.55)';
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.arc(headX, headY, r + scale, 0, Math.PI * 2);
       ctx.fill();
-      ctx.restore();
+      ctx.fillStyle = '#050407';
+      ctx.beginPath();
+      ctx.arc(headX + scale, headY - scale, r, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (art.aura !== 'none') {
+      ctx.strokeStyle = art.aura === 'motes' ? 'rgba(184, 176, 224, 0.35)' : 'rgba(255, 179, 92, 0.3)';
+      ctx.lineWidth = scale;
+      ctx.beginPath();
+      ctx.arc(headX, headY, 9 * scale, 0, Math.PI * 2);
+      ctx.stroke();
     }
 
-    // 4. Ascension Flash
+    // 2. Stone plinth
+    ctx.fillStyle = '#1d1712';
+    ctx.fillRect(left - 4 * scale, floor, spriteW + 8 * scale, scale * 2);
+    ctx.fillStyle = '#2a2119';
+    ctx.fillRect(left - 2 * scale, floor - scale, spriteW + 4 * scale, scale);
+
+    // 3. The avatar
+    ctx.drawImage(sprite, left, top, spriteW, spriteH);
+
+    // 4. Click pulse
+    if (this.pulsePhase > 0) {
+      ctx.strokeStyle = `rgba(246, 220, 154, ${this.pulsePhase * 0.6})`;
+      ctx.lineWidth = scale;
+      ctx.beginPath();
+      ctx.arc(headX, top + spriteH / 2, (1 - this.pulsePhase) * spriteH, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // 5. Square pixel sparks
+    for (const p of this.particles) {
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = p.color;
+      const size = p.size > 2.4 ? scale : Math.max(2, scale - 1);
+      ctx.fillRect(Math.round(p.x), Math.round(p.y), size, size);
+    }
+    ctx.globalAlpha = 1;
+
+    // 6. Ascension flash
     if (this.flashAlpha > 0) {
-      ctx.save();
       ctx.fillStyle = `rgba(255, 245, 220, ${this.flashAlpha * 0.7})`;
       ctx.fillRect(0, 0, w, h);
-      ctx.restore();
     }
   }
 
   private startLoop(): void {
-    const loop = () => {
-      this.update();
-      this.draw();
+    const clock = new VisualFrameClock();
+    const loop = (nowMs: number) => {
+      const elapsedSec = clock.tick(nowMs);
+      if (elapsedSec !== null) {
+        this.update(elapsedSec);
+        if (this.isOnScreen && document.visibilityState !== 'hidden') this.draw();
+      }
       this.animFrameId = requestAnimationFrame(loop);
     };
     this.animFrameId = requestAnimationFrame(loop);

@@ -21,8 +21,6 @@ export class IncarnationTab {
 
   // DOM Elements
   private stageBadgeEl: HTMLElement | null = null;
-  private titleEl: HTMLElement | null = null;
-  private descSubEl: HTMLElement | null = null;
   private rateBadgeEl: HTMLElement | null = null;
   private btnUpgradeEl: HTMLButtonElement | null = null;
   private upgradeTitleEl: HTMLElement | null = null;
@@ -53,8 +51,6 @@ export class IncarnationTab {
     }
 
     this.stageBadgeEl = document.getElementById('incarnation-stage-badge');
-    this.titleEl = document.getElementById('incarnation-title');
-    this.descSubEl = document.getElementById('incarnation-desc-sub');
     this.rateBadgeEl = document.getElementById('incarnation-rate-badge');
     this.btnUpgradeEl = document.getElementById('btn-upgrade-incarnation') as HTMLButtonElement | null;
     this.upgradeTitleEl = document.getElementById('incarnation-upgrade-title');
@@ -106,7 +102,7 @@ export class IncarnationTab {
       this.blessingStatusEl.textContent = `✦ 2× FÉ ATIVO · ${Math.ceil(boostSec)}s / ${maxCap}s`;
       this.blessingPanelEl?.classList.add('active');
     } else {
-      this.blessingStatusEl.textContent = 'INATIVA (Clique no Altar para +2s)';
+      this.blessingStatusEl.textContent = `INATIVA (Clique no Altar para +${BLESSING_SECONDS_PER_PRESS}s)`;
       this.blessingPanelEl?.classList.remove('active');
     }
   }
@@ -123,7 +119,7 @@ export class IncarnationTab {
       this.options.notifications.showCustomPopup(
         'A ENCARNAÇÃO RENASCE',
         `A Encarnação renasceu como ${nextStage.name}! Fervor/s multiplicado por ${formatNumber(nextStage.multiplier)}x.`,
-        '👑',
+        'crown',
         'EVOLUÇÃO'
       );
       this.updateUI();
@@ -136,20 +132,12 @@ export class IncarnationTab {
     const currentStage = INCARNATION_STAGES.find((s) => s.stage === stage);
     const nextStage = INCARNATION_STAGES.find((s) => s.stage === stage + 1);
 
-    this.altar?.setStage(stage);
+    if (this.altar && this.altar.getCurrentStage() !== stage) this.altar.setStage(stage, true);
 
     if (this.stageBadgeEl) {
       const stageName = currentStage ? currentStage.name.toUpperCase() : `ESTÁGIO ${stage}`;
       const multText = currentStage ? ` (${formatNumber(currentStage.multiplier)}x)` : '';
       this.stageBadgeEl.textContent = `ESTÁGIO ${stage}: ${stageName}${multText}`;
-    }
-    if (this.titleEl) {
-      this.titleEl.textContent = '';
-      this.titleEl.style.display = 'none';
-    }
-    if (this.descSubEl) {
-      this.descSubEl.textContent = '';
-      this.descSubEl.style.display = 'none';
     }
     if (this.rateBadgeEl) {
       const incFollowerMult = this.options.gameState.getEffectiveIncarnationFollowerMultiplier();
@@ -164,8 +152,8 @@ export class IncarnationTab {
           this.upgradeBenefitEl.textContent = `${formatNumber(nextStage.multiplier)}x Fervor/s`;
           this.upgradeBenefitEl.style.display = 'block';
         }
-        this.upgradeCostValEl.textContent = `${formatNumber(stageCost)} Fé`;
-        this.btnUpgradeEl.disabled = this.options.gameState.faithPoints < stageCost;
+        this.upgradeCostValEl.textContent = this.options.gameState.canAccessIncarnationStage(nextStage.stage) ? `${formatNumber(stageCost)} Fé` : 'Exige Gnosis Suprema';
+        this.btnUpgradeEl.disabled = !this.options.gameState.canAccessIncarnationStage(nextStage.stage) || this.options.gameState.faithPoints < stageCost;
       } else {
         this.upgradeTitleEl.textContent = 'ENCARNAÇÃO MÁXIMA';
         if (this.upgradeBenefitEl) {
@@ -185,7 +173,7 @@ export class IncarnationTab {
     const nextStage = INCARNATION_STAGES.find((s) => s.stage === this.options.gameState.incarnationStage + 1);
     if (nextStage) {
       const stageCost = this.options.gameState.getIncarnationStageCost(nextStage);
-      this.btnUpgradeEl.disabled = this.options.gameState.faithPoints < stageCost;
+      this.btnUpgradeEl.disabled = !this.options.gameState.canAccessIncarnationStage(nextStage.stage) || this.options.gameState.faithPoints < stageCost;
     }
   }
 

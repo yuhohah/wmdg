@@ -4,6 +4,7 @@ import { AudioManager } from '../../systems/audio.js';
 import { NotificationManager } from '../../systems/notifications.js';
 import { formatNumber } from '../../systems/calculations.js';
 import { events, GameEvents } from '../../core/EventBus.js';
+import { icon } from '../../ui/icons.js';
 
 export interface UnlocksTabOptions {
   gameState: GameStateManager;
@@ -71,10 +72,10 @@ export class UnlocksTab {
     btn.setAttribute('aria-label', `Desbloquear ${currentUnlock.name}`);
 
     btn.innerHTML = `
-      <div class="unlock-btn-badge">🔓 DESBLOQUEAR NOVA MECÂNICA</div>
+      <div class="unlock-btn-badge">${icon('unlock')} DESBLOQUEAR NOVA MECÂNICA</div>
       <div class="unlock-btn-main">
         <span class="unlock-btn-name">${currentUnlock.name}</span>
-        <span class="unlock-btn-cost">${formatNumber(currentUnlock.cost)} Fé</span>
+        <span class="unlock-btn-cost">${currentUnlock.id === 'unlock_gnose' ? 'Atingir ' : ''}${formatNumber(currentUnlock.cost)} Fé${currentUnlock.id === 'unlock_gnose' ? ' · sem gasto' : ''}</span>
       </div>
     `;
 
@@ -96,28 +97,28 @@ export class UnlocksTab {
       this.notifications.showCustomPopup(
         'A ESFERA GANHOU CORPO',
         'A Encarnação desceu ao altar e acendeu o Fervor (+1/s).',
-        '🔥',
+        'fervor',
         'NOVA MECÂNICA'
       );
     } else if (unlock.id === 'unlock_fervor_upgrades') {
       this.notifications.showCustomPopup(
         'RITOS DE FERVOR',
         'As melhorias de Fervor estão liberadas no card de Fervor.',
-        '🕯️',
+        'incarnation',
         'NOVA MECÂNICA'
       );
     } else if (unlock.id === 'unlock_relics') {
       this.notifications.showCustomPopup(
         'O RELICÁRIO SE ABRIU',
         'Transmute sua Fé em Fragmentos e restaure relíquias no card de Relíquias.',
-        '⚱️',
+        'relics',
         'NOVA MECÂNICA'
       );
     } else if (unlock.id === 'unlock_gnose') {
       this.notifications.showCustomPopup(
         'A CÂMARA DA GNOSE SE ABRIU',
         'O último selo foi rompido. Dissolva o culto terreno a partir de 1Q Fé para colher Gnose.',
-        '👁️',
+        'gnose',
         'NOVA MECÂNICA'
       );
     }

@@ -7,6 +7,7 @@ export interface StatsTabOptions {
 
 export class StatsTab {
   private gameState: GameStateManager;
+  private dialogEl: HTMLDialogElement | null = null;
 
   private statTotalFaithEl: HTMLElement | null = null;
   private statClickFaithEl: HTMLElement | null = null;
@@ -21,9 +22,11 @@ export class StatsTab {
   constructor(options: StatsTabOptions) {
     this.gameState = options.gameState;
     this.initElements();
+    this.bindEvents();
   }
 
   private initElements(): void {
+    this.dialogEl = document.getElementById('cult-status-modal') as HTMLDialogElement | null;
     this.statTotalFaithEl = document.getElementById('stat-total-faith');
     this.statClickFaithEl = document.getElementById('stat-click-faith');
     this.statPassiveFaithEl = document.getElementById('stat-passive-faith');
@@ -35,7 +38,27 @@ export class StatsTab {
     this.statCultTierEl = document.getElementById('stat-cult-tier');
   }
 
+  private bindEvents(): void {
+    const trigger = document.getElementById('cult-status-btn');
+    trigger?.addEventListener('click', () => {
+      if (!this.dialogEl || this.dialogEl.open) return;
+      this.dialogEl.showModal();
+      trigger.setAttribute('aria-expanded', 'true');
+      this.updateUI();
+    });
+    document.getElementById('close-cult-status-btn')?.addEventListener('click', () => this.dialogEl?.close());
+    this.dialogEl?.addEventListener('close', () => trigger?.setAttribute('aria-expanded', 'false'));
+    this.dialogEl?.addEventListener('click', (event) => {
+      if (event.target !== this.dialogEl) return;
+      const rect = this.dialogEl!.getBoundingClientRect();
+      if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) {
+        this.dialogEl?.close();
+      }
+    });
+  }
+
   public updateUI(): void {
+    if (!this.dialogEl?.open) return;
     const totalFaith = this.gameState.totalFaithAccumulated;
     const fpc = this.gameState.getFaithPerClick();
     const fps = this.gameState.getFaithPerSecond();

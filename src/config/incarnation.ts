@@ -9,7 +9,7 @@ export interface IncarnationStage {
 }
 
 /** Each Bênção press adds this many seconds of 2× Fé, stored up to the cap. */
-export const BLESSING_SECONDS_PER_PRESS = 2;
+export const BLESSING_SECONDS_PER_PRESS = 10;
 export const BLESSING_MAX_SECONDS = 60;
 
 /**
@@ -18,7 +18,7 @@ export const BLESSING_MAX_SECONDS = 60;
  * - Estágio II: 2.500.000 Fé (2.5e6) -> Avatar Consagrado (Adult Dragon), 100x Fervor
  * - Estágio III: 1.000.000.000.000 Fé (1e12) -> Avatar Ancestral (Elder Dragon), 10.000x Fervor
  * - Estágio IV: 1.0e25 Fé (1e25) -> Avatar do Eclipse (Dark Dragon), 100.000.000x Fervor (1e8)
- * - Estágio V: 1.0e150 Fé (1e150) -> Avatar Solar (Light Dragon), 1.0e15x Fervor (1e15)
+ * - Estágio V: 1.0e30 Fé (1e30), exige Gnosis Suprema -> Avatar Solar (Light Dragon), 1.0e15x Fervor (1e15)
  */
 export const INCARNATION_STAGES: IncarnationStage[] = [
   {
@@ -45,7 +45,7 @@ export const INCARNATION_STAGES: IncarnationStage[] = [
     title: 'O Ancião da Esfera',
     desc: 'Sabedoria imemorial dos primórdios cósmicos. Multiplica a geração de Fervor por 10.000x.',
     lore: 'Repousando no epicentro do santuário, sua respiração cósmica incendeia o cosmos e dobra o tempo divino.',
-    cost: 1000000000000,
+    cost: 250000000000,
     multiplier: 10000
   },
   {
@@ -63,7 +63,7 @@ export const INCARNATION_STAGES: IncarnationStage[] = [
     title: 'A Entidade da Luz Eterna',
     desc: 'Ascensão solar absoluta. Multiplica a geração de Fervor por 10^15 (1 Quadrilhão de vezes).',
     lore: 'A personificação viva da Esfera Cósmica em seu esplendor máximo, brilhando como um trilhão de supernovas.',
-    cost: 1e150,
+    cost: 1e30,
     multiplier: 1e15
   }
 ];

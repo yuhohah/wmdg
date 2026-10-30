@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "benchmark": "vitest run src/benchmark/benchmark.test.ts"
+    "benchmark": "node scripts/run-benchmark.mjs"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

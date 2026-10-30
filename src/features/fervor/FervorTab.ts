@@ -1,9 +1,10 @@
+import { AutomationToggle } from '../../ui/AutomationToggle.js';
+import { setText } from '../../ui/dom.js';
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { FervorUpgrade } from '../../types.js';
 import { DISPLAY_CONFIG } from '../../config/display.js';
-import { getFervorUpgradeMultiplier } from '../../config/fervor.js';
-import { calculateFervorUpgradeCost, formatNumber } from '../../systems/calculations.js';
+import { formatNumber } from '../../systems/calculations.js';
 
 export interface FervorTabOptions {
   gameState: GameStateManager;
@@ -14,6 +15,7 @@ export interface FervorTabOptions {
 
 export class FervorTab {
   private options: FervorTabOptions;
+  private automation: AutomationToggle;
 
   private listEl: HTMLElement | null = null;
   private hudDividerEl: HTMLElement | null = null;
@@ -21,6 +23,11 @@ export class FervorTab {
 
   constructor(options: FervorTabOptions) {
     this.options = options;
+    this.automation = new AutomationToggle('auto-fervor', {
+      isUnlocked: () => options.gameState.hasGnoseUpgrade('gn_ritual_automation'),
+      isEnabled: () => options.gameState.autoFervorEnabled,
+      setEnabled: enabled => { options.gameState.autoFervorEnabled = enabled; },
+    });
     this.initElements();
   }
 
@@ -30,8 +37,8 @@ export class FervorTab {
     this.hudItemEl = document.getElementById('hud-fervor-item');
   }
 
-  public buyUpgrade(upg: FervorUpgrade): void {
-    const success = this.options.gameState.buyFervorUpgrade(upg);
+  public buyUpgrade(upg: FervorUpgrade, bulk = false): void {
+    const success = bulk ? this.options.gameState.buyMaxFervorUpgrade(upg) > 0 : this.options.gameState.buyFervorUpgrade(upg);
     if (success) {
       this.options.triggerHaptic(15);
       this.options.audio.playTone(720, 'sine', 0.18);
@@ -46,8 +53,6 @@ export class FervorTab {
     if (!this.listEl) return;
     this.listEl.innerHTML = '';
 
-    const totalFollowers = this.options.gameState.getTotalFollowersCount();
-    const faith = this.options.gameState.faithPoints;
     const fervor = this.options.gameState.fervorPoints;
     const phoenixUnlocked = this.options.gameState.isPhoenixRelicUnlocked();
 
@@ -56,9 +61,8 @@ export class FervorTab {
         return;
       }
 
-      const cost = calculateFervorUpgradeCost(upg);
-      const fu1Boosted = this.options.gameState.isFu1Boosted();
-      const mult = getFervorUpgradeMultiplier(upg, totalFollowers, faith, fu1Boosted);
+      const cost = this.options.gameState.getFervorUpgradeCost(upg);
+      const mult = this.options.gameState.getFervorUpgradeEffect(upg);
       const canAfford = fervor >= cost;
 
       const card = document.createElement('div');
@@ -88,6 +92,13 @@ export class FervorTab {
         </div>
       `;
 
+      if (this.options.gameState.hasGnoseUpgrade('gn_memoria_selos')) {
+        const bulk = document.createElement('button');
+        bulk.className = 'btn-ritual-max'; bulk.textContent = 'Ritualizar máximo';
+        bulk.addEventListener('click', event => { event.stopPropagation(); this.buyUpgrade(upg, true); });
+        card.appendChild(bulk);
+      }
+
       card.addEventListener('click', () => {
         this.buyUpgrade(upg);
       });
@@ -97,14 +108,18 @@ export class FervorTab {
   }
 
   public updateButtonStates(): void {
+    const resonance = document.getElementById('fervor-resonance');
+    if (resonance) setText(resonance, `Ressonância do pico: ×${formatNumber(this.options.gameState.getFervorResonanceMultiplier())} Fé`);
+    this.automation.update();
+    // The relic autobuyer can restore Phoenix while this card is already visible.
+    if (this.options.gameState.isPhoenixRelicUnlocked() && !document.getElementById('card-fu_relics')) {
+      this.renderList();
+    }
     const fervor = this.options.gameState.fervorPoints;
-    const totalFollowers = this.options.gameState.getTotalFollowersCount();
-    const faith = this.options.gameState.faithPoints;
-    const fu1Boosted = this.options.gameState.isFu1Boosted();
 
     this.options.gameState.fervorUpgrades.forEach((upg) => {
-      const cost = calculateFervorUpgradeCost(upg);
-      const mult = getFervorUpgradeMultiplier(upg, totalFollowers, faith, fu1Boosted);
+      const cost = this.options.gameState.getFervorUpgradeCost(upg);
+      const mult = this.options.gameState.getFervorUpgradeEffect(upg);
       const card = document.getElementById(`card-${upg.id}`);
       if (card) {
         if (fervor >= cost) {
@@ -114,11 +129,11 @@ export class FervorTab {
         }
         const multTagEl = card.querySelector('.fervor-mult-tag');
         if (multTagEl) {
-          multTagEl.textContent = `x${mult.toFixed(2)}`;
+          setText(multTagEl, `x${mult.toFixed(2)}`);
         }
         const costSpanEls = card.querySelectorAll('.cost-tag span');
         if (costSpanEls.length >= 2) {
-          costSpanEls[1].textContent = `${formatNumber(cost)} Fervor`;
+          setText(costSpanEls[1], `${formatNumber(cost)} Fervor`);
         }
       }
     });

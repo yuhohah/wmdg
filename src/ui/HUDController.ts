@@ -1,3 +1,4 @@
+import { setText } from './dom.js';
 import { GameStateManager } from '../core/GameState.js';
 import { formatNumber } from '../systems/calculations.js';
 import { events, GameEvents } from '../core/EventBus.js';
@@ -14,8 +15,6 @@ export class HUDController {
   private followersCounterEl: HTMLElement | null = null;
   private sphereClickValEl: HTMLElement | null = null;
 
-  private fervorCounterEl: HTMLElement | null = null;
-  private fervorRateCounterEl: HTMLElement | null = null;
   private fervorCounterHudEl: HTMLElement | null = null;
   private fervorRateCounterHudEl: HTMLElement | null = null;
 
@@ -38,8 +37,6 @@ export class HUDController {
     this.followersCounterEl = document.getElementById('followers-counter');
     this.sphereClickValEl = document.getElementById('sphere-click-val');
 
-    this.fervorCounterEl = document.getElementById('fervor-counter');
-    this.fervorRateCounterEl = document.getElementById('fervor-rate-counter');
     this.fervorCounterHudEl = document.getElementById('fervor-counter-hud');
     this.fervorRateCounterHudEl = document.getElementById('fervor-rate-counter-hud');
 
@@ -58,56 +55,51 @@ export class HUDController {
   public update(): void {
     const faithInt = Math.floor(this.gameState.faithPoints);
     if (this.faithCounterEl) {
-      this.faithCounterEl.textContent = formatNumber(faithInt);
+      setText(this.faithCounterEl, formatNumber(faithInt));
     }
 
     const fps = this.gameState.getFaithPerSecond();
     const isBoosted = this.gameState.incarnationBoostTimer > 0;
     if (this.faithPerSecCounterEl) {
-      this.faithPerSecCounterEl.textContent = `${formatNumber(fps)}/s${isBoosted ? ' (2x)' : ''}`;
+      setText(this.faithPerSecCounterEl, `${formatNumber(fps)}/s${isBoosted ? ' (2x)' : ''}`);
       this.faithPerSecCounterEl.classList.toggle('boosted', isBoosted);
     }
 
     if (this.followersCounterEl) {
-      this.followersCounterEl.textContent = formatNumber(this.gameState.getTotalFollowersCount());
-    }
-
-    const fpc = this.gameState.getFaithPerClick();
-    if (this.sphereClickValEl) {
-      this.sphereClickValEl.textContent = `+${formatNumber(fpc)} Fé`;
+      setText(this.followersCounterEl, formatNumber(this.gameState.getTotalFollowersCount()));
     }
 
     const fervor = Math.floor(this.gameState.fervorPoints);
     const fervorRate = this.gameState.getFervorRatePerSecond();
-    if (this.fervorCounterEl) {
-      this.fervorCounterEl.textContent = formatNumber(fervor);
-    }
-    if (this.fervorRateCounterEl) {
-      this.fervorRateCounterEl.textContent = `+${formatNumber(fervorRate)} Fervor/s`;
-    }
     if (this.fervorCounterHudEl) {
-      this.fervorCounterHudEl.textContent = formatNumber(fervor);
+      setText(this.fervorCounterHudEl, formatNumber(fervor));
     }
     if (this.fervorRateCounterHudEl) {
-      this.fervorRateCounterHudEl.textContent = `${formatNumber(fervorRate)}/s`;
+      setText(this.fervorRateCounterHudEl, `${formatNumber(fervorRate)}/s`);
     }
 
     const relic = Math.floor(this.gameState.relicPoints);
     const relicRate = this.gameState.getRelicsRatePerSecond();
     if (this.relicCounterHudEl) {
-      this.relicCounterHudEl.textContent = formatNumber(relic);
+      setText(this.relicCounterHudEl, formatNumber(relic));
     }
     if (this.relicRateCounterHudEl) {
-      this.relicRateCounterHudEl.textContent = `${formatNumber(relicRate)}/s`;
+      setText(this.relicRateCounterHudEl, `${formatNumber(relicRate)}/s`);
     }
 
     const gnose = Math.floor(this.gameState.gnosePoints);
     const gnoseMult = this.gameState.getTotalGnosePassiveMultiplier();
     if (this.gnoseCounterHudEl) {
-      this.gnoseCounterHudEl.textContent = formatNumber(gnose);
+      setText(this.gnoseCounterHudEl, formatNumber(gnose));
     }
     if (this.gnoseMultCounterHudEl) {
-      this.gnoseMultCounterHudEl.textContent = `×${formatNumber(gnoseMult)}`;
+      setText(this.gnoseMultCounterHudEl, `×${formatNumber(gnoseMult)}`);
+    }
+  }
+
+  public updateCard(id: string): void {
+    if (id === 'card-altar-sphere') {
+      setText(this.sphereClickValEl, `+${formatNumber(this.gameState.getFaithPerClick())} Fé`);
     }
   }
 }

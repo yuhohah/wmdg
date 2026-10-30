@@ -1,5 +1,9 @@
 import type { BuyableItem, FervorUpgrade, Achievement, BuffType } from '../types.js';
 
+export function calculateMiracleReward(_faith: number, faithPerClick: number, faithPerSecond: number): number {
+  return Math.max(30, faithPerClick * 15, Math.floor(30 * faithPerSecond));
+}
+
 export function calculateItemCost(
   item: BuyableItem,
   discountMultiplier: number = 1.0,
@@ -13,8 +17,8 @@ export function calculateItemCost(
   return Math.max(1, cost);
 }
 
-export function calculateFervorUpgradeCost(upg: FervorUpgrade): number {
-  return Math.floor(upg.baseCost * Math.pow(upg.costMultiplier, upg.level));
+export function calculateFervorUpgradeCost(upg: FervorUpgrade, costMultiplier: number = upg.costMultiplier): number {
+  return Math.floor(upg.baseCost * Math.pow(costMultiplier, upg.level));
 }
 
 // Bônus de conquistas somam dentro da mesma categoria (ex: +10% e +20% de clique = +30%),
@@ -204,7 +208,7 @@ export function calculateMaxAffordableFollowers(
 export function calculateRelicsToGet(faith: number, relicBonusMult: number = 1.0): number {
   if (faith <= 0) return 0;
   // Fórmula DodecaDragons: floor(log2(faith + 1) * relicBonusMult) (com 20.000.000 de Fé, rende 24 relíquias base)
-  return Math.max(0, Math.floor(Math.log2(faith + 1) * relicBonusMult));
+  return Math.max(0, Math.floor(Math.log2(Math.max(0, faith) + 1) * relicBonusMult));
 }
 
 export function calculateExtraRelicsPerSecond(bestRelics: number): number {
@@ -217,9 +221,9 @@ export function calculateRelicFaithMultiplier(relicPoints: number, level: number
   return Math.pow(Math.log10(Math.max(0, relicPoints) + 1) + 1, level * 1.2);
 }
 
-export function calculateGnoseToGet(faith: number, gnoseMult: number = 1.0): number {
+export function calculateGnoseToGet(faith: number, gainExponent: number = 0.25): number {
   if (faith < 1e15) return 0;
-  return Math.max(1, Math.floor(Math.pow(faith / 1e15, 0.15) * gnoseMult));
+  return Math.max(1, Math.floor(Math.pow(faith / 1e15, gainExponent)));
 }
 
 export function calculateTotalGnoseMultiplier(totalGnoseEarned: number): number {
@@ -230,9 +234,8 @@ export function calculateTotalGnoseMultiplier(totalGnoseEarned: number): number 
 export function calculateGnoseFollowersSynergyMultiplier(
   followersCount: number,
   hasFollowersSyn: boolean,
-  hasCubicSyn: boolean = false
+  exponent: number = 1.5
 ): number {
   if (!hasFollowersSyn || followersCount <= 0) return 1.0;
-  const exp = hasCubicSyn ? 3.0 : 1.5;
-  return 1 + Math.pow(followersCount, exp);
+  return 1 + Math.pow(followersCount, exponent);
 }

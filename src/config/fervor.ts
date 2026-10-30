@@ -69,17 +69,14 @@ export function getFervorUpgradeMultiplier(
   upg: FervorUpgrade,
   followersCount: number = 0,
   faithPoints: number = 0,
-  fu1Boosted: boolean = false
+  productionBase: number = 2,
+  relicBase: number = 3
 ): number {
   if (upg.level <= 0) return 1.0;
 
   switch (upg.id) {
     case 'fu_prod':
-      // DodecaDragons FU1: 2 ^ (level ^ 0.6), or 3.5 ^ (level ^ 0.7) with Magic Upgrade 14 (gn_fu1_boost)
-      if (fu1Boosted) {
-        return Math.pow(3.5, Math.pow(upg.level, 0.7));
-      }
-      return Math.pow(2, Math.pow(upg.level, 0.6));
+      return Math.pow(productionBase, Math.pow(upg.level, 0.6));
 
     case 'fu_effect':
       // DodecaDragons FU2: 1.25 ^ (level ^ 0.8)
@@ -99,7 +96,7 @@ export function getFervorUpgradeMultiplier(
 
     case 'fu_relics':
       // DodecaDragons FU6: 3 ^ (level ^ 0.6)
-      return Math.pow(3, Math.pow(upg.level, 0.6));
+      return Math.pow(relicBase, Math.pow(upg.level, 0.6));
 
     default:
       return 1.0;

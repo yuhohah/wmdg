@@ -1,0 +1,924 @@
+/* ===================================================
+   BOARD FEATURES — DODECADRAGONS CATHEDRAL SKIN
+   Elements added after the cathedral board (Gnose chamber, Incarnation altar,
+   unlock seal button, bottom quick-nav, extra HUD counters) dressed in the
+   board's wood-frame, soot and parchment palette.
+   =================================================== */
+
+:root {
+  /* Shared palette for parchment surfaces (boss battle, test menu, drag & drop) */
+  --hermetic-parchment-light: #e5d4b4;
+  --hermetic-parchment: #d8c39e;
+  --hermetic-parchment-mid: #cbb286;
+  --hermetic-parchment-dark: #b89b6c;
+  --hermetic-ink-black: #16100c;
+  --hermetic-ink-soot: #221913;
+  --hermetic-ink-umber: #423022;
+  --hermetic-ink-sepia: #5e4631;
+  --hermetic-rule-brass: #7d603e;
+  --hermetic-gold-ochre: #c89d54;
+  --hermetic-crimson-ink: #7d291b;
+  --hermetic-relic-ink: #493850;
+  --hermetic-gnose-ink: #6b4918;
+}
+
+/* Cards keep their dark plate look without live backdrop blur, so panning stays light */
+.dodeca-card {
+  backdrop-filter: none;
+}
+
+/* ===================================================
+   CATHEDRAL LANDMARK POSITIONS
+   =================================================== */
+
+/* The armillary sphere floats framed in the centre of the cosmic oculus */
+#card-altar-sphere {
+  backdrop-filter: none !important;
+}
+
+#card-altar-sphere .dodeca-card-body,
+#card-altar-sphere .center-frame,
+#card-altar-sphere .center-frame-content,
+#card-altar-sphere .sphere-presentation-area {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#card-altar-sphere .center-frame {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  overflow: visible;
+}
+
+#card-altar-sphere .center-frame::before {
+  display: none;
+}
+
+/* The armillary sphere floats free in the oculus: it carries its own meridian ring, so no frame */
+#card-altar-sphere .sphere-wrapper {
+  width: 400px;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  box-shadow: none;
+}
+
+#card-altar-sphere .divine-sphere-btn,
+#card-altar-sphere .sphere-wrapper:hover .divine-sphere-btn,
+#card-altar-sphere .sphere-wrapper:active .divine-sphere-btn,
+#card-altar-sphere .divine-sphere-btn:hover {
+  position: relative;
+  width: 400px;
+  height: 400px;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  box-shadow: none;
+  filter: none;
+  transform: none;
+}
+
+/* Layers stacked on one grid; click animations (SphereController) move them on the compositor */
+#card-altar-sphere .sphere-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+
+#card-altar-sphere .sphere-globe {
+  transform-origin: 50% 50%;
+}
+
+/* Expanding gold wave on each click (pooled, animated via Web Animations) */
+#card-altar-sphere .sphere-shock {
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  border: 3px solid #f6dc9a;
+  box-shadow: 0 0 22px rgba(246, 220, 154, 0.55), inset 0 0 18px rgba(246, 220, 154, 0.35);
+  opacity: 0;
+  pointer-events: none;
+}
+
+#card-altar-sphere .sphere-shock.crit {
+  border-width: 4px;
+  box-shadow: 0 0 34px rgba(255, 211, 107, 0.8), inset 0 0 24px rgba(255, 211, 107, 0.5);
+}
+
+/* Satellite cards grow with their content; navigation happens on the board. */
+#card-incarnation,
+#card-relics,
+#card-followers,
+#card-fervor,
+#card-gnose {
+  min-height: 0;
+  height: auto;
+}
+
+#card-gnose .dodeca-card-body {
+  max-height: none;
+  overflow: visible;
+}
+
+/* Sanctum Gnosticum takes the Via Stellarum tower once held by the Pantheon */
+#card-gnose {
+  left: 2580px;
+  top: 80px;
+  width: 780px;
+}
+
+/* Keep the drag & drop 20px gutter clear of the oculus */
+#card-followers {
+  left: 2000px;
+}
+
+/* Unlocks start below the oculus and can be rearranged by their header. */
+#card-unlocks {
+  position: absolute;
+  left: 1570px;
+  top: 1110px;
+  width: min(400px, calc(100vw - 16px));
+  min-height: 0;
+  z-index: 15;
+  display: flex;
+  align-items: stretch;
+}
+
+/* ===================================================
+   UNLOCK SEAL BUTTON
+   =================================================== */
+
+.unlock-btn-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-unlock-mechanic {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 300px;
+  padding: 8px 18px;
+  border: 8px solid transparent;
+  border-image: var(--wood-frame) 8 / 8px / 0 stretch;
+  border-radius: 0;
+  background: #775132;
+  box-shadow: 0 3px #3b281d, 0 12px 28px rgba(0, 0, 0, 0.75);
+  color: #ffe1a2;
+  font-family: var(--font-game);
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* The pulse fades a static glow layer in and out: animating box-shadow itself repainted the
+   board under the button every frame, opacity runs on the compositor */
+.btn-unlock-mechanic::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  box-shadow: 0 0 38px rgba(220, 180, 110, 0.75);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.btn-unlock-mechanic.affordable::after {
+  animation: unlock-seal-glow 2.4s infinite ease-in-out;
+}
+
+@keyframes unlock-seal-glow {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
+.btn-unlock-mechanic.unaffordable {
+  background: #8b7d64;
+  color: #e8dbbf;
+  filter: saturate(0.5);
+  cursor: not-allowed;
+}
+
+.unlock-btn-badge {
+  font: 16px/1 var(--font-game);
+  letter-spacing: 1px;
+  color: #f2d297;
+  text-transform: uppercase;
+}
+
+.unlock-btn-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.unlock-btn-name {
+  font: 22px/1 var(--font-game);
+  color: #ffe5ad;
+  text-shadow: 1px 2px #3c241e;
+}
+
+.unlock-btn-cost {
+  font: 18px/1 var(--font-game);
+  background: #3b281d;
+  border: 1px solid #9d754c;
+  padding: 3px 10px;
+  color: #ffe1a2;
+}
+
+.btn-unlock-mechanic.unaffordable .unlock-btn-name,
+.btn-unlock-mechanic.unaffordable .unlock-btn-cost {
+  color: #e8dbbf;
+}
+
+/* ===================================================
+   HUD — EXTRA COUNTERS & ACHIEVEMENTS BUTTON
+   =================================================== */
+
+.resource-item-gnose .res-name::before {
+  background-image: url('/assets/hud/book.svg');
+}
+
+#gnose-counter-hud {
+  color: #e9d38f;
+}
+
+/* No woodcut trophy exists, so the achievements button keeps its line icon */
+#achievements-hud-btn::before {
+  display: none;
+}
+
+#achievements-hud-btn svg {
+  visibility: visible;
+  position: static;
+  width: 24px;
+  height: 24px;
+  color: #eed29a;
+}
+
+/* ===================================================
+   BOTTOM QUICK-NAV (cathedral skin, docked at the bottom)
+   =================================================== */
+
+.board-quicknav-bar {
+  position: fixed;
+  top: auto;
+  bottom: 16px;
+  max-width: calc(100vw - 260px);
+}
+
+.board-zoom-controls {
+  position: fixed;
+  bottom: 16px;
+  right: 18px;
+}
+
+/* ===================================================
+   ALTAR DA ENCARNAÇÃO
+   =================================================== */
+
+.incarnation-altar-container {
+  width: 100%;
+  margin: 4px 0 6px 0;
+  overflow: hidden;
+  position: relative;
+  background: radial-gradient(circle at 50% 50%, rgba(20, 16, 14, 0.95), rgba(8, 7, 6, 0.98));
+  border: 1px dashed rgba(196, 152, 80, 0.35);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+  cursor: pointer;
+  user-select: none;
+}
+
+.incarnation-altar-viewport {
+  position: relative;
+  width: 100%;
+  height: 210px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #0d0b09;
+}
+
+.incarnation-altar-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.incarnation-altar-aura {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(216, 191, 141, 0.08) 0%, transparent 70%);
+  animation: altar-aura-pulse 4s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes altar-aura-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.96); }
+  50% { opacity: 0.85; transform: scale(1.04); }
+}
+
+.incarnation-altar-overlay {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 10px;
+  background: #18110d;
+  border-top: 2px solid #5a422d;
+  box-sizing: border-box;
+}
+
+.incarnation-altar-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.incarnation-altar-hint {
+  font: 18px/1.1 var(--font-game);
+  color: #f7d99a;
+  text-shadow: 1px 1px 2px #000;
+}
+
+.incarnation-altar-subhint {
+  font: 16px/1.1 var(--font-game);
+  color: #c49850;
+}
+
+.incarnation-altar-lore {
+  font: 16px/1.1 var(--font-game);
+  color: #a89379;
+  text-align: right;
+}
+
+.incarnation-blessing-panel {
+  width: 100%;
+  margin: 2px 0 6px 0;
+  padding: 7px 10px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid #5a422d;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  box-sizing: border-box;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.incarnation-blessing-panel.active {
+  border-color: #c49850;
+  box-shadow: 0 0 14px rgba(220, 180, 110, 0.4);
+}
+
+.incarnation-blessing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.incarnation-blessing-title {
+  font: 18px/1 var(--font-game);
+  letter-spacing: 1px;
+  color: #c49850;
+}
+
+.incarnation-blessing-panel.active .incarnation-blessing-title {
+  color: #ffdf78;
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+}
+
+.incarnation-blessing-status {
+  font: 16px/1 var(--font-game);
+  color: #a89379;
+}
+
+.incarnation-blessing-panel.active .incarnation-blessing-status {
+  color: #fff0b3;
+}
+
+.incarnation-blessing-track {
+  width: 100%;
+  height: 10px;
+  background: #0e0a08;
+  border: 1px solid #5a422d;
+  overflow: hidden;
+}
+
+.incarnation-blessing-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #775132 0%, #c49850 55%, #f7d99a 100%);
+  box-shadow: 0 0 8px rgba(220, 180, 110, 0.6);
+  transition: width 0.12s linear;
+}
+
+/* ===================================================
+   CÂMARA DA GNOSE
+   =================================================== */
+
+.gnose-reset-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  margin-bottom: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid #5a422d;
+}
+
+.gnose-top-bar {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.btn-gnose-reset {
+  flex: 0 0 230px;
+  padding: 4px 10px;
+  border: 6px solid transparent;
+  border-image: var(--wood-frame) 8 / 6px / 0 stretch;
+  border-radius: 0;
+  background: #775132;
+  box-shadow: 0 3px #3b281d;
+  color: #ffe1a2;
+  font: 20px/1 var(--font-game);
+  text-shadow: 1px 2px #3c241e;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.btn-gnose-reset:disabled {
+  background: #8b7d64;
+  color: #e8dbbf;
+  filter: saturate(0.5);
+  text-shadow: none;
+  cursor: not-allowed;
+}
+
+.gnose-stats-grid {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+
+.gnose-stat-box {
+  background: #d5bc88;
+  border-top: 2px solid #a18454;
+  border-bottom: 2px solid #aa8b59;
+  padding: 2px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.gnose-stat-label {
+  font: 14px/1.1 var(--font-game);
+  color: #6a4c2c;
+  text-transform: uppercase;
+}
+
+.gnose-stat-val {
+  font: 20px/1.05 var(--font-game);
+  color: #38271f;
+}
+
+.gnose-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 8px;
+  padding-top: 5px;
+  border-top: 1px dashed rgba(196, 152, 80, 0.35);
+}
+
+.gnose-req-hint {
+  font: 16px/1.1 var(--font-game);
+  color: #a89379;
+  white-space: nowrap;
+}
+
+.gnose-toggles-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gnose-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: 16px/1 var(--font-game);
+  color: #d1b894;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.gnose-toggle-label input[type='checkbox'] {
+  accent-color: #c49850;
+  cursor: pointer;
+  margin: 0;
+}
+
+.card-automation-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 18px;
+  margin: 4px 0;
+  padding: 0;
+  box-sizing: border-box;
+  border: 0;
+  background: none;
+  color: var(--gold-light, #f6dc9a);
+  font: 16px/1 var(--font-game);
+  cursor: pointer;
+}
+
+.card-automation-toggle[hidden] { display: none; }
+
+.card-automation-toggle input {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: #c49850;
+  cursor: pointer;
+}
+
+.card-automation-toggle > span { min-width: 0; }
+
+.card-automation-toggle:focus-within {
+  outline: 2px solid var(--gold-light, #f6dc9a);
+  outline-offset: 2px;
+}
+
+.gnose-upgrades-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gnose-tier-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gnose-tier-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 2px;
+  border-bottom: 2px solid #5a422d;
+  font: 18px/1 var(--font-game);
+  letter-spacing: 1px;
+  color: #f7d99a;
+  text-transform: uppercase;
+}
+
+.gnose-tier-progress {
+  font-size: 15px;
+  color: #a89379;
+}
+
+.gnose-tier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+  gap: 8px;
+}
+
+.gnose-tree-node {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  min-height: 90px;
+  padding: 8px;
+  box-sizing: border-box;
+  background: #d5bc88;
+  border: 0;
+  border-top: 2px solid #a18454;
+  border-bottom: 2px solid #aa8b59;
+  color: #38271f;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.gnose-tree-node.gnose-node-available {
+  background: #e1c998;
+  box-shadow: inset 0 0 0 1px #c49850, 0 0 10px rgba(220, 180, 110, 0.35);
+}
+
+.gnose-tree-node:focus-visible {
+  outline: 2px solid var(--gold-light, #e4d2a5);
+  outline-offset: 2px;
+}
+
+.gnose-tree-node.gnose-node-unlocked {
+  background: #b8c3a0;
+  border-color: #4a683e;
+}
+
+.gnose-tree-node.gnose-node-locked-prereq,
+.gnose-tree-node.gnose-node-unaffordable {
+  opacity: 0.68;
+}
+
+.gnose-node-top {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  margin-bottom: 2px;
+}
+
+.gnose-node-symbol {
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.gnose-node-title {
+  margin: 0;
+  font: 17px/1 var(--font-game);
+  color: #39291f;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.gnose-node-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-bottom: 3px;
+}
+
+.gnose-node-effect {
+  margin: 0;
+  font: 14px/1.05 var(--font-game);
+  color: #6a523c;
+  display: block;
+  line-height: 1.2;
+}
+
+.gnose-node-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: auto;
+  padding-top: 2px;
+  border-top: 1px dashed rgba(94, 70, 49, 0.4);
+}
+
+.gnose-node-badge {
+  max-width: 100%;
+  padding: 1px 5px;
+  font: 14px/1.1 var(--font-game);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gnose-node-badge.cost {
+  background: #775132;
+  border: 1px solid #3b281d;
+  color: #ffe1a2;
+}
+
+.gnose-node-badge.unlocked {
+  background: #49613a;
+  border: 1px solid #2e4a28;
+  color: #e6f2d8;
+}
+
+.gnose-node-badge.locked {
+  background: rgba(94, 70, 49, 0.25);
+  border: 1px solid #8b6b42;
+  color: #5f482f;
+}
+
+/* ===================================================
+   FERVOR UPGRADE ROWS
+   =================================================== */
+
+.fervor-upgrade-card .card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.fervor-upgrade-card .card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.fervor-upgrade-card .card-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===================================================
+   STABLE HOVER — upgrade cards and buttons never jump under the cursor
+   =================================================== */
+
+:is(.cult-action-card, .fervor-upgrade-card, .relic-action-card, .ach-card, .gnose-tree-node,
+  .btn-follower-action, .btn-buy-card, .btn-convert-primary, .btn-convert-max, .btn-incarnation-upgrade,
+  .btn-convert-relics, .btn-buy-relic, .btn-unlock-action, .btn-unlock-mechanic, .btn-gnose-reset):is(:hover, :active) {
+  transform: none;
+}
+
+/* ===================================================
+   MOBILE — nav docked full width, zoom above it, phone-width plates
+   =================================================== */
+
+@media (max-width: 860px) {
+  .board-quicknav-bar {
+    left: 6px;
+    right: 6px;
+    bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+    transform: none;
+    width: calc(100vw - 12px);
+    max-width: none;
+    padding: 4px;
+    gap: 3px;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .quicknav-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4px 2px;
+    gap: 1px;
+    font-size: 13px;
+  }
+
+  .quicknav-btn > span:last-child {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .board-zoom-controls {
+    bottom: calc(62px + env(safe-area-inset-bottom, 0px));
+    right: 6px;
+    padding: 3px 5px;
+    gap: 3px;
+  }
+
+  .board-zoom-btn {
+    width: 26px;
+    height: 26px;
+  }
+
+  #card-followers,
+  #card-fervor,
+  #card-incarnation,
+  #card-relics,
+  #card-gnose {
+    width: min(400px, calc(100vw - 16px));
+  }
+
+  #card-followers .dodeca-card-body,
+  #card-fervor .dodeca-card-body,
+  #card-incarnation .dodeca-card-body,
+  #card-relics .dodeca-card-body,
+  #card-gnose .dodeca-card-body {
+    max-height: none;
+    overflow: visible;
+    touch-action: none;
+  }
+
+  .btn-unlock-mechanic {
+    min-width: 280px;
+  }
+
+  .gnose-top-bar {
+    flex-direction: column;
+  }
+
+  .btn-gnose-reset {
+    flex-basis: auto;
+  }
+
+  .gnose-tier-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+  }
+
+  .gnose-controls-row {
+    flex-wrap: wrap;
+  }
+
+  .incarnation-altar-viewport {
+    height: 148px;
+  }
+
+  .incarnation-altar-overlay {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .incarnation-altar-lore {
+    text-align: left;
+  }
+}
+
+/* ===================================================
+   VT323 SIZING FOR BOSS BATTLE & GNOSE ENDGAME
+   boss-battle.css was sized for JetBrains Mono; the pixel face reads ~30% smaller.
+   (`html` prefix outranks boss-battle.css, which loads after this file)
+   =================================================== */
+
+html .boss-myth-badge { font-size: 13px; }
+html .boss-modal-name { font-size: 28px; }
+html .boss-modal-title,
+html .boss-modal-lore,
+html .boss-combat-stats { font-size: 15px; }
+html .btn-boss-retreat,
+html .boss-bar-header,
+html .boss-attack-caption { font-size: 16px; }
+html .boss-penalty-hint,
+html .boss-arena-hint-top,
+html .boss-rift-label { font-size: 14px; }
+html .boss-rift-timer { font-size: 13px; }
+html .gnose-guardian-badge,
+html .gnose-endgame-desc { font-size: 14px; }
+html .btn-challenge-guardian,
+html .gnose-curse-banner,
+html .gnose-endgame-lock-hint { font-size: 15px; }
+html .btn-challenge-guardian.endgame-ready { font-size: 17px; }
+html .gnose-endgame-title { font-size: 18px; }
+
+/* ===================================================
+   RENDERING COST — things that repainted or re-blurred every frame
+   =================================================== */
+
+/* Fixed chrome floating over the board: a backdrop blur here is recomputed on every pan/zoom
+   frame, and these plates are near-opaque anyway */
+.resources-hud-card,
+.icon-btn-gold,
+.board-quicknav-bar,
+.board-zoom-controls {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* The landscape sits fully hidden behind the board during play */
+body.is-playing .bg-landscape-layer {
+  display: none;
+}
+
+/* Closed modals were only transparent: still painted, hit-tested and re-laid out every tick */
+.modal-overlay {
+  transition: opacity 160ms ease-out, visibility 0s linear 160ms;
+}
+
+.modal-overlay:not(.open):not(.active) {
+  visibility: hidden;
+}
+
+.modal-overlay.open,
+.modal-overlay.active {
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.btn-ritual-max { margin-top: 8px; padding: 6px 10px; border: 1px solid #776339; border-radius: 4px;
+  background: #24202b; color: #e8d7a1; font: inherit; cursor: pointer; }
+.btn-ritual-max:focus-visible { outline: 2px solid #ead08d; outline-offset: 2px; }

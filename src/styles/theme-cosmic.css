@@ -1,0 +1,1089 @@
+/* ===================================================
+   COSMIC & DIVINE THEME
+   Void-black plates, bone ink, gold as the accent and astral violet for what is owned.
+   Loaded last: it re-skins the restored treatise CSS without touching layout.
+   No filters, blurs or repainting animations — everything here is static paint.
+   =================================================== */
+
+:root {
+  --void: #0c0a08;
+  --plate: rgba(15, 12, 10, 0.95);
+  --plate-solid: #0f0c0a;
+  --plate-raised: #1a1511;
+  --plate-hover: #241d17;
+  --line: rgba(201, 154, 78, 0.38);
+  --line-strong: rgba(201, 154, 78, 0.8);
+  --line-faint: rgba(236, 226, 200, 0.1);
+  --bone: #ece2c8;
+  --bone-dim: #b3a88f;
+  --bone-mute: #786f60;
+  --gold: #c99a4e;
+  --gold-light: #f6dc9a;
+  --gold-dark: #7c5a2c;
+  --gold-wash: rgba(201, 154, 78, 0.12);
+  --astral: #a99be0;
+  --astral-light: #c3baf0;
+  --astral-wash: rgba(169, 155, 224, 0.12);
+  --ember: #e08a52;
+  --danger: #c8604a;
+
+  /* Variables the treatise CSS is built on */
+  --paper: var(--plate-solid);
+  --paper-surface: none;
+  --ink: var(--bone);
+  --ink-muted: var(--bone-dim);
+  --wood-frame: url('/assets/ui/astral-frame.svg');
+  --faith-ink: var(--gold-light);
+  --fervor-ink: var(--ember);
+  --relic-ink: var(--astral-light);
+}
+
+/* ---------------------------------------------------
+   Ground: the same void and stars as the board, everywhere
+   --------------------------------------------------- */
+
+html,
+body {
+  background-color: var(--void);
+  background-image: url('/assets/board/void-stars-b.svg'), url('/assets/board/void-stars-a.svg');
+  background-size: 1730px 1730px, 1200px 1200px;
+  color: var(--bone);
+}
+
+.bg-landscape-layer {
+  display: none !important;
+}
+
+.bg-overlay-gradient {
+  background: transparent !important;
+}
+
+/* The board fills the screen; the HUD floats over the void */
+#gameplay-screen {
+  padding: 0 !important;
+}
+
+.dodeca-board-viewport {
+  height: 100vh !important;
+  height: 100dvh !important;
+}
+
+/* ---------------------------------------------------
+   Pixel icons
+   --------------------------------------------------- */
+
+.ico {
+  display: inline-block;
+  width: 1.3em;
+  height: 1.3em;
+  vertical-align: -0.25em;
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------
+   HUD
+   --------------------------------------------------- */
+
+.cult-wordmark,
+.resource-item,
+.icon-btn-gold {
+  background: var(--plate) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5) !important;
+}
+
+.cult-wordmark {
+  color: var(--gold-light);
+  text-shadow: none;
+}
+
+.cult-mark {
+  width: 30px;
+  height: 30px;
+  background: none !important;
+}
+
+.cult-mark .ico,
+.res-name .ico {
+  width: 100%;
+  height: 100%;
+}
+
+.res-name {
+  width: 30px !important;
+  height: 30px !important;
+}
+
+.res-name::before {
+  display: none !important;
+}
+
+/* Name above the number, so players learn what each currency is called */
+.resource-item {
+  grid-template-rows: 13px 27px 14px !important;
+  align-content: center;
+}
+
+.res-name {
+  grid-row: 1 / 4 !important;
+}
+
+.res-label {
+  grid-column: 2;
+  font: 14px/1 var(--font-game);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+  white-space: nowrap;
+}
+
+.res-num {
+  color: var(--gold-light);
+  text-shadow: 0 2px 0 #000;
+}
+
+.resource-item-followers .res-num,
+#followers-counter {
+  color: var(--bone) !important;
+}
+
+#fervor-counter-hud {
+  color: var(--ember) !important;
+}
+
+#relic-counter-hud {
+  color: var(--astral-light) !important;
+}
+
+#gnose-counter-hud {
+  color: #e6e0ff !important;
+}
+
+.res-rate {
+  color: var(--bone-mute);
+}
+
+.icon-btn-gold::before {
+  display: none !important;
+}
+
+.icon-btn-gold {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn-gold .ico {
+  width: 26px;
+  height: 26px;
+}
+
+#music-quick-btn.muted #music-icon-on {
+  display: none;
+}
+
+/* ---------------------------------------------------
+   Board cards
+   --------------------------------------------------- */
+
+.dodeca-card {
+  background: var(--plate);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  box-shadow:
+    inset 0 0 0 3px var(--plate-solid),
+    inset 0 0 0 4px rgba(201, 154, 78, 0.14),
+    0 18px 40px rgba(0, 0, 0, 0.55);
+  color: var(--bone);
+}
+
+.dodeca-card.focused-glow {
+  border-color: var(--line-strong);
+  filter: none;
+  box-shadow:
+    inset 0 0 0 3px var(--plate-solid),
+    inset 0 0 0 4px rgba(201, 154, 78, 0.3),
+    0 0 0 1px var(--gold),
+    0 18px 40px rgba(0, 0, 0, 0.55);
+}
+
+.dodeca-card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 14px;
+}
+
+.dodeca-card-title {
+  color: var(--gold-light);
+  font-size: 20px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: none;
+}
+
+.dodeca-card-icon {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+}
+
+.dodeca-card-icon .ico {
+  width: 100%;
+  height: 100%;
+}
+
+.dodeca-card-tag {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--gold);
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.dodeca-card-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dodeca-card-body::-webkit-scrollbar-thumb {
+  background: var(--gold-dark);
+}
+
+/* Section headers and info strips inside cards */
+.followers-tab-header,
+.incarnation-tab-header,
+.fervor-header-card {
+  border-bottom: 1px dashed var(--line) !important;
+}
+
+.fervor-header-card,
+.incarnation-tab-header,
+.relics-convert-section,
+.stat-box,
+.setting-item,
+.spotlight-balloon-tracker,
+.unlocks-completed-banner,
+.relic-monument-banner {
+  background: rgba(236, 226, 200, 0.03) !important;
+  border-color: var(--line-faint) !important;
+  color: var(--bone);
+}
+
+.fervor-header-card,
+.incarnation-tab-header {
+  background: transparent !important;
+}
+
+.followers-stat-label,
+.incarnation-stat-label,
+.unlocks-stat-label,
+.fervor-label,
+.fervor-unit,
+.incarnation-mult-sublabel,
+.stat-label,
+.relics-status-info,
+.relics-balance-text,
+.relics-extra-rate-text {
+  color: var(--bone-mute) !important;
+}
+
+.followers-total-val,
+.stat-val,
+.relic-monument-title {
+  color: var(--bone) !important;
+}
+
+.followers-stat-unit,
+.relic-monument-desc {
+  color: var(--bone-dim) !important;
+}
+
+.followers-rate-badge,
+.fervor-rate-tag,
+.incarnation-rate-badge,
+.incarnation-stage-tag {
+  background: transparent !important;
+  border: 1px solid var(--line) !important;
+  color: var(--gold-light) !important;
+}
+
+.fervor-val {
+  color: var(--ember) !important;
+}
+
+.relics-balance-text span,
+.relics-extra-rate-text span {
+  color: var(--astral-light) !important;
+}
+
+.fervor-badge-group::before {
+  display: none !important;
+}
+
+/* The medieval woodcut no longer fits the void */
+.relic-monument-img {
+  display: none !important;
+}
+
+.followers-arena-container,
+.incarnation-altar-container {
+  background: var(--void) !important;
+  border: 1px solid var(--line-faint) !important;
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.6) !important;
+}
+
+.followers-arena-hint {
+  background: rgba(9, 10, 15, 0.8) !important;
+  border: 1px solid var(--line-faint) !important;
+  color: var(--bone-mute) !important;
+}
+
+/* Engraved scenery stays behind the transparent character canvases. */
+#card-followers .followers-arena-container {
+  background: #090a0f url('/assets/backgrounds/followers-courtyard-v1.png') center / cover no-repeat !important;
+  image-rendering: auto;
+}
+
+/* ---------------------------------------------------
+   Upgrade rows — gold when it can be bought, dim when not, violet when owned
+   --------------------------------------------------- */
+
+html :is(.cult-action-card, .fervor-upgrade-card, .relic-action-card, .ach-card) {
+  background: rgba(236, 226, 200, 0.035) !important;
+  border: 1px solid var(--line-faint) !important;
+  border-left: 2px solid var(--gold) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: var(--bone) !important;
+  opacity: 1 !important;
+}
+
+html :is(.cult-action-card, .fervor-upgrade-card, .relic-action-card, .ach-card):hover:not(.unaffordable) {
+  background: var(--gold-wash) !important;
+}
+
+html :is(.cult-action-card, .fervor-upgrade-card, .relic-action-card).unaffordable {
+  background: transparent !important;
+  border-left-color: var(--line-faint) !important;
+}
+
+html :is(.relic-action-card.maxed, .ach-card.unlocked) {
+  background: var(--astral-wash) !important;
+  border-color: rgba(169, 155, 224, 0.3) !important;
+  border-left-color: var(--astral) !important;
+}
+
+html :is(.cult-action-card, .fervor-upgrade-card, .relic-action-card, .ach-card) .card-name {
+  color: var(--bone) !important;
+}
+
+html :is(.cult-action-card, .fervor-upgrade-card, .relic-action-card).unaffordable .card-name {
+  color: var(--bone-dim) !important;
+}
+
+html :is(.relic-action-card.maxed, .ach-card.unlocked) .card-name {
+  color: var(--astral-light) !important;
+}
+
+html :is(.cult-action-card, .fervor-upgrade-card, .relic-action-card, .ach-card) :is(.card-desc, .card-lore, .ach-desc) {
+  color: var(--bone-dim) !important;
+}
+
+html :is(.card-count-badge, .card-status-badge, .relic-level-badge, .fervor-mult-tag, .unlock-type-badge, .ach-buff-chip, .ach-badge) {
+  background: transparent !important;
+  border: 1px solid var(--line) !important;
+  color: var(--gold) !important;
+}
+
+html :is(.cost-tag, .cost-tag *, .relic-cost-tag, .relic-cost-tag *, .relic-benefit-text, .card-benefit) {
+  color: var(--gold-light) !important;
+}
+
+html #tab-fervor :is(.cost-tag, .cost-tag *) {
+  color: var(--ember) !important;
+}
+
+html #tab-relics :is(.relic-cost-tag, .relic-cost-tag *) {
+  color: var(--astral-light) !important;
+}
+
+html .unaffordable :is(.cost-tag, .cost-tag *, .relic-cost-tag, .relic-cost-tag *) {
+  color: var(--bone-mute) !important;
+}
+
+/* "Click to raise" plate on each row */
+html :is(.cult-action-card, .fervor-upgrade-card, .relic-action-card) .card-click-hint {
+  background: var(--gold-wash) !important;
+  border: 1px solid var(--line-strong) !important;
+  border-image: none !important;
+  color: var(--gold-light) !important;
+  box-shadow: none !important;
+}
+
+html :is(.cult-action-card, .fervor-upgrade-card, .relic-action-card).unaffordable .card-click-hint {
+  background: transparent !important;
+  border-color: var(--line-faint) !important;
+  color: var(--bone-mute) !important;
+}
+
+.ach-progress-container {
+  background: rgba(236, 226, 200, 0.06) !important;
+  border-color: var(--line-faint) !important;
+}
+
+.ach-progress-bar {
+  background: var(--gold) !important;
+}
+
+.ach-progress-label,
+.ach-progress-pct {
+  color: var(--bone-mute) !important;
+}
+
+/* ---------------------------------------------------
+   Buttons — astral frame, gold ink; disabled ones fade instead of filtering
+   --------------------------------------------------- */
+
+html :is(.btn-follower-action, .btn-incarnation-upgrade, .btn-convert-relics, .btn-buy-relic, .btn-unlock-action,
+  .btn-setting-action, .btn-setting-danger, .btn-slide-play, .spotlight-balloon-skip, .cult-dialog button,
+  .btn-gnose-reset, .close-btn-gold, .ach-popup-close, .btn-unlock-mechanic) {
+  background: var(--plate-raised) !important;
+  color: var(--gold-light) !important;
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+html :is(.btn-follower-action, .btn-incarnation-upgrade, .btn-convert-relics, .btn-buy-relic, .btn-unlock-action,
+  .btn-setting-action, .btn-slide-play, .btn-gnose-reset, .close-btn-gold, .ach-popup-close):hover:not(:disabled) {
+  background: var(--plate-hover) !important;
+}
+
+html :is(.btn-follower-action, .btn-incarnation-upgrade, .btn-convert-relics, .btn-buy-relic, .btn-unlock-action,
+  .btn-gnose-reset, .btn-convert-max.locked):is(:disabled, .locked) {
+  background: transparent !important;
+  color: var(--bone-mute) !important;
+  opacity: 0.75 !important;
+}
+
+html .btn-setting-danger {
+  color: var(--danger) !important;
+}
+
+.btn-follower-action::before,
+.btn-incarnation-upgrade::before {
+  display: none !important;
+}
+
+html :is(.btn-follower-action, .btn-incarnation-upgrade) .btn-action-title {
+  color: var(--gold-light) !important;
+  text-shadow: none !important;
+}
+
+html :is(.btn-follower-action, .btn-incarnation-upgrade) :is(.btn-action-benefit, .btn-action-cost) {
+  color: var(--bone-dim) !important;
+}
+
+html :is(.btn-follower-action, .btn-incarnation-upgrade) .cost-val {
+  color: var(--gold-light) !important;
+}
+
+html :is(.btn-follower-action, .btn-incarnation-upgrade):disabled :is(.btn-action-title, .btn-action-benefit, .cost-val, .btn-action-cost) {
+  color: var(--bone-mute) !important;
+}
+
+/* Unlock seal */
+.btn-unlock-mechanic.unaffordable {
+  color: var(--bone-mute) !important;
+}
+
+.unlock-btn-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gold) !important;
+}
+
+.unlock-btn-badge .ico {
+  width: 18px;
+  height: 18px;
+}
+
+.unlock-btn-name {
+  color: var(--bone) !important;
+  text-shadow: none !important;
+}
+
+.unlock-btn-cost {
+  background: transparent !important;
+  border-color: var(--line) !important;
+  color: var(--gold-light) !important;
+}
+
+.btn-unlock-mechanic.unaffordable :is(.unlock-btn-name, .unlock-btn-cost, .unlock-btn-badge) {
+  color: var(--bone-mute) !important;
+}
+
+/* ---------------------------------------------------
+   Incarnation altar & blessing
+   --------------------------------------------------- */
+
+.incarnation-altar-viewport {
+  background: #090a0f url('/assets/backgrounds/incarnation-sanctuary-v1.png') center / cover no-repeat !important;
+  image-rendering: auto;
+}
+
+.incarnation-altar-overlay {
+  background: var(--plate-solid) !important;
+  border-top: 1px solid var(--line) !important;
+}
+
+.incarnation-altar-hint {
+  color: var(--gold-light) !important;
+}
+
+.incarnation-altar-subhint {
+  color: var(--astral-light) !important;
+}
+
+.incarnation-altar-lore {
+  color: var(--bone-mute) !important;
+}
+
+.incarnation-blessing-panel {
+  background: rgba(236, 226, 200, 0.03) !important;
+  border-color: var(--line-faint) !important;
+}
+
+.incarnation-blessing-panel.active {
+  border-color: var(--line-strong) !important;
+}
+
+.incarnation-blessing-track {
+  background: var(--void) !important;
+  border-color: var(--line-faint) !important;
+}
+
+.incarnation-blessing-fill {
+  background: var(--gold) !important;
+  box-shadow: none !important;
+}
+
+/* ---------------------------------------------------
+   Gnose chamber
+   --------------------------------------------------- */
+
+.gnose-reset-section {
+  background: rgba(236, 226, 200, 0.03) !important;
+  border-color: var(--line-faint) !important;
+}
+
+.gnose-stat-box {
+  background: var(--plate-raised) !important;
+  border: 1px solid var(--line-faint) !important;
+}
+
+.gnose-stat-label {
+  color: var(--bone-mute) !important;
+}
+
+.gnose-stat-val {
+  color: var(--gold-light) !important;
+}
+
+.gnose-tier-header {
+  border-bottom-color: var(--line) !important;
+  color: var(--gold-light) !important;
+}
+
+.gnose-tree-node {
+  background: rgba(236, 226, 200, 0.035) !important;
+  border: 1px solid var(--line-faint) !important;
+  box-shadow: none !important;
+  color: var(--bone) !important;
+}
+
+.gnose-tree-node.gnose-node-available {
+  background: var(--gold-wash) !important;
+  border-color: var(--line-strong) !important;
+}
+
+.gnose-tree-node.gnose-node-unlocked {
+  background: var(--astral-wash) !important;
+  border-color: rgba(169, 155, 224, 0.5) !important;
+}
+
+.gnose-node-title {
+  color: var(--bone) !important;
+}
+
+.gnose-node-available .gnose-node-title {
+  color: var(--gold-light) !important;
+}
+
+.gnose-node-unlocked .gnose-node-title {
+  color: var(--astral-light) !important;
+}
+
+.gnose-node-effect {
+  color: var(--bone-dim) !important;
+}
+
+.gnose-node-footer {
+  border-top-color: var(--line-faint) !important;
+}
+
+.gnose-node-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gnose-node-badge .ico,
+.gnose-guardian-badge .ico,
+.btn-challenge-guardian .ico,
+.gnose-endgame-lock-hint .ico,
+.gnose-endgame-title .ico,
+.gnose-curse-banner .ico,
+.boss-bar-label .ico {
+  width: 16px;
+  height: 16px;
+}
+
+.gnose-node-badge.cost {
+  background: transparent !important;
+  border: 1px solid var(--line-strong) !important;
+  color: var(--gold-light) !important;
+}
+
+.gnose-node-badge.unlocked {
+  background: transparent !important;
+  border: 1px solid var(--astral) !important;
+  color: var(--astral-light) !important;
+}
+
+.gnose-node-badge.locked {
+  background: transparent !important;
+  border: 1px solid var(--line-faint) !important;
+  color: var(--bone-mute) !important;
+}
+
+.gnose-guardian-badge,
+.gnose-curse-banner,
+.gnose-endgame-boss-bar {
+  background: rgba(236, 226, 200, 0.03) !important;
+  border-color: var(--line-faint) !important;
+  color: var(--bone-dim) !important;
+}
+
+.gnose-guardian-badge.defeated,
+.gnose-endgame-boss-bar.defeated {
+  background: var(--astral-wash) !important;
+  border-color: rgba(169, 155, 224, 0.5) !important;
+  color: var(--astral-light) !important;
+}
+
+.gnose-curse-banner {
+  border-color: rgba(200, 96, 74, 0.5) !important;
+  color: var(--danger) !important;
+}
+
+.gnose-endgame-boss-bar.ready {
+  background: var(--gold-wash) !important;
+  border-color: var(--line-strong) !important;
+}
+
+.gnose-endgame-title {
+  color: var(--gold-light) !important;
+}
+
+.gnose-endgame-desc,
+.gnose-endgame-lock-hint,
+.gnose-req-hint,
+.gnose-toggle-label {
+  color: var(--bone-dim) !important;
+}
+
+html .btn-challenge-guardian {
+  background: var(--plate-raised) !important;
+  border: 1px solid var(--line-strong) !important;
+  color: var(--gold-light) !important;
+}
+
+html .btn-challenge-guardian.locked {
+  background: transparent !important;
+  border-color: var(--line-faint) !important;
+  color: var(--bone-mute) !important;
+}
+
+/* ---------------------------------------------------
+   Boss trial
+   --------------------------------------------------- */
+
+.boss-emblem-box {
+  background: var(--plate-raised) !important;
+  border: 1px solid var(--line) !important;
+}
+
+.boss-emblem-box .ico {
+  width: 34px;
+  height: 34px;
+}
+
+.boss-modal-name {
+  color: var(--gold-light) !important;
+}
+
+.boss-modal-title,
+.boss-modal-lore,
+.boss-penalty-hint {
+  color: var(--bone-dim) !important;
+}
+
+.boss-myth-badge,
+.boss-bar-label,
+.boss-bar-val {
+  color: var(--gold) !important;
+}
+
+.boss-bar-track {
+  background: var(--void) !important;
+  border-color: var(--line-faint) !important;
+}
+
+.boss-hp-fill {
+  background: var(--ember) !important;
+}
+
+.altar-integrity-fill {
+  background: var(--astral) !important;
+}
+
+.boss-arena-stage {
+  background: var(--void) !important;
+  border-color: var(--line) !important;
+}
+
+html .btn-boss-retreat {
+  background: transparent !important;
+  border: 1px solid var(--line) !important;
+  color: var(--bone-dim) !important;
+}
+
+/* ---------------------------------------------------
+   Modals, toasts, onboarding, start screen
+   --------------------------------------------------- */
+
+html :is(.modal-slide-card, .spotlight-balloon, .slide-card, .cult-dialog, .ach-popup-toast, .ach-popup-square, .cult-tooltip) {
+  background: var(--plate-solid) !important;
+  color: var(--bone) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7) !important;
+}
+
+.modal-overlay {
+  background: rgba(6, 5, 4, 0.82) !important;
+}
+
+html :is(.modal-header, .spotlight-balloon-header, .slide-card-header) {
+  background: transparent !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+
+html :is(.modal-title, .spotlight-balloon-title, .slide-title, .ach-popup-title, .cult-dialog h2) {
+  color: var(--gold-light) !important;
+}
+
+html :is(.setting-name) {
+  color: var(--bone) !important;
+}
+
+html :is(.setting-desc, .spotlight-balloon-desc, .spotlight-balloon-action-tip, .ach-popup-desc, .settings-section-subtitle) {
+  color: var(--bone-dim) !important;
+}
+
+html .settings-section-subtitle {
+  color: var(--gold) !important;
+}
+
+html .setting-item.setting-danger {
+  border-color: rgba(200, 96, 74, 0.45) !important;
+}
+
+input[type='checkbox'] {
+  border: 2px solid var(--gold) !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+input[type='checkbox']:checked {
+  background: var(--gold) !important;
+  box-shadow: inset 0 0 0 3px var(--plate-solid) !important;
+}
+
+input[type='range'] {
+  background: rgba(236, 226, 200, 0.08) !important;
+  border: 1px solid var(--line) !important;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  background: var(--gold) !important;
+  border: 2px solid var(--plate-solid) !important;
+  box-shadow: none !important;
+}
+
+.save-data-textarea {
+  background: var(--void) !important;
+  border-color: var(--line) !important;
+  color: var(--bone) !important;
+}
+
+/* Toasts */
+.ach-popup-icon-box {
+  background: transparent !important;
+  border: 1px solid var(--line) !important;
+}
+
+.ach-popup-icon {
+  font-size: inherit !important;
+  background: none !important;
+  width: 30px !important;
+  height: 30px !important;
+}
+
+.ach-popup-icon .ico,
+.ach-popup-buff-icon .ico,
+.spotlight-balloon-icon .ico {
+  width: 100%;
+  height: 100%;
+}
+
+.ach-popup-badge {
+  background: transparent !important;
+  border: 1px solid var(--line) !important;
+  color: var(--gold) !important;
+}
+
+.ach-popup-buff {
+  background: var(--gold-wash) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--gold-light) !important;
+}
+
+.ach-popup-buff-icon {
+  background: none !important;
+  font-size: inherit !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.ach-popup-timer-bar {
+  background: var(--gold) !important;
+}
+
+/* Onboarding */
+.spotlight-balloon-icon {
+  background: none !important;
+  font-size: inherit !important;
+  width: 26px !important;
+  height: 26px !important;
+}
+
+.spotlight-focus-ring {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6) !important;
+}
+
+.spotlight-tracker-bar-bg {
+  background: var(--void) !important;
+  border-color: var(--line-faint) !important;
+}
+
+.spotlight-tracker-bar-fill {
+  background: var(--gold) !important;
+}
+
+.spotlight-panel {
+  background: rgba(6, 5, 4, 0.6) !important;
+}
+
+/* Start screen */
+.slide-card {
+  background: var(--plate) !important;
+}
+
+.start-sphere-emblem {
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.start-sphere-img {
+  width: 260px !important;
+  height: 260px !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* ---------------------------------------------------
+   Quick nav & zoom
+   --------------------------------------------------- */
+
+.board-quicknav-bar,
+.board-zoom-controls {
+  background: var(--plate) !important;
+  border: 6px solid transparent !important;
+  border-image: var(--wood-frame) 8 / 6px / 0 stretch !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6) !important;
+  border-radius: 0 !important;
+}
+
+.quicknav-btn,
+.board-zoom-btn {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 0 !important;
+  color: var(--bone-dim) !important;
+  box-shadow: none !important;
+}
+
+.quicknav-btn:hover,
+.board-zoom-btn:hover {
+  color: var(--bone) !important;
+  border-color: var(--line-faint) !important;
+}
+
+.quicknav-btn.active {
+  background: var(--gold-wash) !important;
+  border-color: var(--line) !important;
+  color: var(--gold-light) !important;
+}
+
+.quicknav-ico {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+}
+
+.quicknav-ico .ico {
+  width: 100%;
+  height: 100%;
+}
+
+.board-zoom-level {
+  color: var(--gold-light) !important;
+}
+
+/* Floating "+Fé" numbers */
+.floating-faith-num {
+  color: var(--gold-light) !important;
+  text-shadow: 0 2px 0 #000 !important;
+}
+
+/* Dev test launcher icon */
+.test-launcher-icon .ico,
+.test-menu-icon .ico,
+.test-section-title .ico {
+  width: 16px;
+  height: 16px;
+}
+
+/* The treatise HUD hid every inline svg in these buttons; ours are the icons */
+.icon-btn-gold svg {
+  visibility: visible !important;
+  position: static !important;
+}
+
+@media (max-width: 860px) {
+  /* Compact HUD: five counters plus three buttons must fit a phone, wrapping if needed */
+  .top-hud-bar {
+    top: calc(6px + env(safe-area-inset-top, 0px)) !important;
+    left: 6px !important;
+    width: calc(100% - 12px) !important;
+    height: auto !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+
+  .resources-hud-card {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .resources-hud-row {
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+
+  .resource-item {
+    min-width: 0 !important;
+    flex: 1 1 64px !important;
+    grid-template-columns: 18px auto !important;
+    grid-template-rows: 18px 12px !important;
+    gap: 0 5px !important;
+    padding: 1px 5px 1px 3px !important;
+    border-width: 5px !important;
+    border-image-width: 5px !important;
+  }
+
+  .res-name {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .resource-item {
+    grid-template-rows: 10px 18px 11px !important;
+  }
+
+  .res-name {
+    grid-row: 1 / 4 !important;
+  }
+
+  .res-label {
+    font-size: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  .res-num {
+    font-size: 19px !important;
+  }
+
+  .res-rate {
+    font-size: 12px !important;
+  }
+
+  .top-right-group {
+    flex-direction: column !important;
+    gap: 4px !important;
+  }
+
+  .icon-btn-gold {
+    width: 34px !important;
+    height: 34px !important;
+    border-width: 4px !important;
+    border-image-width: 4px !important;
+  }
+
+  .icon-btn-gold .ico {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* The sphere has to fit a phone-width viewport at ~100% zoom */
+  #card-altar-sphere .sphere-wrapper,
+  #card-altar-sphere .sphere-wrapper .divine-sphere-btn {
+    width: 320px !important;
+    height: 320px !important;
+  }
+}
+
+/* Rendering cost: rasterise the sphere layers once and only move them on clicks */
+#card-altar-sphere .sphere-layer,
+#card-altar-sphere .sphere-shock {
+  will-change: transform, opacity;
+}
+
+/* During play the board covers the page: don't keep repainting stars nobody sees under the HUD */
+body.is-playing {
+  background-image: none;
+}

@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+import { ElapsedTimeCredit } from './systems/elapsedTime.js';
 // --- App Manager for Cult of the Sphere (Modular Orchestrator) ---
 
 import { AudioManager } from './systems/audio.js';
@@ -7,6 +8,7 @@ import { SaveSystem, type SaveData } from './systems/saveSystem.js';
 import { SettingsModal } from './ui/SettingsModal.js';
 import { SaveDataModal } from './ui/SaveDataModal.js';
 import { HUDController } from './ui/HUDController.js';
+import { VisibleCardUpdates } from './ui/VisibleCardUpdates.js';
 import { GameStateManager } from './core/GameState.js';
 import { GameLoop } from './core/GameLoop.js';
 import { events, GameEvents } from './core/EventBus.js';
@@ -20,9 +22,12 @@ import { AchievementsTab } from './features/achievements/AchievementsTab.js';
 import { StatsTab } from './features/stats/StatsTab.js';
 import { SphereController } from './features/sphere/SphereController.js';
 import { OnboardingGuide } from './ui/OnboardingGuide.js';
+import { FormulaTooltip } from './ui/FormulaTooltip.js';
 import { BoardManager } from './ui/BoardManager.js';
+import { hydrateIcons } from './ui/icons.js';
 import { cultDialog } from './ui/CultDialog.js';
 import { TestMenu } from './ui/TestMenu.js';
+import { formatNumber } from './systems/calculations.js';
 
 export function isDevMode(): boolean {
   if (typeof window === 'undefined') return false;
@@ -50,6 +55,7 @@ class AppManager {
   public settingsModal: SettingsModal;
   public saveDataModal: SaveDataModal;
   public onboardingGuide: OnboardingGuide;
+  private formulaTooltip: FormulaTooltip;
   public board: BoardManager;
 
   // Feature Tabs
@@ -62,13 +68,19 @@ class AppManager {
   public achievementsTab: AchievementsTab;
   public statsTab: StatsTab;
   public testMenu?: TestMenu;
+  private cardUpdates: VisibleCardUpdates;
 
   // Save & System State
   private lastSaveTime: number = Date.now();
   public isResetting: boolean = false;
   private isHapticsEnabled: boolean = true;
+  private hiddenSinceMs: number | undefined;
+  private pendingOfflineNotice?: { title: string; desc: string };
 
   constructor() {
+    // 0. Fill static [data-icon] placeholders with the game's engraved icon set
+    hydrateIcons();
+
     // 1. Instantiate Core Subsystems
     this.audio = new AudioManager();
     this.notifications = new NotificationManager('achievements-popup-container');
@@ -118,9 +130,8 @@ class AppManager {
       spawnFloatingText: (x, y, t) => this.sphere.spawnFloatingText(x, y, t),
       onRelicsTransmuted: () => events.emit(GameEvents.STATE_CHANGED),
       onUpgradePurchased: () => {
+        this.renderAllLists();
         events.emit(GameEvents.STATE_CHANGED);
-        this.fervorTab.renderList();
-        this.fervorTab.updateButtonStates();
       }
     });
 
@@ -131,8 +142,8 @@ class AppManager {
       spawnFloatingText: (x, y, t) => this.sphere.spawnFloatingText(x, y, t),
       onGnoseReset: () => {
         this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
-        this.incarnationTab.updateUI();
         this.refreshAllUI();
+        this.board.centerOnCard('card-altar-sphere', true);
       },
       onUpgradePurchased: () => {
         this.refreshAllUI();
@@ -174,6 +185,8 @@ class AppManager {
         if (ok) {
           SaveSystem.save(imported);
           this.applySaveData(imported);
+          this.processOfflineGains(imported.timestamp);
+          this.saveProgress();
           this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
           this.refreshAllUI();
           return true;
@@ -189,6 +202,7 @@ class AppManager {
       audio: this.audio
     });
 
+    this.formulaTooltip = new FormulaTooltip(this.gameState);
     this.settingsModal = new SettingsModal({
       audio: this.audio,
       getLastSaveTime: () => this.lastSaveTime,
@@ -200,16 +214,21 @@ class AppManager {
         this.isHapticsEnabled = enabled;
       },
       isHapticsEnabled: () => this.isHapticsEnabled,
+      isNerdsEnabled: () => this.gameState.nerdsEnabled,
+      onToggleNerds: enabled => {
+        this.gameState.nerdsEnabled = enabled;
+        this.formulaTooltip.hide();
+      },
       onTriggerHaptic: (pattern) => this.triggerHaptic(pattern)
     });
 
     // 5. Load Progress & Sync Views
     this.loadProgress();
     this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
-    this.incarnationTab.updateUI();
 
     // 6. Setup Listeners, Initial Renders & Loops
     this.board = new BoardManager();
+    this.cardUpdates = this.setupCardUpdates();
     this.onboardingGuide.setOnFocusCard((cardId, immediate) => {
       this.board.centerOnCard(cardId, immediate);
     });
@@ -221,7 +240,6 @@ class AppManager {
     this.startPassiveFaithLoop();
     this.startAutoSaveLoop();
     this.hud.update();
-    this.statsTab.updateUI();
     this.onboardingGuide.update();
 
     // 7. Developer-only / Localhost Test Menu & Global Window Helpers
@@ -242,34 +260,45 @@ class AppManager {
       this.audio.playTone(440, 'sine', 0.1);
       startScreen?.classList.remove('active');
       gameplayScreen?.classList.add('active');
+      // Cheap hook for play-time styles (a body:has() selector re-ran style recalcs on every DOM change)
+      document.body.classList.add('is-playing');
       requestAnimationFrame(() => {
         this.board.centerOnCard('card-altar-sphere', true);
         this.followersTab.resize();
         this.incarnationTab.altar?.resize();
         this.onboardingGuide.update();
+        if (this.pendingOfflineNotice) {
+          this.notifications.showCustomPopup(
+            this.pendingOfflineNotice.title,
+            this.pendingOfflineNotice.desc,
+            'hourglass',
+            'VIGÍLIA SAGRADA'
+          );
+          this.pendingOfflineNotice = undefined;
+        }
       });
     });
   }
 
   private setupReactiveListeners(): void {
     events.on(GameEvents.STATE_CHANGED, () => {
-      this.hud.update();
       this.statsTab.updateUI();
       this.achievementsTab.checkAchievements();
       this.achievementsTab.updateRealtime();
-      this.updateItemButtonsState();
+      this.cardUpdates.update();
+      if (this.gnoseTab.bossBattleModal.isOpen()) this.gnoseTab.bossBattleModal.updateUI();
       this.onboardingGuide.update();
+      this.formulaTooltip.update();
     });
 
     events.on(GameEvents.GAME_TICK, () => {
       this.statsTab.updateUI();
       this.achievementsTab.checkAchievements();
-      this.updateItemButtonsState();
-      this.fervorTab.updateButtonStates();
+      this.cardUpdates.update();
+      if (this.gnoseTab.bossBattleModal.isOpen()) this.gnoseTab.bossBattleModal.updateUI();
       this.achievementsTab.updateRealtime();
-      this.incarnationTab.updateRealtime();
-      this.followersTab.updateRealtime();
       this.onboardingGuide.update();
+      this.formulaTooltip.update();
     });
   }
 
@@ -282,12 +311,23 @@ class AppManager {
 
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') {
+        this.hiddenSinceMs ??= Date.now();
         if (!this.isResetting) {
           this.saveProgress();
         }
         this.gameLoop.pause();
         this.followersTab.pause();
       } else {
+        if (this.hiddenSinceMs !== undefined) {
+          this.processOfflineGains(this.hiddenSinceMs);
+          this.hiddenSinceMs = undefined;
+          this.saveProgress();
+          this.refreshAllUI();
+          if (this.pendingOfflineNotice) {
+            this.notifications.showCustomPopup(this.pendingOfflineNotice.title, this.pendingOfflineNotice.desc, 'hourglass', 'VIGÍLIA SAGRADA');
+            this.pendingOfflineNotice = undefined;
+          }
+        }
         this.gameLoop.resume();
         this.followersTab.resume();
       }
@@ -321,31 +361,34 @@ class AppManager {
   }
 
   public renderAllLists(): void {
-    this.followersTab.updateUI();
-    this.incarnationTab.updateUI();
-    this.fervorTab.renderList();
-    this.unlocksTab.renderList();
-    this.relicsTab.renderList();
-    this.gnoseTab.renderTree();
-    this.gnoseTab.updateUI();
+    this.cardUpdates.invalidateAll();
     this.achievementsTab.renderList();
   }
 
-  private updateItemButtonsState(): void {
-    this.followersTab.updateUI();
-    this.incarnationTab.updateUpgradeButtonState();
-    this.unlocksTab.updateButtonStates();
-    if (this.gameState.isRelicsUnlocked()) {
-      this.relicsTab.updateUI();
-    }
-    if (this.gameState.isGnoseUnlocked()) {
-      this.gnoseTab.updateUI();
-    }
+  private setupCardUpdates(): VisibleCardUpdates {
+    const views = new VisibleCardUpdates();
+    views.register('card-altar-sphere', () => {}, () => this.hud.updateCard('card-altar-sphere'));
+    views.register('card-followers', () => {}, () => this.followersTab.updateUI());
+    views.register('card-incarnation', () => this.incarnationTab.updateUI(), () => this.incarnationTab.updateRealtime());
+    views.register('card-unlocks', () => this.unlocksTab.renderList(), () => this.unlocksTab.updateButtonStates());
+    views.register('card-fervor', () => this.fervorTab.renderList(), () => {
+      this.fervorTab.updateButtonStates();
+    });
+    views.register('card-relics', () => this.relicsTab.renderList(), () => this.relicsTab.updateUI());
+    views.register('card-gnose', () => this.gnoseTab.renderTree(), () => this.gnoseTab.updateUI());
+    return views;
   }
 
   private startPassiveFaithLoop(): void {
     this.gameLoop.onTick((deltaSec) => {
+      const unlockedCount = this.gameState.unlocks.filter(u => u.unlocked).length;
       this.gameState.tick(deltaSec);
+      if (this.gameState.unlocks.filter(u => u.unlocked).length !== unlockedCount) {
+        this.updateUnlockedTabsVisibility();
+        this.renderAllLists();
+      }
+      // Walkers own miracle timers; keep their population in sync even off-screen.
+      this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
       events.emit(GameEvents.GAME_TICK, deltaSec);
     });
     this.gameLoop.start();
@@ -370,6 +413,7 @@ class AppManager {
   private saveProgress(): boolean {
     if (this.isResetting) return false;
     const data = this.gameState.buildSaveData();
+    if (this.hiddenSinceMs !== undefined) data.timestamp = this.hiddenSinceMs;
     const success = SaveSystem.save(data);
     if (success) {
       this.lastSaveTime = Date.now();
@@ -383,9 +427,36 @@ class AppManager {
     if (data) {
       this.applySaveData(data);
       this.lastSaveTime = data.timestamp || Date.now();
+      if (data.timestamp) {
+        this.processOfflineGains(data.timestamp);
+        this.saveProgress();
+      }
       return true;
     }
     return false;
+  }
+
+  private processOfflineGains(lastTimestamp: number): void {
+    if (!lastTimestamp || lastTimestamp <= 0) return;
+    const now = Date.now();
+    const elapsedSec = (now - lastTimestamp) / 1000;
+    const { faithGained, fervorGained, relicGained } = new ElapsedTimeCredit(lastTimestamp).consume(this.gameState, now);
+
+    if (faithGained > 0 || fervorGained > 0 || relicGained > 0) {
+      const minutes = Math.floor(elapsedSec / 60);
+      const hours = (elapsedSec / 3600).toFixed(1);
+      const timeStr = elapsedSec >= 3600 ? `${hours}h` : `${minutes}m`;
+
+      const parts: string[] = [];
+      if (faithGained > 0) parts.push(`+${formatNumber(faithGained)} Fé`);
+      if (fervorGained > 0) parts.push(`+${formatNumber(fervorGained)} Fervor`);
+      if (relicGained > 0) parts.push(`+${formatNumber(relicGained)} Fragmentos`);
+
+      this.pendingOfflineNotice = {
+        title: `VIGÍLIA SAGRADA (${timeStr})`,
+        desc: `Durante sua ausência, o culto continuou ardendo: ${parts.join(', ')} acumulados.`
+      };
+    }
   }
 
   private manualSave(): void {
@@ -395,7 +466,7 @@ class AppManager {
       this.notifications.showCustomPopup(
         'Culto Salvo',
         'Seu progresso sagrado foi gravado com sucesso.',
-        '💾',
+        'codex',
         'REGISTRO SAGRADO'
       );
       this.settingsModal.updateSaveStatus();
@@ -403,7 +474,7 @@ class AppManager {
       this.notifications.showCustomPopup(
         'Erro ao Salvar',
         'Não foi possível gravar no armazenamento do navegador.',
-        '⚠️',
+        'warning',
         'ALERTA'
       );
     }

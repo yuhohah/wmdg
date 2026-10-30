@@ -1,6 +1,8 @@
 import { GameStateManager } from '../core/GameState.js';
 import { NotificationManager } from '../systems/notifications.js';
 import { AudioManager } from '../systems/audio.js';
+import { icon } from './icons.js';
+import { CARD_TUTORIALS, type CardTutorial } from '../config/cardTutorials.js';
 
 export interface OnboardingGuideOptions {
   gameState: GameStateManager;
@@ -42,6 +44,8 @@ export class OnboardingGuide {
   private isDismissed: boolean = false;
   private hasCelebrated: boolean = false;
   private isPositioning: boolean = false;
+  private cardTutorial: CardTutorial | null = null;
+  private canPresent: boolean = false;
 
   constructor(options: OnboardingGuideOptions) {
     this.gameState = options.gameState;
@@ -49,11 +53,7 @@ export class OnboardingGuide {
     this.audio = options.audio;
     this.onFocusCard = options.onFocusCard;
 
-    const devotee = this.gameState.followers[0];
-    const followerCount = devotee ? devotee.count : 0;
-    if (this.gameState.hasSeenIntro && followerCount >= 1) {
-      this.isDismissed = true;
-    }
+    this.isDismissed = this.gameState.hasSeenIntro;
 
     this.initElements();
     this.bindEvents();
@@ -109,6 +109,12 @@ export class OnboardingGuide {
         this.updatePosition();
       }
     });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.cardTutorial && this.overlayEl?.style.display !== 'none') {
+        this.dismiss();
+      }
+    });
   }
 
   private nudgeAttention(): void {
@@ -121,6 +127,12 @@ export class OnboardingGuide {
   }
 
   public dismiss(): void {
+    if (this.cardTutorial) {
+      this.gameState.seenCardTutorials.add(this.cardTutorial.cardId);
+      this.cardTutorial = null;
+      this.hideOverlay();
+      return;
+    }
     this.isDismissed = true;
     this.gameState.hasSeenIntro = true;
     document.getElementById('btn-convert-one')?.classList.remove('pulse-guide');
@@ -129,26 +141,19 @@ export class OnboardingGuide {
 
   private hideOverlay(): void {
     if (!this.overlayEl) return;
-    this.overlayEl.style.opacity = '0';
-    setTimeout(() => {
-      if (this.overlayEl) {
-        this.overlayEl.style.display = 'none';
-        this.overlayEl.style.opacity = '1';
-      }
-    }, 300);
+    // Hide synchronously so an old dismissal cannot hide the next queued tooltip.
+    this.overlayEl.style.display = 'none';
   }
 
   public update(): void {
-    if (!this.overlayEl || this.isDismissed) return;
+    this.canPresent = false;
+    if (!this.overlayEl) return;
 
     // Sync dismissal state if save loaded after construction
     const devotee = this.gameState.followers[0];
     const followerCount = devotee ? devotee.count : 0;
-    if (this.gameState.hasSeenIntro && followerCount >= 1) {
-      this.isDismissed = true;
-      this.overlayEl.style.display = 'none';
-      return;
-    }
+    this.isDismissed = this.gameState.hasSeenIntro;
+    if (!this.isDismissed) this.cardTutorial = null;
 
     // Do not show spotlight overlay while start screen is active
     const startScreen = document.getElementById('start-screen');
@@ -158,9 +163,15 @@ export class OnboardingGuide {
     }
 
     // Do not show spotlight overlay while any full modal is visibly open
-    const openModals = document.querySelectorAll('.modal-overlay.open');
-    if (openModals.length > 0) {
+    const openModals = document.querySelectorAll('.modal-overlay.open, .modal-overlay.active, dialog[open]');
+    if (openModals.length > 0 || this.gameState.activeBossBattle) {
       this.overlayEl.style.display = 'none';
+      return;
+    }
+
+    this.canPresent = true;
+    if (this.isDismissed) {
+      this.updateCardTutorial();
       return;
     }
 
@@ -174,7 +185,7 @@ export class OnboardingGuide {
         this.notifications.showCustomPopup(
           'O PRIMEIRO CONVERSO',
           'Seu primeiro fiel começou a orar no pátio: +1 Fé/s.',
-          '👥',
+          'followers',
           'FIÉIS'
         );
       }
@@ -212,10 +223,13 @@ export class OnboardingGuide {
   }
 
   private renderStepContent(faith: number, targetFaith: number): void {
+    if (this.skipBtn) this.skipBtn.textContent = 'Pular';
+    const tracker = document.getElementById('spotlight-balloon-tracker');
+    if (tracker) tracker.style.display = '';
     if (this.currentStep === 'sphere') {
       const percent = Math.min(100, Math.floor((faith / targetFaith) * 100));
 
-      if (this.iconEl) this.iconEl.textContent = '🔮';
+      if (this.iconEl) this.iconEl.innerHTML = icon('orb');
       if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 1/2 • O DESPERTAR';
       if (this.titleEl) this.titleEl.textContent = 'Toque a Esfera';
       if (this.descEl) {
@@ -228,15 +242,15 @@ export class OnboardingGuide {
         this.trackerFillEl.style.background = 'linear-gradient(90deg, #f59e0b, #fef08a)';
       }
       if (this.actionTipEl) {
-        this.actionTipEl.textContent = '👉 Toque a Esfera até juntar Fé suficiente (+1 Fé por toque).';
+        this.actionTipEl.textContent = 'Toque a Esfera até juntar Fé suficiente (+1 Fé por toque).';
       }
     } else {
       // Step 2: Buy follower
-      if (this.iconEl) this.iconEl.textContent = '🏛️';
+      if (this.iconEl) this.iconEl.innerHTML = icon('temple');
       if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 2/2 • CONVERTA FIÉIS';
       if (this.titleEl) this.titleEl.textContent = 'Converta seu primeiro fiel';
       if (this.descEl) {
-        this.descEl.textContent = 'Você já tem Fé suficiente. No Pátio dos Fiéis, converta alguém: ele vai orar por você e gerar +1 Fé/s.';
+        this.descEl.textContent = 'Um primeiro mortal ouviu o chamado da Esfera. No Pátio dos Fiéis, converta-o: ele vai orar por você e gerar +1 Fé/s.';
       }
       if (this.trackerMetaEl) this.trackerMetaEl.textContent = `Custo: ${targetFaith} Fé`;
       if (this.trackerValEl) this.trackerValEl.textContent = 'Pronto para converter!';
@@ -245,17 +259,55 @@ export class OnboardingGuide {
         this.trackerFillEl.style.background = 'linear-gradient(90deg, #22c55e, #86efac)';
       }
       if (this.actionTipEl) {
-        this.actionTipEl.textContent = '👉 Clique no botão "CONVERTER FIEL".';
+        this.actionTipEl.textContent = 'Clique no botão "CONVERTER FIEL".';
       }
     }
   }
 
-  private applyPositionSync(): void {
-    if (!this.overlayEl || this.isDismissed) return;
+  private updateCardTutorial(): void {
+    const isAvailable = (tutorial: CardTutorial) => {
+      if (this.gameState.seenCardTutorials.has(tutorial.cardId)) return false;
+      if ('unlockId' in tutorial) {
+        return this.gameState.unlocks.some(u => u.id === tutorial.unlockId && u.unlocked);
+      }
+      return this.gameState.unlocks.some(u => !u.unlocked);
+    };
+    if (this.cardTutorial && !isAvailable(this.cardTutorial)) this.cardTutorial = null;
+    const tutorial = this.cardTutorial ?? CARD_TUTORIALS.find(isAvailable);
+    if (!tutorial) {
+      this.hideOverlay();
+      return;
+    }
+    const card = document.getElementById(tutorial.cardId);
+    // Wait for the board to expose the card, even if its unlock and render share a tick.
+    if (!card || card.offsetWidth === 0 || card.style.display === 'none') {
+      this.hideOverlay();
+      return;
+    }
+    const entering = this.cardTutorial !== tutorial;
+    this.cardTutorial = tutorial;
+    if (entering) this.onFocusCard?.(tutorial.cardId, true);
+    if (this.iconEl) this.iconEl.innerHTML = icon(tutorial.icon);
+    if (this.badgeEl) this.badgeEl.textContent = 'CONHEÇA ESTE CARD';
+    if (this.titleEl) this.titleEl.textContent = tutorial.title;
+    if (this.descEl) this.descEl.textContent = tutorial.lore;
+    if (this.actionTipEl) this.actionTipEl.textContent = tutorial.basics;
+    if (this.skipBtn) this.skipBtn.textContent = 'Entendi';
+    const tracker = document.getElementById('spotlight-balloon-tracker');
+    if (tracker) tracker.style.display = 'none';
+    this.applyPositionSync();
+    this.updatePosition();
+    if (entering) this.skipBtn?.focus({ preventScroll: true });
+  }
 
-    const targetEl = this.currentStep === 'sphere'
+  private applyPositionSync(): void {
+    if (!this.canPresent || !this.overlayEl || (this.isDismissed && !this.cardTutorial)) return;
+
+    const tutorialHeader = this.cardTutorial
+      ? document.getElementById(this.cardTutorial.cardId)?.querySelector<HTMLElement>('.dodeca-card-header') : null;
+    const targetEl = tutorialHeader ?? (this.currentStep === 'sphere'
       ? (document.getElementById('divine-sphere-btn') || document.getElementById('divine-sphere-container'))
-      : (document.getElementById('btn-convert-one') || document.getElementById('card-followers'));
+      : (document.getElementById('btn-convert-one') || document.getElementById('card-followers')));
 
     if (!targetEl) return;
 
@@ -271,7 +323,7 @@ export class OnboardingGuide {
       rect.bottom < 60 ||
       rect.top > vh - 60
     ) {
-      const targetCardId = this.currentStep === 'sphere' ? 'card-altar-sphere' : 'card-followers';
+      const targetCardId = this.cardTutorial?.cardId ?? (this.currentStep === 'sphere' ? 'card-altar-sphere' : 'card-followers');
       this.onFocusCard?.(targetCardId, true);
       rect = targetEl.getBoundingClientRect();
     }
@@ -317,7 +369,7 @@ export class OnboardingGuide {
       this.focusRing.style.left = `${spotLeft}px`;
       this.focusRing.style.width = `${spotWidth}px`;
       this.focusRing.style.height = `${spotHeight}px`;
-      this.focusRing.style.borderRadius = this.currentStep === 'sphere' ? '50%' : '12px';
+      this.focusRing.style.borderRadius = !this.cardTutorial && this.currentStep === 'sphere' ? '50%' : '2px';
     }
 
     if (this.balloonEl) {
@@ -343,7 +395,7 @@ export class OnboardingGuide {
       const spaceBelow = bottomLimit - spotBottom;
       const spaceRight = vw - spotRight;
 
-      if (this.currentStep !== 'sphere' && vw > 860 && spaceRight >= balloonW + 24) {
+      if ((this.cardTutorial || this.currentStep !== 'sphere') && vw > 860 && spaceRight >= balloonW + 24) {
         bLeft = spotRight + 16;
         bTop = Math.max(topSafe, Math.min(bottomLimit - balloonH, targetCenterY - balloonH / 2));
         arrowDir = 'arrow-left';

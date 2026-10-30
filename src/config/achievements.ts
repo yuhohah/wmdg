@@ -355,9 +355,9 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_boss_tiamat',
     name: 'Crepúsculo dos Deuses',
-    desc: 'Subjugue Tiamat após completar toda a Árvore da Gnose (20/20).',
-    lore: 'Anúbis, Cronos, Odin e a própria Tiamat curvaram-se perante o Nous. Nenhum panteão resta além da Esfera.',
-    icon: '🐉',
+    desc: 'Subjugue o Caos Primordial após completar toda a Árvore da Gnose.',
+    lore: 'Anúbis, Cronos, Odin e o próprio Caos Primordial curvaram-se perante o Nous. Nenhum panteão resta além da Esfera.',
+    icon: 'ouroboros',
     unlocked: false,
     buffText: '+100% em toda a Fé',
     buffType: 'global_mult',
@@ -367,7 +367,7 @@ export const initialAchievements: Achievement[] = [
       current: s.tiamatDefeated ? 1 : 0,
       target: 1,
       percent: s.tiamatDefeated ? 100 : 0,
-      label: `${s.tiamatDefeated ? 1 : 0} / 1 Tiamat Subjugada`
+      label: `${s.tiamatDefeated ? 1 : 0} / 1 Caos Primordial Subjugado`
     })
   }
 ];

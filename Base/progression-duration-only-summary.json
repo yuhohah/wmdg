@@ -1,0 +1,893 @@
+{
+  "inputs": [
+    "Base/progression-duration-only-0.json.gz",
+    "Base/progression-duration-only-5.json.gz",
+    "Base/progression-duration-only-10.json.gz",
+    "Base/progression-duration-only-15.json.gz"
+  ],
+  "metadata": {
+    "balance": {
+      "ascensionExponent": 0.25,
+      "enlightenedExponent": 0.28,
+      "earlySynergyExponent": 0.5,
+      "congregationExponent": 1,
+      "solarCost": 1e+30,
+      "nodeProductionMultiplier": 4
+    },
+    "costs": {
+      "gn_init_faith": 1,
+      "gn_memoria_selos": 66,
+      "gn_init_fervor": 1904,
+      "gn_relic_gain": 35367,
+      "gn_automation": 480,
+      "gn_seal_automation": 1904,
+      "gn_ritual_automation": 7452,
+      "gn_relic_automation": 17112,
+      "gn_followers_syn": 113922,
+      "gn_bencao_eterna": 496875,
+      "gn_keep_relics": 64336,
+      "gn_followers_economy": 912634,
+      "gn_followers_cubic": 1958468,
+      "gn_gnose_mult": 4212565,
+      "gn_relic_refinement": 56195709,
+      "gn_fu1_boost": 126803661,
+      "gn_omniscience": 280254384,
+      "gn_apotheosis": 672487130,
+      "gn_empyrean_fire": 3428755351,
+      "gn_perfect_opus": 8228624583
+    },
+    "sources": {
+      "src/core/GameState.ts": "be6793f41ce0ced660d8b66356afbc20739b8d70be3b13077ab89435494e4764",
+      "src/benchmark/ProgressionSimulator.ts": "c247aee879c2103af685404b2b94aa71671dfb80c3373a328dc641320c1cc5c3",
+      "src/benchmark/behavior.ts": "44b77a239d16ebda80f4a9e252a40c0dc32dba345a86604a9bcf4b2ae1c4becb",
+      "src/systems/calculations.ts": "661ed8c4e7d56572e42739f622ec4a38faefa29d94f3ecb84e955d23e7737cce"
+    }
+  },
+  "summary": [
+    {
+      "scenario": "reference",
+      "campaigns": 20,
+      "completed": 20,
+      "incomplete": [],
+      "medianHours": 14.26934722209249,
+      "worstHours": 14.382888888757506,
+      "observedLimitHours": 14.382888888757506,
+      "presentMedianHours": 14.26934722209249,
+      "permanentGapMaxMin": 48.403333332628975,
+      "relevantGapMaxMin": 25.596666666294187,
+      "resetsMin": 20,
+      "resetsMax": 20,
+      "recoveryMeasured": 360,
+      "recoveryFailures": 28,
+      "recoveryCensored": 20,
+      "manualProductionDrops": 0,
+      "solarBeforeChaos": 20,
+      "durationPass": true
+    },
+    {
+      "scenario": "no-miracles",
+      "campaigns": 20,
+      "completed": 20,
+      "incomplete": [],
+      "medianHours": 17.584722222044245,
+      "worstHours": 17.659416666487605,
+      "observedLimitHours": 17.659416666487605,
+      "presentMedianHours": 17.584722222044245,
+      "permanentGapMaxMin": 58.583333332480834,
+      "relevantGapMaxMin": 31.5583333328741,
+      "resetsMin": 20,
+      "resetsMax": 20,
+      "recoveryMeasured": 360,
+      "recoveryFailures": 4,
+      "recoveryCensored": 20,
+      "manualProductionDrops": 0,
+      "solarBeforeChaos": 20,
+      "durationPass": true
+    },
+    {
+      "scenario": "intense",
+      "campaigns": 20,
+      "completed": 20,
+      "incomplete": [],
+      "medianHours": 13.153736110997613,
+      "worstHours": 13.28461111099571,
+      "observedLimitHours": 13.28461111099571,
+      "presentMedianHours": 13.153736110997613,
+      "permanentGapMaxMin": 45.36166666683169,
+      "relevantGapMaxMin": 24.443333332977637,
+      "resetsMin": 20,
+      "resetsMax": 20,
+      "recoveryMeasured": 360,
+      "recoveryFailures": 35,
+      "recoveryCensored": 20,
+      "manualProductionDrops": 0,
+      "solarBeforeChaos": 20,
+      "durationPass": true
+    },
+    {
+      "scenario": "comfort",
+      "campaigns": 20,
+      "completed": 20,
+      "incomplete": [],
+      "medianHours": 14.276305555425724,
+      "worstHours": 14.379194444313114,
+      "observedLimitHours": 14.379194444313114,
+      "presentMedianHours": 14.276305555425724,
+      "permanentGapMaxMin": 49.2666666668459,
+      "relevantGapMaxMin": 27.13333333293849,
+      "resetsMin": 20,
+      "resetsMax": 20,
+      "recoveryMeasured": 360,
+      "recoveryFailures": 25,
+      "recoveryCensored": 20,
+      "manualProductionDrops": 0,
+      "solarBeforeChaos": 20,
+      "durationPass": true
+    },
+    {
+      "scenario": "production",
+      "campaigns": 20,
+      "completed": 20,
+      "incomplete": [],
+      "medianHours": 14.26934722209249,
+      "worstHours": 14.382888888757506,
+      "observedLimitHours": 14.382888888757506,
+      "presentMedianHours": 14.26934722209249,
+      "permanentGapMaxMin": 48.403333332628975,
+      "relevantGapMaxMin": 25.596666666294187,
+      "resetsMin": 20,
+      "resetsMax": 20,
+      "recoveryMeasured": 360,
+      "recoveryFailures": 28,
+      "recoveryCensored": 20,
+      "manualProductionDrops": 0,
+      "solarBeforeChaos": 20,
+      "durationPass": true
+    },
+    {
+      "scenario": "immediate",
+      "campaigns": 20,
+      "completed": 0,
+      "incomplete": [
+        {
+          "seed": 786802,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786803,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786804,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786805,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786806,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786807,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786808,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786809,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786810,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786811,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786812,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786813,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786814,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786815,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786816,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786817,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786818,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786819,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786820,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        },
+        {
+          "seed": 786821,
+          "status": "time_limit",
+          "nodes": 1,
+          "resets": 59
+        }
+      ],
+      "medianHours": null,
+      "worstHours": null,
+      "observedLimitHours": 20,
+      "presentMedianHours": 20,
+      "permanentGapMaxMin": 1118.6016666666626,
+      "relevantGapMaxMin": 12.195000000002702,
+      "resetsMin": 59,
+      "resetsMax": 59,
+      "recoveryMeasured": 1140,
+      "recoveryFailures": 1137,
+      "recoveryCensored": 3,
+      "manualProductionDrops": 0,
+      "solarBeforeChaos": 0,
+      "durationPass": false
+    },
+    {
+      "scenario": "short",
+      "campaigns": 20,
+      "completed": 20,
+      "incomplete": [],
+      "medianHours": 12.010972222125355,
+      "worstHours": 12.12811111101254,
+      "observedLimitHours": 12.12811111101254,
+      "presentMedianHours": 12.010972222125355,
+      "permanentGapMaxMin": 53.57000000019489,
+      "relevantGapMaxMin": 19.216666666387088,
+      "resetsMin": 39,
+      "resetsMax": 39,
+      "recoveryMeasured": 740,
+      "recoveryFailures": 717,
+      "recoveryCensored": 20,
+      "manualProductionDrops": 0,
+      "solarBeforeChaos": 20,
+      "durationPass": true
+    },
+    {
+      "scenario": "long",
+      "campaigns": 20,
+      "completed": 20,
+      "incomplete": [],
+      "medianHours": 15.112472222080223,
+      "worstHours": 15.244222222078305,
+      "observedLimitHours": 15.244222222078305,
+      "presentMedianHours": 15.112472222080223,
+      "permanentGapMaxMin": 53.40833333255614,
+      "relevantGapMaxMin": 27.536666666265955,
+      "resetsMin": 20,
+      "resetsMax": 20,
+      "recoveryMeasured": 360,
+      "recoveryFailures": 30,
+      "recoveryCensored": 20,
+      "manualProductionDrops": 0,
+      "solarBeforeChaos": 20,
+      "durationPass": true
+    },
+    {
+      "scenario": "casual",
+      "campaigns": 20,
+      "completed": 0,
+      "incomplete": [
+        {
+          "seed": 786802,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786803,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786804,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786805,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786806,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786807,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786808,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786809,
+          "status": "time_limit",
+          "nodes": 19,
+          "resets": 19
+        },
+        {
+          "seed": 786810,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786811,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786812,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786813,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786814,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786815,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786816,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786817,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786818,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786819,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786820,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786821,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        }
+      ],
+      "medianHours": null,
+      "worstHours": null,
+      "observedLimitHours": 20,
+      "presentMedianHours": 7.999999999999503,
+      "permanentGapMaxMin": 94.80166666664776,
+      "relevantGapMaxMin": 39.3883333331094,
+      "resetsMin": 18,
+      "resetsMax": 19,
+      "recoveryMeasured": 321,
+      "recoveryFailures": 25,
+      "recoveryCensored": 0,
+      "manualProductionDrops": 0,
+      "solarBeforeChaos": 20,
+      "durationPass": false
+    },
+    {
+      "scenario": "casual-hidden",
+      "campaigns": 20,
+      "completed": 0,
+      "incomplete": [
+        {
+          "seed": 786802,
+          "status": "time_limit",
+          "nodes": 19,
+          "resets": 19
+        },
+        {
+          "seed": 786803,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786804,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786805,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786806,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786807,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786808,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786809,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786810,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786811,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786812,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786813,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786814,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786815,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786816,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786817,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786818,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786819,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786820,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786821,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        }
+      ],
+      "medianHours": null,
+      "worstHours": null,
+      "observedLimitHours": 20,
+      "presentMedianHours": 7.999999999999503,
+      "permanentGapMaxMin": 83.20166666667832,
+      "relevantGapMaxMin": 39.383333333109476,
+      "resetsMin": 18,
+      "resetsMax": 19,
+      "recoveryMeasured": 321,
+      "recoveryFailures": 26,
+      "recoveryCensored": 0,
+      "manualProductionDrops": 0,
+      "solarBeforeChaos": 20,
+      "durationPass": false
+    },
+    {
+      "scenario": "casual-save",
+      "campaigns": 20,
+      "completed": 0,
+      "incomplete": [
+        {
+          "seed": 786802,
+          "status": "time_limit",
+          "nodes": 19,
+          "resets": 19
+        },
+        {
+          "seed": 786803,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786804,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786805,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786806,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786807,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786808,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786809,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786810,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786811,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786812,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786813,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786814,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786815,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786816,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786817,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786818,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786819,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786820,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        },
+        {
+          "seed": 786821,
+          "status": "time_limit",
+          "nodes": 18,
+          "resets": 18
+        }
+      ],
+      "medianHours": null,
+      "worstHours": null,
+      "observedLimitHours": 20,
+      "presentMedianHours": 7.999999999999503,
+      "permanentGapMaxMin": 83.20166666667832,
+      "relevantGapMaxMin": 39.383333333109476,
+      "resetsMin": 18,
+      "resetsMax": 19,
+      "recoveryMeasured": 321,
+      "recoveryFailures": 26,
+      "recoveryCensored": 0,
+      "manualProductionDrops": 0,
+      "solarBeforeChaos": 20,
+      "durationPass": false
+    },
+    {
+      "scenario": "absence",
+      "campaigns": 20,
+      "completed": 0,
+      "incomplete": [
+        {
+          "seed": 786802,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786803,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786804,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786805,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786806,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786807,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786808,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786809,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786810,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786811,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786812,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786813,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786814,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786815,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786816,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786817,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786818,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786819,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786820,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        },
+        {
+          "seed": 786821,
+          "status": "time_limit",
+          "nodes": 0,
+          "resets": 0
+        }
+      ],
+      "medianHours": null,
+      "worstHours": null,
+      "observedLimitHours": 20,
+      "presentMedianHours": 0.16666666666666666,
+      "permanentGapMaxMin": 0,
+      "relevantGapMaxMin": 1190.7133333333325,
+      "resetsMin": 0,
+      "resetsMax": 0,
+      "recoveryMeasured": 0,
+      "recoveryFailures": 0,
+      "recoveryCensored": 0,
+      "manualProductionDrops": 0,
+      "solarBeforeChaos": 0,
+      "durationPass": false
+    }
+  ]
+}

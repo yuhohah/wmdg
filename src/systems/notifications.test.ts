@@ -66,5 +66,10 @@ describe("NotificationManager deduplication logic", () => {
     // Custom notification second appearance blocked
     notifs.showCustomPopup("TESTE", "Notificacao 1", "", "BADGE");
     expect(appended.length).toBe(2);
+
+    // After resetHistory or when cleared, it can be displayed again
+    notifs.resetHistory();
+    notifs.showCustomPopup("TESTE", "Notificacao 1", "", "BADGE");
+    expect(appended.length).toBe(3);
   });
 });

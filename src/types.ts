@@ -117,11 +117,26 @@ export interface GnoseBoss {
   mythology: string;
   symbol: string;
   unlocksTier: 2 | 3 | 4 | 'endgame';
+  portraitSrc?: string;
   maxHp: number;
   riftDamagePercent: number;
   riftIntervalSec: number;
   riftWindowSec: number;
   altarDamageOnMiss: number;
+  /** Ambient altar integrity erosion (% per second) before cult mitigation */
+  altarPressurePerSec?: number;
+  /** Target resource readiness benchmarks for this boss */
+  requirements?: {
+    faithLog: number;
+    followers: number;
+    fervorLog: number;
+    fervorLevels: number;
+    relicsLog: number;
+    relicLevels: number;
+    incarnationStage: number;
+    gnoseLog: number;
+    gnoseNodes: number;
+  };
   rewardName: string;
   rewardDesc: string;
   lore: string;
@@ -143,12 +158,45 @@ export interface ActiveBossBattle {
   altarIntegrity: number;
   maxAltarIntegrity: number;
   riftSpawnTimerSec: number;
+  sphereCooldownSec: number;
   activeRifts: BossRift[];
   riftsShattered: number;
   riftsMissed: number;
+  /** Current boss phase (1 = Vigília, 2 = Fúria Divina below 60% HP, 3 = Apocalipse below 25% HP) */
+  phase?: 1 | 2 | 3;
+  /** Consecutive rifts shattered without missing any */
+  comboStreak?: number;
+}
+
+export interface BossCombatBreakdown {
+  faithBonus: number;
+  followersBonus: number;
+  fervorBonus: number;
+  relicsBonus: number;
+  incarnationBonus: number;
+  gnoseBonus: number;
+  achievementsBonus: number;
+  totalResourceMultiplier: number;
+  /** Cult Readiness vs Boss target benchmarks (0.15 to 2.5+) */
+  cultReadiness: number;
+  passiveHpFractionPerSec: number;
+  passiveDps: number;
+  clickHpFraction: number;
+  clickDamage: number;
+  riftHpFraction: number;
+  riftDamage: number;
+  altarDamageOnMiss: number;
+  altarHealOnRift: number;
+  /** Continuous Altar Integrity drain per second after defense mitigation */
+  altarPressurePerSec: number;
+  /** Estimated passive time to defeat boss (seconds) */
+  estimatedPassiveVictorySec: number;
+  /** Estimated time until Altar breaks if no rifts are shattered (seconds) */
+  estimatedAltarSurvivalSec: number;
 }
 
 export interface GnoseSaveData {
+  automationAccumulatorSec?: number;
   gnosePoints: number;
   totalGnoseEarned: number;
   gnoseResets: number;
@@ -158,5 +206,10 @@ export interface GnoseSaveData {
   confirmReset: boolean;
   autoFollowersEnabled: boolean;
   autoFervorEnabled: boolean;
+  /** Passive transmutation unlocked by Olho do Infinito. */
   autoRelicsEnabled?: boolean;
+  autoRelicUpgradesEnabled?: boolean;
+  /** Legacy income budgets are accepted on import but no longer used. */
+  autoFollowersBudget?: number;
+  autoFervorBudget?: number;
 }

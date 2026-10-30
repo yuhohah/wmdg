@@ -10,11 +10,18 @@ export interface SaveData {
     totalFaithAccumulated: number;
     totalClicks: number;
     fervorPoints: number;
+    fervorPeakThisRun?: number;
+    relicPeakThisRun?: number;
+    totalFervorGenerated?: number;
     incarnationStage: number;
     relicPoints: number;
+    totalRelicsGenerated?: number;
     bestRelicsToGet: number;
     incarnationBoostTimer?: number;
     hasSeenIntro?: boolean;
+    seenCardTutorials?: string[];
+    nerdsEnabled?: boolean;
+    hasSeenTransmutationNotification?: boolean;
   };
   followers: Array<{ id: string; count: number }>;
   fervorUpgrades: Array<{ id: string; level: number }>;
@@ -22,6 +29,7 @@ export interface SaveData {
   unlocks: string[];
   achievements: string[];
   gnose?: GnoseSaveData;
+  progressionRevision?: number;
 }
 
 export class SaveSystem {

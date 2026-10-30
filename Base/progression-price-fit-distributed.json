@@ -1,0 +1,1551 @@
+[
+  {
+    "id": "gn_memoria_selos",
+    "price": 3,
+    "minutes": 18.93333333333437,
+    "acquired": true,
+    "before": {
+      "version": 1,
+      "progressionRevision": 1,
+      "timestamp": 1793300889973,
+      "stats": {
+        "faithPoints": 1000,
+        "totalFaithAccumulated": 5117454368944910,
+        "totalClicks": 1727,
+        "fervorPoints": 0,
+        "fervorPeakThisRun": 0,
+        "relicPeakThisRun": 0,
+        "totalFervorGenerated": 15414080471214.52,
+        "incarnationStage": 1,
+        "relicPoints": 0,
+        "totalRelicsGenerated": 50981.244999991046,
+        "bestRelicsToGet": 0,
+        "incarnationBoostTimer": 0,
+        "hasSeenIntro": false
+      },
+      "followers": [
+        {
+          "id": "f_devotee",
+          "count": 1
+        }
+      ],
+      "fervorUpgrades": [
+        {
+          "id": "fu_prod",
+          "level": 0
+        },
+        {
+          "id": "fu_effect",
+          "level": 0
+        },
+        {
+          "id": "fu_click",
+          "level": 0
+        },
+        {
+          "id": "fu_followers",
+          "level": 0
+        },
+        {
+          "id": "fu_synergy",
+          "level": 0
+        },
+        {
+          "id": "fu_relics",
+          "level": 0
+        }
+      ],
+      "relicUpgrades": [
+        {
+          "id": "relic_cornucopia",
+          "level": 0
+        },
+        {
+          "id": "relic_torch",
+          "level": 0
+        },
+        {
+          "id": "relic_phoenix",
+          "level": 0
+        },
+        {
+          "id": "relic_caduceus",
+          "level": 0
+        },
+        {
+          "id": "relic_draupnir",
+          "level": 0
+        },
+        {
+          "id": "relic_ark",
+          "level": 0
+        }
+      ],
+      "unlocks": [
+        "unlock_gnose"
+      ],
+      "achievements": [
+        "ach_click_1",
+        "ach_click_50",
+        "ach_click_250",
+        "ach_click_1000",
+        "ach_f_1",
+        "ach_f_10",
+        "ach_f_25",
+        "ach_f_50",
+        "ach_f_100",
+        "ach_f_250",
+        "ach_faith_500",
+        "ach_faith_5000",
+        "ach_faith_50k",
+        "ach_faith_500k",
+        "ach_faith_5m",
+        "ach_fps_100",
+        "ach_gnose_first"
+      ],
+      "gnose": {
+        "gnosePoints": 0,
+        "totalGnoseEarned": 1,
+        "gnoseResets": 1,
+        "unlockedUpgrades": [
+          "gn_init_faith"
+        ],
+        "defeatedBosses": [
+          "boss_anubis"
+        ],
+        "bossCurseTimerSec": 0,
+        "automationAccumulatorSec": 0.4,
+        "automationGoal": "gnose",
+        "automationGnoseTarget": 1,
+        "confirmReset": true,
+        "autoFollowersEnabled": true,
+        "autoFervorEnabled": true,
+        "autoRelicsEnabled": true,
+        "autoRelicUpgradesEnabled": true
+      }
+    },
+    "after": {
+      "version": 1,
+      "progressionRevision": 1,
+      "timestamp": 1793300892381,
+      "stats": {
+        "faithPoints": 2269.1240885204625,
+        "totalFaithAccumulated": 90598883027568930,
+        "totalClicks": 2111,
+        "fervorPoints": 0,
+        "fervorPeakThisRun": 0,
+        "relicPeakThisRun": 0,
+        "totalFervorGenerated": 35156932196948.82,
+        "incarnationStage": 1,
+        "relicPoints": 0,
+        "totalRelicsGenerated": 59961.24499997937,
+        "bestRelicsToGet": 0,
+        "incarnationBoostTimer": 0,
+        "hasSeenIntro": false
+      },
+      "followers": [
+        {
+          "id": "f_devotee",
+          "count": 1
+        }
+      ],
+      "fervorUpgrades": [
+        {
+          "id": "fu_prod",
+          "level": 0
+        },
+        {
+          "id": "fu_effect",
+          "level": 0
+        },
+        {
+          "id": "fu_click",
+          "level": 0
+        },
+        {
+          "id": "fu_followers",
+          "level": 0
+        },
+        {
+          "id": "fu_synergy",
+          "level": 0
+        },
+        {
+          "id": "fu_relics",
+          "level": 0
+        }
+      ],
+      "relicUpgrades": [
+        {
+          "id": "relic_cornucopia",
+          "level": 0
+        },
+        {
+          "id": "relic_torch",
+          "level": 0
+        },
+        {
+          "id": "relic_phoenix",
+          "level": 0
+        },
+        {
+          "id": "relic_caduceus",
+          "level": 0
+        },
+        {
+          "id": "relic_draupnir",
+          "level": 0
+        },
+        {
+          "id": "relic_ark",
+          "level": 0
+        }
+      ],
+      "unlocks": [
+        "unlock_incarnation",
+        "unlock_gnose"
+      ],
+      "achievements": [
+        "ach_click_1",
+        "ach_click_50",
+        "ach_click_250",
+        "ach_click_1000",
+        "ach_f_1",
+        "ach_f_10",
+        "ach_f_25",
+        "ach_f_50",
+        "ach_f_100",
+        "ach_f_250",
+        "ach_faith_500",
+        "ach_faith_5000",
+        "ach_faith_50k",
+        "ach_faith_500k",
+        "ach_faith_5m",
+        "ach_fps_100",
+        "ach_gnose_first"
+      ],
+      "gnose": {
+        "gnosePoints": 0,
+        "totalGnoseEarned": 4,
+        "gnoseResets": 2,
+        "unlockedUpgrades": [
+          "gn_init_faith",
+          "gn_memoria_selos"
+        ],
+        "defeatedBosses": [
+          "boss_anubis"
+        ],
+        "bossCurseTimerSec": 0,
+        "automationAccumulatorSec": 0.4,
+        "automationGoal": "gnose",
+        "automationGnoseTarget": 3,
+        "confirmReset": true,
+        "autoFollowersEnabled": true,
+        "autoFervorEnabled": true,
+        "autoRelicsEnabled": true,
+        "autoRelicUpgradesEnabled": true
+      }
+    }
+  },
+  {
+    "id": "gn_automation",
+    "price": 196,
+    "minutes": 20.551666666666232,
+    "acquired": true,
+    "before": {
+      "version": 1,
+      "progressionRevision": 1,
+      "timestamp": 1793300892381,
+      "stats": {
+        "faithPoints": 2269.1240885204625,
+        "totalFaithAccumulated": 90598883027568930,
+        "totalClicks": 2111,
+        "fervorPoints": 0,
+        "fervorPeakThisRun": 0,
+        "relicPeakThisRun": 0,
+        "totalFervorGenerated": 35156932196948.82,
+        "incarnationStage": 1,
+        "relicPoints": 0,
+        "totalRelicsGenerated": 59961.24499997937,
+        "bestRelicsToGet": 0,
+        "incarnationBoostTimer": 0,
+        "hasSeenIntro": false
+      },
+      "followers": [
+        {
+          "id": "f_devotee",
+          "count": 1
+        }
+      ],
+      "fervorUpgrades": [
+        {
+          "id": "fu_prod",
+          "level": 0
+        },
+        {
+          "id": "fu_effect",
+          "level": 0
+        },
+        {
+          "id": "fu_click",
+          "level": 0
+        },
+        {
+          "id": "fu_followers",
+          "level": 0
+        },
+        {
+          "id": "fu_synergy",
+          "level": 0
+        },
+        {
+          "id": "fu_relics",
+          "level": 0
+        }
+      ],
+      "relicUpgrades": [
+        {
+          "id": "relic_cornucopia",
+          "level": 0
+        },
+        {
+          "id": "relic_torch",
+          "level": 0
+        },
+        {
+          "id": "relic_phoenix",
+          "level": 0
+        },
+        {
+          "id": "relic_caduceus",
+          "level": 0
+        },
+        {
+          "id": "relic_draupnir",
+          "level": 0
+        },
+        {
+          "id": "relic_ark",
+          "level": 0
+        }
+      ],
+      "unlocks": [
+        "unlock_incarnation",
+        "unlock_gnose"
+      ],
+      "achievements": [
+        "ach_click_1",
+        "ach_click_50",
+        "ach_click_250",
+        "ach_click_1000",
+        "ach_f_1",
+        "ach_f_10",
+        "ach_f_25",
+        "ach_f_50",
+        "ach_f_100",
+        "ach_f_250",
+        "ach_faith_500",
+        "ach_faith_5000",
+        "ach_faith_50k",
+        "ach_faith_500k",
+        "ach_faith_5m",
+        "ach_fps_100",
+        "ach_gnose_first"
+      ],
+      "gnose": {
+        "gnosePoints": 0,
+        "totalGnoseEarned": 4,
+        "gnoseResets": 2,
+        "unlockedUpgrades": [
+          "gn_init_faith",
+          "gn_memoria_selos"
+        ],
+        "defeatedBosses": [
+          "boss_anubis"
+        ],
+        "bossCurseTimerSec": 0,
+        "automationAccumulatorSec": 0.4,
+        "automationGoal": "gnose",
+        "automationGnoseTarget": 3,
+        "confirmReset": true,
+        "autoFollowersEnabled": true,
+        "autoFervorEnabled": true,
+        "autoRelicsEnabled": true,
+        "autoRelicUpgradesEnabled": true
+      }
+    },
+    "after": {
+      "version": 1,
+      "progressionRevision": 1,
+      "timestamp": 1793300894921,
+      "stats": {
+        "faithPoints": 61312859.615462504,
+        "totalFaithAccumulated": 1.6505550396289262e+24,
+        "totalClicks": 2533,
+        "fervorPoints": 1579.5612504726757,
+        "fervorPeakThisRun": 1579.5612504726757,
+        "relicPeakThisRun": 0,
+        "totalFervorGenerated": 4967228148137977,
+        "incarnationStage": 1,
+        "relicPoints": 0,
+        "totalRelicsGenerated": 7517724.084999965,
+        "bestRelicsToGet": 0,
+        "incarnationBoostTimer": 53.999999999999915,
+        "hasSeenIntro": false
+      },
+      "followers": [
+        {
+          "id": "f_devotee",
+          "count": 57
+        }
+      ],
+      "fervorUpgrades": [
+        {
+          "id": "fu_prod",
+          "level": 0
+        },
+        {
+          "id": "fu_effect",
+          "level": 0
+        },
+        {
+          "id": "fu_click",
+          "level": 0
+        },
+        {
+          "id": "fu_followers",
+          "level": 0
+        },
+        {
+          "id": "fu_synergy",
+          "level": 0
+        },
+        {
+          "id": "fu_relics",
+          "level": 0
+        }
+      ],
+      "relicUpgrades": [
+        {
+          "id": "relic_cornucopia",
+          "level": 0
+        },
+        {
+          "id": "relic_torch",
+          "level": 0
+        },
+        {
+          "id": "relic_phoenix",
+          "level": 0
+        },
+        {
+          "id": "relic_caduceus",
+          "level": 0
+        },
+        {
+          "id": "relic_draupnir",
+          "level": 0
+        },
+        {
+          "id": "relic_ark",
+          "level": 0
+        }
+      ],
+      "unlocks": [
+        "unlock_incarnation",
+        "unlock_gnose"
+      ],
+      "achievements": [
+        "ach_click_1",
+        "ach_click_50",
+        "ach_click_250",
+        "ach_click_1000",
+        "ach_f_1",
+        "ach_f_10",
+        "ach_f_25",
+        "ach_f_50",
+        "ach_f_100",
+        "ach_f_250",
+        "ach_faith_500",
+        "ach_faith_5000",
+        "ach_faith_50k",
+        "ach_faith_500k",
+        "ach_faith_5m",
+        "ach_fps_100",
+        "ach_gnose_first",
+        "ach_gnose_25"
+      ],
+      "gnose": {
+        "gnosePoints": 2,
+        "totalGnoseEarned": 202,
+        "gnoseResets": 3,
+        "unlockedUpgrades": [
+          "gn_init_faith",
+          "gn_memoria_selos",
+          "gn_automation"
+        ],
+        "defeatedBosses": [
+          "boss_anubis"
+        ],
+        "bossCurseTimerSec": 0,
+        "automationAccumulatorSec": 0.5,
+        "automationGoal": "gnose",
+        "automationGnoseTarget": 196,
+        "confirmReset": true,
+        "autoFollowersEnabled": true,
+        "autoFervorEnabled": true,
+        "autoRelicsEnabled": true,
+        "autoRelicUpgradesEnabled": true
+      }
+    }
+  },
+  {
+    "id": "gn_seal_automation",
+    "price": 980,
+    "minutes": 20.08833333333332,
+    "acquired": true,
+    "before": {
+      "version": 1,
+      "progressionRevision": 1,
+      "timestamp": 1793300894921,
+      "stats": {
+        "faithPoints": 61312859.615462504,
+        "totalFaithAccumulated": 1.6505550396289262e+24,
+        "totalClicks": 2533,
+        "fervorPoints": 1579.5612504726757,
+        "fervorPeakThisRun": 1579.5612504726757,
+        "relicPeakThisRun": 0,
+        "totalFervorGenerated": 4967228148137977,
+        "incarnationStage": 1,
+        "relicPoints": 0,
+        "totalRelicsGenerated": 7517724.084999965,
+        "bestRelicsToGet": 0,
+        "incarnationBoostTimer": 53.999999999999915,
+        "hasSeenIntro": false
+      },
+      "followers": [
+        {
+          "id": "f_devotee",
+          "count": 57
+        }
+      ],
+      "fervorUpgrades": [
+        {
+          "id": "fu_prod",
+          "level": 0
+        },
+        {
+          "id": "fu_effect",
+          "level": 0
+        },
+        {
+          "id": "fu_click",
+          "level": 0
+        },
+        {
+          "id": "fu_followers",
+          "level": 0
+        },
+        {
+          "id": "fu_synergy",
+          "level": 0
+        },
+        {
+          "id": "fu_relics",
+          "level": 0
+        }
+      ],
+      "relicUpgrades": [
+        {
+          "id": "relic_cornucopia",
+          "level": 0
+        },
+        {
+          "id": "relic_torch",
+          "level": 0
+        },
+        {
+          "id": "relic_phoenix",
+          "level": 0
+        },
+        {
+          "id": "relic_caduceus",
+          "level": 0
+        },
+        {
+          "id": "relic_draupnir",
+          "level": 0
+        },
+        {
+          "id": "relic_ark",
+          "level": 0
+        }
+      ],
+      "unlocks": [
+        "unlock_incarnation",
+        "unlock_gnose"
+      ],
+      "achievements": [
+        "ach_click_1",
+        "ach_click_50",
+        "ach_click_250",
+        "ach_click_1000",
+        "ach_f_1",
+        "ach_f_10",
+        "ach_f_25",
+        "ach_f_50",
+        "ach_f_100",
+        "ach_f_250",
+        "ach_faith_500",
+        "ach_faith_5000",
+        "ach_faith_50k",
+        "ach_faith_500k",
+        "ach_faith_5m",
+        "ach_fps_100",
+        "ach_gnose_first",
+        "ach_gnose_25"
+      ],
+      "gnose": {
+        "gnosePoints": 2,
+        "totalGnoseEarned": 202,
+        "gnoseResets": 3,
+        "unlockedUpgrades": [
+          "gn_init_faith",
+          "gn_memoria_selos",
+          "gn_automation"
+        ],
+        "defeatedBosses": [
+          "boss_anubis"
+        ],
+        "bossCurseTimerSec": 0,
+        "automationAccumulatorSec": 0.5,
+        "automationGoal": "gnose",
+        "automationGnoseTarget": 196,
+        "confirmReset": true,
+        "autoFollowersEnabled": true,
+        "autoFervorEnabled": true,
+        "autoRelicsEnabled": true,
+        "autoRelicUpgradesEnabled": true
+      }
+    },
+    "after": {
+      "version": 1,
+      "progressionRevision": 1,
+      "timestamp": 1793300897495,
+      "stats": {
+        "faithPoints": 2286547276.11314,
+        "totalFaithAccumulated": 9.828064700370453e+26,
+        "totalClicks": 2943,
+        "fervorPoints": 11219.463715422906,
+        "fervorPeakThisRun": 11219.463715422906,
+        "relicPeakThisRun": 0,
+        "totalFervorGenerated": 3.6407239249264336e+21,
+        "incarnationStage": 1,
+        "relicPoints": 0,
+        "totalRelicsGenerated": 119811389.84500098,
+        "bestRelicsToGet": 0,
+        "incarnationBoostTimer": 53.999999999999915,
+        "hasSeenIntro": false
+      },
+      "followers": [
+        {
+          "id": "f_devotee",
+          "count": 202
+        }
+      ],
+      "fervorUpgrades": [
+        {
+          "id": "fu_prod",
+          "level": 0
+        },
+        {
+          "id": "fu_effect",
+          "level": 0
+        },
+        {
+          "id": "fu_click",
+          "level": 0
+        },
+        {
+          "id": "fu_followers",
+          "level": 0
+        },
+        {
+          "id": "fu_synergy",
+          "level": 0
+        },
+        {
+          "id": "fu_relics",
+          "level": 0
+        }
+      ],
+      "relicUpgrades": [
+        {
+          "id": "relic_cornucopia",
+          "level": 0
+        },
+        {
+          "id": "relic_torch",
+          "level": 0
+        },
+        {
+          "id": "relic_phoenix",
+          "level": 0
+        },
+        {
+          "id": "relic_caduceus",
+          "level": 0
+        },
+        {
+          "id": "relic_draupnir",
+          "level": 0
+        },
+        {
+          "id": "relic_ark",
+          "level": 0
+        }
+      ],
+      "unlocks": [
+        "unlock_incarnation",
+        "unlock_gnose"
+      ],
+      "achievements": [
+        "ach_click_1",
+        "ach_click_50",
+        "ach_click_250",
+        "ach_click_1000",
+        "ach_f_1",
+        "ach_f_10",
+        "ach_f_25",
+        "ach_f_50",
+        "ach_f_100",
+        "ach_f_250",
+        "ach_faith_500",
+        "ach_faith_5000",
+        "ach_faith_50k",
+        "ach_faith_500k",
+        "ach_faith_5m",
+        "ach_fps_100",
+        "ach_gnose_first",
+        "ach_gnose_25",
+        "ach_gnose_500"
+      ],
+      "gnose": {
+        "gnosePoints": 3,
+        "totalGnoseEarned": 1183,
+        "gnoseResets": 4,
+        "unlockedUpgrades": [
+          "gn_init_faith",
+          "gn_memoria_selos",
+          "gn_automation",
+          "gn_seal_automation"
+        ],
+        "defeatedBosses": [
+          "boss_anubis"
+        ],
+        "bossCurseTimerSec": 0,
+        "automationAccumulatorSec": 0.7999999999999999,
+        "automationGoal": "gnose",
+        "automationGnoseTarget": 978,
+        "confirmReset": true,
+        "autoFollowersEnabled": true,
+        "autoFervorEnabled": true,
+        "autoRelicsEnabled": true,
+        "autoRelicUpgradesEnabled": true
+      }
+    }
+  },
+  {
+    "id": "gn_init_fervor",
+    "price": 2939,
+    "minutes": 20.286666666666473,
+    "acquired": true,
+    "before": {
+      "version": 1,
+      "progressionRevision": 1,
+      "timestamp": 1793300897495,
+      "stats": {
+        "faithPoints": 2286547276.11314,
+        "totalFaithAccumulated": 9.828064700370453e+26,
+        "totalClicks": 2943,
+        "fervorPoints": 11219.463715422906,
+        "fervorPeakThisRun": 11219.463715422906,
+        "relicPeakThisRun": 0,
+        "totalFervorGenerated": 3.6407239249264336e+21,
+        "incarnationStage": 1,
+        "relicPoints": 0,
+        "totalRelicsGenerated": 119811389.84500098,
+        "bestRelicsToGet": 0,
+        "incarnationBoostTimer": 53.999999999999915,
+        "hasSeenIntro": false
+      },
+      "followers": [
+        {
+          "id": "f_devotee",
+          "count": 202
+        }
+      ],
+      "fervorUpgrades": [
+        {
+          "id": "fu_prod",
+          "level": 0
+        },
+        {
+          "id": "fu_effect",
+          "level": 0
+        },
+        {
+          "id": "fu_click",
+          "level": 0
+        },
+        {
+          "id": "fu_followers",
+          "level": 0
+        },
+        {
+          "id": "fu_synergy",
+          "level": 0
+        },
+        {
+          "id": "fu_relics",
+          "level": 0
+        }
+      ],
+      "relicUpgrades": [
+        {
+          "id": "relic_cornucopia",
+          "level": 0
+        },
+        {
+          "id": "relic_torch",
+          "level": 0
+        },
+        {
+          "id": "relic_phoenix",
+          "level": 0
+        },
+        {
+          "id": "relic_caduceus",
+          "level": 0
+        },
+        {
+          "id": "relic_draupnir",
+          "level": 0
+        },
+        {
+          "id": "relic_ark",
+          "level": 0
+        }
+      ],
+      "unlocks": [
+        "unlock_incarnation",
+        "unlock_gnose"
+      ],
+      "achievements": [
+        "ach_click_1",
+        "ach_click_50",
+        "ach_click_250",
+        "ach_click_1000",
+        "ach_f_1",
+        "ach_f_10",
+        "ach_f_25",
+        "ach_f_50",
+        "ach_f_100",
+        "ach_f_250",
+        "ach_faith_500",
+        "ach_faith_5000",
+        "ach_faith_50k",
+        "ach_faith_500k",
+        "ach_faith_5m",
+        "ach_fps_100",
+        "ach_gnose_first",
+        "ach_gnose_25",
+        "ach_gnose_500"
+      ],
+      "gnose": {
+        "gnosePoints": 3,
+        "totalGnoseEarned": 1183,
+        "gnoseResets": 4,
+        "unlockedUpgrades": [
+          "gn_init_faith",
+          "gn_memoria_selos",
+          "gn_automation",
+          "gn_seal_automation"
+        ],
+        "defeatedBosses": [
+          "boss_anubis"
+        ],
+        "bossCurseTimerSec": 0,
+        "automationAccumulatorSec": 0.7999999999999999,
+        "automationGoal": "gnose",
+        "automationGnoseTarget": 978,
+        "confirmReset": true,
+        "autoFollowersEnabled": true,
+        "autoFervorEnabled": true,
+        "autoRelicsEnabled": true,
+        "autoRelicUpgradesEnabled": true
+      }
+    },
+    "after": {
+      "version": 1,
+      "progressionRevision": 1,
+      "timestamp": 1793300901322,
+      "stats": {
+        "faithPoints": 1587779693.1015625,
+        "totalFaithAccumulated": 7.913052612646241e+28,
+        "totalClicks": 3363,
+        "fervorPoints": 34086.59800721396,
+        "fervorPeakThisRun": 34086.59800721396,
+        "relicPeakThisRun": 512.0000000000001,
+        "totalFervorGenerated": 1.209202831184001e+23,
+        "incarnationStage": 1,
+        "relicPoints": 512.0000000000001,
+        "totalRelicsGenerated": 1328400999.3249888,
+        "bestRelicsToGet": 0,
+        "incarnationBoostTimer": 57.09999999999996,
+        "hasSeenIntro": false
+      },
+      "followers": [
+        {
+          "id": "f_devotee",
+          "count": 220
+        }
+      ],
+      "fervorUpgrades": [
+        {
+          "id": "fu_prod",
+          "level": 0
+        },
+        {
+          "id": "fu_effect",
+          "level": 0
+        },
+        {
+          "id": "fu_click",
+          "level": 0
+        },
+        {
+          "id": "fu_followers",
+          "level": 0
+        },
+        {
+          "id": "fu_synergy",
+          "level": 0
+        },
+        {
+          "id": "fu_relics",
+          "level": 0
+        }
+      ],
+      "relicUpgrades": [
+        {
+          "id": "relic_cornucopia",
+          "level": 0
+        },
+        {
+          "id": "relic_torch",
+          "level": 0
+        },
+        {
+          "id": "relic_phoenix",
+          "level": 0
+        },
+        {
+          "id": "relic_caduceus",
+          "level": 0
+        },
+        {
+          "id": "relic_draupnir",
+          "level": 0
+        },
+        {
+          "id": "relic_ark",
+          "level": 0
+        }
+      ],
+      "unlocks": [
+        "unlock_incarnation",
+        "unlock_fervor_upgrades",
+        "unlock_relics",
+        "unlock_gnose"
+      ],
+      "achievements": [
+        "ach_click_1",
+        "ach_click_50",
+        "ach_click_250",
+        "ach_click_1000",
+        "ach_f_1",
+        "ach_f_10",
+        "ach_f_25",
+        "ach_f_50",
+        "ach_f_100",
+        "ach_f_250",
+        "ach_faith_500",
+        "ach_faith_5000",
+        "ach_faith_50k",
+        "ach_faith_500k",
+        "ach_faith_5m",
+        "ach_fps_100",
+        "ach_gnose_first",
+        "ach_gnose_25",
+        "ach_gnose_500"
+      ],
+      "gnose": {
+        "gnosePoints": 5,
+        "totalGnoseEarned": 4124,
+        "gnoseResets": 5,
+        "unlockedUpgrades": [
+          "gn_init_faith",
+          "gn_memoria_selos",
+          "gn_automation",
+          "gn_seal_automation",
+          "gn_init_fervor"
+        ],
+        "defeatedBosses": [
+          "boss_anubis"
+        ],
+        "bossCurseTimerSec": 0,
+        "automationAccumulatorSec": 0,
+        "automationGoal": "gnose",
+        "automationGnoseTarget": 2936,
+        "confirmReset": true,
+        "autoFollowersEnabled": true,
+        "autoFervorEnabled": true,
+        "autoRelicsEnabled": true,
+        "autoRelicUpgradesEnabled": true
+      }
+    }
+  },
+  {
+    "id": "gn_ritual_automation",
+    "price": 6345,
+    "minutes": 20.209999999999877,
+    "acquired": true,
+    "before": {
+      "version": 1,
+      "progressionRevision": 1,
+      "timestamp": 1793300901322,
+      "stats": {
+        "faithPoints": 1587779693.1015625,
+        "totalFaithAccumulated": 7.913052612646241e+28,
+        "totalClicks": 3363,
+        "fervorPoints": 34086.59800721396,
+        "fervorPeakThisRun": 34086.59800721396,
+        "relicPeakThisRun": 512.0000000000001,
+        "totalFervorGenerated": 1.209202831184001e+23,
+        "incarnationStage": 1,
+        "relicPoints": 512.0000000000001,
+        "totalRelicsGenerated": 1328400999.3249888,
+        "bestRelicsToGet": 0,
+        "incarnationBoostTimer": 57.09999999999996,
+        "hasSeenIntro": false
+      },
+      "followers": [
+        {
+          "id": "f_devotee",
+          "count": 220
+        }
+      ],
+      "fervorUpgrades": [
+        {
+          "id": "fu_prod",
+          "level": 0
+        },
+        {
+          "id": "fu_effect",
+          "level": 0
+        },
+        {
+          "id": "fu_click",
+          "level": 0
+        },
+        {
+          "id": "fu_followers",
+          "level": 0
+        },
+        {
+          "id": "fu_synergy",
+          "level": 0
+        },
+        {
+          "id": "fu_relics",
+          "level": 0
+        }
+      ],
+      "relicUpgrades": [
+        {
+          "id": "relic_cornucopia",
+          "level": 0
+        },
+        {
+          "id": "relic_torch",
+          "level": 0
+        },
+        {
+          "id": "relic_phoenix",
+          "level": 0
+        },
+        {
+          "id": "relic_caduceus",
+          "level": 0
+        },
+        {
+          "id": "relic_draupnir",
+          "level": 0
+        },
+        {
+          "id": "relic_ark",
+          "level": 0
+        }
+      ],
+      "unlocks": [
+        "unlock_incarnation",
+        "unlock_fervor_upgrades",
+        "unlock_relics",
+        "unlock_gnose"
+      ],
+      "achievements": [
+        "ach_click_1",
+        "ach_click_50",
+        "ach_click_250",
+        "ach_click_1000",
+        "ach_f_1",
+        "ach_f_10",
+        "ach_f_25",
+        "ach_f_50",
+        "ach_f_100",
+        "ach_f_250",
+        "ach_faith_500",
+        "ach_faith_5000",
+        "ach_faith_50k",
+        "ach_faith_500k",
+        "ach_faith_5m",
+        "ach_fps_100",
+        "ach_gnose_first",
+        "ach_gnose_25",
+        "ach_gnose_500"
+      ],
+      "gnose": {
+        "gnosePoints": 5,
+        "totalGnoseEarned": 4124,
+        "gnoseResets": 5,
+        "unlockedUpgrades": [
+          "gn_init_faith",
+          "gn_memoria_selos",
+          "gn_automation",
+          "gn_seal_automation",
+          "gn_init_fervor"
+        ],
+        "defeatedBosses": [
+          "boss_anubis"
+        ],
+        "bossCurseTimerSec": 0,
+        "automationAccumulatorSec": 0,
+        "automationGoal": "gnose",
+        "automationGnoseTarget": 2936,
+        "confirmReset": true,
+        "autoFollowersEnabled": true,
+        "autoFervorEnabled": true,
+        "autoRelicsEnabled": true,
+        "autoRelicUpgradesEnabled": true
+      }
+    },
+    "after": {
+      "version": 1,
+      "progressionRevision": 1,
+      "timestamp": 1793300905559,
+      "stats": {
+        "faithPoints": 247885129840.7091,
+        "totalFaithAccumulated": 1.774393388374061e+30,
+        "totalClicks": 3775,
+        "fervorPoints": 374204.5582027871,
+        "fervorPeakThisRun": 374204.5582027871,
+        "relicPeakThisRun": 4710.4,
+        "totalFervorGenerated": 2.664993411949411e+24,
+        "incarnationStage": 1,
+        "relicPoints": 4710.4,
+        "totalRelicsGenerated": 16604387737.245142,
+        "bestRelicsToGet": 0,
+        "incarnationBoostTimer": 53.999999999999915,
+        "hasSeenIntro": false
+      },
+      "followers": [
+        {
+          "id": "f_devotee",
+          "count": 257
+        }
+      ],
+      "fervorUpgrades": [
+        {
+          "id": "fu_prod",
+          "level": 0
+        },
+        {
+          "id": "fu_effect",
+          "level": 0
+        },
+        {
+          "id": "fu_click",
+          "level": 0
+        },
+        {
+          "id": "fu_followers",
+          "level": 0
+        },
+        {
+          "id": "fu_synergy",
+          "level": 0
+        },
+        {
+          "id": "fu_relics",
+          "level": 0
+        }
+      ],
+      "relicUpgrades": [
+        {
+          "id": "relic_cornucopia",
+          "level": 0
+        },
+        {
+          "id": "relic_torch",
+          "level": 0
+        },
+        {
+          "id": "relic_phoenix",
+          "level": 0
+        },
+        {
+          "id": "relic_caduceus",
+          "level": 0
+        },
+        {
+          "id": "relic_draupnir",
+          "level": 0
+        },
+        {
+          "id": "relic_ark",
+          "level": 0
+        }
+      ],
+      "unlocks": [
+        "unlock_incarnation",
+        "unlock_fervor_upgrades",
+        "unlock_relics",
+        "unlock_gnose"
+      ],
+      "achievements": [
+        "ach_click_1",
+        "ach_click_50",
+        "ach_click_250",
+        "ach_click_1000",
+        "ach_f_1",
+        "ach_f_10",
+        "ach_f_25",
+        "ach_f_50",
+        "ach_f_100",
+        "ach_f_250",
+        "ach_faith_500",
+        "ach_faith_5000",
+        "ach_faith_50k",
+        "ach_faith_500k",
+        "ach_faith_5m",
+        "ach_fps_100",
+        "ach_gnose_first",
+        "ach_gnose_25",
+        "ach_gnose_500"
+      ],
+      "gnose": {
+        "gnosePoints": 10,
+        "totalGnoseEarned": 10474,
+        "gnoseResets": 6,
+        "unlockedUpgrades": [
+          "gn_init_faith",
+          "gn_memoria_selos",
+          "gn_automation",
+          "gn_seal_automation",
+          "gn_init_fervor",
+          "gn_ritual_automation"
+        ],
+        "defeatedBosses": [
+          "boss_anubis"
+        ],
+        "bossCurseTimerSec": 0,
+        "automationAccumulatorSec": 0.6,
+        "automationGoal": "gnose",
+        "automationGnoseTarget": 6340,
+        "confirmReset": true,
+        "autoFollowersEnabled": true,
+        "autoFervorEnabled": true,
+        "autoRelicsEnabled": true,
+        "autoRelicUpgradesEnabled": true
+      }
+    }
+  },
+  {
+    "id": "gn_relic_automation",
+    "price": 16974,
+    "minutes": 47.95666666664131,
+    "acquired": true,
+    "before": {
+      "version": 1,
+      "progressionRevision": 1,
+      "timestamp": 1793300905559,
+      "stats": {
+        "faithPoints": 247885129840.7091,
+        "totalFaithAccumulated": 1.774393388374061e+30,
+        "totalClicks": 3775,
+        "fervorPoints": 374204.5582027871,
+        "fervorPeakThisRun": 374204.5582027871,
+        "relicPeakThisRun": 4710.4,
+        "totalFervorGenerated": 2.664993411949411e+24,
+        "incarnationStage": 1,
+        "relicPoints": 4710.4,
+        "totalRelicsGenerated": 16604387737.245142,
+        "bestRelicsToGet": 0,
+        "incarnationBoostTimer": 53.999999999999915,
+        "hasSeenIntro": false
+      },
+      "followers": [
+        {
+          "id": "f_devotee",
+          "count": 257
+        }
+      ],
+      "fervorUpgrades": [
+        {
+          "id": "fu_prod",
+          "level": 0
+        },
+        {
+          "id": "fu_effect",
+          "level": 0
+        },
+        {
+          "id": "fu_click",
+          "level": 0
+        },
+        {
+          "id": "fu_followers",
+          "level": 0
+        },
+        {
+          "id": "fu_synergy",
+          "level": 0
+        },
+        {
+          "id": "fu_relics",
+          "level": 0
+        }
+      ],
+      "relicUpgrades": [
+        {
+          "id": "relic_cornucopia",
+          "level": 0
+        },
+        {
+          "id": "relic_torch",
+          "level": 0
+        },
+        {
+          "id": "relic_phoenix",
+          "level": 0
+        },
+        {
+          "id": "relic_caduceus",
+          "level": 0
+        },
+        {
+          "id": "relic_draupnir",
+          "level": 0
+        },
+        {
+          "id": "relic_ark",
+          "level": 0
+        }
+      ],
+      "unlocks": [
+        "unlock_incarnation",
+        "unlock_fervor_upgrades",
+        "unlock_relics",
+        "unlock_gnose"
+      ],
+      "achievements": [
+        "ach_click_1",
+        "ach_click_50",
+        "ach_click_250",
+        "ach_click_1000",
+        "ach_f_1",
+        "ach_f_10",
+        "ach_f_25",
+        "ach_f_50",
+        "ach_f_100",
+        "ach_f_250",
+        "ach_faith_500",
+        "ach_faith_5000",
+        "ach_faith_50k",
+        "ach_faith_500k",
+        "ach_faith_5m",
+        "ach_fps_100",
+        "ach_gnose_first",
+        "ach_gnose_25",
+        "ach_gnose_500"
+      ],
+      "gnose": {
+        "gnosePoints": 10,
+        "totalGnoseEarned": 10474,
+        "gnoseResets": 6,
+        "unlockedUpgrades": [
+          "gn_init_faith",
+          "gn_memoria_selos",
+          "gn_automation",
+          "gn_seal_automation",
+          "gn_init_fervor",
+          "gn_ritual_automation"
+        ],
+        "defeatedBosses": [
+          "boss_anubis"
+        ],
+        "bossCurseTimerSec": 0,
+        "automationAccumulatorSec": 0.6,
+        "automationGoal": "gnose",
+        "automationGnoseTarget": 6340,
+        "confirmReset": true,
+        "autoFollowersEnabled": true,
+        "autoFervorEnabled": true,
+        "autoRelicsEnabled": true,
+        "autoRelicUpgradesEnabled": true
+      }
+    },
+    "after": {
+      "version": 1,
+      "progressionRevision": 1,
+      "timestamp": 1793300913742,
+      "stats": {
+        "faithPoints": 2763290118129016,
+        "totalFaithAccumulated": 8.79353995043238e+31,
+        "totalClicks": 4735,
+        "fervorPoints": 470827697.04246044,
+        "fervorPeakThisRun": 5867710496.04246,
+        "relicPeakThisRun": 8192.000000000002,
+        "totalFervorGenerated": 7.176148394049535e+25,
+        "incarnationStage": 1,
+        "relicPoints": 8192.000000000002,
+        "totalRelicsGenerated": 199186887653.20572,
+        "bestRelicsToGet": 0,
+        "incarnationBoostTimer": 57.099999999999966,
+        "hasSeenIntro": false
+      },
+      "followers": [
+        {
+          "id": "f_devotee",
+          "count": 391
+        }
+      ],
+      "fervorUpgrades": [
+        {
+          "id": "fu_prod",
+          "level": 29
+        },
+        {
+          "id": "fu_effect",
+          "level": 23
+        },
+        {
+          "id": "fu_click",
+          "level": 47
+        },
+        {
+          "id": "fu_followers",
+          "level": 35
+        },
+        {
+          "id": "fu_synergy",
+          "level": 16
+        },
+        {
+          "id": "fu_relics",
+          "level": 0
+        }
+      ],
+      "relicUpgrades": [
+        {
+          "id": "relic_cornucopia",
+          "level": 0
+        },
+        {
+          "id": "relic_torch",
+          "level": 0
+        },
+        {
+          "id": "relic_phoenix",
+          "level": 0
+        },
+        {
+          "id": "relic_caduceus",
+          "level": 0
+        },
+        {
+          "id": "relic_draupnir",
+          "level": 0
+        },
+        {
+          "id": "relic_ark",
+          "level": 0
+        }
+      ],
+      "unlocks": [
+        "unlock_incarnation",
+        "unlock_fervor_upgrades",
+        "unlock_relics",
+        "unlock_gnose"
+      ],
+      "achievements": [
+        "ach_click_1",
+        "ach_click_50",
+        "ach_click_250",
+        "ach_click_1000",
+        "ach_f_1",
+        "ach_f_10",
+        "ach_f_25",
+        "ach_f_50",
+        "ach_f_100",
+        "ach_f_250",
+        "ach_faith_500",
+        "ach_faith_5000",
+        "ach_faith_50k",
+        "ach_faith_500k",
+        "ach_faith_5m",
+        "ach_fps_100",
+        "ach_gnose_first",
+        "ach_gnose_25",
+        "ach_gnose_500"
+      ],
+      "gnose": {
+        "gnosePoints": 9,
+        "totalGnoseEarned": 27447,
+        "gnoseResets": 7,
+        "unlockedUpgrades": [
+          "gn_init_faith",
+          "gn_memoria_selos",
+          "gn_automation",
+          "gn_seal_automation",
+          "gn_init_fervor",
+          "gn_ritual_automation",
+          "gn_relic_automation"
+        ],
+        "defeatedBosses": [
+          "boss_anubis"
+        ],
+        "bossCurseTimerSec": 0,
+        "automationAccumulatorSec": 0,
+        "automationGoal": "gnose",
+        "automationGnoseTarget": 16964,
+        "confirmReset": true,
+        "autoFollowersEnabled": true,
+        "autoFervorEnabled": true,
+        "autoRelicsEnabled": true,
+        "autoRelicUpgradesEnabled": true
+      }
+    }
+  }
+]

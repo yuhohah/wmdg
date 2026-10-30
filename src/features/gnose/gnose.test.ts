@@ -37,6 +37,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(gnoseUnlock?.cost).toBe(1e15);
     expect(gnoseUnlock?.prerequisiteId).toBe('unlock_relics');
 
+    gameState.unlocks.find(u => u.id === 'unlock_relics')!.unlocked = true;
     gameState.faithPoints = 1e15;
     expect(gameState.buyUnlock(gnoseUnlock!)).toBe(true);
     expect(gameState.isGnoseUnlocked()).toBe(true);
@@ -45,9 +46,9 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
   it('calculates Gnose gain on the DodecaDragons sub-exponential curve', () => {
     expect(calculateGnoseToGet(9.99e14)).toBe(0);
     expect(calculateGnoseToGet(1e15)).toBe(1);
-    expect(calculateGnoseToGet(1e18)).toBe(Math.floor(Math.pow(1e3, 0.15))); // 2
-    expect(calculateGnoseToGet(1e25)).toBe(Math.floor(Math.pow(1e10, 0.15))); // 31
-    expect(calculateGnoseToGet(1e25, 2.5)).toBe(Math.floor(Math.pow(1e10, 0.15) * 2.5));
+    expect(calculateGnoseToGet(1e18)).toBe(Math.floor(Math.pow(1e3, 0.25))); // 2
+    expect(calculateGnoseToGet(1e25)).toBe(Math.floor(Math.pow(1e10, 0.25))); // 31
+    expect(calculateGnoseToGet(1e25, 0.17)).toBe(Math.floor(Math.pow(1e10, 0.17)));
   });
 
   it('performs hard DodecaDragons reset by default, re-locking earlier Selos while keeping Achievements and Defeated Bosses', () => {
@@ -112,7 +113,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
   });
 
   it('enforces Guardian Boss locks on Tiers II, III, IV and applies Memória Hermética and Cripta Eterna on reset', () => {
-    gameState.gnosePoints = 150;
+    gameState.gnosePoints = GNOSE_UPGRADES.reduce((sum, u) => sum + u.cost, 0);
     gameState.totalGnoseEarned = 150;
 
     expect(gameState.buyGnoseUpgrade('gn_init_faith')).toBe(true);
@@ -128,10 +129,10 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(gameState.isGnoseTierUnlocked(2)).toBe(true);
     expect(gameState.buyGnoseUpgrade('gn_keep_relics')).toBe(true);
 
-    // Memória Hermética unlocks earlier Selos immediately and enables Convert Max at 0 followers
+    // Memória Hermética now opens only Encarnação and Converter Máximo.
     expect(gameState.isIncarnationUnlocked()).toBe(true);
-    expect(gameState.isFervorUpgradesUnlocked()).toBe(true);
-    expect(gameState.isRelicsUnlocked()).toBe(true);
+    expect(gameState.isFervorUpgradesUnlocked()).toBe(false);
+    expect(gameState.isRelicsUnlocked()).toBe(false);
     expect(gameState.isConvertMaxUnlocked()).toBe(true);
 
     // Upgrade a relic, then perform Gnose reset
@@ -140,11 +141,11 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     const res = gameState.performGnoseReset();
     expect(res.success).toBe(true);
 
-    // Starts with 1000 Fé (gn_init_faith), keeps Selos open (gn_memoria_selos), keeps Relics (gn_keep_relics)
+    // Starts with 1000 Fé (gn_init_faith), keeps only Encarnação open (gn_memoria_selos), keeps Relics (gn_keep_relics)
     expect(gameState.faithPoints).toBe(1000);
     expect(gameState.isIncarnationUnlocked()).toBe(true);
-    expect(gameState.isFervorUpgradesUnlocked()).toBe(true);
-    expect(gameState.isRelicsUnlocked()).toBe(true);
+    expect(gameState.isFervorUpgradesUnlocked()).toBe(false);
+    expect(gameState.isRelicsUnlocked()).toBe(false);
     expect(gameState.relicUpgrades[0].level).toBe(15);
   });
 
@@ -175,7 +176,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
 
     // 2. Re-challenge Anúbis and shatter rifts + click Sphere to win quickly
     expect(gameState.startBossBattle('boss_anubis')).toBe(true);
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 30; i++) {
       if (!gameState.activeBossBattle) break;
       gameState.spawnBossRift();
       const riftId = gameState.activeBossBattle.activeRifts[0].id;
@@ -188,18 +189,18 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(gameState.getFaithPerSecond()).toBeCloseTo(normalFps * 1.5, 4);
   });
 
-  it('unlocks Tiamat (Endgame Boss) only when all 20/20 Gnose nodes are assimilated and grants Crepúsculo dos Deuses on victory', () => {
+  it('unlocks Primordial Chaos (Endgame Boss) only when the complete Gnose tree are assimilated and grants Crepúsculo dos Deuses on victory', () => {
     gameState.totalGnoseEarned = 1000;
     expect(gameState.canChallengeBoss('boss_tiamat')).toBe(false);
 
-    // Assimilate all 20 Gnose nodes
+    // Assimilate every Gnose node
     GNOSE_UPGRADES.forEach((u) => {
       gameState.unlockedGnoseUpgrades.add(u.id);
     });
     expect(gameState.canChallengeBoss('boss_tiamat')).toBe(true);
 
     expect(gameState.startBossBattle('boss_tiamat')).toBe(true);
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 30; i++) {
       if (!gameState.activeBossBattle) break;
       gameState.spawnBossRift();
       const riftId = gameState.activeBossBattle.activeRifts[0].id;
@@ -211,36 +212,94 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(newlyUnlocked.some((a) => a.id === 'ach_boss_tiamat')).toBe(true);
   });
 
-  it('evolves DodecaDragons formulas for MU6 (1 + Fiéis^1.5), MU10 (1 + Fiéis^3), and MU14 (3.5^(n^0.7))', () => {
-    expect(calculateGnoseFollowersSynergyMultiplier(10, false, false)).toBe(1);
-    expect(calculateGnoseFollowersSynergyMultiplier(10, true, false)).toBeCloseTo(1 + Math.pow(10, 1.5), 4);
-    expect(calculateGnoseFollowersSynergyMultiplier(10, true, true)).toBe(1001);
+  it('scales Boss Battle HP bar drain, Click damage, Rift damage, and Altar protection across all 6 cult resources', () => {
+    gameState.totalGnoseEarned = 1;
+    const base = gameState.getBossCombatBreakdown('boss_anubis');
+
+    // 1. Adding Fé increases faithBonus and passive DPS
+    gameState.faithPoints = 1e9;
+    gameState.totalFaithAccumulated = 1e9;
+    const afterFaith = gameState.getBossCombatBreakdown('boss_anubis');
+    expect(afterFaith.faithBonus).toBeGreaterThan(base.faithBonus);
+    expect(afterFaith.passiveDps).toBeGreaterThan(base.passiveDps);
+
+    // 2. Adding Fiéis increases followersBonus, passive DPS, and Altar heal on rift shatter
+    gameState.followers[0].count = 50;
+    const afterFollowers = gameState.getBossCombatBreakdown('boss_anubis');
+    expect(afterFollowers.followersBonus).toBeGreaterThan(afterFaith.followersBonus);
+    expect(afterFollowers.passiveDps).toBeGreaterThan(afterFaith.passiveDps);
+    expect(afterFollowers.altarHealOnRift).toBeGreaterThan(0);
+
+    // 3. Adding Fervor increases fervorBonus, passive DPS, and Sphere Click damage
+    gameState.unlocks.forEach((u) => (u.unlocked = true));
+    gameState.fervorPoints = 100000;
+    gameState.fervorUpgrades[0].level = 5;
+    const afterFervor = gameState.getBossCombatBreakdown('boss_anubis');
+    expect(afterFervor.fervorBonus).toBeGreaterThan(afterFollowers.fervorBonus);
+    expect(afterFervor.clickDamage).toBeGreaterThan(afterFollowers.clickDamage);
+
+    // 4. Adding Relíquias increases relicsBonus, Rift critical damage, and mitigates Altar damage on miss
+    gameState.relicPoints = 1000;
+    gameState.relicUpgrades[0].level = 5;
+    const afterRelics = gameState.getBossCombatBreakdown('boss_anubis');
+    expect(afterRelics.relicsBonus).toBeGreaterThan(afterFervor.relicsBonus);
+    expect(afterRelics.riftDamage).toBeGreaterThan(afterFervor.riftDamage);
+    expect(afterRelics.altarDamageOnMiss).toBeLessThan(base.altarDamageOnMiss);
+
+    // 5. Advancing Encarnação increases incarnationBonus, click damage, and passive DPS
+    gameState.incarnationStage = 3;
+    gameState.incarnationBoostTimer = 30;
+    const afterIncarnation = gameState.getBossCombatBreakdown('boss_anubis');
+    expect(afterIncarnation.incarnationBonus).toBeGreaterThan(afterRelics.incarnationBonus);
+    expect(afterIncarnation.passiveDps).toBeGreaterThan(afterRelics.passiveDps);
+
+    // 6. Adding Gnose increases gnoseBonus and overall multiplier
+    gameState.gnosePoints = 100;
+    gameState.totalGnoseEarned = 100;
+    gameState.unlockedGnoseUpgrades.add('gn_init_faith');
+    const afterGnose = gameState.getBossCombatBreakdown('boss_anubis');
+    expect(afterGnose.gnoseBonus).toBeGreaterThan(afterIncarnation.gnoseBonus);
+    expect(afterGnose.totalResourceMultiplier).toBeGreaterThan(afterIncarnation.totalResourceMultiplier);
+
+    // Verify passive tick visibly drains Boss HP bar even when raw Fé/s is smaller than 1e18
+    expect(gameState.startBossBattle('boss_anubis')).toBe(true);
+    const initialHp = gameState.activeBossBattle!.bossHp;
+    gameState.tick(1.0);
+    expect(gameState.activeBossBattle!.bossHp).toBeLessThan(initialHp);
+    expect(gameState.activeBossBattle!.bossHp).toBeGreaterThanOrEqual(initialHp * 0.975);
+  });
+
+  it('evolves only the coefficients and exponents of the existing synergy and ritual formulas', () => {
+    expect(calculateGnoseFollowersSynergyMultiplier(10, false)).toBe(1);
+    expect(calculateGnoseFollowersSynergyMultiplier(10, true)).toBeCloseTo(1 + Math.pow(10, 1.5), 4);
+    expect(calculateGnoseFollowersSynergyMultiplier(10, true, 1.6)).toBeCloseTo(1 + 10 ** 1.6, 7);
 
     const fu1 = { ...gameState.fervorUpgrades[0], level: 5 };
-    const normalFu1 = getFervorUpgradeMultiplier(fu1, 0, 0, false);
-    const boostedFu1 = getFervorUpgradeMultiplier(fu1, 0, 0, true);
+    const normalFu1 = getFervorUpgradeMultiplier(fu1, 0, 0, 2);
+    const boostedFu1 = getFervorUpgradeMultiplier(fu1, 0, 0, 2.35);
     expect(normalFu1).toBeCloseTo(Math.pow(2, Math.pow(5, 0.6)), 4);
-    expect(boostedFu1).toBeCloseTo(Math.pow(3.5, Math.pow(5, 0.7)), 4);
+    expect(boostedFu1).toBeCloseTo(Math.pow(2.35, Math.pow(5, 0.6)), 4);
     expect(boostedFu1).toBeGreaterThan(normalFu1);
   });
 
-  it('applies gn_dilatacao (Dilatação Hermética) as an exact 2x multiplier to both click and passive faith', () => {
+  it('grants the first permanent follower synergy through Emanação', () => {
     gameState.followers[0].count = 10;
     const baseFpc = gameState.getFaithPerClick();
     const baseFps = gameState.getFaithPerSecond();
 
-    gameState.unlockedGnoseUpgrades.add('gn_dilatacao');
+    gameState.unlockedGnoseUpgrades.add('gn_init_faith');
 
-    expect(gameState.getFaithPerClick()).toBeCloseTo(baseFpc * 2, 5);
-    expect(gameState.getFaithPerSecond()).toBeCloseTo(baseFps * 2, 5);
+    expect(gameState.getFaithPerClick()).toBeCloseTo(baseFpc * 4 * (1 + Math.sqrt(10)), 5);
+    expect(gameState.getFaithPerSecond()).toBeCloseTo(baseFps * 4 * (1 + Math.sqrt(10)), 5);
   });
 
-  it('runs Tier 4 automation on tick without spending Fé or Fervor and respects toggles', () => {
+  it('makes the tier I autobuyers free after Olho do Infinito', () => {
     gameState.unlocks.forEach((u) => {
       u.unlocked = true;
     });
-    gameState.unlockedGnoseUpgrades.add('gn_auto_followers');
-    gameState.unlockedGnoseUpgrades.add('gn_auto_fervor');
+    gameState.unlockedGnoseUpgrades.add('gn_automation');
+    gameState.unlockedGnoseUpgrades.add('gn_ritual_automation');
+    gameState.unlockedGnoseUpgrades.add('gn_omniscience');
 
     gameState.faithPoints = 5000;
     gameState.fervorPoints = 1000;
