@@ -205,7 +205,6 @@ class AppManager {
     this.formulaTooltip = new FormulaTooltip(this.gameState);
     this.settingsModal = new SettingsModal({
       audio: this.audio,
-      onOpen: () => this.statsTab.updateUI(),
       getLastSaveTime: () => this.lastSaveTime,
       onManualSave: () => this.manualSave(),
       onExportSave: () => this.saveDataModal.openExport(),
@@ -283,7 +282,7 @@ class AppManager {
 
   private setupReactiveListeners(): void {
     events.on(GameEvents.STATE_CHANGED, () => {
-      if (this.settingsModal.isOpen()) this.statsTab.updateUI();
+      this.statsTab.updateUI();
       this.achievementsTab.checkAchievements();
       this.achievementsTab.updateRealtime();
       this.cardUpdates.update();
@@ -293,7 +292,7 @@ class AppManager {
     });
 
     events.on(GameEvents.GAME_TICK, () => {
-      if (this.settingsModal.isOpen()) this.statsTab.updateUI();
+      this.statsTab.updateUI();
       this.achievementsTab.checkAchievements();
       this.cardUpdates.update();
       if (this.gnoseTab.bossBattleModal.isOpen()) this.gnoseTab.bossBattleModal.updateUI();
@@ -339,7 +338,7 @@ class AppManager {
     this.updateUnlockedTabsVisibility();
     this.renderAllLists();
     this.hud.update();
-    if (this.settingsModal.isOpen()) this.statsTab.updateUI();
+    this.statsTab.updateUI();
     events.emit(GameEvents.STATE_CHANGED);
   }
 

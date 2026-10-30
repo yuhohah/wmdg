@@ -1,0 +1,50 @@
+#cult-status-btn {
+  cursor: pointer;
+  text-align: left;
+}
+
+#cult-status-modal {
+  width: min(560px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+#cult-status-modal .modal-header {
+  gap: 12px;
+}
+
+#cult-status-modal .modal-title {
+  margin: 0;
+}
+
+#cult-status-modal .stat-box {
+  gap: 16px;
+}
+
+#cult-status-modal .stat-val {
+  text-align: right;
+}
+
+@media (max-width: 860px) {
+  /* Keep access to status on compact HUDs, using the wordmark's existing icon. */
+  #cult-status-btn {
+    display: inline-flex;
+    flex: 0 0 34px;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 2px;
+    border-width: 4px;
+    border-image-width: 4px;
+  }
+
+  #cult-status-btn .cult-mark {
+    width: 22px;
+    height: 22px;
+  }
+
+  #cult-status-btn > span:last-child {
+    display: none;
+  }
+}

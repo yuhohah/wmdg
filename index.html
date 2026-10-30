@@ -27,7 +27,7 @@
 
       <!-- Top HUD Bar -->
       <header class="top-hud-bar">
-        <a class="cult-wordmark" href="/" aria-label="Cult of the Sphere"><span class="cult-mark" data-icon="sphere"></span><span>CULT OF<br>THE SPHERE</span></a>
+        <button id="cult-status-btn" class="cult-wordmark" type="button" aria-label="Cult of the Sphere — Status do Culto" aria-haspopup="dialog" aria-controls="cult-status-modal" aria-expanded="false"><span class="cult-mark" data-icon="sphere" aria-hidden="true"></span><span>CULT OF<br>THE SPHERE</span></button>
         <!-- Left: Integrated Resources Box (Fé & Fervor) -->
         <div class="resources-hud-card">
           <div class="resources-hud-header">RECURSOS</div>
@@ -559,6 +559,52 @@
       </div>
     </div>
 
+    <!-- CULT STATUS DIALOG -->
+    <dialog id="cult-status-modal" class="cult-dialog cult-status-dialog" aria-labelledby="cult-status-title">
+      <div class="modal-header">
+        <h2 id="cult-status-title" class="modal-title">Status do Culto</h2>
+        <button id="close-cult-status-btn" type="button" class="close-btn-gold" aria-label="Fechar Status do Culto">&times;</button>
+      </div>
+        <div class="stats-panel-content cult-status-stats">
+          <div class="stat-box">
+            <span class="stat-label">FÉ TOTAL ACUMULADA</span>
+            <span id="stat-total-faith" class="stat-val">1</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">FÉ POR CLIQUE</span>
+            <span id="stat-click-faith" class="stat-val">+1</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">FÉ POR SEGUNDO</span>
+            <span id="stat-passive-faith" class="stat-val">+0 Fé/s</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">FERVOR ACUMULADO</span>
+            <span id="stat-fervor-accum" class="stat-val">0</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">PRODUÇÃO DE FERVOR</span>
+            <span id="stat-fervor-rate" class="stat-val">+0 Fervor/s</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">TOTAL DE FIÉIS</span>
+            <span id="stat-total-followers" class="stat-val">0</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">CLIQUES NA ESFERA</span>
+            <span id="stat-total-clicks" class="stat-val">0</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">CONQUISTAS DESBLOQUEADAS</span>
+            <span id="stat-achievements-count" class="stat-val">0 / 20</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">ESTÁGIO DO CULTO</span>
+            <span id="stat-cult-tier" class="stat-val">Boato</span>
+          </div>
+        </div>
+    </dialog>
+
     <!-- SETTINGS MODAL OVERLAY -->
     <div id="settings-modal" class="modal-overlay">
       <div class="modal-slide-card">
@@ -616,46 +662,6 @@
             </div>
             <input type="checkbox" id="nerds-toggle" />
           </label>
-        </div>
-
-        <div class="settings-section-subtitle">Status do Culto</div>
-        <div class="stats-panel-content settings-stats">
-          <div class="stat-box">
-            <span class="stat-label">FÉ TOTAL ACUMULADA</span>
-            <span id="stat-total-faith" class="stat-val">1</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-label">FÉ POR CLIQUE</span>
-            <span id="stat-click-faith" class="stat-val">+1</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-label">FÉ POR SEGUNDO</span>
-            <span id="stat-passive-faith" class="stat-val">+0 Fé/s</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-label">FERVOR ACUMULADO</span>
-            <span id="stat-fervor-accum" class="stat-val">0</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-label">PRODUÇÃO DE FERVOR</span>
-            <span id="stat-fervor-rate" class="stat-val">+0 Fervor/s</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-label">TOTAL DE FIÉIS</span>
-            <span id="stat-total-followers" class="stat-val">0</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-label">CLIQUES NA ESFERA</span>
-            <span id="stat-total-clicks" class="stat-val">0</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-label">CONQUISTAS DESBLOQUEADAS</span>
-            <span id="stat-achievements-count" class="stat-val">0 / 20</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-label">ESTÁGIO DO CULTO</span>
-            <span id="stat-cult-tier" class="stat-val">Boato</span>
-          </div>
         </div>
 
         <div class="settings-section-subtitle">Progresso & Salvamento</div>
