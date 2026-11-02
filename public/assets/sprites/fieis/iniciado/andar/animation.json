@@ -1,0 +1,14 @@
+{
+  "model": "iniciado",
+  "action": "andar",
+  "id": "a51ed6d8-92da-42d2-9220-40d75b02f55b",
+  "generated_frames": 8,
+  "frame_width": 96,
+  "frame_height": 96,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 120,
+  "layout": "horizontal",
+  "transparent": true
+}

@@ -4,6 +4,7 @@ import { NotificationManager } from '../../systems/notifications.js';
 import { calculateMiracleReward, formatNumber } from '../../systems/calculations.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 import { effectEasing } from '../../ui/visualTiming.js';
+import { SphereSprite } from './SphereSprite.js';
 
 export interface SphereControllerOptions {
   gameState: GameStateManager;
@@ -19,11 +20,10 @@ export class SphereController {
   private triggerHaptic: (pattern: number | number[]) => void;
 
   private divineSphereBtn: HTMLElement | null = null;
-  private sphereRings: HTMLElement[] = [];
+  private sphereAnimation: SphereSprite | null = null;
   private sphereGlobe: HTMLElement | null = null;
   private shockPool: HTMLElement[] = [];
   private shockIndex: number = 0;
-  private swingDirection: number = 1;
   private reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   constructor(options: SphereControllerOptions) {
@@ -40,13 +40,12 @@ export class SphereController {
     this.divineSphereBtn = document.getElementById('divine-sphere-btn');
     if (!this.divineSphereBtn) return;
 
-    // Three stacked layers so the rings can swing around a still globe
+    // The sprite contains both rotation directions; pulse its canvas on clicks.
     this.divineSphereBtn.innerHTML =
-      '<img class="sphere-layer sphere-rings" src="/assets/board/sphere-rings-back.svg" alt="" draggable="false">' +
-      '<img class="sphere-layer sphere-globe" src="/assets/board/sphere-globe.svg" alt="" draggable="false">' +
-      '<img class="sphere-layer sphere-rings" src="/assets/board/sphere-rings-front.svg" alt="" draggable="false">';
-    this.sphereRings = Array.from(this.divineSphereBtn.querySelectorAll<HTMLElement>('.sphere-rings'));
-    this.sphereGlobe = this.divineSphereBtn.querySelector<HTMLElement>('.sphere-globe');
+      '<canvas class="sphere-layer sphere-globe sphere-sprite" aria-hidden="true"></canvas>';
+    const canvas = this.divineSphereBtn.querySelector<HTMLCanvasElement>('.sphere-sprite')!;
+    this.sphereGlobe = canvas;
+    this.sphereAnimation = new SphereSprite(canvas);
     for (let i = 0; i < 3; i++) {
       const wave = document.createElement('span');
       wave.className = 'sphere-shock';
@@ -55,25 +54,11 @@ export class SphereController {
     }
   }
 
-  // Click feedback: rings swing like a gimbal, the globe pulses and a gold wave spreads.
+  // Click feedback: the sprite pulses and a gold wave spreads, preserving rotation.
   // Transform/opacity only, so it all runs on the compositor.
   private playClickAnimation(isCrit: boolean): void {
     if (!this.sphereGlobe || this.reducedMotion.matches) return;
 
-    const dir = (this.swingDirection = -this.swingDirection);
-    const swing = isCrit ? 11 : 7;
-    this.sphereRings.forEach((ring) =>
-      ring.animate(
-        [
-          { transform: 'rotate(0deg) scale(1)' },
-          { transform: `rotate(${dir * swing}deg) scale(1.03)`, offset: 0.25 },
-          { transform: `rotate(${-dir * swing * 0.45}deg) scale(1)`, offset: 0.6 },
-          { transform: `rotate(${dir * swing * 0.15}deg)`, offset: 0.85 },
-          { transform: 'rotate(0deg) scale(1)' },
-        ],
-        { duration: isCrit ? 900 : 650, easing: effectEasing(isCrit ? 900 : 650) }
-      )
-    );
     this.sphereGlobe.animate(
       [{ transform: 'scale(1)' }, { transform: 'scale(0.95)', offset: 0.3 }, { transform: 'scale(1.03)', offset: 0.65 }, { transform: 'scale(1)' }],
       { duration: 340, easing: effectEasing(340) }
@@ -94,6 +79,10 @@ export class SphereController {
     this.divineSphereBtn?.addEventListener('click', (e: MouseEvent) => {
       this.onSphereClicked(e);
     });
+  }
+
+  public destroy(): void {
+    this.sphereAnimation?.destroy();
   }
 
   public onSphereClicked(e?: MouseEvent): void {

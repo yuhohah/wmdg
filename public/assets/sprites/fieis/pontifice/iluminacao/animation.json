@@ -1,0 +1,14 @@
+{
+  "model": "pontifice",
+  "action": "iluminacao",
+  "id": "1f8e7b85-c397-400c-b6d3-1d40c8e52bb4",
+  "generated_frames": 8,
+  "frame_width": 96,
+  "frame_height": 96,
+  "source_frame_count": 9,
+  "sheet_frame_count": 9,
+  "loop": false,
+  "frame_duration_ms": 150,
+  "layout": "horizontal",
+  "transparent": true
+}

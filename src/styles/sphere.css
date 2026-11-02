@@ -1,4 +1,8 @@
 /* Center Gameplay Frame Layout */
+.start-sphere-img {
+  image-rendering: pixelated;
+}
+
 .center-frame {
   flex: 1;
   display: flex;

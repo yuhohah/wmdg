@@ -1,0 +1,67 @@
+{
+  "frame_size": [
+    96,
+    96
+  ],
+  "models": [
+    "iniciado",
+    "hierofante",
+    "pontifice"
+  ],
+  "animations": [
+    {
+      "model": "iniciado",
+      "action": "andar",
+      "id": "a51ed6d8-92da-42d2-9220-40d75b02f55b",
+      "generated_frames": 8
+    },
+    {
+      "model": "hierofante",
+      "action": "andar",
+      "id": "818a6ac0-5e3b-446c-993c-e544f07df60c",
+      "generated_frames": 8
+    },
+    {
+      "model": "pontifice",
+      "action": "andar",
+      "id": "fe114bac-4b60-4c40-895f-0184787e23d9",
+      "generated_frames": 8
+    },
+    {
+      "model": "iniciado",
+      "action": "rezar",
+      "id": "d6627657-305f-4ef0-9502-250daef30a3d",
+      "generated_frames": 12
+    },
+    {
+      "model": "hierofante",
+      "action": "rezar",
+      "id": "1b6d68e2-6e9b-4d12-a338-04915404ce6a",
+      "generated_frames": 12
+    },
+    {
+      "model": "pontifice",
+      "action": "rezar",
+      "id": "bdf7bfb8-0065-4f30-b7e3-df26cf9a9083",
+      "generated_frames": 12
+    },
+    {
+      "model": "hierofante",
+      "action": "iluminacao",
+      "id": "0a08cd28-bbf1-4911-9d26-1e7c00f6bb4b",
+      "generated_frames": 8
+    },
+    {
+      "model": "iniciado",
+      "action": "iluminacao",
+      "id": "b6bfa6e3-06c1-4c9a-b11a-4f23cf33dc4e",
+      "generated_frames": 8
+    },
+    {
+      "model": "pontifice",
+      "action": "iluminacao",
+      "id": "1f8e7b85-c397-400c-b6d3-1d40c8e52bb4",
+      "generated_frames": 8
+    }
+  ]
+}

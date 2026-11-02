@@ -1,0 +1,44 @@
+{
+  "purpose": "Sprites conceituais da evolução dos Fiéis; sem integração ao jogo.",
+  "generator": "PixelLab Pixen",
+  "sprites": [
+    {
+      "name": "Iniciado",
+      "file": "01-iniciado.png",
+      "width": 96,
+      "height": 96,
+      "job_id": "4da500d2-228a-42a1-a916-98d094615b90",
+      "source": "https://api.pixellab.ai/mcp/images/4da500d2-228a-42a1-a916-98d094615b90/download"
+    },
+    {
+      "name": "Acólito",
+      "file": "02-acolito.png",
+      "width": 96,
+      "height": 96,
+      "job_id": "5fc4942a-9648-4247-93fb-18f05909f79a",
+      "source": "https://api.pixellab.ai/mcp/images/5fc4942a-9648-4247-93fb-18f05909f79a/download"
+    },
+    {
+      "name": "Hierofante",
+      "file": "03-hierofante.png",
+      "width": 96,
+      "height": 96,
+      "job_id": "f09f9b0a-cf29-48df-b2df-75ed8a14dfe4",
+      "source": "https://api.pixellab.ai/mcp/images/f09f9b0a-cf29-48df-b2df-75ed8a14dfe4/download"
+    },
+    {
+      "name": "Pontífice da Esfera",
+      "file": "04-pontifice.png",
+      "width": 96,
+      "height": 96,
+      "job_id": "a880deb1-6c9e-4af0-9a25-275786e4e1b0",
+      "source": "https://api.pixellab.ai/mcp/images/a880deb1-6c9e-4af0-9a25-275786e4e1b0/download",
+      "evolves_from": "03-hierofante.png"
+    }
+  ],
+  "selected_progression": [
+    "01-iniciado.png",
+    "03-hierofante.png",
+    "04-pontifice.png"
+  ]
+}

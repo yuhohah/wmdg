@@ -1,5 +1,8 @@
 import { INCARNATION_STAGES, IncarnationStage } from '../config/incarnation.js';
-import { getAvatarArt } from './pixelArt.js';
+import {
+  INCARNATION_FRAME_SIZE, incarnationStageIndex, incarnationParticleColors,
+  loadIncarnationSprites, type IncarnationSprite,
+} from './incarnationSprites.js';
 import { VisualFrameClock, visualFrameScale } from './visualTiming.js';
 
 export interface IncarnationAltarOptions {
@@ -36,6 +39,7 @@ export class IncarnationAltar {
   private rotationAngle: number = 0;
   private pulsePhase: number = 0;
   private flashAlpha: number = 0;
+  private sprites: IncarnationSprite[] = [];
   private isOnScreen: boolean = true;
   private options: IncarnationAltarOptions;
 
@@ -47,6 +51,7 @@ export class IncarnationAltar {
     this.loreEl = document.getElementById('incarnation-altar-lore');
 
     if (this.canvas) {
+      this.sprites = loadIncarnationSprites();
       this.ctx = this.canvas.getContext('2d', { alpha: true });
       this.initCanvas();
       this.setupEvents();
@@ -114,8 +119,8 @@ export class IncarnationAltar {
   }
 
   public setStage(stageNumber: number, silent: boolean = false): void {
-    this.currentStage = stageNumber;
-    const stageData: IncarnationStage | undefined = INCARNATION_STAGES.find((s) => s.stage === stageNumber);
+    this.currentStage = incarnationStageIndex(stageNumber) + 1;
+    const stageData: IncarnationStage | undefined = INCARNATION_STAGES.find((s) => s.stage === this.currentStage);
 
     if (stageData) {
       if (this.titleEl) this.titleEl.textContent = stageData.title;
@@ -138,7 +143,7 @@ export class IncarnationAltar {
   private spawnBurstParticles(count: number): void {
     const cx = this.width / 2;
     const cy = this.height * 0.45;
-    const colors = getAvatarArt(this.currentStage).particleColors;
+    const colors = incarnationParticleColors(this.currentStage);
 
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
@@ -164,7 +169,7 @@ export class IncarnationAltar {
 
     const cx = this.width / 2;
     const cy = this.height * 0.5;
-    const colors = getAvatarArt(this.currentStage).particleColors;
+    const colors = incarnationParticleColors(this.currentStage);
 
     this.particles.push({
       x: cx + (Math.random() - 0.5) * (this.width * 0.6),
@@ -210,60 +215,34 @@ export class IncarnationAltar {
     const ctx = this.ctx;
     const w = this.width;
     const h = this.height;
-    const art = getAvatarArt(this.currentStage);
-    const sprite = art.sprite;
+    const art = this.sprites[this.currentStage - 1];
+    if (!art) return;
+    const sprite = art.still;
 
-    // Whole pixels only: the avatar is scaled by an integer factor
-    const scale = Math.max(3, Math.floor((h - 26) / sprite.height));
-    const spriteW = sprite.width * scale;
-    const spriteH = sprite.height * scale;
+    // The approved pixels contain their own halo and astrolabe by stage.
+    // Do not draw extra auras that would change that progression.
+    const scale = Math.max(1, Math.floor(Math.min(h - 26, w - 32) / INCARNATION_FRAME_SIZE));
+    const spriteW = INCARNATION_FRAME_SIZE * scale;
+    const spriteH = spriteW;
     const left = Math.round((w - spriteW) / 2);
     const floor = h - 12;
-    const breath = Math.sin(this.rotationAngle * 6) > 0.55 ? scale : 0;
-    const top = floor - spriteH - breath;
+    const top = floor - spriteH;
     const headX = w / 2;
-    const headY = top + 9 * scale;
 
     ctx.clearRect(0, 0, w, h);
     ctx.imageSmoothingEnabled = false;
 
-    // 1. Stage aura behind the figure
-    if (art.aura === 'solar') {
-      ctx.save();
-      ctx.translate(headX, headY);
-      ctx.rotate(this.rotationAngle);
-      ctx.fillStyle = 'rgba(255, 211, 107, 0.35)';
-      for (let i = 0; i < 12; i++) {
-        ctx.rotate(Math.PI / 6);
-        ctx.fillRect(-scale / 2, -spriteH * 0.62, scale, spriteH * (i % 2 ? 0.22 : 0.32));
-      }
-      ctx.restore();
-    } else if (art.aura === 'eclipse') {
-      const r = 11 * scale;
-      ctx.fillStyle = 'rgba(184, 176, 224, 0.55)';
-      ctx.beginPath();
-      ctx.arc(headX, headY, r + scale, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#050407';
-      ctx.beginPath();
-      ctx.arc(headX + scale, headY - scale, r, 0, Math.PI * 2);
-      ctx.fill();
-    } else if (art.aura !== 'none') {
-      ctx.strokeStyle = art.aura === 'motes' ? 'rgba(184, 176, 224, 0.35)' : 'rgba(255, 179, 92, 0.3)';
-      ctx.lineWidth = scale;
-      ctx.beginPath();
-      ctx.arc(headX, headY, 9 * scale, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-
-    // 2. Stone plinth
+    // Stone plinth beneath the avatar.
     ctx.fillStyle = '#1d1712';
     ctx.fillRect(left - 4 * scale, floor, spriteW + 8 * scale, scale * 2);
     ctx.fillStyle = '#2a2119';
     ctx.fillRect(left - 2 * scale, floor - scale, spriteW + 4 * scale, scale);
 
-    // 3. The avatar
-    ctx.drawImage(sprite, left, top, spriteW, spriteH);
+    if (sprite.complete && sprite.naturalWidth > 0) {
+      ctx.drawImage(sprite,
+        0, 0, INCARNATION_FRAME_SIZE, INCARNATION_FRAME_SIZE,
+        left, top, spriteW, spriteH);
+    }
 
     // 4. Click pulse
     if (this.pulsePhase > 0) {

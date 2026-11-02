@@ -1,4 +1,7 @@
-import { getDevoteeSheet, type DevoteeSheet } from './pixelArt.js';
+import {
+  FOLLOWER_FRAME_SIZE, PRAYER_DURATION, PRAYER_SEQUENCE_DURATION, followerAnimationFrame,
+  loadFollowerSprites, visibleFollowerTiers, type FollowerTier,
+} from './followerVisuals.js';
 import { VisualFrameClock, visualFrameScale } from './visualTiming.js';
 
 export interface Walker {
@@ -10,7 +13,7 @@ export interface Walker {
   targetX: number;
   targetY: number;
   facing: number; // 1 = right, -1 = left
-  variant: number; // 0..8 (9 unique devotees!)
+  variant: FollowerTier; // Iniciado, Hierofante, Pontífice
   state: 'walk' | 'idle' | 'pray';
   stateTimer: number;
   walkCycle: number;
@@ -36,7 +39,8 @@ export class FollowersArena {
   private miracleSpawnCooldown: number = 5; // ~5s after start
   private isPaused: boolean = false;
   private speedMultiplier: number = 1.0;
-  private sheet: DevoteeSheet = getDevoteeSheet();
+  private sprites = loadFollowerSprites();
+  private totalFollowerCount = 0;
   private isOnScreen: boolean = true;
 
   constructor(canvasId: string = 'followers-walk-canvas') {
@@ -64,7 +68,7 @@ export class FollowersArena {
   }
 
   public triggerMiraclePlea(targetWalker?: Walker): void {
-    const available = this.walkers.filter((w) => !w.isMiraclePlea);
+    const available = this.walkers.filter((w) => w.state !== 'pray');
     const w = targetWalker || (available.length > 0 ? available[Math.floor(Math.random() * available.length)] : null);
     if (!w) return;
     w.isMiraclePlea = true;
@@ -73,6 +77,17 @@ export class FollowersArena {
     w.prayCycle = 0;
     w.stateTimer = 900;
     this.spawnPrayerParticles(w, 10);
+  }
+
+  private acceptMiracle(w: Walker, clientX: number, clientY: number): void {
+    w.isMiraclePlea = false;
+    w.miracleTimer = 0;
+    w.state = 'pray';
+    // The plea already played the kneeling animation; start its blessing now.
+    w.prayCycle = PRAYER_DURATION;
+    w.stateTimer = 0;
+    this.spawnPrayerParticles(w, 18);
+    this.onMiracleClickCallback?.(clientX, clientY, w);
   }
 
   public resize(): void {
@@ -88,7 +103,7 @@ export class FollowersArena {
         this.ctx.scale(this.dpr, this.dpr);
 
         const pad = 24;
-        const minY = Math.max(28, this.height * 0.12);
+        const minY = Math.max(90, this.height * 0.12);
         const maxY = Math.max(minY + 20, this.height - 18);
         for (const w of this.walkers) {
           w.x = Math.max(pad, Math.min(this.width - pad, w.x));
@@ -147,7 +162,7 @@ export class FollowersArena {
       for (const w of this.walkers) {
         if (w.isMiraclePlea) {
           const dx = w.x - clickX;
-          const dy = (w.y - 48) - clickY;
+          const dy = (w.y - 78) - clickY;
           if (Math.hypot(dx, dy) < 42) {
             miracleWalker = w;
             break;
@@ -156,15 +171,7 @@ export class FollowersArena {
       }
 
       if (miracleWalker) {
-        miracleWalker.isMiraclePlea = false;
-        miracleWalker.miracleTimer = 0;
-        miracleWalker.state = 'pray';
-        miracleWalker.prayCycle = 0;
-        miracleWalker.stateTimer = 140;
-        this.spawnPrayerParticles(miracleWalker, 18);
-        if (this.onMiracleClickCallback) {
-          this.onMiracleClickCallback(e.clientX, e.clientY, miracleWalker);
-        }
+        this.acceptMiracle(miracleWalker, e.clientX, e.clientY);
         return;
       }
 
@@ -172,7 +179,7 @@ export class FollowersArena {
       let hitWalker: Walker | null = null;
       for (const w of this.walkers) {
         const dx = w.x - clickX;
-        const dy = w.y - 32 - clickY;
+        const dy = w.y - 34 - clickY;
         if (Math.hypot(dx, dy) < 32) {
           hitWalker = w;
           break;
@@ -180,11 +187,15 @@ export class FollowersArena {
       }
 
       if (hitWalker) {
-        hitWalker.state = 'pray';
-        hitWalker.prayCycle = 0;
-        hitWalker.stateTimer = 120;
-        hitWalker.facing = clickX >= hitWalker.x ? 1 : -1;
-        this.spawnPrayerParticles(hitWalker, 8);
+        if (hitWalker.isMiraclePlea) {
+          this.acceptMiracle(hitWalker, e.clientX, e.clientY);
+          return;
+        }
+        if (hitWalker.state !== 'pray') {
+          hitWalker.state = 'idle';
+          hitWalker.stateTimer = 60;
+          hitWalker.facing = clickX >= hitWalker.x ? 1 : -1;
+        }
         if (this.onFollowerClickCallback) {
           this.onFollowerClickCallback(e.clientX, e.clientY);
         }
@@ -194,12 +205,14 @@ export class FollowersArena {
           let nearest = this.walkers[0];
           let minDist = 9999;
           for (const w of this.walkers) {
+            if (w.state === 'pray') continue;
             const dist = Math.hypot(w.x - clickX, w.y - clickY);
             if (dist < minDist) {
               minDist = dist;
               nearest = w;
             }
           }
+          if (nearest.state === 'pray') return;
           nearest.targetX = clickX;
           nearest.targetY = clickY;
           nearest.state = 'walk';
@@ -209,30 +222,29 @@ export class FollowersArena {
     });
   }
 
-  public syncFollowerCount(totalCount: number): void {
-    // Show up to 35 active walker sprites for optimal visual balance and performance
-    const targetCount = Math.min(totalCount, 35);
-    while (this.walkers.length < targetCount) {
-      this.addWalker();
-    }
-    while (this.walkers.length > targetCount) {
-      this.walkers.pop();
-    }
+  public syncFollowerCount(totalCount: number, atEdge = false): void {
+    if (totalCount === this.totalFollowerCount) return;
+    this.totalFollowerCount = totalCount;
+    const available = [...this.walkers];
+    this.walkers = visibleFollowerTiers(totalCount).map(tier => {
+      const index = available.findIndex(w => w.variant === tier);
+      // Keep existing positions, prayers and miracle pleas when that tier survives.
+      if (index >= 0) return available.splice(index, 1)[0];
+      return this.addWalker(atEdge, tier);
+    });
   }
 
   public onFollowersAdded(addedCount: number): void {
-    const spawnCount = Math.min(addedCount, 6);
-    for (let i = 0; i < spawnCount; i++) {
-      if (this.walkers.length < 35) {
-        const w = this.addWalker(true);
-        this.spawnPrayerParticles(w, 8);
-      }
+    const previousIds = new Set(this.walkers.map(w => w.id));
+    this.syncFollowerCount(this.totalFollowerCount + addedCount, true);
+    for (const w of this.walkers.filter(w => !previousIds.has(w.id)).slice(0, 6)) {
+      this.spawnPrayerParticles(w, 8);
     }
   }
 
-  private addWalker(atEdge: boolean = false): Walker {
+  private addWalker(atEdge: boolean, tier: FollowerTier): Walker {
     const pad = 24;
-    const minY = Math.max(28, this.height * 0.12);
+    const minY = Math.max(90, this.height * 0.12);
     const maxY = Math.max(minY + 20, this.height - 18);
     let x = pad + Math.random() * Math.max(10, this.width - pad * 2);
     let y = minY + Math.random() * (maxY - minY);
@@ -251,7 +263,7 @@ export class FollowersArena {
       targetX: pad + Math.random() * Math.max(10, this.width - pad * 2),
       targetY: minY + Math.random() * (maxY - minY),
       facing: Math.random() > 0.5 ? 1 : -1,
-      variant: Math.floor(Math.random() * 9), // 0..8
+      variant: tier,
       state: 'walk',
       stateTimer: 60 + Math.floor(Math.random() * 120),
       walkCycle: Math.random() * 9,
@@ -261,7 +273,6 @@ export class FollowersArena {
       prayParticles: []
     };
 
-    this.walkers.push(walker);
     return walker;
   }
 
@@ -279,7 +290,7 @@ export class FollowersArena {
 
   private update(elapsedSec: number): void {
     const pad = 24;
-    const minY = Math.max(28, this.height * 0.12);
+    const minY = Math.max(90, this.height * 0.12);
     const maxY = Math.max(minY + 20, this.height - 18);
 
     const frameScale = visualFrameScale(elapsedSec);
@@ -301,18 +312,14 @@ export class FollowersArena {
       }
 
       // State machine transitions
-      if (w.stateTimer <= 0) {
+      const finishingPrayer = w.state === 'pray' && w.prayCycle < PRAYER_SEQUENCE_DURATION;
+      if (w.stateTimer <= 0 && !finishingPrayer) {
         const rand = Math.random();
         if (rand < 0.5) {
           w.state = 'walk';
           w.stateTimer = 100 + Math.floor(Math.random() * 180);
           w.targetX = pad + Math.random() * Math.max(10, this.width - pad * 2);
           w.targetY = minY + Math.random() * (maxY - minY);
-        } else if (rand < 0.75) {
-          w.state = 'pray';
-          w.prayCycle = 0;
-          w.stateTimer = 110 + Math.floor(Math.random() * 90);
-          this.spawnPrayerParticles(w, 4);
         } else {
           w.state = 'idle';
           w.stateTimer = 60 + Math.floor(Math.random() * 100);
@@ -331,17 +338,13 @@ export class FollowersArena {
           w.x += w.vx;
           w.y += w.vy;
           w.facing = w.vx >= 0 ? 1 : -1;
-          w.walkCycle += 0.16 * speedScale;
+          w.walkCycle += elapsedSec * Math.min(this.speedMultiplier, 5) / 0.12;
         } else {
-          w.state = Math.random() > 0.4 ? 'pray' : 'idle';
-          w.prayCycle = 0;
+          w.state = 'idle';
           w.stateTimer = 70 + Math.floor(Math.random() * 70);
-          if (w.state === 'pray') {
-            this.spawnPrayerParticles(w, 3);
-          }
         }
       } else if (w.state === 'pray') {
-        w.prayCycle += 0.075 * speedScale;
+        w.prayCycle += elapsedSec * Math.min(this.speedMultiplier, 5);
         // Emit gentle sparks at deep reverence frames
         const frame = Math.floor(w.prayCycle) % 9;
         if ((frame === 3 || frame === 5) && Math.random() < 1 - 0.75 ** frameScale) {
@@ -422,31 +425,21 @@ export class FollowersArena {
     }
   }
 
-  // Sheet columns: 0..3 walk cycle, 4..5 prayer; rows: robe palettes
   private drawFollowerSprite(w: Walker, x: number, y: number): void {
-    const { canvas, frameW, frameH, variants, walkFrames, prayColumn } = this.sheet;
-    const scale = 3;
-    let col = 0;
-    let bob = 0;
-
-    if (w.state === 'walk') {
-      col = Math.floor(w.walkCycle) % walkFrames;
-      bob = col % 2 === 1 ? 1 : 0;
-    } else if (w.state === 'pray') {
-      col = prayColumn + (Math.floor(Math.abs(w.breathTimer * 0.8)) % 2);
-    } else {
-      bob = Math.sin(w.breathTimer) > 0.6 ? 1 : 0;
-    }
+    const { action, frame } = followerAnimationFrame(w.state, w.walkCycle, w.prayCycle, w.isMiraclePlea);
+    const image = this.sprites[w.variant][action];
+    if (!image.complete || image.naturalWidth === 0) return;
 
     const ctx = this.ctx;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
-    ctx.translate(x, y - bob * scale);
+    // Reduce the 96px sprites to 80px, keeping source row 89 at the feet.
+    ctx.translate(x, y);
     ctx.scale(w.facing, 1);
     ctx.drawImage(
-      canvas,
-      col * frameW, (w.variant % variants) * frameH, frameW, frameH,
-      (-frameW * scale) / 2, -frameH * scale + scale, frameW * scale, frameH * scale
+      image,
+      frame * FOLLOWER_FRAME_SIZE, 0, FOLLOWER_FRAME_SIZE, FOLLOWER_FRAME_SIZE,
+      -40, -74, 80, 80
     );
     ctx.restore();
   }
@@ -461,7 +454,7 @@ export class FollowersArena {
     const cols = 11;
     const rows = 8;
     const left = Math.round(Math.max(6, Math.min(this.width - cols * px - 6, x - (cols * px) / 2)));
-    const top = Math.round(Math.max(4, y - 68 - bob));
+    const top = Math.round(Math.max(4, y - 96 - bob));
 
     // Gold frame, dark plate, tail pointing at the devotee
     ctx.fillStyle = blink ? '#f6dc9a' : '#c99a4e';

@@ -1,0 +1,13 @@
+{
+  "purpose": "Conceito da Esfera divina; sem integração ao jogo.",
+  "generator": "PixelLab Pixen",
+  "file": "01-esfera-armilar.png",
+  "size": [
+    256,
+    256
+  ],
+  "transparent": true,
+  "job_id": "4839c358-72d5-43b5-8393-cd7825d2bc7e",
+  "source": "https://api.pixellab.ai/mcp/images/4839c358-72d5-43b5-8393-cd7825d2bc7e/download",
+  "prompt": "Concept sprite of the divine celestial Sphere, the central deity of Cult of the Sphere. Single centered circular silhouette, monumental mysterious armillary sphere, isolated with transparent background, NO pedestal or stand. An obsidian celestial globe at center etched in bone-white with precise latitude longitude meridians, tiny star marks and concentric alchemical seals. Three intersecting broad astrolabe orbital rings wrap clearly in front of and behind the globe at different inclinations, fine engraved measuring ticks and sparse planetary glyphs, readable open negative space between rings. A delicate outer cosmographic circle, four tiny antique celestial wind sage profiles at cardinal points breathing straight thin rays towards the orb, integrated into the ring, secondary to the Sphere. Authentic 16th-century Renaissance hermetic woodcut / copperplate engraving translated into disciplined pixel art, Durer and Robert Fludd cosmography. Crisp contour pixels, meticulous parallel hatching, stippled shadows, no antialiasing. Palette almost monochrome: soot #090A0F, charcoal slate, ash #C5C6C7, bone ivory #E2E8F0; antique tarnished gold accents under 5 percent on a few ring edges only. Very high contrast legible against the game's black void. Full object inside a 256x256 square with at least 12px empty margin on all sides. Symmetric visual weight, sacred austere antique artifact. NO modern gradients, smooth 3D shading, neon, cartoon, anime, lens flare, glossy metal, scenery, textual labels or rectangular frame."
+}

@@ -1,0 +1,14 @@
+{
+  "model": "pontifice",
+  "action": "andar",
+  "id": "fe114bac-4b60-4c40-895f-0184787e23d9",
+  "generated_frames": 8,
+  "frame_width": 96,
+  "frame_height": 96,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 120,
+  "layout": "horizontal",
+  "transparent": true
+}

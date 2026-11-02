@@ -1,0 +1,681 @@
+{
+  "generator": "PixelLab pixelart_workbench",
+  "drawing_id": "12adb80b-77fa-4a1e-a1de-ff2092cf0da4",
+  "source_job_id": "4839c358-72d5-43b5-8393-cd7825d2bc7e",
+  "frame_width": 384,
+  "frame_height": 384,
+  "original_size": [
+    256,
+    256
+  ],
+  "source_offset": [
+    64,
+    64
+  ],
+  "pivot": [
+    192,
+    192
+  ],
+  "frame_count": 64,
+  "columns": 8,
+  "rows": 8,
+  "frame_duration_ms": 80,
+  "loop_duration_ms": 5120,
+  "loop": true,
+  "transparent": true,
+  "sheet": "spritesheet.png",
+  "layout": "row-major",
+  "rotation_directions": {
+    "outer": "clockwise",
+    "inner": "counterclockwise",
+    "center": "stationary"
+  },
+  "validation": {
+    "first_frame_matches_source": true,
+    "center_static": true,
+    "source_palette_preserved": true,
+    "no_clipping": true
+  },
+  "frames": [
+    {
+      "index": 0,
+      "file": "00.png",
+      "x": 0,
+      "y": 0,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 0.0,
+      "inner_angle": 0.0
+    },
+    {
+      "index": 1,
+      "file": "01.png",
+      "x": 384,
+      "y": 0,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 5.625,
+      "inner_angle": -5.625
+    },
+    {
+      "index": 2,
+      "file": "02.png",
+      "x": 768,
+      "y": 0,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 11.25,
+      "inner_angle": -11.25
+    },
+    {
+      "index": 3,
+      "file": "03.png",
+      "x": 1152,
+      "y": 0,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 16.875,
+      "inner_angle": -16.875
+    },
+    {
+      "index": 4,
+      "file": "04.png",
+      "x": 1536,
+      "y": 0,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 22.5,
+      "inner_angle": -22.5
+    },
+    {
+      "index": 5,
+      "file": "05.png",
+      "x": 1920,
+      "y": 0,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 28.125,
+      "inner_angle": -28.125
+    },
+    {
+      "index": 6,
+      "file": "06.png",
+      "x": 2304,
+      "y": 0,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 33.75,
+      "inner_angle": -33.75
+    },
+    {
+      "index": 7,
+      "file": "07.png",
+      "x": 2688,
+      "y": 0,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 39.375,
+      "inner_angle": -39.375
+    },
+    {
+      "index": 8,
+      "file": "08.png",
+      "x": 0,
+      "y": 384,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 45.0,
+      "inner_angle": -45.0
+    },
+    {
+      "index": 9,
+      "file": "09.png",
+      "x": 384,
+      "y": 384,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 50.625,
+      "inner_angle": -50.625
+    },
+    {
+      "index": 10,
+      "file": "10.png",
+      "x": 768,
+      "y": 384,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 56.25,
+      "inner_angle": -56.25
+    },
+    {
+      "index": 11,
+      "file": "11.png",
+      "x": 1152,
+      "y": 384,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 61.875,
+      "inner_angle": -61.875
+    },
+    {
+      "index": 12,
+      "file": "12.png",
+      "x": 1536,
+      "y": 384,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 67.5,
+      "inner_angle": -67.5
+    },
+    {
+      "index": 13,
+      "file": "13.png",
+      "x": 1920,
+      "y": 384,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 73.125,
+      "inner_angle": -73.125
+    },
+    {
+      "index": 14,
+      "file": "14.png",
+      "x": 2304,
+      "y": 384,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 78.75,
+      "inner_angle": -78.75
+    },
+    {
+      "index": 15,
+      "file": "15.png",
+      "x": 2688,
+      "y": 384,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 84.375,
+      "inner_angle": -84.375
+    },
+    {
+      "index": 16,
+      "file": "16.png",
+      "x": 0,
+      "y": 768,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 90.0,
+      "inner_angle": -90.0
+    },
+    {
+      "index": 17,
+      "file": "17.png",
+      "x": 384,
+      "y": 768,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 95.625,
+      "inner_angle": -95.625
+    },
+    {
+      "index": 18,
+      "file": "18.png",
+      "x": 768,
+      "y": 768,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 101.25,
+      "inner_angle": -101.25
+    },
+    {
+      "index": 19,
+      "file": "19.png",
+      "x": 1152,
+      "y": 768,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 106.875,
+      "inner_angle": -106.875
+    },
+    {
+      "index": 20,
+      "file": "20.png",
+      "x": 1536,
+      "y": 768,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 112.5,
+      "inner_angle": -112.5
+    },
+    {
+      "index": 21,
+      "file": "21.png",
+      "x": 1920,
+      "y": 768,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 118.125,
+      "inner_angle": -118.125
+    },
+    {
+      "index": 22,
+      "file": "22.png",
+      "x": 2304,
+      "y": 768,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 123.75,
+      "inner_angle": -123.75
+    },
+    {
+      "index": 23,
+      "file": "23.png",
+      "x": 2688,
+      "y": 768,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 129.375,
+      "inner_angle": -129.375
+    },
+    {
+      "index": 24,
+      "file": "24.png",
+      "x": 0,
+      "y": 1152,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 135.0,
+      "inner_angle": -135.0
+    },
+    {
+      "index": 25,
+      "file": "25.png",
+      "x": 384,
+      "y": 1152,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 140.625,
+      "inner_angle": -140.625
+    },
+    {
+      "index": 26,
+      "file": "26.png",
+      "x": 768,
+      "y": 1152,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 146.25,
+      "inner_angle": -146.25
+    },
+    {
+      "index": 27,
+      "file": "27.png",
+      "x": 1152,
+      "y": 1152,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 151.875,
+      "inner_angle": -151.875
+    },
+    {
+      "index": 28,
+      "file": "28.png",
+      "x": 1536,
+      "y": 1152,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 157.5,
+      "inner_angle": -157.5
+    },
+    {
+      "index": 29,
+      "file": "29.png",
+      "x": 1920,
+      "y": 1152,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 163.125,
+      "inner_angle": -163.125
+    },
+    {
+      "index": 30,
+      "file": "30.png",
+      "x": 2304,
+      "y": 1152,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 168.75,
+      "inner_angle": -168.75
+    },
+    {
+      "index": 31,
+      "file": "31.png",
+      "x": 2688,
+      "y": 1152,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 174.375,
+      "inner_angle": -174.375
+    },
+    {
+      "index": 32,
+      "file": "32.png",
+      "x": 0,
+      "y": 1536,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 180.0,
+      "inner_angle": -180.0
+    },
+    {
+      "index": 33,
+      "file": "33.png",
+      "x": 384,
+      "y": 1536,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 185.625,
+      "inner_angle": -185.625
+    },
+    {
+      "index": 34,
+      "file": "34.png",
+      "x": 768,
+      "y": 1536,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 191.25,
+      "inner_angle": -191.25
+    },
+    {
+      "index": 35,
+      "file": "35.png",
+      "x": 1152,
+      "y": 1536,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 196.875,
+      "inner_angle": -196.875
+    },
+    {
+      "index": 36,
+      "file": "36.png",
+      "x": 1536,
+      "y": 1536,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 202.5,
+      "inner_angle": -202.5
+    },
+    {
+      "index": 37,
+      "file": "37.png",
+      "x": 1920,
+      "y": 1536,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 208.125,
+      "inner_angle": -208.125
+    },
+    {
+      "index": 38,
+      "file": "38.png",
+      "x": 2304,
+      "y": 1536,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 213.75,
+      "inner_angle": -213.75
+    },
+    {
+      "index": 39,
+      "file": "39.png",
+      "x": 2688,
+      "y": 1536,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 219.375,
+      "inner_angle": -219.375
+    },
+    {
+      "index": 40,
+      "file": "40.png",
+      "x": 0,
+      "y": 1920,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 225.0,
+      "inner_angle": -225.0
+    },
+    {
+      "index": 41,
+      "file": "41.png",
+      "x": 384,
+      "y": 1920,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 230.625,
+      "inner_angle": -230.625
+    },
+    {
+      "index": 42,
+      "file": "42.png",
+      "x": 768,
+      "y": 1920,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 236.25,
+      "inner_angle": -236.25
+    },
+    {
+      "index": 43,
+      "file": "43.png",
+      "x": 1152,
+      "y": 1920,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 241.875,
+      "inner_angle": -241.875
+    },
+    {
+      "index": 44,
+      "file": "44.png",
+      "x": 1536,
+      "y": 1920,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 247.5,
+      "inner_angle": -247.5
+    },
+    {
+      "index": 45,
+      "file": "45.png",
+      "x": 1920,
+      "y": 1920,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 253.125,
+      "inner_angle": -253.125
+    },
+    {
+      "index": 46,
+      "file": "46.png",
+      "x": 2304,
+      "y": 1920,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 258.75,
+      "inner_angle": -258.75
+    },
+    {
+      "index": 47,
+      "file": "47.png",
+      "x": 2688,
+      "y": 1920,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 264.375,
+      "inner_angle": -264.375
+    },
+    {
+      "index": 48,
+      "file": "48.png",
+      "x": 0,
+      "y": 2304,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 270.0,
+      "inner_angle": -270.0
+    },
+    {
+      "index": 49,
+      "file": "49.png",
+      "x": 384,
+      "y": 2304,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 275.625,
+      "inner_angle": -275.625
+    },
+    {
+      "index": 50,
+      "file": "50.png",
+      "x": 768,
+      "y": 2304,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 281.25,
+      "inner_angle": -281.25
+    },
+    {
+      "index": 51,
+      "file": "51.png",
+      "x": 1152,
+      "y": 2304,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 286.875,
+      "inner_angle": -286.875
+    },
+    {
+      "index": 52,
+      "file": "52.png",
+      "x": 1536,
+      "y": 2304,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 292.5,
+      "inner_angle": -292.5
+    },
+    {
+      "index": 53,
+      "file": "53.png",
+      "x": 1920,
+      "y": 2304,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 298.125,
+      "inner_angle": -298.125
+    },
+    {
+      "index": 54,
+      "file": "54.png",
+      "x": 2304,
+      "y": 2304,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 303.75,
+      "inner_angle": -303.75
+    },
+    {
+      "index": 55,
+      "file": "55.png",
+      "x": 2688,
+      "y": 2304,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 309.375,
+      "inner_angle": -309.375
+    },
+    {
+      "index": 56,
+      "file": "56.png",
+      "x": 0,
+      "y": 2688,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 315.0,
+      "inner_angle": -315.0
+    },
+    {
+      "index": 57,
+      "file": "57.png",
+      "x": 384,
+      "y": 2688,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 320.625,
+      "inner_angle": -320.625
+    },
+    {
+      "index": 58,
+      "file": "58.png",
+      "x": 768,
+      "y": 2688,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 326.25,
+      "inner_angle": -326.25
+    },
+    {
+      "index": 59,
+      "file": "59.png",
+      "x": 1152,
+      "y": 2688,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 331.875,
+      "inner_angle": -331.875
+    },
+    {
+      "index": 60,
+      "file": "60.png",
+      "x": 1536,
+      "y": 2688,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 337.5,
+      "inner_angle": -337.5
+    },
+    {
+      "index": 61,
+      "file": "61.png",
+      "x": 1920,
+      "y": 2688,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 343.125,
+      "inner_angle": -343.125
+    },
+    {
+      "index": 62,
+      "file": "62.png",
+      "x": 2304,
+      "y": 2688,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 348.75,
+      "inner_angle": -348.75
+    },
+    {
+      "index": 63,
+      "file": "63.png",
+      "x": 2688,
+      "y": 2688,
+      "w": 384,
+      "h": 384,
+      "outer_angle": 354.375,
+      "inner_angle": -354.375
+    }
+  ]
+}

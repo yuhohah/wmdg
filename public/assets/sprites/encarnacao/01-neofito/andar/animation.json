@@ -1,0 +1,15 @@
+{
+  "stage": 1,
+  "file": "01-neofito",
+  "concept_job_id": "3a48085c-3db5-4096-b9b4-b8ccaacd9061",
+  "id": "a0020b2d-109e-4a44-a43f-881ace5a4a1c",
+  "action": "Walk slowly in place, facing straight towards the viewer, seamless full walking cycle. Alternate feet stepping clearly forward and back beneath the robe, gently shift body weight, cloth folds and hem sway naturally. Keep both hands carrying the sphere at chest, preserve identity, proportions, outfit, pixel style and all existing ornaments. Fixed orthographic frontal camera, no translation, no zoom. No halo, no background circles or new effects.",
+  "frame_width": 128,
+  "frame_height": 128,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 120,
+  "layout": "horizontal",
+  "transparent": true
+}

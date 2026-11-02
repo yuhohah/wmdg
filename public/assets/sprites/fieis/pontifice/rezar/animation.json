@@ -1,0 +1,14 @@
+{
+  "model": "pontifice",
+  "action": "rezar",
+  "id": "bdf7bfb8-0065-4f30-b7e3-df26cf9a9083",
+  "generated_frames": 12,
+  "frame_width": 96,
+  "frame_height": 96,
+  "source_frame_count": 13,
+  "sheet_frame_count": 13,
+  "loop": false,
+  "frame_duration_ms": 150,
+  "layout": "horizontal",
+  "transparent": true
+}

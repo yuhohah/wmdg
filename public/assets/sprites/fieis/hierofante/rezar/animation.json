@@ -1,0 +1,14 @@
+{
+  "model": "hierofante",
+  "action": "rezar",
+  "id": "1b6d68e2-6e9b-4d12-a338-04915404ce6a",
+  "generated_frames": 12,
+  "frame_width": 96,
+  "frame_height": 96,
+  "source_frame_count": 13,
+  "sheet_frame_count": 13,
+  "loop": false,
+  "frame_duration_ms": 150,
+  "layout": "horizontal",
+  "transparent": true
+}

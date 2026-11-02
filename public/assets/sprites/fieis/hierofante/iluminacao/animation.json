@@ -1,0 +1,14 @@
+{
+  "model": "hierofante",
+  "action": "iluminacao",
+  "id": "0a08cd28-bbf1-4911-9d26-1e7c00f6bb4b",
+  "generated_frames": 8,
+  "frame_width": 96,
+  "frame_height": 96,
+  "source_frame_count": 9,
+  "sheet_frame_count": 9,
+  "loop": false,
+  "frame_duration_ms": 150,
+  "layout": "horizontal",
+  "transparent": true
+}

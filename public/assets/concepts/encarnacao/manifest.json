@@ -1,0 +1,68 @@
+{
+  "purpose": "Cinco conceitos base da evolução da Encarnação; sem integração ao jogo.",
+  "generator": "PixelLab Pixen",
+  "view": "front",
+  "transparent": true,
+  "size": [
+    128,
+    128
+  ],
+  "sprites": [
+    {
+      "stage": 1,
+      "name": "Avatar Neófito",
+      "file": "01-neofito",
+      "id": "3a48085c-3db5-4096-b9b4-b8ccaacd9061",
+      "previous_id": "aaea7ff1-4728-4fe9-9622-e81b3e91e596",
+      "description": "Simplify this FIRST stage drastically. Same frontal person, pose, size and sphere in hands. Replace ornate vestments with a plain coarse charcoal hooded robe and simple rope belt. Remove ALL gold trim, embroidery, medallions, filigree, shoulder ornaments and patterned hem. Only a few broad cloth folds, low detail, muted slate shading. Pale hands and face, small plain white sphere. NO halo, NO rings or background circles. Crisp sober hermetic pixel art, transparent background."
+    },
+    {
+      "stage": 2,
+      "name": "Avatar Consagrado",
+      "file": "02-consagrado",
+      "description": "Simplify this SECOND stage. Same frontal person, pose and held sphere. Plain dark grey layered robe with a modest bone-grey shoulder cloth and simple narrow sash, a single thin antique-gold clasp. Remove ornate embroidery, patterned hem, filigree, rich golden shoulder ornaments. Slightly more detail than a plain novice, sparse etched folds. REMOVE the halo completely: NO halo, rays, rings or circle behind head or body. Hermetic pixel art, transparent background.",
+      "id": "4e5a312d-d62a-4385-b052-50032d0c2121",
+      "previous_id": "495f2250-8306-4d99-bc6a-c3f4d7db1a39"
+    },
+    {
+      "stage": 3,
+      "name": "Avatar Ancestral",
+      "file": "03-ancestral",
+      "description": "Stage 3: REMOVE the entire giant circular zodiac diagram behind the body, including its rings, symbols and all remnants. Keep the old white-haired bearded sage, frontal pose, ornate robes, hands and sphere unchanged. Behind the HEAD ONLY add one small perfectly circular thin antique-gold halo, about 30 pixels diameter, centered on head, no rays, no star or spokes. Nothing circular behind shoulders or body. Crisp hermetic pixel art. Transparent background.",
+      "id": "fc6e796c-edbf-44f4-8e81-d1041e76aac0",
+      "previous_id": "af7b4c59-7961-4328-bbe8-6bd3ee083ad3"
+    },
+    {
+      "stage": 4,
+      "name": "Avatar do Eclipse",
+      "file": "04-eclipse",
+      "description": "Stage 4 Eclipse: preserve the dark hooded avatar, frontal pose, robes and held sphere. STANDARDIZE head halo: one small perfectly circular thin antique-gold ring about 30px diameter centered on head, NO rays or spikes. ADD a separate large thin antique-gold circular astrolabe diagram BEHIND THE WHOLE BODY, centered at torso, about 112px diameter, sparse engraved orbital tick marks. Both circles fully visible, within canvas. Crisp hermetic pixel art, transparent.",
+      "id": "090cf77d-8ac2-4700-ae1d-afb15261dd73",
+      "previous_id": "837623eb-6c8a-4dfb-9602-1d7d736f4258"
+    },
+    {
+      "stage": 5,
+      "name": "Avatar Solar",
+      "file": "05-solar",
+      "description": "Stage 5 Solar: keep ivory-gold robes, face, frontal pose and held sphere. REPLACE angular star and crossed lines above head with one small perfectly circular thin antique-gold halo, about 30px diameter centered on head, NO spikes or rays. ADD a separate large thin antique-gold circular astrolabe diagram BEHIND THE WHOLE BODY, centered at torso, about 112px diameter, fine orbital tick marks and planetary seals. Circles fit inside canvas. Crisp hermetic pixel art, transparent.",
+      "id": "767146f2-518f-498a-912c-1ab3e14fbea2",
+      "previous_id": "4f688d41-cea8-49c1-b68c-86d52d256f34"
+    }
+  ],
+  "revision": 2,
+  "visual_rules": {
+    "simple_robes": [
+      1,
+      2
+    ],
+    "head_halo": [
+      3,
+      4,
+      5
+    ],
+    "large_background_circle": [
+      4,
+      5
+    ]
+  }
+}

@@ -87,7 +87,7 @@
   transform: none;
 }
 
-/* Layers stacked on one grid; click animations (SphereController) move them on the compositor */
+/* Sprite sheet is cropped on canvas; click pulses run on the compositor. */
 #card-altar-sphere .sphere-layer {
   position: absolute;
   inset: 0;
@@ -99,6 +99,11 @@
 
 #card-altar-sphere .sphere-globe {
   transform-origin: 50% 50%;
+}
+
+#card-altar-sphere .sphere-sprite {
+  display: block;
+  image-rendering: pixelated;
 }
 
 /* Expanding gold wave on each click (pooled, animated via Web Animations) */

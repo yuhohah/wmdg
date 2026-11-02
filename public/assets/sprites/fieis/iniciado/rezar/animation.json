@@ -1,0 +1,14 @@
+{
+  "model": "iniciado",
+  "action": "rezar",
+  "id": "d6627657-305f-4ef0-9502-250daef30a3d",
+  "generated_frames": 12,
+  "frame_width": 96,
+  "frame_height": 96,
+  "source_frame_count": 13,
+  "sheet_frame_count": 13,
+  "loop": false,
+  "frame_duration_ms": 150,
+  "layout": "horizontal",
+  "transparent": true
+}

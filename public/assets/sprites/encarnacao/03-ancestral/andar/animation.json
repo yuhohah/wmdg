@@ -1,0 +1,15 @@
+{
+  "stage": 3,
+  "file": "03-ancestral",
+  "concept_job_id": "fc6e796c-edbf-44f4-8e81-d1041e76aac0",
+  "id": "7da97235-ccda-4ab0-bb5b-c0df6da08133",
+  "action": "Walk slowly in place, facing straight towards the viewer, seamless full walking cycle. Alternate feet stepping clearly forward and back beneath the robe, gently shift body weight, cloth folds and hem sway naturally. Keep both hands carrying the sphere at chest, preserve identity, proportions, outfit, pixel style and all existing ornaments. Fixed orthographic frontal camera, no translation, no zoom. Keep existing small head halo stable, do not add any large circle or new effects.",
+  "frame_width": 128,
+  "frame_height": 128,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 120,
+  "layout": "horizontal",
+  "transparent": true
+}
