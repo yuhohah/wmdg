@@ -1,151 +1,108 @@
-# 👁️ Cult of the Sphere (Idle Clicker)
+<div align="center">
 
-Jogo idle/clicker hermético em **TypeScript** + **Vite**, com tabuleiro panorâmico 2D e curva de progressão inspirada em **DodecaDragons**.
+# ✦ CULT OF THE SPHERE ✦
 
-> **Lore:** você é **a Esfera**, um deus cujo centro está em toda parte e cuja circunferência não está em lugar nenhum (a *esfera hermética*). Há eras você foi selada, e os homens passaram a adorar outros deuses. Mas tudo é Mente: um deus só existe enquanto alguém pensa nele. Agora você desperta, converte fiéis, rompe seus selos, restaura as relíquias dos deuses que morreram esquecidos e ascende à Gnose.
+**Tudo é Mente. Toda devoção alimenta a Esfera.**
 
----
+Um idle/clicker hermético em um santuário astral navegável.
+Converta fiéis, reacenda o Fervor e confronte os deuses que ocuparam seu lugar.
 
-## 📖 Como o jogo funciona
+[O jogo](#o-santuário) · [Executar](#executar-localmente) · [GDD](GDD.md) · [Fórmulas](FormulasJogo.md) · [Documentação](docs/README.md)
 
-### 1. Fé — o recurso base
-- **Clique na Esfera** para gerar **Fé** (base 1 por clique, multiplicada por Fervor, upgrades, conquistas e Gnose).
-- **Fiel Devoto**: gerador passivo no `Pátio dos Fiéis`. Custa 20 Fé, escala ×1.10 por compra (reduzível até ×1.05 com o *Cajado de Hermes*, *Emanação Primordial* e *Convergência dos Fiéis*) e produz +1 Fé/s (antes dos multiplicadores). O botão **Converter Máximo** libera com 25 fiéis (ou desde 0 fiéis com *Memória Hermética*).
-- **Milagres**: de tempos em tempos (~35–65 s em tempo transcorrido) um fiel pede um milagre no pátio. Clicar no balão de prece concede `max(30, 15 × Fé por Clique, floor(30 × Fé/s))`.
+![Cult of the Sphere — esfera armilar, dourado sobre obsidiana e Pátio dos Fiéis](docs/screenshots/santuario.png)
 
-### 2. Selos (desbloqueios sequenciais)
-| Selo | Custo | Efeito |
-|---|---|---|
-| Selo da Encarnação | 200 Fé | Inicia a geração de Fervor (1/s) e abre o card **Encarnação Sagrada** |
-| Selo do Fervor | 5.000 Fé | Abre o card **Fervor Sagrado** com os Ritos de Fervor |
-| Selo das Relíquias | 20M Fé | Abre o card **Opus Magnum (Relíquias)** e inicia a geração de Fragmentos |
-| Selo da Gnose | 1Q (`1e15`) Fé *(limiar sem cobrança)* | Abre a **Câmara da Gnose** (True Prestige) e a Árvore Hermética |
+*Capturas da interface real, com uma partida de demonstração preparada para mostrar os sistemas.*
 
-### 3. Encarnação Sagrada
-- 5 estágios que multiplicam o Fervor/s: **1× → 100× → 10⁴× → 10⁸× → 10¹⁵×** (custos: 0 · 2,5M · 1T · 1e25 *(1e20 com Gnosis Suprema)* · 1e30 Fé *(requer Gnosis Suprema)*).
-- O estágio e o pico de Fervor do ciclo também multiplicam os fiéis: `1 + log10(1 + FervorPico/150) × 1.5 × estágio`.
-- Clicar no **Altar da Encarnação** adiciona **+10 s de Bênção 2×** na Fé/s (máx. 60 s).
+</div>
 
-### 4. Fervor Sagrado
-- O pico de Fervor do ciclo multiplica toda a Fé: `(log10(FervorPico/10 + 1) × 2 + 1) × efeito × ressonância`. Gastar Fervor em Ritos não reduz o bônus conquistado no ciclo.
-- 6 Ritos comprados com Fervor (o 6º rito é revelado ao restaurar a *Pena Solar de Fênix*):
+## O santuário
 
-| Rito de Fervor | Custo Base (Escala) | Fórmula |
-|---|---|---|
-| Aumentar Produção de Fervor | 50 (×1.8) | `2^(nível^0.6)` *(base evolui para 2,05 / 2,35 / 2,65 com Chama Astral, Fogo Hermético e Fogo Empíreo)* |
-| Aumentar Efeito do Fervor | 100 (×2.0) | `1.25^(nível^0.8)` |
-| Aumentar Fé por Clique | 100 (×1.4) | `nível^2.6 × 4 + 1` |
-| Fiéis Aumentam Fé/s | 500 (×1.5) | `nível^1.5 × fiéis / 50 + 1` |
-| Fé Aumenta Fervor/s | 500 (×2.5) | `nível^1.5 × log10(Fé + 1) / 5 + 1` |
-| Aumentar Ganho de Fragmentos *(requer Pena Solar de Fênix)* | 20M (×5.0) | `3^(nível^0.6)` *(base evolui para 3,05 / 3,40 / 3,75 com Alquimia Astral, Alquimia Hermética e Opus Perfeito)* |
+Você é **a Esfera**, a divindade cujo centro está em toda parte e cuja circunferência não está em lugar nenhum. Esquecida pelos homens, desperta de uma centelha de pensamento. Cada clique canaliza **Fé**; cada Fiel Devoto mantém o culto vivo.
 
-### 5. Relíquias e Fragmentos (Opus Magnum)
-- **Fragmentos** são a moeda de transmutação alquímica; **Relíquias** são os artefatos mitológicos restaurados com eles.
-- **Transmutar**: zera apenas a Fé atual e concede `floor(log2(Fé + 1) × bônus)` Fragmentos (espera de 3 s). Fiéis, Fervor e upgrades são mantidos.
-- **Geração passiva**: `MR × (max(1, floor(melhor transmutação / 10)) + bônus percentuais da Transmutação atual por segundo)` (*Anel Divino de Draupnir* +5%/s e *Olho do Infinito* +100%/s, com Auto-Transmutação ativa).
+O tabuleiro reúne altares e câmaras em um céu de obsidiana, com gravuras herméticas, diagramas astronômicos, bordas douradas e personagens animados. Arraste o cenário, aproxime com o zoom ou use a navegação inferior para visitar cada sistema.
 
-| Relíquia | Custo (Fragmentos) | Efeito |
-|---|---|---|
-| Cornucópia de Amalteia | 200 | +20% Fé/s por nível (máx. 20) |
-| Tocha de Prometeu | 500 | +20% Fervor/s por nível (máx. 20) |
-| Pena Solar de Fênix | 750 | Fervor/s ×1,5 e revela o 6º Rito de Fervor (*Aumentar Ganho de Fragmentos*) |
-| Cajado de Hermes | 1.500 | Custo dos fiéis escala mais devagar em −0.005 por nível (máx. 5) |
-| Anel Divino de Draupnir | 2.000 | Rende +5% da Transmutação por segundo, sem gastar Fé |
-| Arca da Aliança Cósmica | 15.000 | Pico de Fragmentos do ciclo multiplica a Fé/s: `(log10(fragmentosPico + 1) + 1)^(nível × 1.2)` (máx. 4) |
+| Caminho do culto | O que muda |
+| --- | --- |
+| **Fé & Fiéis** | Cliques, produção passiva, conversões e pedidos de milagre. |
+| **Encarnação** | Cinco Avatares, geração de Fervor e Bênção temporária de 2× Fé/s. |
+| **Fervor** | Seis Ritos que fortalecem produção, cliques, Fiéis e Fragmentos. |
+| **Opus Magnum** | Transmute Fé em Fragmentos e restaure seis Relíquias. |
+| **Gnose** | Ascenda, reconstrua o culto e assimile vinte nós permanentes. |
+| **Guardiões** | Enfrente Anúbis, Hades, Odin e o Caos Primordial no próprio tabuleiro. |
 
-### 6. Câmara da Gnose (True Prestige)
-- Desbloqueada ao atingir o limiar do **Selo da Gnose** (`1Q` / `1e15` Fé, sem cobrança de saldo).
-- **Ascensão Gnóstica**: reinicia o culto em troca de `floor((Fé / 1e15)^expoente)` Gnose; o expoente começa em 0,25 e passa a 0,28 com Olho de Trismegisto.
-- **Bônus permanente**: `1 + TotalGnose^0.35 × 1.5` em Fé e Fervor, além de `4^K` (ressonância por nó assimilado) em Fé, Fervor e Fragmentos. Gastar Gnose preserva esse bônus histórico.
-- **Árvore Hermética (20 upgrades em 4 Tiers)**:
-  - **Tier I — Despertar & Automação (6 nós):** Emanação Primordial (1 Gnose; escala dos Fiéis −0,01, início com 1.000 Fé e sinergia `1 + sqrt(Fiéis)`), Memória Hermética (77; Encarnação permanente e compras máximas em lote), Culto Autônomo (1.816; Auto-Fiéis orientado por objetivo com reserva de 180 s), Ruptura Automática (55.923; compra todos os Selos em sequência com Fé), Chama Astral (749.310; base do Rito de Fervor 2 → 2,05 e escala 1,80 → 1,75) e Alquimia Astral (1.546.331.765; base do Rito de Fragmentos 3 → 3,05 e escala 5 → 4,90).
-  - **Tier II — Persistência & Economia (6 nós, após Anúbis):** Liturgia Autônoma (10.547.999; Auto-Ritos por retorno marginal/custo), Oficina Autônoma (127.150.504; Auto-Relíquias com prioridade para a Fênix), Cripta Eterna (13.443.656.846; preserva níveis das Relíquias), Congregação Esférica (107.263.635.481; sinergia `1 + Fiéis`), Vigília Perpétua (2.102.158.069.257; Bênção 2× permanente) e Convergência dos Fiéis (19.612.553.057.056; escala dos Fiéis −0,015 adicional).
-  - **Tier III — Poder do Culto (4 nós, após Hades):** Coro Harmônico (183.392.573.867.151; sinergia dos Fiéis elevada a 1,1), Olho de Trismegisto (1.688.174.629.283.967; expoente da Ascensão 0,25 → 0,28), Alquimia Hermética (`1,51e18`; base do Rito de Fragmentos 3,40 e custo 4,60) e Fogo Hermético (`6,82e19`; base do Rito de Fervor 2,35).
-  - **Tier IV — Apoteose (4 nós, após Odin):** Olho do Infinito (`6,84e21`; Fiéis/Ritos automáticos sem gasto e Auto-Transmutação de 100%/s), Gnosis Suprema (`7,92e23`; desconto de escala nos Ritos e acesso aos Avatares finais), Fogo Empíreo (`1,53e30`; base de Fervor 2,65 e custo −0,10) e Opus Perfeito (`2,49e34`; base de Fragmentos 3,75 e custo −0,40).
-- **Compradores automáticos:** atuam uma vez por segundo e têm controles independentes de ativar/desativar nos próprios cards: Auto-Fiéis no Pátio (com seletor de objetivo: Automático, Próximo Selo, Próximo Avatar ou meta de Gnose, reservando Fé nos últimos 180 s), Auto-Ritos no Fervor (priorizando maior ganho relativo por custo, até 50 níveis por Rito/s) e Auto-Relíquias no Opus Magnum (poupando para a primeira Fênix e depois priorizando retorno por Fragmento até os níveis máximos). Auto-Transmutação também fica no Opus Magnum. Olho do Infinito dispensa apenas os gastos dos compradores de Fiéis e Ritos; as Relíquias continuam custando Fragmentos.
-- **Selos e preservação:** Memória Hermética preserva apenas Encarnação. Ruptura Automática é uma única compra de Gnose para todos os Selos; paga os três primeiros com Fé, reconhece o limiar gratuito do Selo da Gnose, respeita pré-requisitos e volta a comprá-los após cada Ascensão. Os Selos acessíveis são processados antes da compra de Fiéis em cada ciclo. Cripta Eterna preserva níveis das Relíquias, mas o saldo de Fragmentos, os picos do ciclo e a melhor Transmutação são zerados na Ascensão.
+Os Selos abrem essas camadas em sequência: **200 Fé → 5 mil Fé → 20 milhões de Fé → 1e15 Fé**. O último reconhece o limiar sem cobrar o saldo. Gastar Fervor ou Fragmentos mantém a força do pico alcançado no ciclo; a Ascensão reinicia esses picos.
 
-### 7. Conquistas
-**20 marcos** (cliques, fiéis, Fé total, Fé/s, Ascensões/Gnose e derrota do Caos Primordial), cada um com um bônus permanente:
+## A Árvore Hermética
 
-| Categoria | Afeta | Total possível |
-|---|---|---|
-| Clique (`fpc_mult`) | Fé por clique | +115% |
-| Produção Passiva (`fps_mult`) | Fé/s dos fiéis | +180% |
-| Produção Global (`global_mult`) | Clique **e** Fé/s | +330% |
-| Desconto (`cost_discount`) | Custo dos Fiéis | −5% (teto de −50%) |
+![Câmara da Gnose e seus nós de progressão permanente](docs/screenshots/gnose.png)
 
-Bônus da mesma categoria **somam**; categorias diferentes **multiplicam** entre si (ex.: Fé/s = passiva × global).
+A Ascensão troca a economia atual por **Gnose**. Nós assimilados, conquistas e vitórias sobrevivem aos reinícios. As compras permanentes abrem automações independentes, preservação de Relíquias e melhorias nas fórmulas. Cada nó também concede ressonância de produção.
 
----
+O que se perde e o que permanece está descrito no [GDD](GDD.md#ascensão-e-permanência) e na [referência matemática](FormulasJogo.md#12-ascensão-e-persistência).
 
-## ✨ Outras funcionalidades
-- 🗺️ **Tabuleiro 2D Panorâmico (Dodeca-Board)**: navegação livre com arraste (pan), zoom no cursor/pinça e barra rápida de acesso aos cards desbloqueados.
-- 🛠️ **Painel de Testes & Benchmark por Sessões (`[T]` ou `[F2]`)**: modificadores de velocidade (`0x` a `100x`), concessão rápida de recursos e simulador de progressão por sessões comparando **Ativo de referência**, **Ativo intenso**, **Casual** e **AFK**, com seed fixa, ações manuais e conclusão explícita; executado num Web Worker.
-- 💾 **Salvamento automático** no `localStorage` a cada 20 s, ao trocar de aba e ao fechar a página, com cópia de backup.
-- 📤 **Exportar/Importar save** em Base64 e reset completo nas Configurações.
-- 🔊 Áudio sintetizado (Web Audio) e vibração háptica em dispositivos móveis.
-- 🧭 Guia de onboarding passo a passo com foco luminoso e notificações de conquistas.
+## O julgamento dos deuses
 
----
+![Duelo contra Anúbis, com a Esfera e o círculo de Fiéis](docs/screenshots/duelo-anubis.png)
 
-## 🚀 Como Executar
+A Encarnação reúne os Fiéis em um círculo antes da chegada do Guardião. O combate começa quando ele alcança a arena: ataque o boss, **apare** os golpes, carregue o **Fulgor Divino** e responda aos milagres que recuperam a integridade da Esfera.
 
-### Pré-requisitos
-- [Node.js](https://nodejs.org/) (v18+) ou [Nix](https://nixos.org/)
+A força do culto depende de **Fé, Fiéis, Fervor, Relíquias, Encarnação e Gnose**, com bônus de conquistas. A prontidão combina os seis pilares pela média geométrica, em relação às metas de cada Guardião.
 
-### Usando npm
+- **Abaixo de 60%:** cliques, dano passivo, fendas e Fulgor não causam dano.
+- **Abaixo de 80%:** um golpe não aparado destrói a proteção; a pressão contínua também leva a Esfera ao colapso em poucos segundos.
+- **Com o culto preparado:** os recursos ampliam o dano e reduzem as perdas de integridade, respeitando os limites do combate.
+
+Vitórias liberam os próximos tiers. Depois, **Relembrar Duelo** permite revanches e registra o melhor tempo, sem repetir recompensas.
+
+## Executar localmente
+
+Requer **Node.js 22.12+ (22.x) ou 24.x**, conforme as dependências instaladas, ou o ambiente Nix do projeto.
+
 ```bash
-npm install         # Instalar dependências
-npm run dev         # Servidor de desenvolvimento (http://localhost:5173)
-npm test            # Executar suíte de testes (Vitest)
-npm run benchmark   # Executar o benchmark por sessões (limite padrão: 72 h simuladas)
-npm run build       # Verificar tipos e compilar para produção
-npm run preview     # Pré-visualizar o build de produção
+npm ci
+npm run dev
 ```
 
-### Usando Nix (`shell.nix`)
+Abra o endereço informado pelo Vite, normalmente `http://localhost:5173`.
+
+| Comando | Uso |
+| --- | --- |
+| `npm test` | Executa os testes com Vitest. |
+| `npm run build` | Verifica TypeScript e gera `dist/`. |
+| `npm run preview` | Serve o build de produção localmente. |
+| `npm run benchmark -- --seed=42 --hours=24` | Simula os perfis de progressão com horizonte explícito. |
+
+Com Nix:
+
 ```bash
-nix-shell                     # Ambiente com Node.js e npm
-nix-shell --run "npm run dev" # Ou rodar o dev server diretamente
+nix-shell
+npm ci
+npm run dev
 ```
 
----
+O painel de desenvolvimento abre com **T** ou **F2** em ambiente de desenvolvimento; oferece recursos de teste, velocidade e benchmark em Web Worker.
 
-## 📁 Estrutura do Projeto
+## Persistência e controles
+
+- Salvamento local automático a cada 20 segundos, ao ocultar a aba e ao sair, com backup.
+- Exportação/importação do progresso em Base64 e reinício nas Configurações.
+- Produção durante ausência de até **24 horas**, incluindo automações já adquiridas. Combates não continuam offline.
+- Arraste para navegar; roda do mouse ou pinça para zoom. Atalhos inferiores focam os altares.
+- Áudio ambiente e efeitos, com controles na interface; guia contextual para os primeiros passos.
+
+## Por dentro do projeto
 
 ```text
-wmdg/
-├── Base/                    # Documentos de design, metodologia do benchmark e balanceamento
-├── docs/                    # Documentação de domínio e ADRs
-├── src/
-│   ├── benchmark/           # ProgressionSimulator, reporters e testes de fidelidade do benchmark
-│   ├── config/              # Dados do jogo: fiéis, fervor, incarnation, relíquias, gnose, unlocks, conquistas
-│   ├── core/
-│   │   ├── GameState.ts         # Estado, regras, multiplicadores, automações e serialização
-│   │   ├── GameLoop.ts          # Loop de ticks (10/s) com suporte a multiplicador de velocidade
-│   │   └── EventBus.ts          # Eventos entre sistemas e UI
-│   ├── systems/
-│   │   ├── calculations.ts      # Fórmulas puras (custos, taxas, bônus, formatação)
-│   │   ├── saveSystem.ts        # Persistência, backup, export/import
-│   │   ├── audio.ts             # Áudio sintetizado e preferências
-│   │   └── notifications.ts     # Popups de notificação
-│   ├── features/            # Controladores de cada card/sistema: followers, incarnation, fervor,
-│   │                        #   relics, gnose, unlocks, achievements, stats e sphere
-│   ├── ui/                  # HUD, BoardManager, arenas em canvas, modais, onboarding e TestMenu
-│   ├── styles/              # CSS modularizado (base, hud, cards, panels, modals, sphere, board, test-menu)
-│   ├── types.ts             # Tipagens compartilhadas
-│   └── main.ts              # AppManager: instancia e conecta todos os módulos
-├── index.html               # Estrutura da página e tabuleiro 2D
-└── shell.nix                # Ambiente Nix
+src/
+├── core/          Estado, regras, loop e eventos
+├── config/        Catálogos, custos e constantes de balanceamento
+├── features/      Sistemas do culto e combate dos Guardiões
+├── systems/       Cálculos, persistência, tempo offline e áudio
+├── ui/            Tabuleiro, arenas, HUD e ferramentas de desenvolvimento
+├── styles/        Estilos da interface
+└── benchmark/     Simulação de campanhas, perfis e relatórios
+public/assets/     Artes, sprites, fontes e trilha usadas pelo jogo
+docs/              Guias, metodologia e capturas da interface
 ```
 
-## Validação da progressão
-
-A implementação de [PlanoProgressao.md](PlanoProgressao.md) mantém as fórmulas em [FormulasJogo.md](FormulasJogo.md) e a comparação de cenários em [Validação da progressão](docs/progression/validation-2026-10-29.md). Resultados antigos continuam preservados em `Base/`.
-
-```bash
-node scripts/calibrate-progression.mjs Base/progression-candidates.json.gz 3 explore
-node scripts/calibrate-progression.mjs Base/progression-final.json.gz 20 final
-node scripts/summarize-progression.mjs Base/progression-final.json.gz
-```
+A documentação acompanha o comportamento implementado. [GDD](GDD.md) explica o design, [FormulasJogo.md](FormulasJogo.md) detalha os cálculos e [GLOSSARY.md](GLOSSARY.md) define os termos. A [metodologia de progressão](docs/progression/README.md) explica como produzir novas medições; durações de versões anteriores não representam o balanceamento atual.

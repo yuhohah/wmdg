@@ -15,6 +15,12 @@ export const BOSS_MAX_CLICK_HP_FRACTION = 0.0045;
 export const BOSS_MAX_RIFT_HP_FRACTION = 0.085;
 export const BOSS_SPHERE_COOLDOWN_SEC = 0.2;
 
+/** Readiness uses all six cult pillars relative to each Guardian's requirements. */
+export const BOSS_DAMAGE_READINESS_THRESHOLD = 0.6;
+export const BOSS_DEFENSE_READINESS_THRESHOLD = 0.8;
+/** An unprepared Sphere collapses within four seconds, even with perfect parries. */
+export const BOSS_UNPREPARED_PRESSURE_PER_SEC = BOSS_MAX_ALTAR_INTEGRITY / 4;
+
 export const GNOSE_BOSSES: GnoseBoss[] = [
   {
     id: 'boss_anubis',

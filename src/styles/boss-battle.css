@@ -24,6 +24,32 @@
   text-transform: uppercase;
 }
 
+.btn-rematch-guardian {
+  font-family: var(--font-game);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  padding: 2px 8px;
+  background: rgba(20, 17, 14, 0.88);
+  color: #f6dc9a;
+  border: 1px solid #ad8c4d;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-rematch-guardian:hover {
+  background: #2b2316;
+  border-color: #f6dc9a;
+}
+
+.gnose-guardian-readiness {
+  font-family: var(--font-game);
+  font-size: 12.5px;
+  color: #d9c293;
+  overflow-wrap: anywhere;
+}
+
 .btn-challenge-guardian {
   font-family: var(--font-game);
   font-size: 11.5px;
@@ -216,6 +242,13 @@ html .gnose-tier-seal .btn-challenge-guardian:disabled {
   min-width: 0;
 }
 
+.gnose-endgame-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .gnose-endgame-title {
   font-family: var(--font-game);
   font-size: 13.5px;
@@ -396,6 +429,81 @@ html .btn-boss-retreat.btn-world-retreat:active {
   z-index: 25;
 }
 
+/* Botão de Fulgor Divino sobre a Esfera Divina */
+.boss-sphere-fulgor-btn {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  font-family: var(--font-game);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  background: rgba(14, 11, 9, 0.88);
+  color: #9e8a63;
+  border: 1px solid rgba(201, 154, 78, 0.45);
+  pointer-events: none;
+  z-index: 24;
+  white-space: nowrap;
+}
+
+.boss-sphere-fulgor-btn.is-ready {
+  pointer-events: auto;
+  cursor: pointer;
+  background: linear-gradient(180deg, #6b4c1b 0%, #2f2009 100%);
+  color: #fff3c4;
+  border: 1.5px solid #f6dc9a;
+  box-shadow: 0 0 18px rgba(246, 220, 154, 0.65);
+}
+
+.boss-sphere-fulgor-btn.is-ready:hover {
+  background: linear-gradient(180deg, #876022 0%, #422d0c 100%);
+  border-color: #ffffff;
+}
+
+/* Milagre dos Fiéis na Roda Sagrada (janela de 1,5s, +10% Integridade) */
+.boss-miracle-target {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  cursor: pointer;
+  padding: 5px 11px;
+  font-family: var(--font-game);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  background: linear-gradient(180deg, #5a4114 0%, #241906 100%);
+  color: #fff3c4;
+  border: 1.5px solid #f6dc9a;
+  box-shadow: 0 0 16px rgba(246, 220, 154, 0.75);
+  white-space: nowrap;
+  z-index: 27;
+}
+
+.boss-miracle-target:hover {
+  background: linear-gradient(180deg, #75551a 0%, #382709 100%);
+  border-color: #ffffff;
+}
+
+/* Letreiro diegético de virada de Fase II / III */
+.boss-phase-banner {
+  position: absolute;
+  transform: translateX(-50%);
+  padding: 6px 18px;
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+  background: rgba(20, 12, 10, 0.94);
+  color: #f6dc9a;
+  border: 1.5px solid #e05555;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 28;
+}
+
 /* Durante a Boss Battle, oculta os fiéis e a encarnação internos dos cards (pois saem pelo mundo)
    e atenua os cards satélites para não obstruírem a grande roda em volta do Boss e da Esfera */
 body.is-boss-battle-active #followers-walk-canvas,
@@ -503,6 +611,37 @@ body.is-boss-battle-active .dodeca-card:not(#card-altar-sphere) {
 }
 
 .boss-rift-target:active { background: #40301b; }
+
+/* Variantes dos 2ºs Ataques Especiais de cada Guardião */
+.boss-rift-target.boss-rift-anubis-scales {
+  border-color: #f6dc9a;
+  background: #211a0c;
+  box-shadow: inset 0 0 0 3px #14110c, inset 0 0 0 4px #8c6d32, 0 6px 18px #000b;
+}
+
+.boss-rift-target.boss-rift-hades-chains {
+  border-color: #e05555;
+  background: #241010;
+  color: #ffd4d4;
+  box-shadow: inset 0 0 0 3px #140a0a, inset 0 0 0 4px #7d291b, 0 6px 18px #000b;
+}
+
+.boss-rift-target.boss-rift-odin-raven {
+  border-color: #93c5fd;
+  background: #101826;
+  color: #e0f2fe;
+}
+
+.boss-rift-target.boss-rift-odin-raven.is-crit-window {
+  border-color: #fff3c4;
+  box-shadow: 0 0 16px rgba(246, 220, 154, 0.65);
+}
+
+.boss-rift-target.boss-rift-chaos-orbit {
+  border-color: #c084fc;
+  background: #1a1026;
+  color: #f3e8ff;
+}
 
 .boss-rift-target.is-urgent {
   border-color: #ed9a83;

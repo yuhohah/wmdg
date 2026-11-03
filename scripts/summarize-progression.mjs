@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 const inputs = process.argv.slice(2);
 if (!inputs.length) throw new Error('Informe arquivos JSON ou JSON.gz.');
@@ -40,5 +40,6 @@ for (const scenario of new Set(rows.map(r=>r.scenario))) {
     durationPass:results.every(r=>r.completed&&r.totalSimulatedTimeSec<20*3600),
   });
 }
-writeFileSync('Base/progression-final-summary.json',JSON.stringify({ inputs,metadata:reports[0].metadata,summary },null,2));
+mkdirSync('reports', { recursive: true });
+writeFileSync('reports/progression-summary.json',JSON.stringify({ inputs,metadata:reports[0].metadata,summary },null,2));
 console.log(JSON.stringify(summary,null,2));

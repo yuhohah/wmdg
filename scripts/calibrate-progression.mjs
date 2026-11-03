@@ -1,9 +1,11 @@
 // node scripts/calibrate-progression.mjs [output] [seeds=3] [suite=explore|final] [hours=20]
 import { createServer } from 'vite';
-import { writeFileSync, readFileSync } from 'node:fs';
+import { writeFileSync, readFileSync, mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
-const output = process.argv[2] ?? 'Base/progression-candidates.json';
+const output = process.argv[2] ?? 'reports/progression-candidates.json';
+mkdirSync(dirname(output), { recursive: true });
 const count = Number(process.argv[3] ?? 3);
 const suite = process.argv[4] ?? 'explore';
 const hours = Number(process.argv[5] ?? 20);

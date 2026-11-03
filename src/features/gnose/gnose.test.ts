@@ -149,7 +149,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(gameState.relicUpgrades[0].level).toBe(15);
   });
 
-  it('runs Boss Battle without countdown timer: shattering Rifts defeats the Boss and missing 4 Rifts breaks Altar Integrity with mild 20s curse', () => {
+  it('breaks an unprepared Sphere with a mild curse and rewards a prepared cult that wins by parrying', () => {
     gameState.totalGnoseEarned = 5;
     gameState.followers[0].count = 10;
 
@@ -174,7 +174,15 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(gameState.bossCurseTimerSec).toBe(0);
     expect(gameState.getFaithPerSecond()).toBeCloseTo(normalFps, 4);
 
-    // 2. Re-challenge Anúbis and shatter rifts + click Sphere to win quickly
+    // 2. Develop every resource before re-challenging Anúbis.
+    gameState.faithPoints = gameState.totalFaithAccumulated = 1e15;
+    gameState.fervorPoints = 1e7;
+    gameState.fervorUpgrades[0].level = 35;
+    gameState.relicPoints = 1000;
+    gameState.relicUpgrades[0].level = 6;
+    gameState.incarnationStage = 2;
+    gameState.followers[0].count = 120;
+    const preparedFps = gameState.getFaithPerSecond();
     expect(gameState.startBossBattle('boss_anubis')).toBe(true);
     for (let i = 0; i < 30; i++) {
       if (!gameState.activeBossBattle) break;
@@ -186,7 +194,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(gameState.activeBossBattle).toBeNull();
     expect(gameState.isBossDefeated('boss_anubis')).toBe(true);
     expect(gameState.isGnoseTierUnlocked(2)).toBe(true);
-    expect(gameState.getFaithPerSecond()).toBeCloseTo(normalFps * 1.5, 4);
+    expect(gameState.getFaithPerSecond()).toBeCloseTo(preparedFps * 1.5, 4);
   });
 
   it('unlocks Primordial Chaos (Endgame Boss) only when the complete Gnose tree are assimilated and grants Crepúsculo dos Deuses on victory', () => {
@@ -199,6 +207,13 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     });
     expect(gameState.canChallengeBoss('boss_tiamat')).toBe(true);
 
+    gameState.faithPoints = gameState.totalFaithAccumulated = 1e38;
+    gameState.followers[0].count = 600;
+    gameState.fervorPoints = 1e20;
+    gameState.fervorUpgrades[0].level = 250;
+    gameState.relicPoints = 1e6;
+    gameState.relicUpgrades.forEach(u => { u.level = 10; });
+    gameState.incarnationStage = 5;
     expect(gameState.startBossBattle('boss_tiamat')).toBe(true);
     for (let i = 0; i < 30; i++) {
       if (!gameState.activeBossBattle) break;
@@ -216,18 +231,18 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     gameState.totalGnoseEarned = 1;
     const base = gameState.getBossCombatBreakdown('boss_anubis');
 
-    // 1. Adding Fé increases faithBonus and passive DPS
+    // Developing isolated resources raises their bonuses but cannot bypass readiness.
     gameState.faithPoints = 1e9;
     gameState.totalFaithAccumulated = 1e9;
     const afterFaith = gameState.getBossCombatBreakdown('boss_anubis');
     expect(afterFaith.faithBonus).toBeGreaterThan(base.faithBonus);
-    expect(afterFaith.passiveDps).toBeGreaterThan(base.passiveDps);
+    expect(afterFaith.passiveDps).toBe(0);
 
     // 2. Adding Fiéis increases followersBonus, passive DPS, and Altar heal on rift shatter
     gameState.followers[0].count = 50;
     const afterFollowers = gameState.getBossCombatBreakdown('boss_anubis');
     expect(afterFollowers.followersBonus).toBeGreaterThan(afterFaith.followersBonus);
-    expect(afterFollowers.passiveDps).toBeGreaterThan(afterFaith.passiveDps);
+    expect(afterFollowers.passiveDps).toBe(0);
     expect(afterFollowers.altarHealOnRift).toBeGreaterThan(0);
 
     // 3. Adding Fervor increases fervorBonus, passive DPS, and Sphere Click damage
@@ -236,7 +251,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     gameState.fervorUpgrades[0].level = 5;
     const afterFervor = gameState.getBossCombatBreakdown('boss_anubis');
     expect(afterFervor.fervorBonus).toBeGreaterThan(afterFollowers.fervorBonus);
-    expect(afterFervor.clickDamage).toBeGreaterThan(afterFollowers.clickDamage);
+    expect(afterFervor.clickDamage).toBe(0);
 
     // 4. Adding Relíquias increases relicsBonus, Rift critical damage, and mitigates Altar damage on miss
     gameState.relicPoints = 1000;
@@ -244,7 +259,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     const afterRelics = gameState.getBossCombatBreakdown('boss_anubis');
     expect(afterRelics.relicsBonus).toBeGreaterThan(afterFervor.relicsBonus);
     expect(afterRelics.riftDamage).toBeGreaterThan(afterFervor.riftDamage);
-    expect(afterRelics.altarDamageOnMiss).toBeLessThan(base.altarDamageOnMiss);
+    expect(afterRelics.altarPressurePerSec).toBeLessThan(base.altarPressurePerSec);
 
     // 5. Advancing Encarnação increases incarnationBonus, click damage, and passive DPS
     gameState.incarnationStage = 3;
@@ -260,6 +275,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     const afterGnose = gameState.getBossCombatBreakdown('boss_anubis');
     expect(afterGnose.gnoseBonus).toBeGreaterThan(afterIncarnation.gnoseBonus);
     expect(afterGnose.totalResourceMultiplier).toBeGreaterThan(afterIncarnation.totalResourceMultiplier);
+    expect(afterGnose.altarDamageOnMiss).toBeLessThan(base.altarDamageOnMiss);
 
     // Verify passive tick visibly drains Boss HP bar even when raw Fé/s is smaller than 1e18
     expect(gameState.startBossBattle('boss_anubis')).toBe(true);

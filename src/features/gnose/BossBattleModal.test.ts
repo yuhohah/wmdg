@@ -303,6 +303,12 @@ function setupBossModalHarness(
 
   const gameState = new GameStateManager();
   gameState.totalGnoseEarned = 10;
+  gameState.faithPoints = gameState.totalFaithAccumulated = 1e22;
+  gameState.fervorPoints = 1e11;
+  gameState.fervorUpgrades[0].level = 80;
+  gameState.relicPoints = 1e4;
+  gameState.relicUpgrades[0].level = 18;
+  gameState.incarnationStage = 3;
   gameState.followers[0].count = followerCount;
   gameState.defeatedBosses.add('boss_anubis');
   gameState.unlockedGnoseUpgrades.add('gn_followers_syn');
@@ -319,7 +325,7 @@ function setupBossModalHarness(
     onCameraFrame: target => cameraFrames.push(target),
   });
 
-  return { modal, gameState, worldEl, drawImageCalls, nativeScroll, cameraFrames, createControl: () => new MockElement() };
+  return { modal, gameState, worldEl, drawImageCalls, nativeScroll, cameraFrames, notifications, createControl: () => new MockElement() };
 }
 
 describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox tracking', () => {
@@ -654,7 +660,6 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
   });
 
   it('produces clean, non-hairpin, non-intersecting routes even when Altar da Encarnacao and Patio dos Fieis are dragged to arbitrary board positions', () => {
-    // Reproduces the user's screenshot layout: Incarnation on the right of the Sphere, Followers on the top-left!
     const { modal } = setupBossModalHarness(400, {
       incarnationBox: { x: 2150, y: 740, w: 420, h: 210 },
       followersBox: { x: 860, y: 520, w: 512, h: 240 },
@@ -664,14 +669,10 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     const initial = modal.getChoreographySnapshot();
     const R = initial.circleRadius;
 
-    // 1. Outbound path from right (x ~ 2360) to top-left (x ~ 1180) skirts cleanly around the Sphere (never cuts inside r < 315)
     for (const pt of initial.outboundPath) {
       expect(Math.hypot(pt.x - 1740, pt.y - 854)).toBeGreaterThan(315);
     }
 
-    // 2. Procession path from top-left enters tangentially clockwise onto R = 535:
-    //    - Never enters inside the R = 535 circle (dist >= R - 1 everywhere)
-    //    - Angular progression around (1740, 854) is strictly monotonic clockwise (zero U-turns / hairpins!)
     let prevAngle: number | null = null;
     for (const pt of initial.processionPath) {
       const dist = Math.hypot(pt.x - 1740, pt.y - 854);
@@ -684,7 +685,6 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
       prevAngle = angle;
     }
 
-    // 3. Advance until ritual completes and verify full non-overlapping ring
     for (let i = 0; i < 200; i++) {
       modal.stepSceneForTest(0.15);
       if (modal.getChoreographySnapshot().combatStarted) break;
@@ -695,5 +695,74 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     expect(done.followers.every((f) => f.state === 'encircling')).toBe(true);
 
     modal.close();
+  });
+
+  it('renders Fulgor Divino on the Sphere, 1.5s Faithful Miracles on the circle, Phase II special attacks, and a 1.5s visual climax', () => {
+    const { modal, gameState, worldEl, drawImageCalls, notifications } = setupBossModalHarness(100);
+    expect(modal.openForBoss('boss_cronos')).toBe(true);
+
+    for (let i = 0; i < 160 && modal.getChoreographySnapshot().bossState !== 'idle'; i++) {
+      modal.stepSceneForTest(0.2);
+    }
+    expect(modal.getChoreographySnapshot().bossState).toBe('idle');
+
+    const stage = worldEl.children[0];
+    const fulgorBtn = stage.querySelector('#boss-sphere-fulgor-btn')!;
+    const riftsLayer = stage.querySelector('#boss-rifts-layer')!;
+    const battle = gameState.activeBossBattle!;
+
+    // 1. Charge Sphere to 100% and fire Fulgor Divino button (pure attack, no heal)
+    battle.altarIntegrity = 65;
+    battle.sphereCharge = 100;
+    modal.updateUI();
+    expect(fulgorBtn.classList.contains('is-ready')).toBe(true);
+    const hpBeforeFulgor = battle.bossHp;
+    fulgorBtn.dispatchClick();
+    expect(battle.bossHp).toBeLessThan(hpBeforeFulgor);
+    expect(battle.sphereCharge).toBe(0);
+    expect(battle.altarIntegrity).toBe(65);
+
+    // 2. Faithful Miracle on the Sacred Circle (1.5s window, heals +10% Integrity)
+    gameState.spawnBossMiracle(0);
+    modal.updateUI();
+    const miracleBtn = riftsLayer.querySelector('#boss-miracle-btn')!;
+    expect(miracleBtn).not.toBeNull();
+    expect(miracleBtn.textContent).toContain('1.5s');
+    miracleBtn.dispatchClick();
+    expect(battle.altarIntegrity).toBe(75);
+    expect(battle.activeMiracle).toBeNull();
+
+    // 3. Phase II transition banner and Hades Special Attack 2 (ataque-correntes / GRILHÃO)
+    battle.bossHp = battle.bossMaxHp * 0.55;
+    battle.highestPhaseShocked = 2;
+    battle.phase = 2;
+    modal.updateUI();
+    const phaseBanner = stage.querySelector('#boss-phase-banner')!;
+    expect(phaseBanner.style.display).toBe('block');
+    expect(phaseBanner.textContent).toContain('FASE II');
+
+    battle.activeRifts = [];
+    gameState.spawnBossRift({ forceSpecial: true });
+    modal.updateUI();
+    expect(battle.activeRifts).toHaveLength(2);
+    expect(battle.activeRifts[0].kind).toBe('hades_chains');
+    battle.activeRifts[0].remainingSec -= 0.7;
+    drawImageCalls.length = 0;
+    modal.stepSceneForTest(0.05);
+    const lastBossDraw = [...drawImageCalls].reverse().find(c => c.sw === 256 && c.sh === 192)!;
+    expect((lastBossDraw.img as { src: string }).src).toContain('/02-hades/ataque-correntes/spritesheet.png');
+
+    // 4. ~1.5s visual climax on victory before closing the stage and showing popup
+    battle.bossHp = 1;
+    battle.sphereCooldownSec = 0;
+    gameState.addClick(() => 0.5);
+    expect(modal.isOpen()).toBe(true);
+    expect(modal.getChoreographySnapshot().climaxRemainingSec).toBeCloseTo(1.5, 1);
+
+    modal.stepSceneForTest(0.8);
+    expect(modal.isOpen()).toBe(true);
+    modal.stepSceneForTest(0.8);
+    expect(modal.isOpen()).toBe(false);
+    expect(notifications.showCustomPopup).toHaveBeenCalled();
   });
 });

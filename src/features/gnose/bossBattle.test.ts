@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GameStateManager } from '../../core/GameState.js';
-import { GNOSE_BOSSES } from '../../config/bosses.js';
+import { BOSS_DAMAGE_READINESS_THRESHOLD, BOSS_DEFENSE_READINESS_THRESHOLD, GNOSE_BOSSES } from '../../config/bosses.js';
+import { GNOSE_UPGRADES } from '../../config/gnose.js';
 
 function eligibleCult() {
   const g = new GameStateManager();
@@ -20,7 +21,128 @@ function preparedCult() {
   return g;
 }
 
+// A cult near the first Guardian's targets, with room for each resource to grow.
+function balancedCult(bossId = 'boss_anubis') {
+  const g = eligibleCult();
+  const req = GNOSE_BOSSES.find(b => b.id === bossId)!.requirements!;
+  g.faithPoints = g.totalFaithAccumulated = 10 ** req.faithLog - 1;
+  g.followers[0].count = req.followers;
+  g.fervorPoints = 10 ** req.fervorLog - 1;
+  g.fervorUpgrades[0].level = req.fervorLevels;
+  g.relicPoints = 10 ** req.relicsLog - 1;
+  g.relicUpgrades[0].level = req.relicLevels;
+  g.incarnationStage = req.incarnationStage;
+  g.totalGnoseEarned = Math.max(1, 10 ** req.gnoseLog - 1);
+  GNOSE_UPGRADES.slice(0, req.gnoseNodes).forEach(u => g.unlockedGnoseUpgrades.add(u.id));
+  return g;
+}
+
+function cultAtReadiness(readiness: number, bossId = 'boss_anubis') {
+  const g = balancedCult(bossId);
+  // Vary only Faith; the six-pillar geometric mean gives a precise boundary fixture.
+  const boss = GNOSE_BOSSES.find(b => b.id === bossId)!;
+  const current = g.getBossCombatBreakdown(bossId);
+  const faithReadiness = current.pillarReadiness.faith * (readiness / current.cultReadiness) ** 6;
+  g.faithPoints = g.totalFaithAccumulated = 10 ** (boss.requirements!.faithLog * faithReadiness) - 1;
+  return g;
+}
+
 describe('Boss battle invariants', () => {
+  it.each(GNOSE_BOSSES)('enforces both readiness thresholds against $name', boss => {
+    for (const threshold of [BOSS_DAMAGE_READINESS_THRESHOLD, BOSS_DEFENSE_READINESS_THRESHOLD]) {
+      const below = cultAtReadiness(threshold - 1e-6, boss.id).getBossCombatBreakdown(boss.id);
+      const above = cultAtReadiness(threshold + 1e-6, boss.id).getBossCombatBreakdown(boss.id);
+      expect(below.cultReadiness).toBeCloseTo(threshold - 1e-6, 8);
+      expect(above.cultReadiness).toBeCloseTo(threshold + 1e-6, 8);
+      if (threshold === BOSS_DAMAGE_READINESS_THRESHOLD) {
+        expect(below.canDamageBoss).toBe(false);
+        expect(below.clickDamage).toBe(0);
+        expect(below.passiveDps).toBe(0);
+        expect(below.riftDamage).toBe(0);
+        expect(below.fulgorDamage).toBe(0);
+        expect(above.canDamageBoss).toBe(true);
+        expect(above.clickDamage).toBeGreaterThan(0);
+      } else {
+        expect(below.canWithstandBoss).toBe(false);
+        expect(below.altarDamageOnMiss).toBe(100);
+        expect(below.altarPressurePerSec).toBeGreaterThanOrEqual(25);
+        expect(above.canWithstandBoss).toBe(true);
+        expect(above.altarDamageOnMiss).toBeLessThan(100);
+        expect(above.altarPressurePerSec).toBeLessThan(25);
+      }
+    }
+  });
+
+  it.each(['faith', 'followers', 'fervor', 'relics', 'incarnation', 'gnose', 'achievements'] as const)(
+    'improves click damage and Sphere protection when %s develops', resource => {
+      const g = balancedCult();
+      const before = g.getBossCombatBreakdown();
+      if (resource === 'faith') g.faithPoints = g.totalFaithAccumulated = 1e18;
+      if (resource === 'followers') g.followers[0].count += 50;
+      if (resource === 'fervor') g.fervorPoints *= 100;
+      if (resource === 'relics') g.relicPoints *= 100;
+      if (resource === 'incarnation') g.incarnationStage++;
+      if (resource === 'gnose') g.totalGnoseEarned += 10;
+      if (resource === 'achievements') g.achievements[0].unlocked = true;
+      const after = g.getBossCombatBreakdown();
+      expect(after.clickDamage).toBeGreaterThan(before.clickDamage);
+      expect(after.altarDamageOnMiss).toBeLessThan(before.altarDamageOnMiss);
+      expect(after.altarPressurePerSec).toBeLessThan(before.altarPressurePerSec);
+    }
+  );
+
+  it('cannot replace a missing resource with extreme production or bypass damage thresholds with special attacks', () => {
+    const g = balancedCult('boss_tiamat');
+    g.relicPoints = g.totalRelicsGenerated = g.bestRelicsToGet = 0;
+    g.relicUpgrades.forEach(u => { u.level = 0; });
+    g.followers[0].count = 1e20;
+    g.faithPoints = g.totalFaithAccumulated = 1e100;
+    g.defeatedBosses.add('boss_tiamat');
+    expect(g.startBossBattle('boss_tiamat', { isRematch: true })).toBe(true);
+    const battle = g.activeBossBattle!;
+    const hp = battle.bossHp;
+    expect(g.getFaithPerSecond()).toBeGreaterThan(battle.bossMaxHp);
+    expect(g.getBossCombatBreakdown().canDamageBoss).toBe(false);
+    expect(g.addClick(() => 0).bossClickDamage).toBe(0); // Critical hits also respect the threshold.
+    battle.sphereCharge = 100;
+    expect(g.triggerSphereFulgor().damage).toBe(0);
+    battle.activeRifts = [0, 1, 2].map(slot => ({
+      id: `orbit-${slot}`, kind: 'chaos_orbit', groupId: 'orbit',
+      xPercent: 50, yPercent: 50, remainingSec: 1, maxSec: 1
+    }));
+    for (const id of battle.activeRifts.map(r => r.id)) expect(g.clickBossRift(id).damage).toBe(0);
+    expect(battle.bossHp).toBe(hp);
+    g.tick(0.1);
+    expect(battle.bossHp).toBe(hp);
+  });
+
+  it('loses an underprepared Sphere to pressure even while every rift is parried', () => {
+    const g = eligibleCult();
+    expect(g.startBossBattle('boss_anubis')).toBe(true);
+    let elapsed = 0;
+    while (g.activeBossBattle && elapsed < 4) {
+      g.spawnBossRift({ forceStandard: true });
+      g.clickBossRift(g.activeBossBattle.activeRifts[0].id);
+      g.tick(0.1);
+      elapsed += 0.1;
+    }
+    expect(g.activeBossBattle).toBeNull();
+    expect(g.isBossDefeated('boss_anubis')).toBe(false);
+    expect(elapsed).toBeLessThanOrEqual(4);
+  });
+
+  it('makes even a reduced special-attack miss lethal below the defense threshold', () => {
+    const g = eligibleCult();
+    g.startBossBattle('boss_anubis');
+    g.activeBossBattle!.activeRifts = [{
+      id: 'scales', kind: 'anubis_scales', xPercent: 50, yPercent: 50,
+      remainingSec: 0.01, maxSec: 1
+    }];
+    g.tick(0.02);
+    expect(g.activeBossBattle).toBeNull();
+    expect(g.isBossDefeated('boss_anubis')).toBe(false);
+  });
+
   it('presents Primordial Chaos as the final boss while preserving legacy victories and rewards', () => {
     const boss = GNOSE_BOSSES.at(-1)!;
     expect(boss.name).toBe('Caos Primordial');
@@ -35,7 +157,7 @@ describe('Boss battle invariants', () => {
   });
 
   it.each(['faith', 'fervor', 'relics'] as const)('keeps %s generated before the fight useful after its balance is spent', resource => {
-    const g = eligibleCult();
+    const g = balancedCult();
     const before = g.getBossCombatBreakdown();
     if (resource === 'faith') g.totalFaithAccumulated = 1e18;
     if (resource === 'fervor') g.totalFervorGenerated = 1e12;
@@ -48,7 +170,7 @@ describe('Boss battle invariants', () => {
     expect(g.startBossBattle('boss_anubis')).toBe(true);
     const hp = g.activeBossBattle!.bossHp;
     g.tick(1);
-    expect(g.activeBossBattle!.bossHp).toBeCloseTo(hp - after.passiveDps, -4);
+    expect((hp - g.activeBossBattle!.bossHp) / hp).toBeCloseTo(after.passiveHpFractionPerSec, 10);
   });
 
   it('holds combat damage, rifts, and sphere clicks when awaitProcession is true until beginBossCombat is called', () => {
@@ -138,11 +260,11 @@ describe('Boss battle invariants', () => {
   });
 
   it('processes intervening rifts equally at normal and accelerated speeds', () => {
-    const normal = eligibleCult(), accelerated = eligibleCult();
+    const normal = balancedCult(), accelerated = balancedCult();
     normal.startBossBattle('boss_anubis');
     accelerated.startBossBattle('boss_anubis');
-    for (let i = 0; i < 100; i++) normal.tick(0.1);
-    accelerated.tick(10);
+    for (let i = 0; i < 60; i++) normal.tick(0.1);
+    accelerated.tick(6);
     expect(accelerated.activeBossBattle!.riftsMissed).toBe(normal.activeBossBattle!.riftsMissed);
     expect(accelerated.activeBossBattle!.altarIntegrity).toBe(normal.activeBossBattle!.altarIntegrity);
     expect(accelerated.activeBossBattle!.bossHp).toBeCloseTo(normal.activeBossBattle!.bossHp, -4);
@@ -175,7 +297,7 @@ describe('Boss battle invariants', () => {
   });
 
   it('limits combat pulses while continuing to grant faith for ordinary sphere clicks', () => {
-    const g = eligibleCult(); g.startBossBattle('boss_anubis');
+    const g = balancedCult(); g.startBossBattle('boss_anubis');
     expect(g.addClick(() => 1).bossClickDamage).toBeGreaterThan(0);
     const faith = g.faithPoints;
     const blocked = g.addClick(() => 1);
@@ -225,8 +347,8 @@ describe('Boss battle invariants', () => {
     expect(g.canChallengeBoss('boss_odin')).toBe(true);
   });
 
-  it('escalates boss phases as HP drops and tracks rift combo streaks', () => {
-    const g = eligibleCult();
+  it('escalates boss phases as HP drops, applies lethal 15% and 30% phase shockwaves, and tracks rift combo streaks', () => {
+    const g = balancedCult();
     g.startBossBattle('boss_anubis');
     const battle = g.activeBossBattle!;
     expect(battle.phase).toBe(1);
@@ -248,24 +370,198 @@ describe('Boss battle invariants', () => {
 
     // Missing a rift resets comboStreak
     g.spawnBossRift();
-    g.tick(10);
+    g.tick(3);
     expect(battle.comboStreak).toBe(0);
 
-    // Drop HP to Phase 2 (<= 60%) and Phase 3 (<= 25%)
+    // Restore Integrity to 100% and verify Phase II (-15%) and Phase III (-30%) shockwaves
+    battle.altarIntegrity = 100;
+    battle.activeMiracle = null;
     battle.bossHp = battle.bossMaxHp * 0.55;
     g.tick(0.1);
     expect(battle.phase).toBe(2);
+    expect(battle.altarIntegrity).toBeLessThanOrEqual(85);
+    expect(battle.altarIntegrity).toBeGreaterThan(84);
+    expect(battle.activeMiracle).not.toBeNull();
+    expect(battle.activeMiracle!.maxSec).toBe(1.5);
 
+    battle.activeMiracle = null;
+    const integrityBeforePhase3 = battle.altarIntegrity;
     battle.bossHp = battle.bossMaxHp * 0.20;
     g.tick(0.1);
     expect(battle.phase).toBe(3);
+    expect(battle.altarIntegrity).toBeLessThanOrEqual(integrityBeforePhase3 - 30);
+    expect(battle.activeMiracle).not.toBeNull();
 
     battle.activeRifts = [];
-    g.spawnBossRift();
+    g.spawnBossRift({ forceStandard: true });
     expect(battle.activeRifts[0].maxSec).toBeLessThan(phase1Window);
   });
 
-  it('scales cultReadiness, damage, and battle time estimates with external game progression', () => {
+  it('makes Phase II (15%) and Phase III (30%) shockwaves truly lethal when Sphere Integrity is low', () => {
+    const g = preparedCult();
+    g.startBossBattle('boss_anubis');
+    const battle = g.activeBossBattle!;
+    battle.altarIntegrity = 12;
+    battle.bossHp = battle.bossMaxHp * 0.58;
+    g.tick(0.05);
+    expect(g.activeBossBattle).toBeNull();
+    expect(g.isBossDefeated('boss_anubis')).toBe(false);
+    expect(g.bossCurseTimerSec).toBeGreaterThan(0);
+  });
+
+  it('enforces the Tactical Triad: Sphere Fulgor Divino (pure attack), APARAR (no heal), and Faithful Miracle (1.5s window, sole +10% heal)', () => {
+    const g = preparedCult();
+    g.startBossBattle('boss_anubis');
+    const battle = g.activeBossBattle!;
+    battle.altarIntegrity = 60;
+
+    // 1. APARAR charges the Sphere (+25%) and damages Boss, but NEVER heals Sphere Integrity
+    g.spawnBossRift({ forceStandard: true });
+    const parryRes = g.clickBossRift(battle.activeRifts[0].id);
+    expect(parryRes.shattered).toBe(true);
+    expect(battle.altarIntegrity).toBe(60);
+    expect(battle.sphereCharge).toBe(25);
+
+    // 2. Boss clicks charge the Sphere (+8% per hit)
+    battle.sphereCooldownSec = 0;
+    g.addClick(() => 1);
+    expect(battle.sphereCharge).toBe(33);
+
+    // 3. At 100% charge, Fulgor Divino deals ~10% max HP damage and NEVER heals Sphere Integrity
+    battle.sphereCharge = 100;
+    const hpBeforeFulgor = battle.bossHp;
+    const fulgorRes = g.triggerSphereFulgor();
+    expect(fulgorRes.triggered).toBe(true);
+    expect(fulgorRes.damage).toBeCloseTo(g.getBossCombatBreakdown('boss_anubis').fulgorDamage, 2);
+    expect(battle.bossHp).toBeCloseTo(hpBeforeFulgor - fulgorRes.damage, 2);
+    expect(battle.sphereCharge).toBe(0);
+    expect(battle.altarIntegrity).toBe(60);
+
+    // 4. Faithful Miracle on the wheel has a 1.5s window and is the SOLE source of +10% healing
+    g.spawnBossMiracle(2);
+    expect(battle.activeMiracle).not.toBeNull();
+    expect(battle.activeMiracle!.maxSec).toBe(1.5);
+    expect(battle.activeMiracle!.remainingSec).toBe(1.5);
+
+    const miracleRes = g.clickBossMiracle();
+    expect(miracleRes.triggered).toBe(true);
+    expect(miracleRes.healed).toBe(10);
+    expect(battle.altarIntegrity).toBe(70);
+    expect(battle.activeMiracle).toBeNull();
+
+    // Unclicked Miracle expires after 1.5s
+    g.spawnBossMiracle(4);
+    g.tick(1.6);
+    expect(g.activeBossBattle!.activeMiracle).toBeNull();
+  });
+
+  it('implements all 4 Guardian signature Attack 2 patterns in Phases II & III', () => {
+    const g = preparedCult();
+    GNOSE_UPGRADES.forEach(u => g.unlockedGnoseUpgrades.add(u.id));
+    g.defeatedBosses.add('boss_anubis');
+    g.defeatedBosses.add('boss_cronos');
+    g.defeatedBosses.add('boss_odin');
+
+    // 1. Anubis (anubis_scales): 2 scale rifts; parrying both awakens a Faithful Miracle on the wheel
+    g.startBossBattle('boss_anubis', { isRematch: true });
+    g.activeBossBattle!.bossHp = g.activeBossBattle!.bossMaxHp * 0.5;
+    g.activeBossBattle!.highestPhaseShocked = 2;
+    g.activeBossBattle!.activeMiracle = null;
+    g.spawnBossRift({ forceSpecial: true });
+    expect(g.activeBossBattle!.activeRifts).toHaveLength(2);
+    expect(g.activeBossBattle!.activeRifts[0].kind).toBe('anubis_scales');
+    expect(g.activeBossBattle!.activeRifts[0].attackIndex).toBe(1);
+    const scaleIds = g.activeBossBattle!.activeRifts.map(r => r.id);
+    expect(g.clickBossRift(scaleIds[0]).miracleAwakened).toBe(false);
+    const secondScale = g.clickBossRift(scaleIds[1]);
+    expect(secondScale.specialBonusTriggered).toBe(true);
+    expect(secondScale.miracleAwakened).toBe(true);
+    expect(g.activeBossBattle!.activeMiracle).not.toBeNull();
+    g.retreatBossBattle();
+
+    // 2. Hades (hades_chains): 2 crimson shackles reduce player click damage by 50% until broken
+    g.startBossBattle('boss_cronos', { isRematch: true });
+    g.activeBossBattle!.bossHp = g.activeBossBattle!.bossMaxHp * 0.5;
+    g.activeBossBattle!.highestPhaseShocked = 2;
+    const baseClick = g.getBossCombatBreakdown('boss_cronos').clickDamage;
+    g.spawnBossRift({ forceSpecial: true });
+    expect(g.activeBossBattle!.activeRifts).toHaveLength(2);
+    expect(g.activeBossBattle!.activeRifts[0].kind).toBe('hades_chains');
+    const chainedClick = g.getBossCombatBreakdown('boss_cronos').clickDamage;
+    expect(chainedClick).toBeCloseTo(baseClick * 0.5, 2);
+    const chainIds = g.activeBossBattle!.activeRifts.map(r => r.id);
+    g.clickBossRift(chainIds[0]);
+    expect(g.getBossCombatBreakdown('boss_cronos').clickDamage).toBeCloseTo(baseClick * 0.5, 2);
+    const chainBreak = g.clickBossRift(chainIds[1]);
+    expect(chainBreak.specialBonusTriggered).toBe(true);
+    expect(g.getBossCombatBreakdown('boss_cronos').clickDamage).toBeCloseTo(baseClick, 2);
+    g.retreatBossBattle();
+
+    // 3. Odin (odin_raven): 1 swift raven seal with critical window (1.6x damage + delays next attack)
+    g.startBossBattle('boss_odin', { isRematch: true });
+    g.activeBossBattle!.bossHp = g.activeBossBattle!.bossMaxHp * 0.5;
+    g.activeBossBattle!.highestPhaseShocked = 2;
+    g.spawnBossRift({ forceSpecial: true });
+    expect(g.activeBossBattle!.activeRifts).toHaveLength(1);
+    expect(g.activeBossBattle!.activeRifts[0].kind).toBe('odin_raven');
+    const timerBeforeRaven = g.activeBossBattle!.riftSpawnTimerSec;
+    const baseRiftDmg = g.getBossCombatBreakdown('boss_odin').riftDamage;
+    const ravenRes = g.clickBossRift(g.activeBossBattle!.activeRifts[0].id);
+    expect(ravenRes.specialBonusTriggered).toBe(true);
+    expect(ravenRes.damage).toBeGreaterThan(baseRiftDmg * 1.4);
+    expect(g.activeBossBattle!.riftSpawnTimerSec).toBeGreaterThan(timerBeforeRaven + 1.0);
+    g.retreatBossBattle();
+
+    // 4. Primordial Chaos (chaos_orbit): 3 orbital seals; shattering all 3 triggers massive rupture damage
+    g.startBossBattle('boss_tiamat');
+    g.activeBossBattle!.bossHp = g.activeBossBattle!.bossMaxHp * 0.5;
+    g.activeBossBattle!.highestPhaseShocked = 2;
+    g.spawnBossRift({ forceSpecial: true });
+    expect(g.activeBossBattle!.activeRifts).toHaveLength(3);
+    expect(g.activeBossBattle!.activeRifts[0].kind).toBe('chaos_orbit');
+    const orbitIds = g.activeBossBattle!.activeRifts.map(r => r.id);
+    const d1 = g.clickBossRift(orbitIds[0]).damage;
+    const d2 = g.clickBossRift(orbitIds[1]).damage;
+    const d3 = g.clickBossRift(orbitIds[2]);
+    expect(d3.specialBonusTriggered).toBe(true);
+    expect(d3.damage).toBeGreaterThan(d1 + d2);
+    g.retreatBossBattle();
+  });
+
+  it('supports rematches (Relembrar Duelo) without curse on defeat, without duplicate rewards, and records best subjugation time', () => {
+    const g = preparedCult();
+    g.defeatedBosses.add('boss_anubis');
+    expect(g.canChallengeBoss('boss_anubis')).toBe(false);
+    expect(g.canChallengeBoss('boss_anubis', { isRematch: true })).toBe(true);
+
+    // Rematch defeat does NOT apply Divine Curse
+    expect(g.startBossBattle('boss_anubis', { isRematch: true })).toBe(true);
+    g.activeBossBattle!.altarIntegrity = 1;
+    g.spawnBossRift({ forceStandard: true });
+    g.tick(5);
+    expect(g.activeBossBattle).toBeNull();
+    expect(g.bossCurseTimerSec).toBe(0);
+    expect(g.isBossDefeated('boss_anubis')).toBe(true);
+    expect(g.getBossRewardsMultiplier()).toBe(1.5);
+
+    // Rematch victory records best subjugation time and persists across save/load
+    expect(g.startBossBattle('boss_anubis', { isRematch: true })).toBe(true);
+    g.tick(4.2);
+    g.activeBossBattle!.bossHp = 1;
+    g.activeBossBattle!.sphereCooldownSec = 0;
+    g.addClick(() => 1);
+    expect(g.activeBossBattle).toBeNull();
+    const bestTime = g.getBossBestTimeSec('boss_anubis');
+    expect(bestTime).not.toBeNull();
+    expect(bestTime!).toBeGreaterThanOrEqual(4.0);
+    expect(g.getBossRewardsMultiplier()).toBe(1.5);
+
+    const restored = new GameStateManager();
+    restored.applySaveData(g.buildSaveData());
+    expect(restored.getBossBestTimeSec('boss_anubis')).toBe(bestTime);
+  });
+
+  it('scales cultReadiness, pillar diagnostics, damage, and battle time estimates with external game progression', () => {
     const weak = eligibleCult();
     const strong = preparedCult();
     strong.achievements.slice(0, 10).forEach(a => { a.unlocked = true; });
@@ -276,6 +572,10 @@ describe('Boss battle invariants', () => {
     const bStrong = strong.getBossCombatBreakdown('boss_anubis');
 
     expect(bStrong.cultReadiness).toBeGreaterThan(bWeak.cultReadiness);
+    expect(bWeak.weakPillars.length).toBeGreaterThan(0);
+    expect(bWeak.lowestTwoPillars).toHaveLength(2);
+    expect(bWeak.lowestTwoPillars[0].readiness).toBeLessThanOrEqual(bWeak.lowestTwoPillars[1].readiness);
+    expect(bStrong.altarPressurePerSec).toBeLessThan(bWeak.altarPressurePerSec);
     expect(bStrong.achievementsBonus).toBeGreaterThan(bWeak.achievementsBonus);
     expect(bStrong.passiveDps).toBeGreaterThan(bWeak.passiveDps);
     expect(bStrong.estimatedPassiveVictorySec).toBeLessThan(bWeak.estimatedPassiveVictorySec);

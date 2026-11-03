@@ -100,7 +100,7 @@
   letter-spacing: 0.6px;
 }
 
-#card-gnose .gnose-tier-seal :is(.btn-challenge-guardian, .gnose-guardian-requirement, .gnose-guardian-power) {
+#card-gnose .gnose-tier-seal :is(.btn-challenge-guardian, .gnose-guardian-requirement, .gnose-guardian-power, .gnose-guardian-readiness) {
   grid-column: 1 / -1;
 }
 

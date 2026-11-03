@@ -1,6 +1,6 @@
 # Fórmulas atuais do jogo — A Entidade Divina
 
-Referência do código local em **29/10/2026**, incluindo as alterações atuais ainda não commitadas. Implementação da revisão de progressão: resultados e critérios em [Validação da progressão](docs/progression/validation-2026-10-29.md). Os valores abaixo descrevem o comportamento executado, inclusive limites, condições e diferenças em relação aos textos da interface.
+Referência das regras implementadas em **03/11/2026**. O [GDD](GDD.md) descreve o design; a [metodologia de progressão](docs/progression/README.md) explica como medir campanhas novas. Os valores abaixo descrevem o comportamento executado, inclusive limites e condições.
 
 ## Índice
 
@@ -203,7 +203,7 @@ A evolução compra somente o próximo estágio, descontando Fé. O multiplicado
 | --- | --- | --- | --- | --- |
 | 1 | Avatar Neófito | 0; inicial ao abrir o selo | 0 | 1 |
 | 2 | Avatar Consagrado | 2.5e6 | 2.5e6 | 100 |
-| 3 | Avatar Ancestral | 1e12 | 1e12 | 10000 |
+| 3 | Avatar Ancestral | 2.5e11 | 2.5e11 | 10000 |
 | 4 | Avatar do Eclipse | 1e25 | 1e20 | 1e8 |
 | 5 | Avatar Solar | Exige Gnosis Suprema | 1e30 | 1e15 |
 
@@ -369,152 +369,143 @@ Progresso de requisito numérico `x` até alvo `t`: `current=min(x,t)`, `target=
 
 ## 11. Bosses e combate
 
-### 11.1 Catálogo, acesso e recompensas
+As fórmulas são calculadas em `getBossCombatBreakdown`. `H` é o HP máximo do Guardião e `d` sua escala de dificuldade. Recursos são consultados durante a luta; os valores podem mudar com a produção e as compras.
 
-| Boss / ID | Abre | HP máximo H | Dificuldade d | Prêmio permanente |
+### 11.1 Guardiões e metas
+
+| Guardião / ID persistido | HP máximo H | d | Recompensa de Fé/Fervor |
+| --- | --- | --- | --- |
+| Anúbis / `boss_anubis` | 1e18 | 1 | ×1.5 e Tier II |
+| Hades / `boss_cronos` | 5e28 | 1.6 | ×1.5 e Tier III |
+| Odin / `boss_odin` | 1e38 | 2.3 | ×1.5 e Tier IV |
+| Caos Primordial / `boss_tiamat` | 1e42 | 3.2 | ×10 e conquista final |
+
+Os multiplicadores acumulam: ×33.75 com as quatro vitórias, afetando também Fé por clique. Anúbis exige acesso à Gnose; Hades exige Tier II e dois nós desse tier; Odin exige Tier III e dois nós desse tier; Caos exige todos os vinte nós. Uma luta ativa impede iniciar outra. Guardiões derrotados só podem ser enfrentados em revanche.
+
+| Referencial req | Anúbis | Hades | Odin | Caos |
 | --- | --- | --- | --- | --- |
-| Anúbis / `boss_anubis` | Tier 2 | 1e18 | 1.0 | Balança de Maat: ×1.5 |
-| Hades / `boss_cronos` | Tier 3 | 5e28 | 1.6 | Bidente do Submundo: ×1.5 |
-| Odin / `boss_odin` | Tier 4 | 1e38 | 2.3 | Runas de Yggdrasil: ×1.5 |
-| Caos Primordial / `boss_tiamat` | Apoteose final | 1e42 | 3.2 | Selo da Criação: ×10 e conquista Crepúsculo dos Deuses |
+| faithLog | 15 | 22 | 30 | 38 |
+| followers | 120 | 240 | 400 | 600 |
+| fervorLog | 7 | 11 | 15 | 20 |
+| fervorLevels | 35 | 80 | 150 | 250 |
+| relicsLog | 2.5 | 3.5 | 4.5 | 5.5 |
+| relicLevels | 6 | 18 | 35 | 50 |
+| incarnationStage | 2 | 3 | 4 | 5 |
+| gnoseLog | 0 | 1.2 | 2.4 | 3.5 |
+| gnoseNodes | 1 | 5 | 10 | 17 |
 
-Os prêmios multiplicam Fé por clique, Fé/s e Fervor/s. `MB=3.375` após os três primeiros e `MB=33.75` após os quatro. Vitórias são permanentes; não é possível repetir boss derrotado.
+São referenciais de prontidão, não requisitos individuais para iniciar o desafio. A meta 17 de Caos não substitui o requisito de entrada de vinte nós.
 
-Anúbis exige acesso à Gnose; Hades exige Tier 2 aberto e pelo menos dois upgrades desse tier; Odin exige Tier 3 aberto e dois upgrades desse tier. Caos exige **todos os 20 upgrades atuais**. Não pode iniciar outra batalha durante uma batalha ativa. Os referenciais abaixo medem preparação; não são travas de entrada individuais.
+### 11.2 Bônus dos recursos
 
-| Referencial | Anúbis | Hades | Odin | Caos |
-| --- | --- | --- | --- | --- |
-| `faithLog` | 15 | 22 | 30 | 38 |
-| `followers` | 120 | 240 | 400 | 600 |
-| `fervorLog` | 7 | 11 | 15 | 20 |
-| `fervorLevels` | 35 | 80 | 150 | 250 |
-| `relicsLog` | 2.5 | 3.5 | 4.5 | 5.5 |
-| `relicLevels` | 6 | 18 | 35 | 50 |
-| `incarnationStage` | 2 | 3 | 4 | 5 |
-| `gnoseLog` | 0 | 1.2 | 2.4 | 3.5 |
-| `gnoseNodes` | 1 | 5 | 10 | 17 |
-
-O referencial 17 de Caos não substitui o requisito real de completar a árvore.
-
-### 11.2 Variáveis auxiliares e bônus de recursos
-
-`LU` é a soma dos níveis dos seis ritos; `LR` a soma dos níveis das seis Relíquias. `boost` vale 1 se a Bênção está ativa, inclusive pela Vigília com Encarnação aberta.
+`LU` soma os níveis dos Ritos; `LR` soma os níveis de Relíquias. `boost=1` com Bênção ativa, inclusive Vigília com Encarnação aberta, ou zero sem ela.
 
 ```text
-f  = log10(max(0,F)+1)
-fh = log10(max(F,Fh,0)+1)
-p  = log10(P) se P>1; 0 caso contrário
-v  = log10(V+1) se V>0; 0 caso contrário
-vh = log10(max(V,Vh,0)+1)
-q  = log10(Q+1) se Q>0; 0 caso contrário
-Re = max(R,Rb)
-r  = log10(Re+1) se Re>0; 0 caso contrário
-rh = log10(max(Re,Rh,0)+1)
-w  = log10(W+1)
-Ge = max(G,Gh)
-g  = log10(Ge+1) se Ge>0; 0 caso contrário
+f=log10(max(0,F)+1); fh=log10(max(F,Fh,0)+1)
+p=log10(P) se P>1; 0 senão
+v=log10(max(0,V)+1); vh=log10(max(V,Vh,0)+1)
+q=log10(max(0,Q)+1)
+Re=max(R,Rb); r=log10(max(0,Re)+1); rh=log10(max(Re,Rh,0)+1)
+w=log10(W+1); Ge=max(G,Gh); g=log10(max(0,Ge)+1)
 
-bf = (0.02*f + 0.02*fh + 0.05*p)/d
-bn = (0.22*log10(N+1) + min(1.5,0.008*N))/d se N>0; 0 senão
-bv = (0.08*v + 0.04*vh + 0.08*q + 0.04*LU)/d
-br = (0.15*r + 0.10*rh + 0.08*w + 0.08*LR)/d
-bs = (0.35*(S-1) + 0.25*boost)/d
-ba = 0.025*A/d
-bg = (0.22*g + 0.08*K + 0.015*A)/d
-soma = bf + bn + bv + br + bs + bg
-multiplicadorDeRecursosExibido = (1+soma)*MC
+bf=(0.02*f+0.02*fh+0.05*p)/d
+bn=(0.22*log10(N+1)+min(1.5,0.008*N))/d se N>0; 0 senão
+bv=(0.08*v+0.04*vh+0.08*q+0.04*LU)/d
+br=(0.15*r+0.10*rh+0.08*w+0.08*LR)/d
+bs=(0.35*(S-1)+0.25*boost)/d
+ba=0.025*A/d
+bg=(0.22*g+0.08*K+0.015*A)/d
+soma=bf+bn+bv+br+bs+bg+ba
+multiplicadorDeRecursos=(1+soma)*MC
 ```
 
-`ba` entra na defesa separadamente; não é somado de novo a `soma`. O multiplicador exibido é um indicador; as fórmulas de dano usam seus próprios coeficientes abaixo.
+Históricos de Fé, Fervor e Fragmentos permanecem úteis depois de gastar saldos e ascender. Isso é separado dos picos econômicos do ciclo.
 
-### 11.3 Preparação do culto
-
-Os nomes `req.*` referem-se à tabela de referenciais do boss.
+### 11.3 Prontidão e thresholds
 
 ```text
-rf = min(2, max(f,fh)/max(1,req.faithLog))
-rn = min(2, N/max(1,req.followers))
-rv = min(2, 0.5*vh/max(1,req.fervorLog) + 0.5*LU/max(1,req.fervorLevels))
-rr = min(2, 0.5*rh/max(1,req.relicsLog) + 0.5*LR/max(1,req.relicLevels))
-rs = min(2, (S+0.5*boost)/max(1,req.incarnationStage))
-rg = min(2,0.8+0.25*K+0.20*g) se req.gnoseNodes<=1 e req.gnoseLog<=0
-rg = min(2,0.5*g/max(0.5,req.gnoseLog)+0.5*K/max(1,req.gnoseNodes)) senão
+rf=min(2,max(f,fh)/max(1,req.faithLog))
+rn=min(2,N/max(1,req.followers))
+rv=min(2,0.5*vh/max(1,req.fervorLog)+0.5*LU/max(1,req.fervorLevels))
+rr=min(2,0.5*rh/max(1,req.relicsLog)+0.5*LR/max(1,req.relicLevels))
+rs=min(2,(S+0.5*boost)/max(1,req.incarnationStage))
+rg=min(2,0.8+0.25*K+0.20*g) se req.gnoseNodes<=1 e req.gnoseLog<=0
+rg=min(2,0.5*g/max(0.5,req.gnoseLog)+0.5*K/max(1,req.gnoseNodes)) senão
 
-preparo = max(0.2,0.18*rf+0.16*rn+0.20*rv+0.18*rr+0.14*rs+0.14*rg)
-fatorPreparo = 0.45+0.55*preparo
+preparo=(rf*rn*rv*rr*rs*rg)^(1/6)
+podeAtacar = preparo >= 0.60
+podeResistir = preparo >= 0.80
+m = min(1,preparo) se podeAtacar; 0 senão
+fatorPreparo=0.45+0.55*preparo
 ```
 
-No estado normal, `preparo` vai de 0.2 a 2 (20% a 200%). Há poder de culto ativo se qualquer condição for verdadeira: `P>0`, `N>0`, `V>0`, `LU>0`, `Re>0`, `LR>0`, `S>1`, `Ge>0`, `K>0`, `F>1`, `Fh>1`, `Vh>0` ou `Rh>0`.
+A média geométrica vai de zero a dois; um pilar zerado zera a prontidão. Abaixo de 60%, todas as fontes de dano são bloqueadas, mesmo que a produção bruta seja enorme. Abaixo de 80%, golpes não aparados são letais e a pressão contínua provoca colapso rápido. Constantes: `BOSS_DAMAGE_READINESS_THRESHOLD` e `BOSS_DEFENSE_READINESS_THRESHOLD`, em `src/config/bosses.ts`.
 
-### 11.4 Dano passivo, clique e fenda
+### 11.4 Dano passivo, cliques, aparos e Fulgor
 
 ```text
-poderPassivo = H*soma*0.00175*fatorPreparo*MC se culto ativo; 0 senão
-DPS = min(0.018*H, max(P,poderPassivo))
-
-Dclique = min(0.0045*H,
-              max(C,H*0.0014*(0.6+0.4*preparo)*(1+0.12*soma+0.08*bv+0.08*bs)))
-
-DfendaBase = min(0.085*H,
-                 max(5*C,H*baseFenda*(0.8+0.2*preparo)
-                       *(1+0.06*soma+0.10*br+0.08*bg)))
-
-comboNovo = comboAnterior+1
-multCombo = 1+min(0.30,(comboNovo-1)*0.05)
-Dfenda = min(0.085*H,DfendaBase*multCombo)
+poderPassivo=H*soma*0.00175*fatorPreparo*MC se há poder ativo; 0 senão
+DPS=m*min(0.018*H,max(P,poderPassivo))
+Dclique=m*correntes*min(0.0045*H,
+  max(C,H*0.0014*(0.6+0.4*preparo)*(1+0.12*soma+0.08*bv+0.08*bs)))
+DfendaBase=m*min(0.085*H,
+  max(5*C,H*baseFenda*(0.8+0.2*preparo)*(1+0.06*soma+0.10*br+0.08*bg)))
+multCombo=1+min(0.30,(comboNovo-1)*0.05)
+Dfenda=min(0.085*H,DfendaBase*multCombo)
+Dfulgor=H*m*min(0.14,max(0.06,0.08+0.02*min(2,preparo)))
 ```
 
-DPS limitado a 1.8% do HP máximo por segundo. Clique normal limitado a 0.45%; crítico dobra o dano **depois** desse limite, chegando a 0.9%. Há cooldown de 0.2 s entre danos da Esfera (até 5 por segundo simulado); cliques no cooldown continuam dando Fé e contando cliques. A fenda permanece limitada a 8.5%, incluindo o combo. O primeiro acerto tem combo 1×; cresce 5% por acerto consecutivo até 1.30×. Perder uma fenda zera o combo.
+Há poder ativo se existe produção, Fiéis, recursos/históricos, níveis, Gnose ou Avatar acima do inicial. `correntes=0.5` enquanto houver fenda de Hades; 1 nos demais casos.
 
-### 11.5 Defesa, altar e estimativas
+O clique normal respeita cooldown de 0.2 s; o crítico de 5% dobra o dano depois do limite, até 0.9% de H. Cliques no cooldown continuam concedendo Fé. Aparar acrescenta 25 pontos de carga e aumenta o combo; errar zera o combo. Cliques de combate acrescentam 8 pontos de carga. A carga é limitada a 100.
+
+Fulgor exige carga 100, combate iniciado e prontidão de ataque. Causa dano e zera a carga; não cura. Sem prontidão não dispara nem consome a carga. Aparos também não curam.
+
+O corvo de Odin recebe ×1.6 quando aparado com pelo menos 35% da janela restante, limitado a 12% de H, e adia a próxima onda em 1.4 s. O último selo orbital do Caos soma `max(1.5*Dfenda,0.065*H*min(1,preparo))` se puder atacar; abaixo do threshold esse bônus é zero.
+
+### 11.5 Proteção e pressão contínua
 
 ```text
-defesa = 0.35*br+0.35*bs+0.15*bv+0.25*ba
-mitigacao = 1/(1+1.85*defesa)
-danoPorErro = max(pisoErro,danoErroOriginal*mitigacao)
-curaPorFenda = min(16,4*bn+5*br+4*bs)
-pressaoCalculada = max(0.08,pressaoOriginal/(1+2.2*defesa+1.2*preparo))
-
-estimativaVitoriaPassiva = H/DPS se DPS>0; infinito caso contrário
-perdaMediaEstimada = danoPorErro/(intervaloBase+0.35*janelaBase)
-estimativaSobrevivencia = 100/max(0.05,pressaoCalculada+perdaMediaEstimada)
+defesa=0.20*bf+0.25*bn+0.35*br+0.35*bs+0.15*bv+0.25*bg+0.25*ba
+mitigacao=1/(1+1.85*defesa)
+danoPorErro=max(pisoErro,danoErroOriginal*mitigacao) se podeResistir; 100 senão
+penalidade=1+(0.8-preparo)*1.8 se preparo<0.8; 1 senão
+bonusPreparado=1/(1+(preparo-0.9)*3.2) se preparo>=1; 1 senão
+pressaoBase=pressaoOriginal*penalidade*bonusPreparado/(1+2.2*defesa+1.4*preparo)
+pressao=max(0.06,pressaoBase) se podeResistir
+pressao=max(25*(1+0.8-preparo),pressaoBase) caso contrário
 ```
 
 | Parâmetro | Anúbis | Hades | Odin | Caos |
 | --- | --- | --- | --- | --- |
-| `baseFenda` | 0.040 | 0.038 | 0.036 | 0.035 |
+| baseFenda | 0.040 | 0.038 | 0.036 | 0.035 |
 | Intervalo base (s) | 3.6 | 3.3 | 3.0 | 2.7 |
 | Janela base (s) | 2.2 | 2.0 | 1.8 | 1.65 |
 | Dano original por erro | 32 | 36 | 40 | 46 |
-| Piso do dano por erro | 4 | 5 | 6.5 | 8.5 |
+| Piso de dano por erro | 3.2 | 4.2 | 5.5 | 7.5 |
 | Pressão original/s | 0.65 | 0.95 | 1.25 | 1.65 |
 
-**Comportamento atual:** a pressão é calculada e usada na estimativa de sobrevivência, mas `tickBossBattle` não a desconta continuamente da integridade. O altar perde integridade quando fendas expiram. Assim, essa estimativa não representa uma contagem regressiva efetivamente aplicada.
+O tick desconta `pressao*dt` da integridade. Com proteção suficiente, fendas de balanças/correntes usam metade do dano por erro; selos orbitais usam 40%. Sem proteção suficiente, qualquer erro tira 100, sem essa redução.
 
-O altar começa em 100. Ao errar, `integridade=max(0,integridade-danoPorErro)`; ao acertar, `integridade=min(100,integridade+curaPorFenda)`. Integridade zero derrota o jogador. HP zero vence. A expiração de fendas é processada antes do dano passivo: derrota por expiração tem prioridade sobre uma vitória que ocorreria no mesmo tick.
-
-Derrota inicia maldição de **20 segundos**, reduzindo Fé/s e Fervor/s em 25%. Vitória remove a maldição, registra o boss derrotado e libera a recompensa. Recuar apenas encerra a batalha, sem aplicar maldição.
-
-### 11.6 Fases, tempo e posição das fendas
+A integridade inicial é 100. O milagre da roda dura 1.5 s e cura `min(10,100-integridade)`. Surge periodicamente em intervalos de 10–14 s e é garantido nas transições de fase se não houver outro ativo. O campo legado `altarHealOnRift=min(16,4*bn+5*br+4*bs)` ainda é calculado, mas não concede cura ao aparar.
 
 ```text
-fase = 3 se HP/H <= 0.25; 2 se HP/H <= 0.60; 1 caso contrário
-intervalo = intervaloBase * (0.78 na fase 3; 0.88 na fase 2; 1 na fase 1)
-janela = max(1.3,janelaBase*(0.85 na fase 3; 0.92 na fase 2; 1 na fase 1))
+estimativaVitoriaPassiva=H/DPS se DPS>0; infinito senão
+perdaMedia=danoPorErro/(intervaloBase+0.35*janelaBase)
+estimativaSobrevivencia=100/max(0.05,pressao+perdaMedia)
 ```
 
-O primeiro timer é `0.65*intervaloBase`. Depois de expirar, soma o intervalo da fase, criando uma fenda apenas se há menos de três ativas. O timer avança mesmo quando já há três. O intervalo do tick usa a fase capturada no início do tick; a janela de uma fenda recém-criada usa a fase consultada ao criá-la.
+As estimativas são aproximações; não incluem a sequência de assinaturas, aparos, cura e ondas de fase.
 
-Posição em porcentagem, para contador global de fendas `j` incrementado antes do cálculo:
+### 11.6 Fases, preparação e resultado
 
-```text
-angulo = ((j*137.5) mod 360)*pi/180
-raio = 30+(j mod 3)*6
-x = clamp(50+cos(angulo)*raio,14,86)
-y = clamp(50+sin(angulo)*raio,18,82)
-```
+Fase II em `HP/H<=0.60`; fase III em `HP/H<=0.25`. As transições causam 15 e 30 pontos de dano à Esfera, uma única vez cada; podem ser letais e somam 45 ao atravessar ambas. Fendas pendentes são dissipadas sem erro extra. O intervalo é multiplicado por 0.88 na fase II e 0.78 na III; a janela comum é `max(1.3,janelaBase*escala)`, com escala 0.92 e 0.85.
 
-A janela de cada fenda diminui em `dt`; expira em `<=0`. No início da batalha, HP é restaurado ao máximo, integridade=100, combo=0 e cooldown da Esfera=0; não há fendas ativas.
+Na fase I as ondas são comuns. Nas fases II/III alternam ataques comuns e especiais: duas balanças de Anúbis, duas correntes de Hades, corvo de Odin e três selos orbitais de Caos. Balanças e correntes têm janela ×1.15; corvo usa `max(1.15,janelaComum*0.82)`; selos orbitais usam janela ×1.25.
+
+Com `awaitProcession`, o combate fica suspenso até a procissão formar a roda e o Guardião chegar. Não há pressão, dano ou novas fendas antes de `beginBossCombat`. O HP inicial é H, integridade 100, combo/carga/cooldown zero e primeiro timer `0.65*intervaloBase`.
+
+HP zero vence; integridade zero perde. Expiração de fendas e pressão são processadas antes do DPS. Vitória de campanha concede recompensa permanente e remove maldição; derrota aplica 20 s de −25% Fé/s e Fervor/s. Recuo não aplica maldição. Revanche não duplica recompensas nem aplica maldição; vitórias registram o melhor tempo, persistido no save.
 
 ## 12. Ascensão e persistência
 

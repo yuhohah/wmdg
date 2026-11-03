@@ -3,3 +3,9 @@ dist/
 *.log
 .DS_Store
 *.nix
+
+# Local reports and distributable archives
+reports/
+*.zip
+*.tar.gz
+*.tgz

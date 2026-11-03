@@ -1,300 +1,189 @@
-# 📜 Game Design Document (GDD) — Cult of the Sphere
+# Cult of the Sphere — Game Design Document
 
-> **Título do Projeto:** *Cult of the Sphere* (codinome: *WMDG / A Entidade Divina*)  
-> **Gênero:** Idle / Incremental / Clicker Hermético  
-> **Plataforma:** Web (Desktop & Mobile Browser — TypeScript + Vite + HTML5 Canvas/CSS)  
-> **Inspiração Mecânica Principal:** *DodecaDragons*  
-> **Direção de Arte:** Xilogravura Hermética Renascentista (*Albrecht Dürer, Robert Fludd, Athanasius Kircher*) + *Dark Glassmorphism*  
-> **Status do Documento:** Versão 1.1 (Sincronizado com código-fonte e documentação canônica)
+**Estado:** jogo implementado no workspace · **Revisão:** 03/11/2026
+**Gênero:** idle / incremental / clicker · **Plataforma:** navegador desktop e mobile
+**Tecnologia:** TypeScript, Vite, Canvas 2D e CSS
 
----
+![Santuário astral e Pátio dos Fiéis](docs/screenshots/santuario.png)
 
-## 1. Visão Geral (Executive Summary)
+## Visão e fantasia
 
-### 1.1. High Concept
-Em **Cult of the Sphere**, o jogador assume a consciência de **A Esfera**, uma divindade hermética primordial cujo *"centro está em toda parte e a circunferência não está em lugar nenhum"*. Selada há eras e esquecida pela humanidade em favor de panteões mortais, a Esfera desperta a partir de uma única centelha de pensamento humano. O jogador canaliza **Fé**, converte **Fiéis Devotos**, rompe **Selos Sagrados**, transmuta **Relíquias** de deuses esquecidos, ascende à **Gnose** (prestígio verdadeiro) e subjuga **Guardiões Mitológicos** (*Anúbis, Hades, Odin e Caos Primordial*) para restaurar sua onipresença cósmica.
+O jogador é **a Esfera**, uma divindade cujo centro está em toda parte e cuja circunferência não está em lugar nenhum. Tudo é Mente: os deuses existem enquanto alguém pensa neles. O culto recomeça com uma unidade de Fé, sem seguidores, e cresce até confrontar os Guardiões que dominam os panteões.
 
-### 1.2. Pilares de Design
-1. **Progressão Matemática Exponencial & Sinérgica (Estilo *DodecaDragons*):** Cada camada desbloqueada não apenas soma recursos, mas multiplica retroativamente as camadas anteriores através de polinômios, logaritmos e exponenciais.
-2. **Tabuleiro Panorâmico 2D (*Dodeca-Board*):** Em vez de menus engessados, o santuário se expande espacialmente em um mapa 2D navegável (pan & zoom), onde novos altares e câmaras se conectam por feixes de energia ao relicário central.
-3. **Atmosfera Ocultista & Hermética:** Narrativa ancorada no Hermetismo (*Corpus Hermeticum*, *Tábua de Esmeralda*, *Nous*) com estética de gravuras alquímicas do século XVI sobre obsidiana profunda.
-4. **Respeito ao Tempo do Jogador:** A duração da campanha é avaliada pelo benchmark por sessões. As projeções antigas de 3–4h30 usavam interações simplificadas e não validam os perfis humanos. Consulte `Base/METODOLOGIA_CALCULO_PROGRESSAO.md` e execute o benchmark atual para medir a política declarada.
+A jornada transforma atenção em devoção, devoção em produção e conhecimento em permanência. A inspiração incremental é DodecaDragons; a identidade visual combina gravuras herméticas, cosmografia renascentista e sprites animados sobre um fundo astral escuro.
 
----
+## Pilares do design
 
-## 2. Lore, Universo & Fantasia do Jogador
+1. **Sistemas conectados.** Fé, Fiéis, Fervor, Fragmentos, Encarnação e Gnose fortalecem uns aos outros. Combate também exige desenvolver o conjunto.
+2. **Reconstrução com permanência explícita.** Ascender reinicia a economia do ciclo; nós, conquistas e vitórias mantêm o avanço permanente. Preservações adicionais dependem das compras de Gnose.
+3. **Um santuário espacial.** Altares habitam um tabuleiro com pan e zoom. A navegação rápida leva aos sistemas e a câmera acompanha a preparação dos duelos.
+4. **Ação e automação.** Cliques, milagres e aparos oferecem participação ativa. Automações compradas reduzem tarefas repetitivas e continuam funcionando durante a produção offline.
+5. **Regras visíveis.** Custos, taxas, efeitos e prontidão orientam a próxima decisão. A duração da campanha é medida por simulação reproduzível e não é uma promessa fixa.
 
-### 2.1. Premissa Filosófica
-No universo de *Cult of the Sphere*, **tudo é Mente (*Nous*)**: um deus só existe enquanto mentes mortais pensam nele. Enquanto a Esfera esteve aprisionada por quatro Selos Sagrados, outros panteões (Egípcio, Grego, Nórdico, Mesopotâmico) reinaram, mas muitos de seus deuses minguaram à medida que o mundo mudou.
+## Jornada do culto
 
-### 2.2. Arco Narrativo em 5 Atos
-1. **Ato I — O Primeiro Sussurro:** A Esfera vibra nas ruínas; o primeiro devoto volta a pensar nela, tornando-a real no plano físico.
-2. **Ato II — O Corpo e a Chama (Encarnação & Fervor):** Com o rompimento do 1º e 2º Selos, a Esfera manifesta um Avatar sagrado no altar e acende o Fervor coletivo através de ritos ígneos.
-3. **Ato III — O Espólio dos Deuses Mortos (Opus Magnum):** O 3º Selo permite transmutar Fé em Fragmentos Alquímicos para restaurar relíquias órfãs de deuses esquecidos (*Zeus, Prometeu, Hermes, Odin*).
-4. **Ato IV — A Dissolução do Templo (Gnose):** No 4º Selo (`1Q` de Fé), a Esfera compreende que não habita nas pedras do templo, mas na Mente que as sonhou. Dissolver o culto terreno concede **Gnose** e revela a **Árvore Hermética**.
-5. **Ato V — Crepúsculo dos Deuses (Guardiões Mitológicos):** Ao avançar pelos 4 Tiers da Gnose, os últimos deuses ancestrais (*Anúbis, Hades, Odin* e o vazio original *Caos Primordial*) tentam rasgar o véu dimensional para destruir o Altar. Subjugá-los coroa a Esfera como única verdade cósmica.
+| Etapa | Acesso | Papel |
+| --- | --- | --- |
+| Primeiro sussurro | Início | Tocar a Esfera e converter o primeiro Fiel Devoto. |
+| Corpo e chama | Selo da Encarnação: 200 Fé | Manifestar o Avatar, produzir Fervor e carregar Bênção. |
+| Liturgia | Selo do Fervor: 5.000 Fé | Investir Fervor em Ritos. |
+| Espólio dos deuses | Selo das Relíquias: 20 milhões de Fé | Transmutar Fé, produzir Fragmentos e restaurar Relíquias. |
+| Dissolução do templo | Selo da Gnose: limiar de 1e15 Fé | Ascender e assimilar nós permanentes. |
+| Julgamento | Gnose e tiers avançados | Subjugar Anúbis, Hades, Odin e o Caos Primordial. |
 
----
+Os três primeiros Selos gastam Fé. O Selo da Gnose exige o saldo mínimo, sem consumi-lo. Cada Selo respeita o anterior.
 
-## 3. Loop Central de Gameplay (Core Loop)
+O ciclo de decisões é: gerar Fé → investir em Fiéis e sistemas → alcançar o próximo marco → ascender quando o ganho de Gnose justificar a reconstrução → assimilar nós → preparar e vencer o próximo Guardião.
 
-```mermaid
-flowchart TD
-    A["1. Canalizar Fé<br/>(Cliques na Esfera + Fiéis + Milagres)"] --> B["2. Romper Selos Sagrados<br/>(200 -> 5k -> 20M -> 1Q Fé)"]
-    B --> C["3. Alimentar Fervor & Encarnação<br/>(5 Estágios de Avatar + 6 Ritos de Fervor)"]
-    C --> D["4. Opus Magnum (1º Prestígio)<br/>(Transmutar Fé em Fragmentos -> 6 Relíquias)"]
-    D --> E["5. Ascensão Gnóstica (True Prestige)<br/>(Resetar Culto a partir de 1Q Fé -> Ganhar Gnose)"]
-    E --> F["6. Árvore Hermética & Boss Battles<br/>(17 Nós em 4 Tiers + 4 Guardiões Mitológicos)"]
-    F -->|Multiplicadores Permanentes & Automação| A
-```
+## Economia do culto
 
-### 3.1. Micro-Loop (Segundos a Minutos)
-- Clicar na Esfera Divina (ou manter a **Bênção 2×** acesa no Altar da Encarnação).
-- Responder a **Pedidos de Milagre** no Pátio dos Fiéis a cada ~35–65s.
-- Recrutar **Fiéis Devotos** e elevar **Ritos de Fervor**.
+### Fé e Fiéis
 
-### 3.2. Meso-Loop (15 a 45 Minutos)
-- Realizar **Transmutações Alquímicas** (sacrificando a Fé atual por Fragmentos sem perder Fiéis ou Fervor) para maximizar as **6 Relíquias**.
-- Evoluir os **Estágios da Encarnação** (Estágios I a V) em grandes saltos de produção (`100×` a `10¹⁵×` Fervor/s).
+Tocar a Esfera produz Fé; há 5% de chance de crítico com ganho dobrado. O Fiel Devoto custa inicialmente 20 Fé, produz 1 Fé/s antes dos multiplicadores e fica progressivamente mais caro. Relíquias e Gnose reduzem a escala desse custo até o piso configurado.
 
-### 3.3. Macro-Loop (1h20 a 4h30)
-- Realizar **Ascensões Gnósticas** para acumular **Gnose**, desbloquear os **17 nós da Árvore Hermética** (que concedem persistência de selos/relíquias e automação total) e derrotar em combate ativo os **4 Guardiões Mitológicos**.
+Converter Máximo abre com 25 Fiéis ou Memória Hermética. Pedidos de milagre aparecem no Pátio; responder concede Fé proporcional ao poder de clique e à produção, sem depender do saldo armazenado.
 
----
+### Encarnação e Bênção
 
-## 4. Economia e Moedas
+| Avatar | Custo de evolução em Fé | Multiplicador de Fervor/s |
+| --- | --- | --- |
+| Neófito | Inicial ao romper o Selo | 1× |
+| Consagrado | 2,5 milhões | 100× |
+| Ancestral | 250 bilhões | 10.000× |
+| Eclipse | 1e25; 1e20 com Gnosis Suprema | 1e8× |
+| Solar | 1e30; exige Gnosis Suprema | 1e15× |
 
-| Recurso | Cor / Identidade | Como é Obtido | Onde é Gasto | Comportamento em Resets |
-|---|---|---|---|---|
-| **Fé (PF)** | Ouro Solar (`#fbbf24`) | Cliques na Esfera, Fiéis Devotos (`/s`) e Pedidos de Milagre | Fiéis Devotos, Selos Sagrados (1 a 4) e Estágios da Encarnação | Zerada na **Transmutação** e na **Ascensão Gnóstica** (inicia em `1.000` com *Emanação Primordial*) |
-| **Fervor** | Vermelho Carmim (`#ef4444`) | Gerado passivamente (`1.0/s` base × multiplicadores) após romper o *Selo da Encarnação* | Os 6 **Ritos de Fervor** | Mantido na Transmutação; zerado na **Ascensão Gnóstica** |
-| **Fragmentos** | Prata Etérea (`#c5d3e2`) | **Transmutação** de Fé (`log2`) + geração passiva por segundo | Restauração e melhoria das **6 Relíquias** | Mantidos na Transmutação; zerados na **Ascensão Gnóstica** |
-| **Gnose** | Púrpura / Branco Astral | **Ascensão Gnóstica** a partir de `1e15` (`1Q`) de Fé | Os 17 nós da **Árvore Hermética** | **Permanente** (`TotalGnose` também concede bônus passivo perpétuo que não diminui ao gastar) |
+O estágio também fortalece os Fiéis e o combate. Cada acionamento do Altar acrescenta 10 segundos de **Bênção 2× Fé/s**, até 60 segundos. Vigília Perpétua a mantém ativa com Encarnação aberta.
 
----
+### Fervor e Ritos
 
-## 5. Sistemas de Jogo & Fórmulas Matemáticas
+Fervor começa a ser gerado ao abrir Encarnação. O maior saldo de Fervor do ciclo fortalece a produção; gastar em Ritos conserva a força já alcançada.
 
-### 5.1. Canalização Manual (Cliques na Esfera)
-- **Base:** `1 Fé` por clique antes de multiplicadores, com 5% de chance de crítico que dobra a Fé recebida.
-- **Fórmula de Fé por Clique (`FPC`):**
-  $$\text{FPC} = 1 \times \text{Mult}_{\text{ConquistasClique}} \times \text{Mult}_{\text{Global}} \times \text{Mult}_{\text{FU3}} \times \text{Bônus}_{\text{FervorFé}} \times \text{Mult}_{\text{PulsoCósmico}}$$
-  *(Sem arredondamento para baixo para preservar incrementos percentuais iniciais de +10% e +20%).*
+Há seis Ritos: produção de Fervor, efeito do Fervor, Fé por clique, Fiéis aumentando Fé/s, Fé aumentando Fervor/s e ganho de Fragmentos. O último exige a Pena Solar de Fênix. Níveis não têm teto fixo; custos crescem exponencialmente. Os nós de Gnose ajustam bases e escalas dessas fórmulas.
 
-### 5.2. Fiéis Devotos & Pátio dos Fiéis (`FollowersArena`)
-- **Unidade:** *Fiel Devoto* (`f_devotee`) — produz base `+1 Fé/s`.
-- **Fórmula de Custo do $N$-ésimo Fiel:**
-  $$\text{Custo}(N) = \max\left(1, \lfloor \lfloor 20 \times \text{Escala}^N \rfloor \times \text{Desconto}_{\text{Conquistas}} \rfloor\right)$$
-  - **Escala Base:** `1.10`, reduzida em `-0.005` por nível do *Cajado de Hermes* (mínimo `1.075` no nível 5).
-  - **Converter Máximo:** Desbloqueado ao atingir `25 Fiéis` ou permanentemente via *Memória Hermética* (`gn_memoria_selos`).
-- **Representação Visual:** Até 35 devotos caminhando e orando em tempo real no canvas do pátio.
-- **Pedidos de Milagre (*Miracle Plea*):**
-  - Intervalo de spawn: a cada `35s a 65s` (requer $\ge 1$ fiel), permanecendo ativo por `15s`.
-  - **Recompensa ao clicar:**
-    $$\text{Milagre} = \max\left(30,\; 15 \times \text{FPC},\; \lfloor 30 \times \text{Fé/s} + 0.10 \times \text{Fé}_{\text{Atual}} \rfloor\right)$$
+### Fragmentos e Relíquias
 
-### 5.3. Os 4 Selos Sagrados (`unlocks.ts`)
+Transmutar consome toda a Fé atual, concede Fragmentos e inicia um cooldown de 3 segundos. Mantém Fiéis, Fervor, Ritos e Avatar. O Selo das Relíquias também abre produção passiva de Fragmentos.
 
-| ID | Nome do Selo | Custo (Fé) | Pré-requisito | Efeito Mecânico |
-|---|---|---|---|---|
-| `unlock_incarnation` | **Selo da Encarnação** | `200` | — | Inicia geração de Fervor (`1.0/s` base) e abre o card **Encarnação Sagrada** |
-| `unlock_fervor_upgrades` | **Selo do Fervor** | `5.000` | `unlock_incarnation` | Abre o card **Fervor Sagrado** com os Ritos de Fervor (`fu_prod` a `fu_synergy`) |
-| `unlock_relics` | **Selo das Relíquias** | `20.000.000` (`20M`) | `unlock_fervor_upgrades` | Abre o card **Opus Magnum (Relíquias)** e inicia geração passiva de Fragmentos |
-| `unlock_gnose` | **Selo da Gnose** | `1e15` (`1Q`) | `unlock_relics` | Abre a **Câmara da Gnose** (True Prestige), Árvore Hermética e Guardiões |
+| Relíquia | Função | Nível máximo |
+| --- | --- | --- |
+| Cornucópia de Amalteia | Amplia Fé/s. | 20 |
+| Tocha de Prometeu | Amplia Fervor/s. | 20 |
+| Pena Solar de Fênix | Multiplica Fervor e libera o sexto Rito. | 1 |
+| Cajado de Hermes | Reduz a escala do custo dos Fiéis. | 5 |
+| Anel Divino de Draupnir | Gera uma fração da Transmutação por segundo, sem gastar Fé. | 1 |
+| Arca da Aliança Cósmica | Multiplica Fé/s pelo pico de Fragmentos do ciclo. | 4 |
 
-### 5.4. Encarnação Sagrada (`incarnation.ts`)
-- **Bênção da Encarnação (`2× Fé/s`):**
-  - Clicar no Altar da Encarnação adiciona `+2s` de **2× Fé/s**, acumulável até `60s` (`BLESSING_MAX_SECONDS`).
-  - Com o nó *Vigília Perpétua* (`gn_bencao_eterna`), trava permanentemente em `60s` (`2×` perpétuo).
-- **Multiplicador da Encarnação sobre os Fiéis:**
-  $$\text{Mult}_{\text{EncarnaçãoFiéis}} = \left(1 + \log_{10}\left(1 + \frac{\text{Fervor}}{150}\right) \times 1.5 \times \text{Estágio}\right) \times \begin{cases} 3.0 & \text{se } \text{Olho de Trismegisto} \\ 1.0 & \text{caso contrário} \end{cases}$$
-- **Tabela dos 5 Estágios do Avatar:**
+Custos por nível são fixos. O melhor resultado de Transmutação manual alimenta a geração passiva. Gastar Fragmentos conserva o bônus econômico do pico do ciclo.
 
-| Estágio | Nome & Título | Custo Base (Fé) | Custo c/ *Gnosis Suprema* (`÷10⁵`) | Multiplicador de Fervor/s |
-|---:|---|---:|---:|---:|
-| **I** | **Avatar Neófito** (*A Centelha Primordial*) | `0` | `0` | `1×` |
-| **II** | **Avatar Consagrado** (*O Portador do Fogo Sagrado*) | `2.500.000` (`2.5M`) | `2.5M` | `100×` |
-| **III** | **Avatar Ancestral** (*O Ancião da Esfera*) | `1e12` (`1T`) | `1T` | `10.000×` (`10⁴×`) |
-| **IV** | **Avatar do Eclipse** (*O Senhor das Sombras Cósmicas*) | `1e25` | `1e20` | `100.000.000×` (`10⁸×`) |
-| **V** | **Avatar Solar** (*A Entidade da Luz Eterna*) | `1e150` | `1e36` | `1e15×` (`10¹⁵×`) |
+## Ascensão e permanência
 
-### 5.5. Fervor Sagrado & Ritos de Fervor (`fervor.ts`)
-- **Bônus Passivo do Fervor acumulado sobre toda a Fé:**
-  $$\text{Bônus}_{\text{FervorFé}} = \left(\log_{10}\left(\frac{\text{Fervor}}{10} + 1\right) \times 2 + 1\right) \times \text{Efeito}_{\text{FU2}}$$
-- **Custo de cada nível de Rito:** $\lfloor \text{CustoBase} \times \text{Escala}^{\text{Nível}} \rfloor$
-- **Tabela dos 6 Ritos de Fervor:**
+A Ascensão Gnóstica exige acesso à Gnose e pelo menos 1e15 Fé. O ganho é `floor((Fé / 1e15)^expoente)`, com expoente 0,25 ou 0,28 com Olho de Trismegisto. Não é permitida durante combate.
 
-| ID | Nome do Rito | Custo Base | Escala | Fórmula de Efeito ($\text{Nível} = L$) | Evoluções / Notas |
-|---|---|---:|---:|---|---|
-| `fu_prod` | **Aumentar Produção de Fervor** | `50` | `×1.8` | $2^{L^{0.6}}$ | Base 2 → 2,15 com Chama Astral; evolui para $2.35^{L^{0.6}}$ com *Fogo Hermético* (`gn_fu1_boost`) |
-| `fu_effect` | **Aumentar Efeito do Fervor** | `100` | `×2.0` | $1.25^{L^{0.8}}$ | Amplifica diretamente $\text{Bônus}_{\text{FervorFé}}$ |
-| `fu_click` | **Aumentar Fé por Clique** | `100` | `×1.4` | $L^{2.6} \times 4 + 1$ | Multiplica $\text{FPC}$ |
-| `fu_followers` | **Fiéis Aumentam Fé/s** | `500` | `×1.5` | $\frac{L^{1.5} \times \text{Fiéis}}{50} + 1$ | Sinergia direta com total de devotos |
-| `fu_synergy` | **Fé Aumenta Fervor/s** | `500` | `×2.5` | $\frac{L^{1.5} \times \log_{10}(\text{Fé}+1)}{5} + 1$ | Sem multiplicador adicional da Gnose |
-| `fu_relics` | **Aumentar Ganho de Fragmentos** | `20.000.000` | `×5.0` | $3^{L^{0.6}}$ | Oculto até restaurar a *Pena Solar de Fênix* |
+| Reinicia | Permanece |
+| --- | --- |
+| Fiéis, Fervor, Ritos e Avatar. | Saldo e histórico de Gnose, nós assimilados. |
+| Fragmentos, melhor Transmutação e picos do ciclo. | Conquistas, vitórias, melhores tempos de duelo e históricos de recursos. |
+| Relíquias sem Cripta Eterna. | Relíquias com Cripta Eterna. |
+| Selos de Fervor e Relíquias. | Acesso à Gnose; Encarnação com Memória Hermética. |
+| Fé atual: 1, ou 1.000 com Emanação Primordial. | Preferências de automação. |
 
-### 5.6. Opus Magnum: Fragmentos & Relíquias (`relics.ts`)
-- **Mecânica de Transmutação:**
-  - Consome `100%` da Fé atual (cooldown de `3s`) e mantém Fiéis, Fervor, Ritos e Estágio da Encarnação.
-  - **Fórmula de Fragmentos Obtidos:**
-    $$\text{Fragmentos} = \lfloor \log_2(\text{Fé} + 1) \times \text{Mult}_{\text{Fragmentos}} \rfloor$$
-    O único multiplicador é o Rito de Fragmentos: base `3`, ou `3,15` com Alquimia Astral, sempre elevada a `nível^0,6`.
-- **Geração Passiva de Fragmentos/s:**
-  $$\text{Fragmentos/s} = \max\left(1,\; \lfloor \text{MelhorTransmutação} / 10 \rfloor\right) + \text{TransmutaçãoAtual} \times (\text{Draupnir} + \text{Automação})$$
-  Draupnir acrescenta `0,05`. Culto Autônomo acrescenta `0,25` quando habilitado, ou `1,00` com Olho do Infinito. Cripta Eterna apenas preserva os níveis das Relíquias.
-- **Tabela das 6 Relíquias Mitológicas (Custo Fixo por Nível):**
+Históricos permanentes participam do combate. Os bônus econômicos de Fervor e Arca usam os picos do ciclo, que zeram ao ascender.
 
-| ID | Relíquia | Custo / Nível | Nível Máx. | Efeito por Nível / Total |
-|---|---|---:|---:|---|
-| `relic_cornucopia` | **Cornucópia de Amalteia** | `200` | `20` | `+20% Fé/s` por nível (até `+400%` / `5×` no nível 20) |
-| `relic_torch` | **Tocha de Prometeu** | `500` | `20` | `+20% Fervor/s` por nível (até `+400%` / `5×` no nível 20) |
-| `relic_phoenix` | **Pena Solar de Fênix** | `750` | `1` | `1.5× Fervor/s` e revela o 6º Rito de Fervor (`fu_relics`) |
-| `relic_caduceus` | **Cajado de Hermes** | `1.500` | `5` | Reduz a escala de custo dos Fiéis em `-0.005` por nível (`1.10` $\to$ `1.075`) |
-| `relic_draupnir` | **Anel Divino de Draupnir** | `2.000` | `1` | Rende `+5%` da Transmutação atual por segundo sem gastar Fé |
-| `relic_ark` | **Arca da Aliança Cósmica** | `15.000` | `4` | Multiplica Fé/s pelos Fragmentos: $(\log_{10}(\text{Fragmentos}+1)+1)^{\text{Nível} \times 1.2}$ |
+### Árvore Hermética
 
-### 5.7. Câmara da Gnose & Árvore Hermética (`gnose.ts`)
-- **Requisito de Ascensão:** Romper o *Selo da Gnose* e possuir ao menos `1e15` (`1Q`) de Fé.
-- **Fórmula de Ganho de Gnose no Reset:**
-  $$\text{Gnose} = \left\lfloor \left(\frac{\text{Fé}}{10^{15}}\right)^{\alpha} \right\rfloor$$
-  O expoente α é `0,15`, ou `0,17` com Olho de Trismegisto. O requisito de `1Q` continua igual.
-- **Multiplicador Passivo Permanente de Gnose Acumulada (`TotalGnose`):**
-  $$\text{Mult}_{\text{TotalGnose}} = 1 + \text{TotalGnose}^{0.35} \times 1.5$$
-- **Tabela Completa dos 17 Nós da Árvore Hermética:**
+![Árvore Hermética](docs/screenshots/gnose.png)
 
-| Tier | ID | Nome | Custo (Gnose) | Pré-requisitos | Efeito |
-| --- | --- | --- | ---: | --- | --- |
-| 1 | `gn_init_faith` | Emanação Primordial | 1 |  | Fiéis: escala de custo −0,01 |
-| 1 | `gn_memoria_selos` | Memória Hermética | 2 | `gn_init_faith` | Preserva Selos e libera Converter Máximo |
-| 1 | `gn_init_fervor` | Chama Astral | 2 | `gn_init_faith` | Rito de Fervor: ganho 2 → 2,15; custo 1,80 → 1,75 |
-| 1 | `gn_relic_gain` | Alquimia Astral | 3 | `gn_init_faith` | Rito de Fragmentos: ganho 3 → 3,15; custo 5 → 4,80 |
-| 1 | `gn_automation` | Culto Autônomo | 8 | `gn_memoria_selos`, `gn_init_fervor` | Automatiza Fiéis, Ritos e Fragmentos |
-| 2 | `gn_followers_syn` | Congregação Esférica | 10 | `gn_memoria_selos` | Mais Fiéis aumentam toda a Fé |
-| 2 | `gn_bencao_eterna` | Vigília Perpétua | 30 | `gn_init_fervor` | Bênção sempre ativa |
-| 2 | `gn_keep_relics` | Cripta Eterna | 78 | `gn_memoria_selos`, `gn_init_fervor` | Preserva Relíquias nos reinícios |
-| 2 | `gn_followers_economy` | Convergência dos Fiéis | 45 | `gn_init_faith`, `gn_followers_syn` | Fiéis: escala de custo −0,015 adicional |
-| 3 | `gn_followers_cubic` | Coro Harmônico | 60 | `gn_followers_syn` | Sinergia dos Fiéis: expoente 1,5 → 1,6 |
-| 3 | `gn_gnose_mult` | Olho de Trismegisto | 120 | `gn_bencao_eterna` | Ascensão: expoente 0,15 → 0,17 |
-| 3 | `gn_relic_refinement` | Alquimia Hermética | 240 | `gn_relic_gain`, `gn_keep_relics` | Fragmentos: ganho 3,15 → 3,40; custo 4,80 → 4,50 |
-| 3 | `gn_fu1_boost` | Fogo Hermético | 360 | `gn_keep_relics` | Rito de Fervor: ganho 2,15 → 2,35 |
-| 4 | `gn_omniscience` | Olho do Infinito | 600 | `gn_gnose_mult`, `gn_automation` | Automações sem gasto de recursos |
-| 4 | `gn_apotheosis` | Gnosis Suprema | 1200 | `gn_omniscience`, `gn_fu1_boost`, `gn_followers_cubic` | Ritos: escala de custo −0,05 · Avatares finais |
-| 4 | `gn_empyrean_fire` | Fogo Empíreo | 1800 | `gn_init_fervor`, `gn_fu1_boost`, `gn_apotheosis` | Fervor: ganho 2,35 → 2,65; custo −0,10 adicional |
-| 4 | `gn_perfect_opus` | Opus Perfeito | 2400 | `gn_relic_refinement`, `gn_apotheosis` | Fragmentos: ganho 3,40 → 3,75; custo −0,40 adicional |
+São **20 nós em quatro tiers (6 / 6 / 4 / 4)**. Cada nó é comprado uma vez, exige seus pré-requisitos e permanece após Ascensões. Além do efeito próprio, cada assimilação multiplica Fé, Fervor e Fragmentos por ressonância de 4×. O total de Gnose obtido também concede um multiplicador permanente; gastar a moeda não o reduz.
 
-**Culto Autônomo** (8 Gnose, tier I) reúne as três automações, com controles separados. Fiéis e Ritos usam uma reserva de 25% da produção, limitada a 10% do saldo. Fragmentos automáticos rendem 25% da Transmutação/s sem consumir Fé; Olho do Infinito eleva essa taxa para 100% e elimina os gastos dos compradores. As exigências de saldo, Selos e Fênix continuam valendo.
+| Tier | Identidade | Abertura |
+| --- | --- | --- |
+| I — Despertar & Automação | Emanação, Memória, Fiéis automáticos, Selos automáticos, Chama e Alquimia Astrais. | Acesso à Gnose. |
+| II — Persistência & Economia | Ritos e Relíquias automáticos, Cripta, sinergia dos Fiéis e Bênção permanente. | Vitória sobre Anúbis. |
+| III — Poder do Culto | Coro, ganho de Gnose e refinamentos herméticos. | Vitória sobre Hades. |
+| IV — Apoteose | Olho do Infinito, Gnosis Suprema, Fogo Empíreo e Opus Perfeito. | Vitória sobre Odin. |
 
-A Gnose preserva as estruturas de cálculo: Emanação reduz a escala de custo dos Fiéis em 0,01; Chama Astral melhora a base do Rito de Fervor de 2 para 2,15 e sua escala de custo de 1,80 para 1,75; Alquimia Astral melhora a base do Rito de Fragmentos de 3 para 3,15 e sua escala de custo de 5 para 4,80. Fogo Hermético continua o mesmo ganho com base 2,35 e expoente de nível 0,6. Coro Harmônico melhora apenas o expoente já existente da sinergia de 1,5 para 1,6. Gnosis Suprema reduz as escalas de custo dos Ritos em mais 0,05; compras manuais, automações e interface usam o mesmo custo efetivo. Os custos finais de Encarnação e as funcionalidades de persistência continuam disponíveis.
+O catálogo completo, custos e pré-requisitos estão em [FormulasJogo.md](FormulasJogo.md#8-gnose-e-todos-os-upgrades) e [src/config/gnose.ts](src/config/gnose.ts).
 
-A distribuição dos 17 nós é **5 / 4 / 4 / 4**. Cada linha de evolução tem passos maiores nos tiers mais altos, mantendo as fórmulas originais:
+### Automações
 
-- Fiéis: escala de custo `1,10 → 1,09 → 1,075`, antes do Cajado de Hermes; reduções de `0,01` e `0,015`.
-- Fervor: base de ganho `2 → 2,15 → 2,35 → 2,65`, sempre com `nível^0,6`; passos de `0,15`, `0,20` e `0,30`. Fogo Empíreo reduz o custo do Rito em mais `0,10`, além dos passos anteriores de `0,05`.
-- Fragmentos: base de ganho `3 → 3,15 → 3,40 → 3,75` e escala de custo `5 → 4,80 → 4,50 → 4,10`, antes da redução global de `0,05` da Gnosis Suprema. Os passos de ganho são `0,15 / 0,25 / 0,35`; os de custo, `0,20 / 0,30 / 0,40`.
+Auto-Fiéis, Auto-Ritos, Auto-Relíquias e Auto-Transmutação têm controles independentes. As compras automáticas operam em ciclos de um segundo e validam desbloqueios e saldos.
 
-Caos Primordial exige os 17 nós. As quatro novas compras são adicionais: saves anteriores mantêm compras e chefes já derrotados.
+Auto-Fiéis considera o objetivo escolhido e uma reserva de Fé; Auto-Ritos escolhe retorno marginal por custo; Auto-Relíquias prioriza a primeira Fênix e depois o retorno das compras. Olho do Infinito permite Fiéis e Ritos automáticos sem gasto, mas Relíquias continuam custando Fragmentos. Ruptura Automática reabre Selos elegíveis na ordem, com a cobrança normal dos três primeiros.
 
-**Migração:** Pulso Cósmico, Dilatação Hermética, Altar Ressonante, Transmutação Áurea, Forja Cósmica e Harmonia Planetária saem da árvore; seu custo é devolvido ao saldo de Gnose. Automações antigas viram Culto Autônomo; o excedente pago acima de 8 Gnose é devolvido. Controles e acesso aos tiers conquistados são preservados. A migração não aumenta a Gnose vitalícia e não repete devoluções ao carregar o novo save.
+## Guardiões e proteção da Esfera
 
-### 5.8. Guardiões Mitológicos — Sistema de Boss Battle (`bosses.ts`)
-Os Tiers II, III, IV da Gnose e a Apoteose de Endgame são guardados por **4 Chefes Mitológicos**.
+![Arena de Anúbis](docs/screenshots/duelo-anubis.png)
 
-#### Regras de Combate:
-- O combate disputa **HP do Guardião** e **Integridade do Altar** (`100%` inicial). Os seis recursos do culto influenciam dano e defesa.
-- **Preparação do culto:** Fé, Fervor e Fragmentos já produzidos também contribuem para dano passivo, ataques e fendas. O histórico permanece após gastos e Ascensões; Fiéis, produção atual dos três recursos, níveis dos Ritos/Relíquias, Avatar e Gnose continuam contribuindo. Fervor e Fragmentos produzidos reforçam também a defesa do altar; Fragmentos ajudam sua recuperação ao aparar fendas.
-- **Histórico persistido:** `totalFaithAccumulated`, `totalFervorGenerated` e `totalRelicsGenerated`. Produção online e offline, Transmutação manual e geração automática usam os mesmos créditos. Reiniciar todo o jogo limpa esse histórico. Saves antigos sem os novos campos começam pelos saldos conhecidos; para Fragmentos, considera-se também a melhor Transmutação registrada. Produção antiga já gasta não pode ser reconstruída integralmente, mas seus upgrades continuam entrando no combate.
-- **Compatibilidade do chefe final:** a identidade apresentada é Caos Primordial; a chave antiga de save é preservada para manter vitórias, conquistas e recompensas já adquiridas.
-- **Dano passivo:** maior valor entre Fé/s e a parcela percentual das sinergias, limitado ao final a **1,8% do HP máximo/s**.
-- **Pulso da Esfera:** maior valor entre Fé/clique e a parcela das sinergias, limitado a **0,45% do HP máximo** por pulso normal. Há intervalo mínimo de **0,2 s** entre pulsos e **5% de chance de crítico**, dobrando dano e Fé. Cliques comuns continuam concedendo Fé mesmo durante o intervalo do dano de combate.
-- **Fendas Divinas:** maior valor entre `5 × Fé/clique` e uma parcela de base `4%` do HP com sinergias, limitado ao final a **8,5% do HP máximo**. Aparar também recupera até **16 pontos** de integridade. Fendas não sorteiam críticos.
-- **Cadência por chefe:** Anúbis gera fendas a cada `3,6 s` com janela de `2,2 s`; Hades a cada `3,3 s` com `2 s`; Odin a cada `3 s` com `1,8 s`; Caos Primordial a cada `2,7 s` com `1,65 s`. Na cena de batalha, a primeira aparece logo após a chegada do boss; há no máximo três simultâneas.
-- **Defesa:** cada fenda ignorada remove de **4 a 46 pontos** do altar, conforme Relíquias, Fervor e Encarnação. Um culto preparado pode vencer passivamente; aparar permite antecipar a vitória e enfrentar o chefe com menos preparo.
-- **Derrota:** integridade zero encerra o combate e aplica **−25% Fé/s e Fervor/s por 20 s**. É possível desafiar novamente a qualquer momento.
-- **Recuo:** gratuito, inclusive pela tecla Escape. Não é possível iniciar outra luta ou realizar uma Ascensão durante combate. Importar um save cancela a luta anterior.
-- **Persistência:** chefes derrotados permanecem subjugados após Ascensão. Combates em andamento não são salvos.
-- **Relógio:** todos os sistemas avançam em subpassos de até `0,1 s`, inclusive no modo acelerado, para processar produção, fendas, buffs e automações na mesma ordem.
+| Guardião | Liberação do desafio | Vitória |
+| --- | --- | --- |
+| Anúbis — O Pesador de Almas | Acesso à Gnose. | Tier II e 1,5× Fé/Fervor. |
+| Hades — O Senhor do Submundo | Tier II aberto e dois nós desse tier. | Tier III e mais 1,5× Fé/Fervor. |
+| Odin — O Pai de Todos da Árvore Cósmica | Tier III aberto e dois nós desse tier. | Tier IV e mais 1,5× Fé/Fervor. |
+| Caos Primordial — O Vazio Antes da Criação | Árvore completa, com 20 nós. | Mais 10× Fé/Fervor e conquista Crepúsculo dos Deuses. |
 
-| Ordem | Guardião | Mitologia | Requisito para Desafiar | HP Máximo | Recompensa Permanente |
-|:---:|---|---|---|---:|---|
-| **1º** | **Anúbis** (*O Pesador de Almas*) | Egípcia | Selo da Gnose desbloqueado | `1e18` (`1.0e18`) | **Balança de Maat:** Libera o **Tier II** da Gnose e `1.5×` Fé/s e Fervor/s |
-| **2º** | **Hades** (*O Senhor do Submundo*) | Grega | Tier II desbloqueado | `5e28` (`5.0e28`) | **Bidente do Submundo:** Libera o **Tier III** da Gnose e `1.5×` Fé/s e Fervor/s |
-| **3º** | **Odin** (*O Pai de Todos da Árvore Cósmica*) | Nórdica | Tier III desbloqueado | `1e38` (`1.0e38`) | **Runas de Yggdrasil:** Libera o **Tier IV** da Gnose e `1.5×` Fé/s e Fervor/s |
-| **4º** | **Caos Primordial** (*O Vazio Antes da Criação*) | Cosmogonia Primordial | Todos os 17/17 nós da Gnose comprados | `1e42` (`1.0e42`) | **Selo da Criação (Apoteose):** Título *Crepúsculo dos Deuses*, conquista final e `10×` Fé/s e Fervor/s |
+Os multiplicadores de vitória se acumulam e também afetam Fé por clique. IDs antigos de Hades e Caos são mantidos no save por compatibilidade.
 
-### 5.9. Conquistas (`achievements.ts`)
-O jogo conta com **20 conquistas** divididas em 4 categorias de bônus. Bônus da **mesma categoria somam** entre si; **categorias diferentes multiplicam** entre si:
-- **Clique (`fpc_mult` — Total `+115%` / `2.15×`):** `1` clique (+10%), `50` cliques (+20%), `250` cliques (+35%), `1.000` cliques (+50%).
-- **Produção Passiva (`fps_mult` — Total `+180%` / `2.80×`):** `1` fiel (+5%), `10` fiéis (+10%), `50` fiéis (+20%), `100` fiéis (+30%), `250` fiéis (+50%), `100` Fé/s (+15%), `25` Gnose Total (+50%).
-- **Produção Global (`global_mult` — Total `+330%` / `4.30×`):** `500` Fé (+5%), `5.000` Fé (+10%), `50k` Fé (+15%), `500k` Fé (+25%), `5M` Fé (+50%), `1` Ascensão Gnóstica (+25%), `500` Gnose Total (+100%), Subjugar Caos Primordial (+100%).
-- **Desconto de Custo (`cost_discount` — Total `-5%`):** `25` fiéis (-5% no custo de novos fiéis).
+### Preparação e prontidão
 
----
+Cada Guardião tem metas próprias de Fé, Fiéis, Fervor e Ritos, Fragmentos e Relíquias, estágio do Avatar e Gnose/nós. A prontidão é a **média geométrica dos seis pilares**, cada um limitado a 200%. Um pilar zerado zera a prontidão; acumular apenas outro recurso não substitui sua ausência. Conquistas aumentam o poder de ataque e a defesa.
 
-## 6. Curva de Balanceamento & Ritmo da Campanha
+- **Menos de 60%:** nenhum dano ao boss, incluindo passivo, crítico, aparos, Fulgor e bônus de ataques especiais.
+- **De 60% até menos de 80%:** ataques causam dano, mas a proteção é insuficiente. A pressão drena pelo menos 25 pontos de integridade por segundo e qualquer erro de aparo é fatal.
+- **A partir de 80%:** a proteção usa mitigação de todos os sistemas do culto. Dano e resistência continuam escalando com o desenvolvimento, até seus limites.
 
-O benchmark atual usa seed fixa, integração de até 0,1 s, orçamento manual e visitas de atenção. Os resultados e o estado de conclusão são produzidos por `npm run benchmark`. O horizonte padrão de 72 h pode terminar sem Caos Primordial; isso é reportado como **Incompleto**, não como duração de campanha.
+A prontidão e os pilares fracos aparecem antes do duelo; a arena avisa sobre dano bloqueado e colapso da proteção. As metas numéricas e coeficientes estão na [referência de combate](FormulasJogo.md#11-bosses-e-combate).
 
-As tabelas anteriores de 3–4h30 e os intervalos obrigatórios de ~30 min por guardião foram retirados por dependerem de uma estratégia automatizada com lotes de compras instantâneos e sem sessões reais. Os guardiões são desafiados conforme as permissões do domínio. A metodologia e as hipóteses estão em `Base/METODOLOGIA_CALCULO_PROGRESSAO.md`.
+### Preparação cênica e ações
 
----
+A Encarnação vai ao Pátio, reúne os Fiéis e conduz a procissão ao círculo. O Guardião chega depois. Não há dano, pressão ou novas fendas durante a preparação; a luta começa quando ele alcança o ponto de combate.
 
-## 7. Interface, Câmera e Direção de Arte
+1. **Atacar o Guardião:** até cinco pulsos de dano por segundo simulado, com cooldown de 0,2 s. Há 5% de chance de crítico dobrado. Cliques continuam gerando Fé.
+2. **Aparar:** clicar nas fendas antes de expirarem interrompe o golpe. Aparos causam dano, alimentam o combo e dão 25 pontos de carga; não curam a Esfera.
+3. **Fulgor Divino:** com carga 100, a Esfera dispara um ataque e esvazia a carga. Cliques de combate acrescentam 8 pontos. O disparo exige prontidão de ataque e não cura.
+4. **Milagre dos Fiéis na roda:** pedido de 1,5 segundo que recupera até 10 pontos de integridade. É a fonte de cura do combate.
 
-### 7.1. Arquitetura Espacial: *Dodeca-Board* (`BoardManager.ts`)
-- O jogo roda sobre um **Tabuleiro 2D Panorâmico** (`#dodeca-board-viewport` e `#dodeca-board-world`) com suporte a:
-  - Arraste livre com mouse/toque (*pan*) e zoom contínuo (`0.35×` a `1.60×`) ancorado no cursor ou gesto de pinça (*pinch-to-zoom*).
-  - **Barra de Navegação Rápida Inferior (`#board-quicknav-bar`):** Centraliza suavemente a câmera (transição *cubic-ease-out* de `450ms`) em qualquer card desbloqueado (*Esfera, Fiéis, Encarnação, Fervor, Relíquias, Gnose, Conquistas, Crônicas*).
-  - **Raios de Conexão (`ray-*`):** Linhas luminosas no tabuleiro conectam o Relicário Central aos cards periféricos à medida que os Selos são rompidos.
+A Esfera começa com 100 de integridade e sofre pressão contínua, além das perdas por golpes não aparados. Não há contagem regressiva de duelo.
 
-### 7.2. Direção de Arte e Paleta Cromática
-- **Identidade Visual:** Xilogravura e calcogravura renascentista (*chiaroscuro*, hachuras cruzadas, diagramas armilares) combinada com painéis em *Dark Glassmorphism* (`backdrop-filter: blur(16px)` sobre fundo obsidiana `#080a0f`).
-- **Semântica de Cores por Sistema:**
-  - **Fé:** Âmbar/Ouro Solar (`#fbbf24`)
-  - **Fervor:** Carmim Incandescente (`#ef4444`)
-  - **Fragmentos & Relíquias:** Prata/Platina Lunar (`#c5d3e2`)
-  - **Encarnação & Gnose:** Branco Celestial (`#ffffff`) e Violeta Astral
-  - **Conquistas:** Esmeralda Mística (`#34d399`)
+### Fases e assinaturas
 
-### 7.3. Notação Numérica (`formatNumber`)
-- `< 1.000`: Inteiros (ou 1 casa decimal para valores entre `0` e `10`).
-- `1.000` a `999.9Q` (`1e3` a `< 1e18`): Sufixos padronizados `K` ($10^3$), `M` ($10^6$), `B` ($10^9$), `T` ($10^{12}$), `Q` ($10^{15}$).
-- $\ge 10^{18}$: Notação científica compacta com 1 casa decimal (`1.0e18` a `1.0e150+`).
+A fase II começa em até 60% do HP do boss e causa uma onda de 15 pontos de dano à Esfera. A fase III começa em até 25% e causa mais 30. As ondas podem matar; atravessar ambas de uma vez soma os danos. Elas dissipam fendas antigas e garantem um milagre se não houver outro ativo. Intervalos e janelas de reação ficam menores.
 
----
+Nas fases avançadas, ataques comuns alternam com a assinatura do Guardião:
 
-## 8. Áudio, Persistência e Ferramentas de Desenvolvimento
+| Guardião | Ataque especial |
+| --- | --- |
+| Anúbis | Duas balanças; aparar ambas desperta um milagre. |
+| Hades | Duas correntes; enquanto restar uma, dano de clique reduzido pela metade. |
+| Odin | Corvo com janela crítica; um aparo cedo amplia o dano e adia o ataque seguinte. |
+| Caos Primordial | Três selos orbitais; completar o grupo causa ruptura adicional. |
 
-1. **Sistema de Áudio (`AudioManager`):**
-   - Trilha sonora ambiente em loop (`/assets/soundtrack.mpeg`) com tratamento automático de políticas de autoplay do navegador.
-   - Efeitos sonoros sintetizados proceduralmente via **Web Audio API** (`OscillatorNode` + `GainNode` com decaimento exponencial) e acordes harmônicos (`playChime`: Dó5 $\to$ Mi5 $\to$ Sol5) ao desbloquear marcos.
-2. **Persistência (`SaveSystem`):**
-   - Salvamento automático no `localStorage` (`cult_of_the_sphere_save_v1`) a cada 20s, ao ocultar a aba (`visibilitychange`) e ao fechar a janela (`beforeunload`).
-   - Sistema de redundância com cópia automática de segurança (`cult_of_the_sphere_save_backup`) e recuperação transparente caso o save principal corrompa.
-   - Exportação e importação manual via string **Base64**.
-3. **Onboarding & Ferramentas de Debug (`OnboardingGuide` & `TestMenu`):**
-   - Guia contextual passo a passo com foco luminoso nos primeiros marcos.
-   - Menu de testes (`[T]` ou `[F2]`): multiplicador de velocidade do loop (`0x` a `100x`), injeção de recursos e execução do simulador analítico.
+O dano passivo é limitado a 1,8% do HP máximo/s; o clique normal a 0,45% antes do crítico; o aparo comum com combo a 8,5%. Fulgor e assinaturas têm limites próprios. Todos respeitam o limiar mínimo de ataque.
 
----
+### Resultado e revanche
 
-## 9. Backlog de Evolução & Decisões de Design em Aberto
+HP do boss em zero concede vitória e recompensa permanente. Integridade da Esfera em zero encerra em derrota; na campanha aplica maldição de 20 segundos, reduzindo Fé/s e Fervor/s em 25%. Recuar não aplica maldição. A interface mostra um breve clímax visual e diagnóstico dos pilares mais fracos na derrota.
 
-> *Nota: as regras de combate acima refletem o motor atual. Cliques têm 5% de chance de crítico, dobrando a Fé e o dano do Pulso quando disponível.*
+**Relembrar Duelo** repete Guardiões já subjugados, sem recompensas duplicadas nem maldição por derrota. Vitórias registram o melhor tempo. A conclusão de campanha usada pelo benchmark exige os vinte nós e o Caos Primordial derrotado. Não há sistema de New Game+ implementado.
 
-Abaixo restam apenas as **decisões de produto e escopo futuro** para próximas iterações:
+## Conquistas, salvamento e ausência
 
-### 9.1. Propostas Históricas vs. Escopo Futuro
-1. **PRD-18 (`docs/prds/prd-18/prd.md` — Igreja Restaurável em Pixel Art & "O Escolhido $\to$ O Profeta"):**
-   - O `prd-18` propunha uma tela principal em *pixel art* com uma igreja em ruínas reconstruída em 4 tiers. O jogo atual consolidou o **Tabuleiro Panorâmico 2D (*Dodeca-Board*)** com direção de arte em **Xilogravura Renascentista (Dürer/Fludd)**.
-   - *Decisão futura:* Arquivar oficialmente o `prd-18` ou reaproveitar a evolução visual do templo dentro do card da Esfera/Encarnação seguindo o estilo de gravura hermética.
-2. **Proposta dos 6 Desafios Restritivos (`Base/OPCOES_ENDGAME_DEUSES.md`):**
-   - O documento em `Base/` especificava 6 Deuses Satélites com desafios de restrição (*Aethelgard, Pyroth, Chronos, Midas, Thanatos, Apep*), enquanto o jogo implementou os **4 Guardiões Mitológicos de Gnose** (*Anúbis, Hades, Odin e Caos Primordial*) com mecânica de Fendas Abissais.
-   - *Decisão futura:* Manter apenas os 4 Guardiões atuais ou utilizar os 6 desafios restritivos como modo *New Game+ / Provações Pós-Caos Primordial*.
+O Grimório reúne vinte conquistas de cliques, Fiéis, produção, Gnose e vitória final. Concedem bônus de clique, produção, multiplicador global ou desconto de Fiéis, conforme o catálogo.
 
-### 9.2. Funcionalidades Candidatas (Roadmap)
-3. **Progressão Offline (Idle Offline Gains):**
-   - `SaveData` já armazena o `timestamp`, permitindo implementar cálculo de ganhos passivos (`Fé`, `Fervor` e `Fragmentos`) quando o jogador reabre o jogo após horas offline.
-4. **Objetivo Pós-Caos Primordial & Estágio V da Encarnação:**
-   - O **Avatar Solar** mantém custo-base de `1e150` Fé, mas passa a custar `1e36` com **Gnosis Suprema**, tornando-se alcançável na economia final. Objetivos repetíveis além de Caos Primordial continuam sendo uma possibilidade de conteúdo futuro.
-5. **Ícones Dedicados nos Configs (`icon` / `symbol`):**
-   - Preencher os campos `icon` / `symbol` (atualmente `''` em `followers.ts`, `fervor.ts`, `relics.ts`, `unlocks.ts` e `achievements.ts`) com glifos herméticos ou gravuras dedicadas.
+O progresso é salvo no navegador a cada 20 segundos, ao ocultar a aba e ao fechar, com backup e exportação/importação Base64. Uma batalha ativa é transitória e não é retomada de um save.
+
+A **Vigília Sagrada** reproduz até 24 horas de ausência com o mesmo integrador da produção online, em passos de até 0,1 segundo. Inclui automações adquiridas, Bênção e maldição; não executa combate, cliques, coleta de milagres, evolução manual de Avatar ou Ascensão. O período é creditado uma única vez e o excesso acima de 24 horas é descartado.
+
+## Interface, arte e áudio
+
+O tabuleiro usa céu escuro, estrelas, inscrições e círculos alquímicos em dourado envelhecido. HUD e molduras mantêm a linguagem astral; Fiéis, Avatares, Esfera e Guardiões usam sprites animados. Canvas desenha as arenas e personagens; painéis HTML apresentam compras, fórmulas e progressão.
+
+Navegação por arraste, roda/pinça e atalhos inferiores; cards podem ser movidos e minimizados. O onboarding apresenta os primeiros marcos. A câmera acompanha procissão, chegada do boss e arena. Há trilha ambiente, efeitos sintetizados e opções de áudio e vibração.
+
+## Validação e manutenção
+
+`npm test` verifica regras, progressão, persistência, interface e simulação; `npm run build` verifica tipos e produz o build. O painel T/F2 oferece velocidade, recursos de teste e benchmark em Web Worker.
+
+A [metodologia do benchmark](docs/progression/README.md) separa regras do jogo de hipóteses de comportamento. Resultados de versões anteriores e propostas substituídas foram retirados da documentação vigente. Novas medições devem registrar versão do código, seed, perfil, horizonte e conclusão real.
+
+Este GDD descreve o estado implementado. Novas propostas e requisitos ficam nas [GitHub Issues](https://github.com/yuhohah/wmdg/issues); valores executáveis têm como fonte os catálogos em `src/config/` e as regras em `src/core/GameState.ts`.

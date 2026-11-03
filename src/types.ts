@@ -143,12 +143,39 @@ export interface GnoseBoss {
   faithFervorMult: number;
 }
 
+export type BossRiftKind =
+  | 'standard'
+  | 'anubis_scales'
+  | 'hades_chains'
+  | 'odin_raven'
+  | 'chaos_orbit';
+
 export interface BossRift {
   id: string;
   xPercent: number;
   yPercent: number;
   remainingSec: number;
   maxSec: number;
+  kind?: BossRiftKind;
+  attackIndex?: 0 | 1;
+  groupId?: string;
+  slotIndex?: number;
+}
+
+export interface ActiveBossMiracle {
+  id: string;
+  followerSlot: number;
+  remainingSec: number;
+  maxSec: number;
+}
+
+export type CultPillarId = 'faith' | 'followers' | 'fervor' | 'relics' | 'incarnation' | 'gnose';
+
+export interface CultPillarStatus {
+  id: CultPillarId;
+  label: string;
+  readiness: number;
+  recommendation: string;
 }
 
 export interface ActiveBossBattle {
@@ -168,6 +195,20 @@ export interface ActiveBossBattle {
   phase?: 1 | 2 | 3;
   /** Consecutive rifts shattered without missing any */
   comboStreak?: number;
+  /** Astral charge of the Divine Sphere (0..100). At 100%, clicking the Sphere fires FULGOR DIVINO */
+  sphereCharge?: number;
+  /** Active miracle plea on one of the Faithful in the circle (1.5s window, heals +10% Integrity) */
+  activeMiracle?: ActiveBossMiracle | null;
+  /** Countdown until the next Faithful miracle spawns on the circle (~10..14s) */
+  miracleSpawnTimerSec?: number;
+  /** Highest phase shockwave already applied (prevents duplicate 15% / 30% hits) */
+  highestPhaseShocked?: 1 | 2 | 3;
+  /** True when replaying a previously subjugated Guardian via "Relembrar Duelo" */
+  isRematch?: boolean;
+  /** Elapsed combat duration in seconds (for recording Best Subjugation Time) */
+  elapsedCombatSec?: number;
+  /** Wave counter used to alternate Attack 1 and Attack 2 in Phases II and III */
+  attackWaveCounter?: number;
 }
 
 export interface BossCombatBreakdown {
@@ -179,14 +220,27 @@ export interface BossCombatBreakdown {
   gnoseBonus: number;
   achievementsBonus: number;
   totalResourceMultiplier: number;
-  /** Cult Readiness vs Boss target benchmarks (0.15 to 2.5+) */
+  /** Geometric mean of all six pillars vs Boss benchmarks (0 to 2). */
   cultReadiness: number;
+  /** All damage sources are blocked below the attack readiness threshold. */
+  canDamageBoss: boolean;
+  /** Below the defense threshold, missed attacks are lethal and pressure breaks the Sphere rapidly. */
+  canWithstandBoss: boolean;
+  /** Per-pillar readiness (0.0 to 2.0) for pre-fight indicator and post-defeat diagnosis */
+  pillarReadiness: Record<CultPillarId, number>;
+  /** Weakest pillars (< 1.0 readiness) sorted ascending */
+  weakPillars: CultPillarStatus[];
+  /** Lowest 2 pillars sorted ascending (always 2 entries for post-defeat diagnosis) */
+  lowestTwoPillars: [CultPillarStatus, CultPillarStatus];
   passiveHpFractionPerSec: number;
   passiveDps: number;
   clickHpFraction: number;
   clickDamage: number;
   riftHpFraction: number;
   riftDamage: number;
+  /** Damage inflicted by FULGOR DIVINO (100% Sphere Charge discharge) */
+  fulgorHpFraction: number;
+  fulgorDamage: number;
   altarDamageOnMiss: number;
   altarHealOnRift: number;
   /** Continuous Altar Integrity drain per second after defense mitigation */
@@ -204,6 +258,7 @@ export interface GnoseSaveData {
   gnoseResets: number;
   unlockedUpgrades: string[];
   defeatedBosses?: string[];
+  bestBossTimesSec?: Record<string, number>;
   bossCurseTimerSec?: number;
   confirmReset: boolean;
   autoFollowersEnabled: boolean;

@@ -16,5 +16,3 @@ Cada ação contém frames PNG transparentes de 256 × 192, spritesheet horizont
 `idle.png` guarda a base lateral de cada boss. `profiles.json` registra as poses e `manifest.json` registra prompts, fontes e IDs das animações, geradas no PixelLab PixMiniMax.
 
 `preview.html` permite pausar, mudar a velocidade, inspecionar frames e espelhar os movimentos para a esquerda.
-
-Pacote: `../../bosses-animacoes-laterais.zip`.

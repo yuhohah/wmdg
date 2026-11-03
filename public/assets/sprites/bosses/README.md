@@ -4,7 +4,6 @@
 
 A revisão em `lateral/` substitui as animações frontais abaixo. São quatro movimentos laterais e oito ataques distintos: bastão e balança de Anúbis, combo e correntes de Hades, lança e corvo de Odin, esferas e círculos do Caos Primordial. Consulte `lateral/README.md`, `lateral/manifest.json` e `lateral/preview.html`.
 
-Pacote atual: `../bosses-animacoes-laterais.zip`. O pacote `../bosses-animacoes.zip` também distribui a versão lateral atualizada.
 
 ## Versão frontal anterior
 
@@ -18,5 +17,3 @@ Cada pasta de boss contém `andar/` e `atacar/`, com frames PNG transparentes de
 - Atacar: ação única com recuperação; a prévia repete os ataques apenas para inspeção.
 - `preview.html`: prévia com pausa e controle de velocidade.
 - `manifest.json`: fontes, prompts, IDs de geração e dimensões.
-
-Pacote completo: `../bosses-animacoes.zip`.
