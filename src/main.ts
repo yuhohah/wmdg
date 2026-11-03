@@ -147,7 +147,9 @@ class AppManager {
       },
       onUpgradePurchased: () => {
         this.refreshAllUI();
-      }
+      },
+      onBossDefeated: () => this.board.centerOnCard('card-gnose'),
+      onBattleCamera: (target, elapsedSec) => this.board.followWorldTarget(target, elapsedSec),
     });
 
     this.unlocksTab = new UnlocksTab({

@@ -10,9 +10,9 @@ export const BOSS_CURSE_MULTIPLIER = 0.75;
 export const BOSS_MAX_ALTAR_INTEGRITY = 100;
 
 /** Combat caps apply after combining resource power with raw production. */
-export const BOSS_MAX_PASSIVE_HP_PER_SEC = 0.025;
-export const BOSS_MAX_CLICK_HP_FRACTION = 0.006;
-export const BOSS_MAX_RIFT_HP_FRACTION = 0.12;
+export const BOSS_MAX_PASSIVE_HP_PER_SEC = 0.018;
+export const BOSS_MAX_CLICK_HP_FRACTION = 0.0045;
+export const BOSS_MAX_RIFT_HP_FRACTION = 0.085;
 export const BOSS_SPHERE_COOLDOWN_SEC = 0.2;
 
 export const GNOSE_BOSSES: GnoseBoss[] = [
@@ -26,9 +26,9 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
     unlocksTier: 2,
     maxHp: 1e18,
     riftDamagePercent: 0.04,
-    riftIntervalSec: 4.5,
-    riftWindowSec: 3,
-    altarDamageOnMiss: 25,
+    riftIntervalSec: 3.6,
+    riftWindowSec: 2.2,
+    altarDamageOnMiss: 32,
     altarPressurePerSec: 0.65,
     requirements: {
       faithLog: 15,
@@ -56,9 +56,9 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
     unlocksTier: 3,
     maxHp: 5e28,
     riftDamagePercent: 0.038,
-    riftIntervalSec: 4.2,
-    riftWindowSec: 2.75,
-    altarDamageOnMiss: 28,
+    riftIntervalSec: 3.3,
+    riftWindowSec: 2.0,
+    altarDamageOnMiss: 36,
     altarPressurePerSec: 0.95,
     requirements: {
       faithLog: 22,
@@ -85,9 +85,9 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
     unlocksTier: 4,
     maxHp: 1e38,
     riftDamagePercent: 0.036,
-    riftIntervalSec: 4.0,
-    riftWindowSec: 2.5,
-    altarDamageOnMiss: 32,
+    riftIntervalSec: 3.0,
+    riftWindowSec: 1.8,
+    altarDamageOnMiss: 40,
     altarPressurePerSec: 1.25,
     requirements: {
       faithLog: 30,
@@ -115,9 +115,9 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
     unlocksTier: 'endgame',
     maxHp: 1e42,
     riftDamagePercent: 0.035,
-    riftIntervalSec: 3.8,
-    riftWindowSec: 2.5,
-    altarDamageOnMiss: 36,
+    riftIntervalSec: 2.7,
+    riftWindowSec: 1.65,
+    altarDamageOnMiss: 46,
     altarPressurePerSec: 1.65,
     requirements: {
       faithLog: 38,

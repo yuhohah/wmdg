@@ -32,8 +32,10 @@
       "boss": "04-caos-primordial",
       "name": "Caos Primordial",
       "source": "ca5a6f41-1e9a-447b-a1b5-0fa3255a7e0b",
-      "prompt": "Reorient this SAME abstract cosmic void entity for a SIDE-SCROLLER facing RIGHT. Asymmetrical silhouette: dark tendrils trail LEFT and a narrow bone-silver crescent aperture faces RIGHT to fire projectiles horizontally. Preserve black eclipse core, broken silver armillary rings and sparse gold. No humanoid anatomy. Entity height about 140px, centered x=80 on 256x192 canvas; leave right half EMPTY for launched orbs and ring projectiles. Same crisp pixel art, transparent background.",
-      "jobId": "660c474a-d88a-4b96-a0b4-b31bfaad7cb3"
+      "prompt": "Imagem exata do usuário, preservando núcleo circular, anel horizontal e tentáculos; preenchimento transparente à direita.",
+      "jobId": "216b1a93-b6c5-474b-b04e-faebaf543530",
+      "previousJobId": "660c474a-d88a-4b96-a0b4-b31bfaad7cb3",
+      "sourceReference": "../../../concepts/bosses/04-caos-referencia-v2.png"
     }
   ]
 }

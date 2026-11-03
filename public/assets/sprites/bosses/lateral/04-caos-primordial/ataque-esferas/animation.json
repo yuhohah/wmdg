@@ -1,12 +1,10 @@
 {
-  "boss": "04-caos-primordial",
-  "name": "Caos Primordial",
   "key": "ataque-esferas",
   "label": "Esferas",
-  "sourceJobId": "660c474a-d88a-4b96-a0b4-b31bfaad7cb3",
-  "description": "Fire THREE distinct spherical projectiles to the RIGHT. The core compresses and charges, then the right-facing aperture ejects small bone-white glowing SPHERES one after another. Three clearly separate solid round energy balls travel horizontally from the aperture across the empty right half of the frame and exit the right edge. Slight recoil of the entity, then recover to idle. No expanding shockwave around the body. STRICT side-scroller view facing RIGHT for every frame, never turn toward camera. Clear anticipation, strong action and recovery. Preserve identity and crisp bone-silver charcoal pixel art, no new colors. Keep full sprite and moving weapons inside 256x192, same planted baseline, same scale. Static camera. Transparent. Stay in place; no camera pan.",
-  "frame_count": 16,
-  "jobId": "ec59fac4-cb54-44a0-a714-e9293c573d80",
+  "description": "The exact reference entity stays at the LEFT, keeping its ROUND black core, HORIZONTAL gold ring and curled tentacles. The core briefly charges with bone-white light, then fires THREE separate small SOLID ROUND energy balls toward the RIGHT. The spheres travel visibly through the transparent right half and exit right. Slight caster recoil then recover to reference idle. Keep reference silhouette; no long spike or beam, no pointed nose, no body turning. Static camera, crisp original pixel art.",
+  "jobId": "4b5e54db-c78a-4d97-8565-d7abe4b4f4eb",
+  "boss": "04-caos-primordial",
+  "name": "Caos Primordial",
   "frame_width": 256,
   "frame_height": 192,
   "source_frame_count": 17,
@@ -14,6 +12,8 @@
   "frame_duration_ms": 90,
   "loop": false,
   "direction": "east",
+  "reference_orientation": "round core with horizontal ring, as supplied by user",
   "layout": "horizontal",
-  "transparent": true
+  "transparent": true,
+  "generator": "PixelLab PixMiniMax"
 }

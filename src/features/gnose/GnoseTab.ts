@@ -5,7 +5,7 @@ import { GNOSE_UPGRADES, GNOSE_TIER_LABELS, GNOSE_MIN_FAITH_REQ } from '../../co
 import { GNOSE_BOSSES } from '../../config/bosses.js';
 import { formatNumber } from '../../systems/calculations.js';
 import { cultDialog } from '../../ui/CultDialog.js';
-import { BossBattleModal } from './BossBattleModal.js';
+import { BossBattleModal, type BattleCameraTarget } from './BossBattleModal.js';
 import type { GnoseUpgrade } from '../../types.js';
 import { icon, iconOrText } from '../../ui/icons.js';
 
@@ -16,6 +16,8 @@ export interface GnoseTabOptions {
   spawnFloatingText: (x: number, y: number, text: string) => void;
   onGnoseReset?: () => void;
   onUpgradePurchased?: (upg: GnoseUpgrade) => void;
+  onBossDefeated?: () => void;
+  onBattleCamera?: (target: BattleCameraTarget, elapsedSec: number) => void;
 }
 
 export class GnoseTab {
@@ -43,8 +45,10 @@ export class GnoseTab {
       audio: options.audio,
       notifications: options.notifications,
       spawnFloatingText: options.spawnFloatingText,
-      onBattleEnded: () => {
+      onCameraFrame: options.onBattleCamera,
+      onBattleEnded: (_boss, victory) => {
         this.options.onUpgradePurchased?.(GNOSE_UPGRADES[0]);
+        if (victory) this.options.onBossDefeated?.();
       }
     });
     this.initElements();

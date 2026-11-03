@@ -6,7 +6,7 @@ import { formatNumber } from '../../systems/calculations.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 import type { GnoseBoss } from '../../types.js';
 import { icon } from '../../ui/icons.js';
-import { effectEasing, visualFrameScale } from '../../ui/visualTiming.js';
+import { effectEasing, visualFrameScale, VisualFrameClock } from '../../ui/visualTiming.js';
 import {
   FOLLOWER_FRAME_SIZE,
   followerAnimationFrame,
@@ -23,6 +23,15 @@ export interface BossBattleModalOptions {
   notifications: NotificationManager;
   spawnFloatingText: (x: number, y: number, text: string) => void;
   onBattleEnded?: (boss: GnoseBoss, victory: boolean) => void;
+  onCameraFrame?: (target: BattleCameraTarget, elapsedSec: number) => void;
+}
+
+export interface BattleCameraTarget {
+  phase: 'incarnation' | 'boss' | 'combat';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 interface BossLateralSprites {
@@ -96,7 +105,7 @@ const SACRED_CIRCLE_RADIUS = 535;
 const SPHERE_CIRCLE_RX = SACRED_CIRCLE_RADIUS;
 const SPHERE_CIRCLE_RY = SACRED_CIRCLE_RADIUS;
 
-const BOSS_SPAWN_TOP = { x: 1335, y: 200 };
+const BOSS_DISTANT_SPAWN = { x: 180, y: 854 };
 const BOSS_COMBAT_SPOT = { x: 1415, y: 865 };
 
 const INCARNATION_OUTBOUND_SPEED = 520;
@@ -110,15 +119,33 @@ const HITBOX_PAD_PX = 6;
 
 // Lead time (in seconds) that the "APARAR" rift is visible BEFORE the Boss swings his attack
 const RIFT_TELEGRAPH_BEFORE_ATTACK_SEC = 0.65;
+const PARRY_RECOVERY_SEC = 0.6;
 
 const INCARNATION_FALLBACK_SPAWN = { x: 490, y: 728 };
 const FOLLOWERS_FALLBACK_BOX = { x: 2024, y: 1030, w: 512, h: 240 };
 
-const BOSS_SPRITE_FOLDERS: Record<string, { folder: string; attacks: [string, string] }> = {
-  boss_anubis: { folder: '01-anubis', attacks: ['ataque-bastao', 'ataque-balanca'] },
-  boss_cronos: { folder: '02-hades', attacks: ['ataque-duplo', 'ataque-correntes'] },
-  boss_odin: { folder: '03-odin', attacks: ['ataque-lanca', 'ataque-corvo'] },
-  boss_tiamat: { folder: '04-caos-primordial', attacks: ['ataque-esferas', 'ataque-circulos'] },
+interface BossSpriteConfig {
+  folder: string;
+  attacks: [string, string];
+  walkFrameSec?: number;
+  attackFrameSec?: number;
+  animateIdle?: boolean;
+  drawOffsetX?: number;
+}
+
+const BOSS_SPRITE_FOLDERS: Record<string, BossSpriteConfig> = {
+  boss_anubis: { folder: 'lateral/01-anubis', attacks: ['ataque-bastao', 'ataque-balanca'] },
+  boss_cronos: { folder: 'lateral/02-hades', attacks: ['ataque-duplo', 'ataque-correntes'] },
+  boss_odin: { folder: 'lateral/03-odin', attacks: ['ataque-lanca', 'ataque-corvo'] },
+  boss_tiamat: {
+    folder: 'caos-referencia-v2',
+    attacks: ['ataque-esferas', 'ataque-circulos'],
+    walkFrameSec: 0.09,
+    attackFrameSec: 0.09,
+    animateIdle: true,
+    // The reference core is at x=96; the right of the canvas is projectile space.
+    drawOffsetX: -120,
+  },
 };
 
 // Exact idle/frame-0 opaque pixel bounds (alpha > 30) in 256x192 source space for instant sync before decode
@@ -126,7 +153,7 @@ const BOSS_DEFAULT_BOUNDS: Record<string, SpriteFrameBounds> = {
   boss_anubis: { minX: 28, minY: 7, maxX: 145, maxY: 183 },
   boss_cronos: { minX: 84, minY: 7, maxX: 164, maxY: 187 },
   boss_odin: { minX: 71, minY: 4, maxX: 189, maxY: 187 },
-  boss_tiamat: { minX: 11, minY: 18, maxX: 236, maxY: 169 },
+  boss_tiamat: { minX: 23, minY: 3, maxX: 166, maxY: 180 },
 };
 
 const INCARNATION_FILES = ['01-neofito', '02-consagrado', '03-ancestral', '04-eclipse', '05-solar'] as const;
@@ -278,7 +305,7 @@ function getBossFrameBounds(
 
 function loadBossLateralSprites(): Record<string, BossLateralSprites> {
   if (cachedBossSprites) return cachedBossSprites;
-  const base = `${import.meta.env.BASE_URL}assets/sprites/bosses/lateral/`;
+  const base = `${import.meta.env.BASE_URL}assets/sprites/bosses/`;
   const map: Record<string, BossLateralSprites> = {};
   for (const [bossId, cfg] of Object.entries(BOSS_SPRITE_FOLDERS)) {
     const load = (rel: string) => {
@@ -298,6 +325,12 @@ function loadBossLateralSprites(): Record<string, BossLateralSprites> {
   }
   cachedBossSprites = map;
   return map;
+}
+
+function bossSheetFrameCount(sheet: HTMLImageElement | undefined): number {
+  return sheet && sheet.naturalWidth >= BOSS_SRC_W
+    ? Math.max(1, Math.floor(sheet.naturalWidth / BOSS_SRC_W))
+    : 17;
 }
 
 function loadIncarnationProcessionSprites(): IncarnationWalkSprite[] {
@@ -343,13 +376,15 @@ export class BossBattleModal {
   private animFrameId: number | null = null;
   private speedMultiplier = 1;
 
-  private bossX = BOSS_SPAWN_TOP.x;
-  private bossY = BOSS_SPAWN_TOP.y;
+  private bossX = BOSS_DISTANT_SPAWN.x;
+  private bossY = BOSS_DISTANT_SPAWN.y;
   private bossState: 'awaiting_ritual' | 'walking' | 'attacking' | 'idle' = 'awaiting_ritual';
   private bossWalkTimeSec = 0;
   private bossAttackIndex = 0;
   private bossAttackFrameTimeSec = 0;
   private bossHitFlashSec = 0;
+  private bossParryRecoverySec = 0;
+  private cameraPhase: BattleCameraTarget['phase'] | null = null;
   private attackedRiftIds = new Set<string>();
 
   private incX = INCARNATION_FALLBACK_SPAWN.x;
@@ -518,7 +553,7 @@ export class BossBattleModal {
         Math.min(
           80,
           BOSS_SPHERE_CENTER.x - SACRED_CIRCLE_RADIUS - pad,
-          BOSS_SPAWN_TOP.x - pad,
+          BOSS_DISTANT_SPAWN.x - pad,
           incBox.x - pad,
           fBox.x - pad
         )
@@ -530,7 +565,7 @@ export class BossBattleModal {
         Math.min(
           0,
           BOSS_SPHERE_CENTER.y - SACRED_CIRCLE_RADIUS - pad,
-          BOSS_SPAWN_TOP.y - pad,
+          BOSS_DISTANT_SPAWN.y - pad,
           incBox.y - pad,
           fBox.y - pad
         )
@@ -831,9 +866,7 @@ export class BossBattleModal {
 
     this.returnFocusEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
-    // Pan & zoom camera to frame the entire Sacred Circle around Boss + Sphere
-    const resetCenterBtn = document.getElementById('btn-zoom-reset');
-    resetCenterBtn?.click();
+    this.updateBattleCamera(0);
 
     this.options.audio.playTone(320, 'triangle', 0.25);
     this.updateUI();
@@ -858,7 +891,7 @@ export class BossBattleModal {
     document.body.classList.remove('is-boss-battle-active');
     if (wasOpen) {
       document.getElementById('btn-zoom-reset')?.click();
-      if (this.returnFocusEl?.isConnected) this.returnFocusEl.focus();
+      if (this.returnFocusEl?.isConnected) this.returnFocusEl.focus({ preventScroll: true });
     }
     this.returnFocusEl = null;
   }
@@ -996,12 +1029,14 @@ export class BossBattleModal {
 
   private initBattleChoreography(): void {
     // 1. Boss stays above out of sight until the Faithful + Incarnation complete the 360° circle
-    this.bossX = BOSS_SPAWN_TOP.x;
-    this.bossY = BOSS_SPAWN_TOP.y;
+    this.bossX = BOSS_DISTANT_SPAWN.x;
+    this.bossY = BOSS_DISTANT_SPAWN.y;
     this.bossState = 'awaiting_ritual';
     this.bossWalkTimeSec = 0;
     this.bossAttackIndex = 0;
     this.bossAttackFrameTimeSec = 0;
+    this.bossParryRecoverySec = 0;
+    this.cameraPhase = null;
     this.bossHitFlashSec = 0;
     this.attackedRiftIds.clear();
 
@@ -1152,16 +1187,15 @@ export class BossBattleModal {
     if (this.animFrameId !== null) {
       cancelAnimationFrame(this.animFrameId);
     }
-    let previousMs: number | null = null;
+    const clock = new VisualFrameClock();
     const step = (nowMs: number) => {
       if (!this.isBattleActive || (this.worldStageEl && !this.worldStageEl.isConnected)) {
         if (this.isBattleActive) this.close();
         return;
       }
-      const elapsedSec =
-        previousMs === null ? 0 : Math.min(0.1, Math.max(0, (nowMs - previousMs) / 1000));
-      previousMs = nowMs;
-      if (document.visibilityState !== 'hidden') {
+      const frameSec = clock.tick(nowMs);
+      if (frameSec !== null && document.visibilityState !== 'hidden') {
+        const elapsedSec = Math.min(0.1, frameSec);
         this.updateWorldScene(elapsedSec);
         this.drawWorldScene();
       }
@@ -1171,6 +1205,7 @@ export class BossBattleModal {
   }
 
   private triggerBossAttackSwing(): void {
+    if (this.bossParryRecoverySec > 0) return;
     this.bossState = 'attacking';
     this.bossAttackFrameTimeSec = 0;
     this.bossAttackIndex = (this.bossAttackIndex + 1) % 2;
@@ -1181,12 +1216,31 @@ export class BossBattleModal {
     this.drawWorldScene();
   }
 
+  private updateBattleCamera(elapsedSec: number): void {
+    let target: BattleCameraTarget;
+    if (this.bossState === 'awaiting_ritual') {
+      target = { phase: 'incarnation', x: this.incX, y: this.incY - 65, width: 680, height: 560 };
+    } else if (this.bossState === 'walking') {
+      target = { phase: 'boss', x: this.bossX, y: this.bossY - 90, width: 760, height: 580 };
+    } else {
+      target = {
+        phase: 'combat', x: BOSS_SPHERE_CENTER.x, y: BOSS_SPHERE_CENTER.y,
+        width: SACRED_CIRCLE_RADIUS * 2 + 140, height: SACRED_CIRCLE_RADIUS * 2 + 140,
+      };
+    }
+    // Cut to the distant entrance before its first visible frame; tracking then stays smooth.
+    const revealBoss = target.phase === 'boss' && this.cameraPhase !== 'boss';
+    this.cameraPhase = target.phase;
+    this.options.onCameraFrame?.(target, revealBoss ? 0 : elapsedSec);
+  }
+
   private resolveBossRenderFrame(bossId: string): BossRenderFrame {
     const lx = Math.round(this.bossX - this.stageOriginX);
     const ly = Math.round(this.bossY - this.stageOriginY);
     const drawW = 320;
     const drawH = 240;
-    const drawOffsetX = bossId === 'boss_anubis' ? -108 : -158;
+    const config = BOSS_SPRITE_FOLDERS[bossId];
+    const drawOffsetX = config?.drawOffsetX ?? (bossId === 'boss_anubis' ? -108 : -158);
     const drawOffsetY = -215;
     const drawLeft = lx + drawOffsetX;
     const drawTop = ly + drawOffsetY;
@@ -1196,20 +1250,14 @@ export class BossBattleModal {
     let frame = 0;
 
     if (bossSprites) {
-      if (this.bossState === 'walking') {
+      if (this.bossState === 'walking' || (this.bossState === 'idle' && config?.animateIdle)) {
         candidateSheet = bossSprites.walk;
-        const totalFrames =
-          candidateSheet.naturalWidth >= BOSS_SRC_W
-            ? Math.max(1, Math.floor(candidateSheet.naturalWidth / BOSS_SRC_W))
-            : 17;
-        frame = Math.floor(this.bossWalkTimeSec / 0.16) % totalFrames;
+        const totalFrames = bossSheetFrameCount(candidateSheet);
+        frame = Math.floor(this.bossWalkTimeSec / (config?.walkFrameSec ?? 0.16)) % totalFrames;
       } else if (this.bossState === 'attacking') {
         candidateSheet = bossSprites.attacks[this.bossAttackIndex] ?? bossSprites.attacks[0];
-        const totalFrames =
-          candidateSheet.naturalWidth >= BOSS_SRC_W
-            ? Math.max(1, Math.floor(candidateSheet.naturalWidth / BOSS_SRC_W))
-            : 17;
-        frame = Math.min(totalFrames - 1, Math.floor(this.bossAttackFrameTimeSec / 0.115));
+        const totalFrames = bossSheetFrameCount(candidateSheet);
+        frame = Math.min(totalFrames - 1, Math.floor(this.bossAttackFrameTimeSec / (config?.attackFrameSec ?? 0.115)));
       } else {
         candidateSheet = bossSprites.walk;
         frame = 0;
@@ -1229,7 +1277,10 @@ export class BossBattleModal {
       candidateSheet && candidateSheet.complete && candidateSheet.naturalWidth > 0
         ? candidateSheet
         : null;
-    const bounds = getBossFrameBounds(activeSheet, frame, bossId);
+    // Ranged effects must not enlarge the clickable body as they travel away.
+    const bounds = bossId === 'boss_tiamat' && this.bossState === 'attacking'
+      ? getBossFrameBounds(bossSprites?.idle ?? null, 0, bossId)
+      : getBossFrameBounds(activeSheet, frame, bossId);
 
     const spriteLeft = drawLeft + (bounds.minX / BOSS_SRC_W) * drawW;
     const spriteRight = drawLeft + ((bounds.maxX + 1) / BOSS_SRC_W) * drawW;
@@ -1290,6 +1341,7 @@ export class BossBattleModal {
   }
 
   private formatRitualStatsLabel(): string {
+    if (this.bossState === 'walking') return 'O Guardião se aproxima da Esfera…';
     const total = this.followerActors.length;
     const encircling = this.followerActors.filter((f) => f.state === 'encircling').length;
     if (this.incState === 'walking_to_patio') return 'Ritual: buscando os Fiéis...';
@@ -1301,6 +1353,7 @@ export class BossBattleModal {
     const frameScale = visualFrameScale(elapsedSec);
     const dt = elapsedSec * Math.max(0.25, Math.min(this.speedMultiplier, 4));
     const battle = this.options.gameState.activeBossBattle;
+    this.bossParryRecoverySec = Math.max(0, this.bossParryRecoverySec - dt);
 
     if (this.bossHitFlashSec > 0) {
       this.bossHitFlashSec = Math.max(0, this.bossHitFlashSec - elapsedSec);
@@ -1460,23 +1513,21 @@ export class BossBattleModal {
     // 3. Update Boss:
     //    - Waits out of sight ('awaiting_ritual') with combat paused until ALL Faithful complete the 360° circle
     //      AND the Incarnation stands in her Sacred Circle station ('guarding').
-    //    - As soon as both hold, combat begins counting (`beginBossCombat()`) and the Boss descends from above
-    //      (`BOSS_SPAWN_TOP` -> `BOSS_COMBAT_SPOT`) into the interior of the Sacred Circle to attack the Sphere!
+    //    - Once the circle holds, the boss enters from afar. Damage and rifts only start on arrival.
     if (this.bossState === 'awaiting_ritual') {
       const allEncircling =
         this.followerActors.length === 0 ||
         this.followerActors.every((f) => f.state === 'encircling');
       if (this.incState === 'guarding' && allEncircling) {
         this.bossState = 'walking';
-        this.bossX = BOSS_SPAWN_TOP.x;
-        this.bossY = BOSS_SPAWN_TOP.y;
+        this.bossX = BOSS_DISTANT_SPAWN.x;
+        this.bossY = BOSS_DISTANT_SPAWN.y;
         this.bossWalkTimeSec = 0;
-        this.options.gameState.beginBossCombat();
         const boss = battle ? GNOSE_BOSSES.find((b) => b.id === battle.bossId) : undefined;
         if (boss) {
           this.setText(
             this.combatFeedbackEl,
-            `${boss.name} desce para atacar a Esfera! Clique na sprite dele para atacar.`
+            `${boss.name} se aproxima da Esfera! Prepare-se para aparar os golpes.`
           );
         }
         this.options.audio.playTone(240, 'sawtooth', 0.22);
@@ -1505,6 +1556,7 @@ export class BossBattleModal {
         this.bossX = BOSS_COMBAT_SPOT.x;
         this.bossY = BOSS_COMBAT_SPOT.y;
         this.bossState = 'idle';
+        this.options.gameState.beginBossCombat();
         // Spawn the first "APARAR" rift shortly after the Boss reaches the Sphere
         if (battle) {
           battle.riftSpawnTimerSec = Math.min(battle.riftSpawnTimerSec, 0.2);
@@ -1512,7 +1564,9 @@ export class BossBattleModal {
       }
     } else if (this.bossState === 'attacking') {
       this.bossAttackFrameTimeSec += dt;
-      const attackDuration = 17 * 0.115; // 17 frames at 115ms per frame (~1.95s)
+      const bossId = battle?.bossId ?? '';
+      const sheet = loadBossLateralSprites()[bossId]?.attacks[this.bossAttackIndex];
+      const attackDuration = bossSheetFrameCount(sheet) * (BOSS_SPRITE_FOLDERS[bossId]?.attackFrameSec ?? 0.115);
       // Trigger impact wave on the Sphere mid-swing
       if (
         this.bossAttackFrameTimeSec >= 0.85 &&
@@ -1526,7 +1580,7 @@ export class BossBattleModal {
     } else {
       // Boss is in 'idle' stance at the Sphere: "APARAR" appears first, then after RIFT_TELEGRAPH_BEFORE_ATTACK_SEC the Boss swings!
       this.bossWalkTimeSec += dt * 0.35;
-      if (battle) {
+      if (battle && this.bossParryRecoverySec <= 0) {
         for (const rift of battle.activeRifts) {
           if (this.attackedRiftIds.has(rift.id)) continue;
           const riftAgeSec = rift.maxSec - rift.remainingSec;
@@ -1538,6 +1592,7 @@ export class BossBattleModal {
         }
       }
     }
+    this.updateBattleCamera(elapsedSec);
   }
 
   private drawWorldScene(): void {
@@ -1808,11 +1863,8 @@ export class BossBattleModal {
     if (battle.riftsMissed > this.lastRiftsMissed) {
       this.lastRiftsMissed = battle.riftsMissed;
       this.options.audio.playTone(210, 'sawtooth', 0.14);
-      // If a rift collapsed before the Boss finished swinging, ensure the strike animation triggers
-      if (this.bossState === 'idle') {
-        this.triggerBossAttackSwing();
-      }
-      this.spherePulseAlpha = 0.9;
+      // Miss feedback must never restart a swing that a successful parry just cancelled.
+      if (this.bossParryRecoverySec <= 0) this.spherePulseAlpha = 0.9;
       this.setText(
         this.combatFeedbackEl,
         `Golpe não aparado! −${breakdown.altarDamageOnMiss.toFixed(0)}% da Esfera (Combo reiniciado).`
@@ -1930,8 +1982,9 @@ export class BossBattleModal {
         riftEl.style.left = `${Math.round(strikeZoneCenterX + offsetX)}px`;
         riftEl.style.top = `${Math.round(strikeZoneCenterY + offsetY)}px`;
         riftEl.innerHTML = `
-          <span class="boss-rift-core">✦</span>
-          <span class="boss-rift-label">APARAR (${riftPctLabel})</span>
+          <span class="boss-rift-core" aria-hidden="true">${icon('shield')}</span>
+          <span class="boss-rift-label">APARAR</span>
+          <span class="boss-rift-damage">${riftPctLabel} essência</span>
           <span class="boss-rift-timer"></span>
           <span class="boss-rift-window" aria-hidden="true"><span class="boss-rift-window-fill"></span></span>
         `;
@@ -1946,11 +1999,13 @@ export class BossBattleModal {
             // Parry interrupts/cancels the Boss's attack swing and flashes the Boss sprite
             this.attackedRiftIds.add(rift.id);
             this.bossHitFlashSec = 0.28;
-            if (this.bossState === 'attacking') {
-              this.bossState = 'idle';
-              this.bossAttackFrameTimeSec = 0;
-              this.spherePulseAlpha = 0;
-            }
+            this.bossState = 'idle';
+            this.bossAttackFrameTimeSec = 0;
+            this.bossParryRecoverySec = PARRY_RECOVERY_SEC;
+            this.spherePulseAlpha = 0;
+            this.lastRiftsMissed = this.options.gameState.activeBossBattle?.riftsMissed ?? this.lastRiftsMissed;
+            // A stale target from another pending rift cannot immediately replay the cancelled swing.
+            this.options.gameState.activeBossBattle?.activeRifts.forEach(r => this.attackedRiftIds.add(r.id));
             const actualPct = ((res.damage / maxHp) * 100).toFixed(1);
             const healStr =
               currentBreakdown.altarHealOnRift >= 1
@@ -1978,7 +2033,8 @@ export class BossBattleModal {
       }
 
       const labelEl = riftEl.querySelector<HTMLElement>('.boss-rift-label');
-      this.setText(labelEl, `APARAR (${riftPctLabel})`);
+      this.setText(labelEl, 'APARAR');
+      this.setText(riftEl.querySelector<HTMLElement>('.boss-rift-damage'), `${riftPctLabel} essência`);
       const timerEl = riftEl.querySelector<HTMLElement>('.boss-rift-timer');
       this.setText(timerEl, `${Math.max(0, rift.remainingSec).toFixed(1)}s`);
       const fillEl = riftEl.querySelector<HTMLElement>('.boss-rift-window-fill');

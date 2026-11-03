@@ -333,7 +333,12 @@ export class BoardManager {
 
   private applyTransform(): void {
     if (!this.worldEl) return;
+    // Native focus scrolling is independent of pan and can make the left side unreachable.
+    // Recover that offset as well, including sessions already shifted before this fix.
+    if (this.viewportEl?.scrollLeft) this.viewportEl.scrollLeft = 0;
+    if (this.viewportEl?.scrollTop) this.viewportEl.scrollTop = 0;
     this.clampPan();
+    this.worldEl.style.setProperty('--boss-prompt-scale', String(Math.min(2.4, 1 / this.zoom)));
     this.worldEl.style.setProperty('transform', `translate3d(${this.panX}px, ${this.panY}px, 0) scale(${this.zoom})`, 'important');
   }
 
@@ -359,6 +364,26 @@ export class BoardManager {
     this.panY = centerY - worldY * newZoom;
     this.zoom = newZoom;
 
+    this.applyTransform();
+    this.updateZoomIndicator();
+  }
+
+  /** Follow a world actor or frame the arena without native scrolling or overlapping camera transitions. */
+  public followWorldTarget(target: { x: number; y: number; width: number; height: number }, elapsedSec: number): void {
+    if (!this.viewportEl || !this.worldEl) return;
+    this.isCameraTransitioning = false;
+    const width = this.viewportEl.clientWidth || window.innerWidth;
+    const height = this.viewportEl.clientHeight || window.innerHeight;
+    const hud = document.querySelector<HTMLElement>('.top-hud-bar')?.getBoundingClientRect();
+    const top = Math.max(90, hud ? hud.bottom + 12 : 90);
+    const bottom = 100;
+    const zoom = Math.max(this.minZoom, Math.min(1.1, (width - 64) / target.width, (height - top - bottom) / target.height));
+    const panX = width / 2 - target.x * zoom;
+    const panY = top + (height - top - bottom) / 2 - target.y * zoom;
+    const blend = elapsedSec <= 0 ? 1 : 1 - Math.exp(-6 * Math.min(0.1, elapsedSec));
+    this.panX += (panX - this.panX) * blend;
+    this.panY += (panY - this.panY) * blend;
+    this.zoom += (zoom - this.zoom) * blend;
     this.applyTransform();
     this.updateZoomIndicator();
   }

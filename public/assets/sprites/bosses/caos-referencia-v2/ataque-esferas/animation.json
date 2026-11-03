@@ -1,0 +1,19 @@
+{
+  "key": "ataque-esferas",
+  "label": "Esferas",
+  "description": "The exact reference entity stays at the LEFT, keeping its ROUND black core, HORIZONTAL gold ring and curled tentacles. The core briefly charges with bone-white light, then fires THREE separate small SOLID ROUND energy balls toward the RIGHT. The spheres travel visibly through the transparent right half and exit right. Slight caster recoil then recover to reference idle. Keep reference silhouette; no long spike or beam, no pointed nose, no body turning. Static camera, crisp original pixel art.",
+  "jobId": "4b5e54db-c78a-4d97-8565-d7abe4b4f4eb",
+  "boss": "04-caos-primordial",
+  "name": "Caos Primordial",
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 17,
+  "sheet_frame_count": 17,
+  "frame_duration_ms": 90,
+  "loop": false,
+  "direction": "east",
+  "reference_orientation": "round core with horizontal ring, as supplied by user",
+  "layout": "horizontal",
+  "transparent": true,
+  "generator": "PixelLab PixMiniMax"
+}

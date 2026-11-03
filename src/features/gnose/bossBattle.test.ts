@@ -169,9 +169,9 @@ describe('Boss battle invariants', () => {
     expect(b.passiveHpFractionPerSec).toBeCloseTo(b.passiveDps / 1e18, 8);
     expect(b.clickHpFraction).toBeCloseTo(b.clickDamage / 1e18, 8);
     expect(b.riftHpFraction).toBeCloseTo(b.riftDamage / 1e18, 8);
-    expect(b.passiveDps).toBeLessThanOrEqual(1e18 * 0.025);
-    expect(b.clickDamage).toBeLessThanOrEqual(1e18 * 0.006);
-    expect(b.riftDamage).toBeLessThanOrEqual(1e18 * 0.12);
+    expect(b.passiveDps).toBeLessThanOrEqual(1e18 * 0.018);
+    expect(b.clickDamage).toBeLessThanOrEqual(1e18 * 0.0045);
+    expect(b.riftDamage).toBeLessThanOrEqual(1e18 * 0.085);
   });
 
   it('limits combat pulses while continuing to grant faith for ordinary sphere clicks', () => {

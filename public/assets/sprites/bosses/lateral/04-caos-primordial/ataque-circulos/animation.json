@@ -1,13 +1,10 @@
 {
-  "boss": "04-caos-primordial",
-  "name": "Caos Primordial",
   "key": "ataque-circulos",
   "label": "Círculos",
-  "sourceJobId": "660c474a-d88a-4b96-a0b4-b31bfaad7cb3",
-  "description": "Side-scroller magic attack, facing RIGHT the whole time. The black eclipse entity remains at the left. A thin hollow WHITE ENERGY RING emerges from the opening on its right, moves right across the empty space and exits. A SECOND hollow ring follows. Both circles have empty transparent centers; they are traveling ring projectiles, NOT an aura on the caster. The caster recoils slightly then returns to idle. Fixed camera, no turning, no zoom. Preserve pixel art identity and transparency.",
-  "frame_count": 16,
-  "jobId": "b54ad06d-c13a-4f92-af9a-a6a0780db497",
-  "previousJobId": "bfc27240-e802-40d0-91bb-5ccd3de23d49",
+  "description": "The exact reference entity remains at LEFT, its round black core and HORIZONTAL gold orbital ring unchanged. Charge briefly, then launch TWO thin HOLLOW WHITE ENERGY CIRCLES one after the other toward RIGHT. Both hoops have empty transparent centers and move across the clear right half, exiting right. These are separate traveling circular projectiles, NOT the boss's own gold orbit or an aura. Recoil slightly then return to reference idle. No spike, beam, morphing, body turning or camera movement.",
+  "jobId": "c7df4e54-3e2f-45d1-bf26-6a80e808e6f7",
+  "boss": "04-caos-primordial",
+  "name": "Caos Primordial",
   "frame_width": 256,
   "frame_height": 192,
   "source_frame_count": 17,
@@ -15,6 +12,21 @@
   "frame_duration_ms": 90,
   "loop": false,
   "direction": "east",
+  "reference_orientation": "round core with horizontal ring, as supplied by user",
   "layout": "horizontal",
-  "transparent": true
+  "transparent": true,
+  "generator": "PixelLab PixMiniMax",
+  "transparency_cleanup": {
+    "tool": "PixelLab Workbench",
+    "frames": [
+      {
+        "index": 8,
+        "imageId": "7bf4a21c-64c1-4c18-b4da-5c53b4e4ad77"
+      },
+      {
+        "index": 9,
+        "imageId": "338cc142-e94d-477f-8ee9-8e24520956f5"
+      }
+    ]
+  }
 }

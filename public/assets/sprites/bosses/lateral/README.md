@@ -1,6 +1,8 @@
 # Bosses — animações laterais
 
-Revisão dos movimentos em perfil, voltados para a direita. Substitui as animações frontais como versão indicada para integração futura. A batalha do jogo ainda não usa estes arquivos.
+Revisão dos movimentos em perfil, voltados para a direita. A batalha usa as pastas laterais dos três primeiros bosses e carrega o Caos Primordial diretamente de `../caos-referencia-v2/`.
+
+Em 2026-11-03, o Caos Primordial foi atualizado conforme a imagem enviada pelo usuário: núcleo circular, anel horizontal e tentáculos preservados. Ele se desloca por levitação e lança os projéteis para a direita mantendo essa aparência. As sprites dos outros três bosses foram preservadas. A versão isolada está em `../caos-referencia-v2/`.
 
 | Boss | Movimento | Ataque 1 | Ataque 2 |
 | --- | --- | --- | --- |

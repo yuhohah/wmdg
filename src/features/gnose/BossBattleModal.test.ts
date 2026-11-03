@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { BossBattleModal } from './BossBattleModal.js';
+import { BossBattleModal, type BattleCameraTarget } from './BossBattleModal.js';
 import { GameStateManager } from '../../core/GameState.js';
 import type { AudioManager } from '../../systems/audio.js';
 import type { NotificationManager } from '../../systems/notifications.js';
+import { GNOSE_UPGRADES } from '../../config/gnose.js';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -23,6 +24,9 @@ function setupBossModalHarness(
     followersBox?: BoxOverride;
   }
 ) {
+  let focusedElement: MockElement | null = null;
+  const nativeScroll = { left: 0 };
+  const cameraFrames: BattleCameraTarget[] = [];
   const drawImageCalls: Array<{
     img: unknown;
     sx: number;
@@ -183,7 +187,11 @@ function setupBossModalHarness(
       return other === this;
     }
 
-    focus(): void {}
+    focus(options?: FocusOptions): void {
+      // Browsers scroll an off-screen focused control into view independently of board pan.
+      if (focusedElement !== this && !options?.preventScroll) nativeScroll.left = 1126;
+      focusedElement = this;
+    }
 
     setAttribute(k: string, v: string): void {
       this.attrs.set(k, v);
@@ -265,7 +273,7 @@ function setupBossModalHarness(
   vi.stubGlobal('HTMLElement', MockElement);
   vi.stubGlobal('document', {
     visibilityState: 'visible',
-    activeElement: null,
+    get activeElement() { return focusedElement; },
     body: bodyEl,
     getElementById: (id: string) => {
       if (id === 'dodeca-board-world') return worldEl;
@@ -308,12 +316,116 @@ function setupBossModalHarness(
     audio,
     notifications,
     spawnFloatingText: vi.fn(),
+    onCameraFrame: target => cameraFrames.push(target),
   });
 
-  return { modal, gameState, worldEl, drawImageCalls };
+  return { modal, gameState, worldEl, drawImageCalls, nativeScroll, cameraFrames, createControl: () => new MockElement() };
 }
 
 describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox tracking', () => {
+  it('follows the incarnation until the full circle is formed, then follows the distant boss before framing combat', () => {
+    const { modal, gameState, cameraFrames } = setupBossModalHarness(100);
+    modal.openForBoss('boss_cronos');
+    expect(cameraFrames.at(-1)?.phase).toBe('incarnation');
+    for (let i = 0; i < 200 && modal.getChoreographySnapshot().bossState === 'awaiting_ritual'; i++) {
+      const before = modal.getChoreographySnapshot();
+      expect(cameraFrames.at(-1)?.phase).toBe('incarnation');
+      expect(cameraFrames.at(-1)?.x).toBe(before.incX);
+      modal.stepSceneForTest(0.2);
+    }
+    const spawn = modal.getChoreographySnapshot();
+    expect(spawn.followers.every(f => f.state === 'encircling')).toBe(true);
+    expect(cameraFrames.at(-1)?.phase).toBe('boss');
+    expect(cameraFrames.at(-1)?.x).toBe(spawn.bossX);
+    expect(Math.hypot(spawn.bossX - 1740, spawn.bossY - 854)).toBeGreaterThan(1500);
+    const hp = gameState.activeBossBattle!.bossHp;
+    gameState.tick(1);
+    expect(gameState.activeBossBattle!.bossHp).toBe(hp);
+    for (let i = 0; i < 40 && modal.getChoreographySnapshot().bossState === 'walking'; i++) modal.stepSceneForTest(0.2);
+    expect(modal.getChoreographySnapshot().combatStarted).toBe(true);
+    expect(cameraFrames.at(-1)?.phase).toBe('combat');
+    modal.close();
+  });
+
+  it('keeps a parried swing interrupted even when an earlier missed rift is reported in the same UI update', () => {
+    const { modal, gameState, worldEl } = setupBossModalHarness(100);
+    expect(modal.openForBoss('boss_cronos')).toBe(true);
+    for (let i = 0; i < 200 && modal.getChoreographySnapshot().bossState !== 'idle'; i++) modal.stepSceneForTest(0.2);
+    gameState.spawnBossRift();
+    gameState.spawnBossRift();
+    const battle = gameState.activeBossBattle!;
+    battle.activeRifts.forEach(r => { r.remainingSec -= 0.7; });
+    modal.updateUI();
+    modal.stepSceneForTest(0.05);
+    expect(modal.getChoreographySnapshot().bossState).toBe('attacking');
+    battle.activeRifts[0].remainingSec = 0;
+    gameState.tick(0.02); // Expiry happened, but the UI has not consumed its feedback yet.
+    const targets = worldEl.children[0].querySelector('#boss-rifts-layer')!;
+    targets.children[1].dispatchClick();
+    expect(modal.getChoreographySnapshot().bossState).toBe('idle');
+    modal.stepSceneForTest(0.1);
+    expect(modal.getChoreographySnapshot().bossState).toBe('idle');
+    modal.close();
+  });
+
+  it('returns focus after a victory without scrolling the board viewport beyond the camera limits', () => {
+    const { modal, gameState, worldEl, nativeScroll, createControl } = setupBossModalHarness();
+    const challengeButton = createControl();
+    challengeButton.focus({ preventScroll: true });
+    expect(modal.openForBoss('boss_cronos')).toBe(true);
+
+    const attackButton = worldEl.children[0].querySelector('#boss-arena-attack-btn')!;
+    attackButton.focus({ preventScroll: true });
+    const battle = gameState.activeBossBattle!;
+    battle.combatStarted = true;
+    battle.bossHp = 1;
+    battle.sphereCooldownSec = 0;
+    gameState.addClick(() => 0.5);
+
+    expect(gameState.isBossDefeated('boss_cronos')).toBe(true);
+    expect(modal.isOpen()).toBe(false);
+    expect(document.activeElement).toBe(challengeButton);
+    expect(nativeScroll.left).toBe(0);
+  });
+
+  it('levitates with the approved Chaos art and alternates ranged attacks without making projectiles clickable', () => {
+    const { modal, gameState, worldEl, drawImageCalls } = setupBossModalHarness(100);
+    GNOSE_UPGRADES.forEach(upgrade => gameState.unlockedGnoseUpgrades.add(upgrade.id));
+    expect(modal.openForBoss('boss_tiamat')).toBe(true);
+
+    for (let i = 0; i < 150 && modal.getChoreographySnapshot().bossState !== 'idle'; i++) {
+      modal.stepSceneForTest(0.2);
+    }
+    expect(modal.getChoreographySnapshot().bossState).toBe('idle');
+    const lastBossDraw = () => [...drawImageCalls].reverse().find(c => c.sw === 256 && c.sh === 192)!;
+    const imageSrc = () => (lastBossDraw().img as { src: string }).src;
+    expect(imageSrc()).toContain('/bosses/caos-referencia-v2/andar/spritesheet.png');
+    const restingFrame = lastBossDraw().sx;
+    modal.stepSceneForTest(0.3);
+    expect(lastBossDraw().sx).not.toBe(restingFrame);
+
+    const hitbox = worldEl.children[0].querySelector('#boss-arena-attack-btn')!;
+    for (const attack of ['ataque-circulos', 'ataque-esferas']) {
+      gameState.activeBossBattle!.activeRifts.length = 0;
+      gameState.spawnBossRift();
+      gameState.activeBossBattle!.activeRifts[0].remainingSec -= 0.7;
+      modal.stepSceneForTest(0.05);
+      expect(modal.getChoreographySnapshot().bossState).toBe('attacking');
+      expect(imageSrc()).toContain(`/caos-referencia-v2/${attack}/spritesheet.png`);
+      const bodyBox = { ...hitbox.style };
+
+      modal.stepSceneForTest(0.45);
+      expect(lastBossDraw().sx).toBe(5 * 256); // 90 ms per frame, matching the generated art.
+      for (const property of ['left', 'top', 'width', 'height']) {
+        expect(hitbox.style[property]).toBe(bodyBox[property]);
+      }
+      modal.stepSceneForTest(1.1);
+      expect(modal.getChoreographySnapshot().bossState).toBe('idle');
+      expect(imageSrc()).toContain('/caos-referencia-v2/andar/spritesheet.png');
+    }
+    modal.close();
+  });
+
   it('keeps the Boss hidden until the ritual completes, then tracks the Boss sprite silhouette on every frame across descent, idle, attack lunge, and parry', () => {
     const { modal, gameState, worldEl, drawImageCalls } = setupBossModalHarness(100);
     expect(modal.openForBoss('boss_cronos')).toBe(true);
@@ -363,7 +475,7 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     assertHitboxWrapsLastBossDraw();
 
     // 3. Across every step of the Boss's descent from above toward the Sphere
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 35; i++) {
       drawImageCalls.length = 0;
       modal.stepSceneForTest(0.2);
       assertHitboxWrapsLastBossDraw();
@@ -468,11 +580,11 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
       }
       modal.stepSceneForTest(0.08);
       descendStartSnap = modal.getChoreographySnapshot();
-      if (descendStartSnap.combatStarted) break;
+      if (descendStartSnap.bossState === 'walking') break;
     }
 
     const R = descendStartSnap.circleRadius;
-    expect(descendStartSnap.combatStarted).toBe(true);
+    expect(descendStartSnap.combatStarted).toBe(false);
     expect(descendStartSnap.incState).toBe('guarding');
     expect(
       Math.hypot(
@@ -484,7 +596,8 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     expect(Math.hypot(descendStartSnap.incX - 1740, descendStartSnap.incY - 854)).toBeCloseTo(R, 0);
     expect(descendStartSnap.followers.every((f) => f.state === 'encircling')).toBe(true);
     expect(descendStartSnap.bossState).toBe('walking');
-    expect(descendStartSnap.bossY).toBeCloseTo(200, 0);
+    expect(descendStartSnap.bossX).toBe(180);
+    expect(Math.hypot(descendStartSnap.bossX - 1740, descendStartSnap.bossY - 854)).toBeGreaterThan(1500);
 
     // Check that all 4 quadrants are populated on the expanded circle (R = 535) and all figures are evenly spaced without overlap
     const quadrants = new Set<string>();
@@ -512,19 +625,20 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
 
     // 5. Boss descends into the interior of the expanded circle so BOTH Boss and Sphere are inside the circle
     gameState.tick(1);
-    expect(gameState.activeBossBattle!.bossHp).toBeLessThan(maxHp);
+    expect(gameState.activeBossBattle!.bossHp).toBe(maxHp);
 
     modal.stepSceneForTest(1.0);
     const midDescentSnap = modal.getChoreographySnapshot();
     expect(midDescentSnap.bossState).toBe('walking');
-    expect(midDescentSnap.bossY).toBeGreaterThan(descendStartSnap.bossY + 120);
+    expect(midDescentSnap.bossX).toBeGreaterThan(descendStartSnap.bossX + 120);
     expect(midDescentSnap.bossY).toBeLessThan(865);
 
-    for (let i = 0; i < 20; i++) modal.stepSceneForTest(0.2);
+    for (let i = 0; i < 35; i++) modal.stepSceneForTest(0.2);
     const arrivedBossSnap = modal.getChoreographySnapshot();
     expect(arrivedBossSnap.bossState).toBe('idle');
     expect(arrivedBossSnap.bossX).toBe(1415);
     expect(arrivedBossSnap.bossY).toBe(865);
+    expect(arrivedBossSnap.combatStarted).toBe(true);
 
     // Verify BOTH Boss (incl. 160px sprite half-width) AND Sphere (incl. 200px radius) sit well inside the circle!
     const minCircleX = Math.min(...allCircleFigures.map((p) => p.x));
@@ -571,7 +685,7 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     }
 
     // 3. Advance until ritual completes and verify full non-overlapping ring
-    for (let i = 0; i < 120; i++) {
+    for (let i = 0; i < 200; i++) {
       modal.stepSceneForTest(0.15);
       if (modal.getChoreographySnapshot().combatStarted) break;
     }

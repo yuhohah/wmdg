@@ -536,7 +536,7 @@ export class GameStateManager {
 
     const phase = this.getBossPhase();
     const windowScale = phase === 3 ? 0.85 : phase === 2 ? 0.92 : 1.0;
-    const windowSec = Math.max(1.6, boss.riftWindowSec * windowScale);
+    const windowSec = Math.max(1.3, boss.riftWindowSec * windowScale);
 
     this.activeBossBattle.activeRifts.push({
       id: `rift_${this.riftIdCounter}`,

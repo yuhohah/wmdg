@@ -1,0 +1,19 @@
+{
+  "key": "andar",
+  "label": "Levitar",
+  "description": "Seamless floating locomotion loop for the exact reference entity, moving to the RIGHT in place. Gently bob up and down 2-3 pixels while the curled tentacles undulate and lower wisps trail slightly left. Keep the SAME circular black core and the SAME thin horizontal gold elliptical ring visible throughout. Keep its reference orientation, do not turn edge-on or rotate the whole body. No legs, no spear, no pointed nose, no new anatomy. Static orthographic camera and unchanged sprite size.",
+  "jobId": "fe252c58-4b81-4bd0-ba81-0e783b5e8d24",
+  "boss": "04-caos-primordial",
+  "name": "Caos Primordial",
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 17,
+  "sheet_frame_count": 17,
+  "frame_duration_ms": 90,
+  "loop": true,
+  "direction": "east",
+  "reference_orientation": "round core with horizontal ring, as supplied by user",
+  "layout": "horizontal",
+  "transparent": true,
+  "generator": "PixelLab PixMiniMax"
+}

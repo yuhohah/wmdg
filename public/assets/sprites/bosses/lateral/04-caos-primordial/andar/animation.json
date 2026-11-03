@@ -1,12 +1,10 @@
 {
-  "boss": "04-caos-primordial",
-  "name": "Caos Primordial",
   "key": "andar",
   "label": "Levitar",
-  "sourceJobId": "660c474a-d88a-4b96-a0b4-b31bfaad7cb3",
-  "description": "A side-scroller FLOATING locomotion loop toward the RIGHT while staying IN PLACE. Keep the aperture facing right, gently bob the core, slowly rotate the broken orbital fragments and wave the shadow tendrils backward to the LEFT like a swimming jellyfish. Preserve the non-humanoid shape. No legs, no face, no frontal transformation. STRICT side-scroller view facing RIGHT for every frame, never turn toward camera. Clear anticipation, strong action and recovery. Preserve identity and crisp bone-silver charcoal pixel art, no new colors. Keep full sprite and moving weapons inside 256x192, same planted baseline, same scale. Static camera. Transparent. Stay in place; no camera pan.",
-  "jobId": "627e6091-7a6b-4c87-83d7-de111b7e9efa",
-  "frame_count": 16,
+  "description": "Seamless floating locomotion loop for the exact reference entity, moving to the RIGHT in place. Gently bob up and down 2-3 pixels while the curled tentacles undulate and lower wisps trail slightly left. Keep the SAME circular black core and the SAME thin horizontal gold elliptical ring visible throughout. Keep its reference orientation, do not turn edge-on or rotate the whole body. No legs, no spear, no pointed nose, no new anatomy. Static orthographic camera and unchanged sprite size.",
+  "jobId": "fe252c58-4b81-4bd0-ba81-0e783b5e8d24",
+  "boss": "04-caos-primordial",
+  "name": "Caos Primordial",
   "frame_width": 256,
   "frame_height": 192,
   "source_frame_count": 17,
@@ -14,6 +12,8 @@
   "frame_duration_ms": 90,
   "loop": true,
   "direction": "east",
+  "reference_orientation": "round core with horizontal ring, as supplied by user",
   "layout": "horizontal",
-  "transparent": true
+  "transparent": true,
+  "generator": "PixelLab PixMiniMax"
 }

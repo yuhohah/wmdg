@@ -450,21 +450,21 @@ No estado normal, `preparo` vai de 0.2 a 2 (20% a 200%). Há poder de culto ativ
 
 ```text
 poderPassivo = H*soma*0.00175*fatorPreparo*MC se culto ativo; 0 senão
-DPS = min(0.025*H, max(P,poderPassivo))
+DPS = min(0.018*H, max(P,poderPassivo))
 
-Dclique = min(0.006*H,
+Dclique = min(0.0045*H,
               max(C,H*0.0014*(0.6+0.4*preparo)*(1+0.12*soma+0.08*bv+0.08*bs)))
 
-DfendaBase = min(0.12*H,
+DfendaBase = min(0.085*H,
                  max(5*C,H*baseFenda*(0.8+0.2*preparo)
                        *(1+0.06*soma+0.10*br+0.08*bg)))
 
 comboNovo = comboAnterior+1
 multCombo = 1+min(0.30,(comboNovo-1)*0.05)
-Dfenda = min(0.12*H,DfendaBase*multCombo)
+Dfenda = min(0.085*H,DfendaBase*multCombo)
 ```
 
-DPS limitado a 2.5% do HP máximo por segundo. Clique normal limitado a 0.6%; crítico dobra o dano **depois** desse limite, chegando a 1.2%. Há cooldown de 0.2 s entre danos da Esfera (até 5 por segundo simulado); cliques no cooldown continuam dando Fé e contando cliques. A fenda permanece limitada a 12%, incluindo o combo. O primeiro acerto tem combo 1×; cresce 5% por acerto consecutivo até 1.30×. Perder uma fenda zera o combo.
+DPS limitado a 1.8% do HP máximo por segundo. Clique normal limitado a 0.45%; crítico dobra o dano **depois** desse limite, chegando a 0.9%. Há cooldown de 0.2 s entre danos da Esfera (até 5 por segundo simulado); cliques no cooldown continuam dando Fé e contando cliques. A fenda permanece limitada a 8.5%, incluindo o combo. O primeiro acerto tem combo 1×; cresce 5% por acerto consecutivo até 1.30×. Perder uma fenda zera o combo.
 
 ### 11.5 Defesa, altar e estimativas
 
@@ -483,9 +483,9 @@ estimativaSobrevivencia = 100/max(0.05,pressaoCalculada+perdaMediaEstimada)
 | Parâmetro | Anúbis | Hades | Odin | Caos |
 | --- | --- | --- | --- | --- |
 | `baseFenda` | 0.040 | 0.038 | 0.036 | 0.035 |
-| Intervalo base (s) | 4.5 | 4.2 | 4.0 | 3.8 |
-| Janela base (s) | 3.0 | 2.75 | 2.5 | 2.5 |
-| Dano original por erro | 25 | 28 | 32 | 36 |
+| Intervalo base (s) | 3.6 | 3.3 | 3.0 | 2.7 |
+| Janela base (s) | 2.2 | 2.0 | 1.8 | 1.65 |
+| Dano original por erro | 32 | 36 | 40 | 46 |
 | Piso do dano por erro | 4 | 5 | 6.5 | 8.5 |
 | Pressão original/s | 0.65 | 0.95 | 1.25 | 1.65 |
 
@@ -500,7 +500,7 @@ Derrota inicia maldição de **20 segundos**, reduzindo Fé/s e Fervor/s em 25%.
 ```text
 fase = 3 se HP/H <= 0.25; 2 se HP/H <= 0.60; 1 caso contrário
 intervalo = intervaloBase * (0.78 na fase 3; 0.88 na fase 2; 1 na fase 1)
-janela = max(1.6,janelaBase*(0.85 na fase 3; 0.92 na fase 2; 1 na fase 1))
+janela = max(1.3,janelaBase*(0.85 na fase 3; 0.92 na fase 2; 1 na fase 1))
 ```
 
 O primeiro timer é `0.65*intervaloBase`. Depois de expirar, soma o intervalo da fase, criando uma fenda apenas se há menos de três ativas. O timer avança mesmo quando já há três. O intervalo do tick usa a fase capturada no início do tick; a janela de uma fenda recém-criada usa a fase consultada ao criá-la.
@@ -630,3 +630,7 @@ Particularidades técnicas que afetam a interpretação:
 5. A documentação cobre regras da partida, bônus, custos, compras, combate, temporização e indicadores de progressão. Movimento decorativo, partículas, cores, áudio, CSS e estratégias do simulador de benchmark não concedem bônus e não constituem fórmulas econômicas da partida.
 
 **Inventário conferido:** 1 tipo de Fiel, 4 Selos, 6 Ritos, 5 estágios de Encarnação, 6 Relíquias, 20 upgrades ativos de Gnose, 20 Conquistas e 4 Bosses; além de regras de migração de 11 IDs antigos.
+
+### Coreografia e defesa na batalha
+
+A câmera acompanha a Encarnação até a roda completa, depois segue o boss desde (180, 854), a 1560 unidades da Esfera. Dano e fendas começam apenas quando ele chega ao ponto de combate. Na luta, a câmera enquadra a arena completa. Aparar cancela a animação e seu impacto, concede 0,6 s de recuperação e impede que fendas já pendentes reiniciem imediatamente o golpe. Atualizações atrasadas de erro não disparam novas animações.

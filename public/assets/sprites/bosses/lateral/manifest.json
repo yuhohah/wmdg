@@ -181,14 +181,12 @@
       "transparent": true
     },
     {
-      "boss": "04-caos-primordial",
-      "name": "Caos Primordial",
       "key": "andar",
       "label": "Levitar",
-      "sourceJobId": "660c474a-d88a-4b96-a0b4-b31bfaad7cb3",
-      "description": "A side-scroller FLOATING locomotion loop toward the RIGHT while staying IN PLACE. Keep the aperture facing right, gently bob the core, slowly rotate the broken orbital fragments and wave the shadow tendrils backward to the LEFT like a swimming jellyfish. Preserve the non-humanoid shape. No legs, no face, no frontal transformation. STRICT side-scroller view facing RIGHT for every frame, never turn toward camera. Clear anticipation, strong action and recovery. Preserve identity and crisp bone-silver charcoal pixel art, no new colors. Keep full sprite and moving weapons inside 256x192, same planted baseline, same scale. Static camera. Transparent. Stay in place; no camera pan.",
-      "jobId": "627e6091-7a6b-4c87-83d7-de111b7e9efa",
-      "frame_count": 16,
+      "description": "Seamless floating locomotion loop for the exact reference entity, moving to the RIGHT in place. Gently bob up and down 2-3 pixels while the curled tentacles undulate and lower wisps trail slightly left. Keep the SAME circular black core and the SAME thin horizontal gold elliptical ring visible throughout. Keep its reference orientation, do not turn edge-on or rotate the whole body. No legs, no spear, no pointed nose, no new anatomy. Static orthographic camera and unchanged sprite size.",
+      "jobId": "fe252c58-4b81-4bd0-ba81-0e783b5e8d24",
+      "boss": "04-caos-primordial",
+      "name": "Caos Primordial",
       "frame_width": 256,
       "frame_height": 192,
       "source_frame_count": 17,
@@ -196,38 +194,18 @@
       "frame_duration_ms": 90,
       "loop": true,
       "direction": "east",
+      "reference_orientation": "round core with horizontal ring, as supplied by user",
       "layout": "horizontal",
-      "transparent": true
+      "transparent": true,
+      "generator": "PixelLab PixMiniMax"
     },
     {
-      "boss": "04-caos-primordial",
-      "name": "Caos Primordial",
       "key": "ataque-circulos",
       "label": "Círculos",
-      "sourceJobId": "660c474a-d88a-4b96-a0b4-b31bfaad7cb3",
-      "description": "Side-scroller magic attack, facing RIGHT the whole time. The black eclipse entity remains at the left. A thin hollow WHITE ENERGY RING emerges from the opening on its right, moves right across the empty space and exits. A SECOND hollow ring follows. Both circles have empty transparent centers; they are traveling ring projectiles, NOT an aura on the caster. The caster recoils slightly then returns to idle. Fixed camera, no turning, no zoom. Preserve pixel art identity and transparency.",
-      "frame_count": 16,
-      "jobId": "b54ad06d-c13a-4f92-af9a-a6a0780db497",
-      "previousJobId": "bfc27240-e802-40d0-91bb-5ccd3de23d49",
-      "frame_width": 256,
-      "frame_height": 192,
-      "source_frame_count": 17,
-      "sheet_frame_count": 17,
-      "frame_duration_ms": 90,
-      "loop": false,
-      "direction": "east",
-      "layout": "horizontal",
-      "transparent": true
-    },
-    {
+      "description": "The exact reference entity remains at LEFT, its round black core and HORIZONTAL gold orbital ring unchanged. Charge briefly, then launch TWO thin HOLLOW WHITE ENERGY CIRCLES one after the other toward RIGHT. Both hoops have empty transparent centers and move across the clear right half, exiting right. These are separate traveling circular projectiles, NOT the boss's own gold orbit or an aura. Recoil slightly then return to reference idle. No spike, beam, morphing, body turning or camera movement.",
+      "jobId": "c7df4e54-3e2f-45d1-bf26-6a80e808e6f7",
       "boss": "04-caos-primordial",
       "name": "Caos Primordial",
-      "key": "ataque-esferas",
-      "label": "Esferas",
-      "sourceJobId": "660c474a-d88a-4b96-a0b4-b31bfaad7cb3",
-      "description": "Fire THREE distinct spherical projectiles to the RIGHT. The core compresses and charges, then the right-facing aperture ejects small bone-white glowing SPHERES one after another. Three clearly separate solid round energy balls travel horizontally from the aperture across the empty right half of the frame and exit the right edge. Slight recoil of the entity, then recover to idle. No expanding shockwave around the body. STRICT side-scroller view facing RIGHT for every frame, never turn toward camera. Clear anticipation, strong action and recovery. Preserve identity and crisp bone-silver charcoal pixel art, no new colors. Keep full sprite and moving weapons inside 256x192, same planted baseline, same scale. Static camera. Transparent. Stay in place; no camera pan.",
-      "frame_count": 16,
-      "jobId": "ec59fac4-cb54-44a0-a714-e9293c573d80",
       "frame_width": 256,
       "frame_height": 192,
       "source_frame_count": 17,
@@ -235,8 +213,43 @@
       "frame_duration_ms": 90,
       "loop": false,
       "direction": "east",
+      "reference_orientation": "round core with horizontal ring, as supplied by user",
       "layout": "horizontal",
-      "transparent": true
+      "transparent": true,
+      "generator": "PixelLab PixMiniMax",
+      "transparency_cleanup": {
+        "tool": "PixelLab Workbench",
+        "frames": [
+          {
+            "index": 8,
+            "imageId": "7bf4a21c-64c1-4c18-b4da-5c53b4e4ad77"
+          },
+          {
+            "index": 9,
+            "imageId": "338cc142-e94d-477f-8ee9-8e24520956f5"
+          }
+        ]
+      }
+    },
+    {
+      "key": "ataque-esferas",
+      "label": "Esferas",
+      "description": "The exact reference entity stays at the LEFT, keeping its ROUND black core, HORIZONTAL gold ring and curled tentacles. The core briefly charges with bone-white light, then fires THREE separate small SOLID ROUND energy balls toward the RIGHT. The spheres travel visibly through the transparent right half and exit right. Slight caster recoil then recover to reference idle. Keep reference silhouette; no long spike or beam, no pointed nose, no body turning. Static camera, crisp original pixel art.",
+      "jobId": "4b5e54db-c78a-4d97-8565-d7abe4b4f4eb",
+      "boss": "04-caos-primordial",
+      "name": "Caos Primordial",
+      "frame_width": 256,
+      "frame_height": 192,
+      "source_frame_count": 17,
+      "sheet_frame_count": 17,
+      "frame_duration_ms": 90,
+      "loop": false,
+      "direction": "east",
+      "reference_orientation": "round core with horizontal ring, as supplied by user",
+      "layout": "horizontal",
+      "transparent": true,
+      "generator": "PixelLab PixMiniMax"
     }
-  ]
+  ],
+  "referenceRevision": "Caos Primordial segue a referência enviada em 2026-11-03."
 }
