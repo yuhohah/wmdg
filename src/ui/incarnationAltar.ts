@@ -39,6 +39,7 @@ export class IncarnationAltar {
   private rotationAngle: number = 0;
   private pulsePhase: number = 0;
   private flashAlpha: number = 0;
+  private blessingActive: boolean = false;
   private sprites: IncarnationSprite[] = [];
   private isOnScreen: boolean = true;
   private options: IncarnationAltarOptions;
@@ -109,6 +110,12 @@ export class IncarnationAltar {
 
   public getCurrentStage(): number {
     return this.currentStage;
+  }
+
+  public setBlessingActive(active: boolean): void {
+    if (active === this.blessingActive) return;
+    this.blessingActive = active;
+    this.container?.classList.toggle('blessing-active', active);
   }
 
   public triggerAltarClick(e?: MouseEvent): void {
@@ -238,7 +245,11 @@ export class IncarnationAltar {
     ctx.fillStyle = '#2a2119';
     ctx.fillRect(left - 2 * scale, floor - scale, spriteW + 4 * scale, scale);
 
-    if (sprite.complete && sprite.naturalWidth > 0) {
+    // During a Boss Battle, the Incarnation leaves the sanctuary plinth to defend the central Sphere
+    const isBossBattleActive =
+      typeof document !== 'undefined' && document.body.classList.contains('is-boss-battle-active');
+
+    if (!isBossBattleActive && sprite.complete && sprite.naturalWidth > 0) {
       ctx.drawImage(sprite,
         0, 0, INCARNATION_FRAME_SIZE, INCARNATION_FRAME_SIZE,
         left, top, spriteW, spriteH);

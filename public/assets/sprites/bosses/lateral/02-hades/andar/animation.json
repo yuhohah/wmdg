@@ -1,0 +1,19 @@
+{
+  "boss": "02-hades",
+  "name": "Hades",
+  "key": "andar",
+  "label": "Andar",
+  "sourceJobId": "81865285-5a83-421b-b3c3-7539a77af39a",
+  "description": "Heavy full walking cycle towards the RIGHT, moving IN PLACE. Strict side profile, alternate thick legs with pronounced knee bends and weighty steps, torso rocks forward with the belly, chains swing with momentum. Carry TWO hooked blades, one in each hand. Clear heel lift and foot contact, not foot sliding. STRICT side-scroller view facing RIGHT for every frame, never turn toward camera. Clear anticipation, strong action and recovery. Preserve identity and crisp bone-silver charcoal pixel art, no new colors. Keep full sprite and moving weapons inside 256x192, same planted baseline, same scale. Static camera. Transparent. Stay in place; no camera pan.",
+  "jobId": "c4a86ba1-6ad4-4b38-a918-e260956571e0",
+  "frame_count": 16,
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 17,
+  "sheet_frame_count": 17,
+  "frame_duration_ms": 90,
+  "loop": true,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

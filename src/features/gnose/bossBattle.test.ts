@@ -51,6 +51,24 @@ describe('Boss battle invariants', () => {
     expect(g.activeBossBattle!.bossHp).toBeCloseTo(hp - after.passiveDps, -4);
   });
 
+  it('holds combat damage, rifts, and sphere clicks when awaitProcession is true until beginBossCombat is called', () => {
+    const g = preparedCult();
+    expect(g.startBossBattle('boss_anubis', { awaitProcession: true })).toBe(true);
+    const initialHp = g.activeBossBattle!.bossHp;
+    const initialIntegrity = g.activeBossBattle!.altarIntegrity;
+
+    g.tick(15);
+    expect(g.addClick(() => 1).bossClickDamage).toBe(0);
+    expect(g.activeBossBattle!.bossHp).toBe(initialHp);
+    expect(g.activeBossBattle!.altarIntegrity).toBe(initialIntegrity);
+    expect(g.activeBossBattle!.activeRifts).toHaveLength(0);
+
+    g.beginBossCombat();
+    g.tick(1);
+    expect(g.activeBossBattle!.bossHp).toBeLessThan(initialHp);
+    expect(g.addClick(() => 1).bossClickDamage).toBeGreaterThan(0);
+  });
+
   it('counts production, offline credits and transmutations without losing history to spending or Ascension', () => {
     const g = eligibleCult(); g.unlocks.forEach(u => { u.unlocked = true; });
     const gains = g.tick(2);
@@ -190,7 +208,7 @@ describe('Boss battle invariants', () => {
     expect(active.rifts).toBeGreaterThan(0);
   });
 
-  it('gates Cronos and Odin behind Tier II and Tier III Gnose nodes', () => {
+  it('gates Hades and Odin behind Tier II and Tier III Gnose nodes', () => {
     const g = eligibleCult();
     g.defeatedBosses.add('boss_anubis');
     expect(g.canChallengeBoss('boss_cronos')).toBe(false);

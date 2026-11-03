@@ -47,11 +47,12 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
     faithFervorMult: 1.5
   },
   {
+    // Keep the legacy save key so previous victories and rewards remain valid.
     id: 'boss_cronos',
-    name: 'Cronos',
-    title: 'O Titã Devorador do Tempo',
+    name: 'Hades',
+    title: 'O Senhor do Submundo',
     mythology: 'Mitologia Grega',
-    symbol: 'hourglass',
+    symbol: 'crown',
     unlocksTier: 3,
     maxHp: 5e28,
     riftDamagePercent: 0.038,
@@ -70,9 +71,9 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
       gnoseLog: 1.2,
       gnoseNodes: 5
     },
-    rewardName: 'Foice de Adamante',
+    rewardName: 'Bidente do Submundo',
     rewardDesc: 'Rompe o Selo do Tier III da Gnose e concede +50% (1,5×) de Fé/s e Fervor/s permanentes.',
-    lore: 'Senhor das eras esquecidas, Cronos tenta engolir as órbitas da Esfera para congelar a evolução hermética em um instante eterno.',
+    lore: 'Do trono nas profundezas do Submundo, Hades ergue seu bidente para aprisionar as almas do culto e impedir que a luz da Esfera atravesse os portões dos mortos.',
     faithFervorMult: 1.5
   },
   {

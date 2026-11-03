@@ -26,6 +26,7 @@ export interface Walker {
 }
 
 export class FollowersArena {
+  public static latestInstance: FollowersArena | null = null;
   public canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   public walkers: Walker[] = [];
@@ -44,11 +45,16 @@ export class FollowersArena {
   private isOnScreen: boolean = true;
 
   constructor(canvasId: string = 'followers-walk-canvas') {
+    FollowersArena.latestInstance = this;
     this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     this.ctx = this.canvas.getContext('2d', { alpha: true })!;
     this.initCanvas();
     this.setupEvents();
     this.startLoop();
+  }
+
+  public getArenaDimensions(): { width: number; height: number } {
+    return { width: this.width, height: this.height };
   }
 
   public setSpeedMultiplier(mult: number): void {
@@ -289,6 +295,10 @@ export class FollowersArena {
   }
 
   private update(elapsedSec: number): void {
+    if (typeof document !== 'undefined' && document.body.classList.contains('is-boss-battle-active')) {
+      return;
+    }
+
     const pad = 24;
     const minY = Math.max(90, this.height * 0.12);
     const maxY = Math.max(minY + 20, this.height - 18);
@@ -391,6 +401,9 @@ export class FollowersArena {
   private draw(): void {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
+    if (typeof document !== 'undefined' && document.body.classList.contains('is-boss-battle-active')) {
+      return;
+    }
 
     // Sort walkers by Y position for proper isometric depth rendering
     const sorted = [...this.walkers].sort((a, b) => a.y - b.y);

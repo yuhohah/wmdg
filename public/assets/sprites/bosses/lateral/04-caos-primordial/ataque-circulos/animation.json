@@ -1,0 +1,20 @@
+{
+  "boss": "04-caos-primordial",
+  "name": "Caos Primordial",
+  "key": "ataque-circulos",
+  "label": "Círculos",
+  "sourceJobId": "660c474a-d88a-4b96-a0b4-b31bfaad7cb3",
+  "description": "Side-scroller magic attack, facing RIGHT the whole time. The black eclipse entity remains at the left. A thin hollow WHITE ENERGY RING emerges from the opening on its right, moves right across the empty space and exits. A SECOND hollow ring follows. Both circles have empty transparent centers; they are traveling ring projectiles, NOT an aura on the caster. The caster recoils slightly then returns to idle. Fixed camera, no turning, no zoom. Preserve pixel art identity and transparency.",
+  "frame_count": 16,
+  "jobId": "b54ad06d-c13a-4f92-af9a-a6a0780db497",
+  "previousJobId": "bfc27240-e802-40d0-91bb-5ccd3de23d49",
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 17,
+  "sheet_frame_count": 17,
+  "frame_duration_ms": 90,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

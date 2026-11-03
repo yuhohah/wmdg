@@ -1,0 +1,47 @@
+{
+  "generator": "PixelLab Pixen",
+  "purpose": "Sprites conceituais dos quatro bosses; sem integração ao jogo.",
+  "size": [
+    192,
+    192
+  ],
+  "transparent": true,
+  "sprites": [
+    {
+      "file": "01-anubis",
+      "name": "Anúbis",
+      "subject": "Anubis the Weigher of Souls. Tall slender jackal-headed Egyptian deity, long upright ears, charcoal jackal face, ivory and dark slate pleated ceremonial kilt, engraved broad collar and simple gold clasps. Holds a clearly readable gold balance scale to one side with feather and symbolic heart pans, other hand carries a long slender staff. Solemn ancient guardian.",
+      "prompt": "Full body standalone boss concept sprite for a dark hermetic 2D pixel art game. Front-facing orthographic standing idle pose, head to feet entirely visible, centered with safe transparent margins. Mature realistic elongated proportions, crisp deliberate pixel clusters, antique Renaissance woodcut crosshatching translated into pixel art. Limited bone-white, charcoal, slate-silver palette with sparse tarnished gold accents under 5 percent. Clear imposing silhouette readable at small size. No scenery, no floor, no cast shadow, no text, no labels, no frame. Not cartoon, not chibi, not anime, no neon, no smooth gradients. Anubis the Weigher of Souls. Tall slender jackal-headed Egyptian deity, long upright ears, charcoal jackal face, ivory and dark slate pleated ceremonial kilt, engraved broad collar and simple gold clasps. Holds a clearly readable gold balance scale to one side with feather and symbolic heart pans, other hand carries a long slender staff. Solemn ancient guardian.",
+      "jobId": "caeca444-7bcf-4755-a510-c387978e1473"
+    },
+    {
+      "file": "02-hades",
+      "name": "Hades",
+      "subject": "Hades the Lord of the Underworld. Imposing stern mature bearded Greek king in a heavy charcoal robe over engraved dark silver ancient armor, angular antique gold crown. Holds a clearly readable tall BIDENT with exactly TWO prongs beside his body. Bone-pale face, tattered drapery, restrained spectral ivory wisps around lower robe. Ominous regal posture, no fire demon, no devil horns.",
+      "prompt": "Full body standalone boss concept sprite for a dark hermetic 2D pixel art game. Front-facing orthographic standing idle pose, head to feet entirely visible, centered with safe transparent margins. Mature realistic elongated proportions, crisp deliberate pixel clusters, antique Renaissance woodcut crosshatching translated into pixel art. Limited bone-white, charcoal, slate-silver palette with sparse tarnished gold accents under 5 percent. Clear imposing silhouette readable at small size. No scenery, no floor, no cast shadow, no text, no labels, no frame. Not cartoon, not chibi, not anime, no neon, no smooth gradients. Hades the Lord of the Underworld. Imposing stern mature bearded Greek king in a heavy charcoal robe over engraved dark silver ancient armor, angular antique gold crown. Holds a clearly readable tall BIDENT with exactly TWO prongs beside his body. Bone-pale face, tattered drapery, restrained spectral ivory wisps around lower robe. Ominous regal posture, no fire demon, no devil horns.",
+      "jobId": "75783f01-5824-475a-987a-5f60df04e093",
+      "previousJobId": "080f90d0-7d8b-47f0-8572-2a3b5f8fdd66",
+      "refinement": "Redesign ONLY this Hades sprite to resemble Hades from God of War III: huge broad hulking muscular brute, ash-grey skin, massive belly and thick arms, menacing closed black iron spiked helmet covering entire face, tiny dim violet eye slits. Heavy dark iron pauldrons, chains across bare torso, dark armored skirt. Replace crown, beard and staff with TWO curved hooked blades on hanging chains, one per hand. Same crisp hermetic pixel art, front full body, transparent, no gore.",
+      "versionedFile": "02-hades-gow-v2.png",
+      "visualReference": "Hades — God of War III, adaptado à estética hermética do jogo"
+    },
+    {
+      "file": "03-odin",
+      "name": "Odin",
+      "subject": "Odin the All-Father. Ancient one-eyed Norse wanderer king, one dark eyepatch, long silver beard, engraved iron helmet with NO horns, ragged charcoal cloak over sparse rune-etched armor. Holds long Gungnir spear upright beside body, a small black raven perched on opposite shoulder. Bone-silver runes and tiny aged gold clasps. Severe wise silhouette.",
+      "prompt": "Full body standalone boss concept sprite for a dark hermetic 2D pixel art game. Front-facing orthographic standing idle pose, head to feet entirely visible, centered with safe transparent margins. Mature realistic elongated proportions, crisp deliberate pixel clusters, antique Renaissance woodcut crosshatching translated into pixel art. Limited bone-white, charcoal, slate-silver palette with sparse tarnished gold accents under 5 percent. Clear imposing silhouette readable at small size. No scenery, no floor, no cast shadow, no text, no labels, no frame. Not cartoon, not chibi, not anime, no neon, no smooth gradients. Odin the All-Father. Ancient one-eyed Norse wanderer king, one dark eyepatch, long silver beard, engraved iron helmet with NO horns, ragged charcoal cloak over sparse rune-etched armor. Holds long Gungnir spear upright beside body, a small black raven perched on opposite shoulder. Bone-silver runes and tiny aged gold clasps. Severe wise silhouette.",
+      "jobId": "51b321a2-3e4c-4b48-9d5a-088fc9f67eba",
+      "previousJobId": "c527f9df-0872-4e93-a625-f9a8cb2a32a0",
+      "refinement": "Preserve this same old Norse king, beard, raven, pose, armor, palette and pixel style. Remove BOTH horns from the helmet completely: a plain engraved iron conical helmet, no horns and no protrusions on its sides. Refine the weapon to a slender Gungnir SPEAR with ONE simple leaf-shaped pointed head, not an axe or halberd. Transparent background."
+    },
+    {
+      "file": "04-caos-primordial",
+      "name": "Caos Primordial",
+      "subject": "Primordial Chaos, the Void Before Creation. A single non-humanoid cosmic entity, asymmetrical swirling black void enclosed in broken bone-silver armillary arcs and an incomplete ouroboros ring, jagged engraved star fragments and elongated curling shadow tendrils form a tall floating silhouette. Central hollow eclipse with a narrow pale rim, scattered ancient geometric fragments. No human face, no dragon, no person, no throne, no background diagram, no bright colored nebula. Powerful abstract cosmic boss.",
+      "prompt": "Full body standalone boss concept sprite for a dark hermetic 2D pixel art game. Front-facing orthographic standing idle pose, head to feet entirely visible, centered with safe transparent margins. Mature realistic elongated proportions, crisp deliberate pixel clusters, antique Renaissance woodcut crosshatching translated into pixel art. Limited bone-white, charcoal, slate-silver palette with sparse tarnished gold accents under 5 percent. Clear imposing silhouette readable at small size. No scenery, no floor, no cast shadow, no text, no labels, no frame. Not cartoon, not chibi, not anime, no neon, no smooth gradients. Primordial Chaos, the Void Before Creation. A single non-humanoid cosmic entity, asymmetrical swirling black void enclosed in broken bone-silver armillary arcs and an incomplete ouroboros ring, jagged engraved star fragments and elongated curling shadow tendrils form a tall floating silhouette. Central hollow eclipse with a narrow pale rim, scattered ancient geometric fragments. No human face, no dragon, no person, no throne, no background diagram, no bright colored nebula. Powerful abstract cosmic boss.",
+      "jobId": "ca5a6f41-1e9a-447b-a1b5-0fa3255a7e0b",
+      "previousJobId": "aee17098-5a15-40f2-b8ed-3862876d763d",
+      "refinement": "Transform this armored humanoid into an ABSTRACT COSMIC VOID ENTITY. Remove ALL humanoid anatomy: no head, no face, no shoulders, no arms, no hands, no torso armor, no legs, no feet. Center a black eclipse void with thin bone-silver rim, encircle it with broken armillary rings, swirling shadow tendrils and floating engraved stone fragments. Tall asymmetrical non-humanoid floating silhouette, empty transparent gaps. Keep crisp dark hermetic pixel art and sparse aged gold."
+    }
+  ]
+}

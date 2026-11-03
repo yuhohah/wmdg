@@ -1,0 +1,19 @@
+{
+  "boss": "03-odin",
+  "name": "Odin",
+  "key": "ataque-corvo",
+  "label": "Corvo",
+  "sourceJobId": "7b223957-61e1-46ea-9247-56fbef9f6420",
+  "description": "A RAVEN ATTACK to the RIGHT. Odin holds his spear steady and extends his free arm as a command. The black raven visibly TAKES OFF from his shoulder, opens both wings, flies forward horizontally toward the right edge with several distinct wingbeats and a pecking dive, then circles back and lands on the shoulder. Odin stays in profile; this is a bird flight attack, not a spear strike. STRICT side-scroller view facing RIGHT for every frame, never turn toward camera. Clear anticipation, strong action and recovery. Preserve identity and crisp bone-silver charcoal pixel art, no new colors. Keep full sprite and moving weapons inside 256x192, same planted baseline, same scale. Static camera. Transparent. Stay in place; no camera pan.",
+  "jobId": "2950f53b-531f-4f80-9a67-32f4b2f81145",
+  "frame_count": 16,
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 17,
+  "sheet_frame_count": 17,
+  "frame_duration_ms": 90,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

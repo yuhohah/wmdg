@@ -91,8 +91,11 @@ export class IncarnationTab {
   }
 
   public updateBlessingBar(): void {
-    if (!this.blessingFillEl || !this.blessingStatusEl) return;
     const boostSec = this.options.gameState.incarnationBoostTimer;
+    const eternalBlessing = this.options.gameState.hasGnoseUpgrade('gn_bencao_eterna') &&
+      this.options.gameState.isIncarnationUnlocked();
+    this.altar?.setBlessingActive(boostSec > 0 || eternalBlessing);
+    if (!this.blessingFillEl || !this.blessingStatusEl) return;
     const maxCap = this.options.gameState.getMaxIncarnationBoost();
     const percent = Math.min(100, Math.max(0, (boostSec / maxCap) * 100));
 

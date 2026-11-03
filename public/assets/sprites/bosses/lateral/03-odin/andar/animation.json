@@ -1,0 +1,19 @@
+{
+  "boss": "03-odin",
+  "name": "Odin",
+  "key": "andar",
+  "label": "Andar",
+  "sourceJobId": "7b223957-61e1-46ea-9247-56fbef9f6420",
+  "description": "Complete walking cycle to the RIGHT while staying IN PLACE. Strict side profile, alternate legs with knee bends, rolling foot contact and clear forward/back strides. Keep spear upright, shoulder raven perched, beard and cloak sway with steps. Body stays facing right throughout. STRICT side-scroller view facing RIGHT for every frame, never turn toward camera. Clear anticipation, strong action and recovery. Preserve identity and crisp bone-silver charcoal pixel art, no new colors. Keep full sprite and moving weapons inside 256x192, same planted baseline, same scale. Static camera. Transparent. Stay in place; no camera pan.",
+  "jobId": "b46528a2-b737-4052-bb12-468b3c07c302",
+  "frame_count": 16,
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 17,
+  "sheet_frame_count": 17,
+  "frame_duration_ms": 90,
+  "loop": true,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

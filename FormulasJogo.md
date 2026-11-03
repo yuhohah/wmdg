@@ -317,7 +317,7 @@ Cada upgrade é comprado uma única vez e fica permanente. Exige tier aberto, sa
 - Cripta preserva somente níveis das Relíquias; não conserva Fragmentos, melhor Transmutação, selos, ritos ou estágio.
 - Olho do Infinito deixa gratuitas apenas as compras **automáticas** de Fiéis e Ritos, se as respectivas automações estiverem compradas e ligadas. Compras manuais continuam pagas. Os três primeiros Selos e as Relíquias continuam pagos.
 - Os nomes “Coro Harmônico”/ID `gn_followers_cubic` não indicam potência cúbica: o expoente atual é 1.1.
-- Liberar tiers também exige os bosses: Tier 1 livre; Tier 2 Anúbis; Tier 3 Cronos; Tier 4 Odin. Saves antigos com algum upgrade já comprado no tier conservam acesso a ele.
+- Liberar tiers também exige os bosses: Tier 1 livre; Tier 2 Anúbis; Tier 3 Hades; Tier 4 Odin. Saves antigos com algum upgrade já comprado no tier conservam acesso a ele.
 
 ## 9. Automações
 
@@ -374,15 +374,15 @@ Progresso de requisito numérico `x` até alvo `t`: `current=min(x,t)`, `target=
 | Boss / ID | Abre | HP máximo H | Dificuldade d | Prêmio permanente |
 | --- | --- | --- | --- | --- |
 | Anúbis / `boss_anubis` | Tier 2 | 1e18 | 1.0 | Balança de Maat: ×1.5 |
-| Cronos / `boss_cronos` | Tier 3 | 5e28 | 1.6 | Foice de Adamante: ×1.5 |
+| Hades / `boss_cronos` | Tier 3 | 5e28 | 1.6 | Bidente do Submundo: ×1.5 |
 | Odin / `boss_odin` | Tier 4 | 1e38 | 2.3 | Runas de Yggdrasil: ×1.5 |
 | Caos Primordial / `boss_tiamat` | Apoteose final | 1e42 | 3.2 | Selo da Criação: ×10 e conquista Crepúsculo dos Deuses |
 
 Os prêmios multiplicam Fé por clique, Fé/s e Fervor/s. `MB=3.375` após os três primeiros e `MB=33.75` após os quatro. Vitórias são permanentes; não é possível repetir boss derrotado.
 
-Anúbis exige acesso à Gnose; Cronos exige Tier 2 aberto e pelo menos dois upgrades desse tier; Odin exige Tier 3 aberto e dois upgrades desse tier. Caos exige **todos os 20 upgrades atuais**. Não pode iniciar outra batalha durante uma batalha ativa. Os referenciais abaixo medem preparação; não são travas de entrada individuais.
+Anúbis exige acesso à Gnose; Hades exige Tier 2 aberto e pelo menos dois upgrades desse tier; Odin exige Tier 3 aberto e dois upgrades desse tier. Caos exige **todos os 20 upgrades atuais**. Não pode iniciar outra batalha durante uma batalha ativa. Os referenciais abaixo medem preparação; não são travas de entrada individuais.
 
-| Referencial | Anúbis | Cronos | Odin | Caos |
+| Referencial | Anúbis | Hades | Odin | Caos |
 | --- | --- | --- | --- | --- |
 | `faithLog` | 15 | 22 | 30 | 38 |
 | `followers` | 120 | 240 | 400 | 600 |
@@ -480,7 +480,7 @@ perdaMediaEstimada = danoPorErro/(intervaloBase+0.35*janelaBase)
 estimativaSobrevivencia = 100/max(0.05,pressaoCalculada+perdaMediaEstimada)
 ```
 
-| Parâmetro | Anúbis | Cronos | Odin | Caos |
+| Parâmetro | Anúbis | Hades | Odin | Caos |
 | --- | --- | --- | --- | --- |
 | `baseFenda` | 0.040 | 0.038 | 0.036 | 0.035 |
 | Intervalo base (s) | 4.5 | 4.2 | 4.0 | 3.8 |

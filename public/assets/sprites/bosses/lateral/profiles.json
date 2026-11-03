@@ -1,0 +1,39 @@
+{
+  "direction": "east",
+  "size": [
+    256,
+    192
+  ],
+  "profiles": [
+    {
+      "boss": "01-anubis",
+      "name": "Anúbis",
+      "source": "caeca444-7bcf-4755-a510-c387978e1473",
+      "prompt": "Rotate this SAME Anubis into STRICT 90-degree SIDE PROFILE facing RIGHT, like a side-scroller enemy. Entire head, torso, pelvis and feet face right, visible long jackal muzzle points right, one eye visible, NEVER frontal or three-quarter. Preserve jackal head, collar, kilt, staff and balance scale, separate the staff and scale so both read clearly. Full body height about 150px, center x=86 on 256x192 canvas; leave right half empty for attacks. Crisp same pixel art and colors, transparent.",
+      "jobId": "48e1caba-0b1f-4561-af93-0992ce4a2631",
+      "previousJobId": "135ad548-0be3-4fed-a83d-60c41656b21d",
+      "refinement": "Keep strict right-facing SIDE PROFILE of the same Anubis. Make BOTH weapons clearly visible: far hand holds the long upright black staff at x=160; near hand carries a GOLD BALANCE SCALE held forward at chest level, horizontal crossbar and TWO gold pans hanging from chains in front of waist. Do not hide scale behind body. Whole figure and weapons fully inside 256x192. Shift whole character to LEFT HALF, around x=75, with empty transparent space to the right. Same pixel style."
+    },
+    {
+      "boss": "02-hades",
+      "name": "Hades",
+      "source": "75783f01-5824-475a-987a-5f60df04e093",
+      "prompt": "Rotate this SAME hulking Hades into STRICT 90-degree SIDE PROFILE facing RIGHT for a side-scroller. Helmet, belly, torso, pelvis and feet point right, only side of helmet visible, NEVER frontal or three-quarter. Preserve massive belly, closed spiked helmet, iron armor, chains and TWO hooked blades one per hand; show both arms offset in profile. Full body height about 150px, center x=86 on 256x192 canvas; leave right half empty for attack reach. Same crisp dark pixel art, transparent.",
+      "jobId": "81865285-5a83-421b-b3c3-7539a77af39a"
+    },
+    {
+      "boss": "03-odin",
+      "name": "Odin",
+      "source": "51b321a2-3e4c-4b48-9d5a-088fc9f67eba",
+      "prompt": "Rotate this SAME Odin into STRICT 90-degree SIDE PROFILE facing RIGHT for a side-scroller, nose and beard project right, entire torso, pelvis and feet face right, one eye visible, NEVER front or three-quarter. Preserve aged face, long silver beard, dark armor and cloak, long spear, black raven perched clearly on shoulder. Full body height about 150px, center x=86 on 256x192 canvas; leave right half empty for forward spear and bird attacks. Same crisp hermetic pixel art, transparent.",
+      "jobId": "7b223957-61e1-46ea-9247-56fbef9f6420"
+    },
+    {
+      "boss": "04-caos-primordial",
+      "name": "Caos Primordial",
+      "source": "ca5a6f41-1e9a-447b-a1b5-0fa3255a7e0b",
+      "prompt": "Reorient this SAME abstract cosmic void entity for a SIDE-SCROLLER facing RIGHT. Asymmetrical silhouette: dark tendrils trail LEFT and a narrow bone-silver crescent aperture faces RIGHT to fire projectiles horizontally. Preserve black eclipse core, broken silver armillary rings and sparse gold. No humanoid anatomy. Entity height about 140px, centered x=80 on 256x192 canvas; leave right half EMPTY for launched orbs and ring projectiles. Same crisp pixel art, transparent background.",
+      "jobId": "660c474a-d88a-4b96-a0b4-b31bfaad7cb3"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "boss": "03-odin",
+  "name": "Odin",
+  "key": "ataque-lanca",
+  "label": "Lança",
+  "sourceJobId": "7b223957-61e1-46ea-9247-56fbef9f6420",
+  "description": "A decisive horizontal SPEAR THRUST to the RIGHT. Lower the long spear from upright to horizontal, draw it back along the body, step into a deep right-facing lunge and thrust the spear tip far right at chest height, then retract it and recover to upright idle. Clear extended arms and forward leading knee. Raven remains perched. STRICT side-scroller view facing RIGHT for every frame, never turn toward camera. Clear anticipation, strong action and recovery. Preserve identity and crisp bone-silver charcoal pixel art, no new colors. Keep full sprite and moving weapons inside 256x192, same planted baseline, same scale. Static camera. Transparent. Stay in place; no camera pan.",
+  "jobId": "3e921ffa-5b91-4870-8831-53cda40fbd18",
+  "frame_count": 16,
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 17,
+  "sheet_frame_count": 17,
+  "frame_duration_ms": 90,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

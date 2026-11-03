@@ -399,15 +399,22 @@ export class BoardManager {
     let targetZoom = 1.0;
 
     if (cardId === 'card-altar-sphere') {
-      const unlockCard = this.cards.get('card-unlocks');
-      const unlockVisible = unlockCard && unlockCard.style.display !== 'none';
-      if (unlockVisible) {
-        // Frame both the Sphere and the Unlock Seal button below it
-        cardCenterY = cardTop + cardHeight * 0.62;
+      const bossActive = document.body.classList.contains('is-boss-battle-active');
+      if (bossActive) {
+        // Frame the full sacred circle of Faithful + Incarnation surrounding both Boss and Sphere
+        cardCenterY = cardTop + cardHeight * 0.42;
+        targetZoom = Math.max(this.minZoom, Math.min(0.92, availW / 1210, availH / 1210));
+      } else {
+        const unlockCard = this.cards.get('card-unlocks');
+        const unlockVisible = unlockCard && unlockCard.style.display !== 'none';
+        if (unlockVisible) {
+          // Frame both the Sphere and the Unlock Seal button below it
+          cardCenterY = cardTop + cardHeight * 0.62;
+        }
+        targetZoom = isMobile
+          ? Math.max(0.82, Math.min(0.98, availW / 340, availH / 410))
+          : Math.max(0.85, Math.min(1.0, availH / 540));
       }
-      targetZoom = isMobile
-        ? Math.max(0.82, Math.min(0.98, availW / 340, availH / 410))
-        : Math.max(0.85, Math.min(1.0, availH / 540));
     } else {
       const maxDesiredZoom = 1.0;
       const fitW = availW / cardWidth;

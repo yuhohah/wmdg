@@ -1,0 +1,18 @@
+{
+  "boss": "04-caos-primordial",
+  "name": "Caos Primordial",
+  "action": "andar",
+  "description": "Seamless floating locomotion in place: levitate with a slow small vertical bob, trailing shadow tendrils undulate, broken armillary fragments orbit subtly around the central eclipse. Keep its abstract non-humanoid form, no limbs. Preserve the exact source sprite identity, outfit, weapons, size and crisp pixel art palette. All motion fits inside the canvas. Fixed front orthographic camera, no translation, no rotation of camera, no zoom, transparent background.",
+  "source": "ca5a6f41-1e9a-447b-a1b5-0fa3255a7e0b",
+  "jobId": "a946df46-3991-4bc7-9ce3-93567d4456f0",
+  "generatedFrames": 8,
+  "sourceFrameIncluded": true,
+  "frame_width": 192,
+  "frame_height": 192,
+  "source_frame_count": 9,
+  "sheet_frame_count": 9,
+  "frame_duration_ms": 120,
+  "loop": true,
+  "layout": "horizontal",
+  "transparent": true
+}

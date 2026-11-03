@@ -162,6 +162,8 @@ export interface ActiveBossBattle {
   activeRifts: BossRift[];
   riftsShattered: number;
   riftsMissed: number;
+  /** Whether the Boss combat has officially begun (false while the pre-battle circle ritual is forming) */
+  combatStarted?: boolean;
   /** Current boss phase (1 = Vigília, 2 = Fúria Divina below 60% HP, 3 = Apocalipse below 25% HP) */
   phase?: 1 | 2 | 3;
   /** Consecutive rifts shattered without missing any */

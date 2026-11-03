@@ -34,7 +34,7 @@ const MILESTONES = [
   ['unlock_relics', 'Selo das Relíquias'], ['first_relic_reset', '1ª Transmutação'],
   ['unlock_gnose', 'Selo da Gnose'], ['first_gnose_reset', '1ª Ascensão'],
   ['first_gnose_upgrade', '1º Upgrade da Gnose'], ['boss_anubis', 'Anúbis'],
-  ['boss_cronos', 'Cronos'], ['boss_odin', 'Odin'], ['gnose_tree_complete', 'Árvore da Gnose completa'],
+  ['boss_cronos', 'Hades'], ['boss_odin', 'Odin'], ['gnose_tree_complete', 'Árvore da Gnose completa'],
   ['boss_tiamat', 'Caos Primordial'],
 ];
 

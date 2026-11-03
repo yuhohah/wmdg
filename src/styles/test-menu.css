@@ -182,6 +182,7 @@
   justify-content: space-between;
   border-bottom: 1px solid #2b2319;
   padding-bottom: 6px;
+  gap: 8px;
 }
 
 .test-section-title {
@@ -192,6 +193,12 @@
   text-transform: uppercase;
 }
 
+.test-section-subtitle {
+  font-size: 10.5px;
+  color: #8f8577;
+  font-style: italic;
+}
+
 .test-current-speed-tag {
   font-size: 12px;
   font-weight: 800;
@@ -200,6 +207,100 @@
   background: #241607;
   border: 1px solid #f59e0b;
   color: #f59e0b;
+}
+
+/* Resource Input Rows */
+.test-resource-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.test-resource-row {
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  background: #17130f;
+  border: 1px solid #2e2418;
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.test-resource-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f4deb3;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.test-resource-label .ico {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.test-resource-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #0e0c0a;
+  border: 1px solid #3d3121;
+  border-radius: 5px;
+  padding: 7px 10px;
+  color: #fbbf24;
+  font-family: 'JetBrains Mono', monospace, inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.test-resource-input:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+
+.test-resource-input.input-error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
+}
+
+.test-resource-btn {
+  padding: 7px 11px;
+  border-color: #926621;
+  background: #23190b;
+  color: #fbbf24;
+  white-space: nowrap;
+}
+
+.test-resource-btn:hover {
+  background: #33240e;
+  border-color: #fbbf24;
+  color: #fff;
+}
+
+.test-resource-set-btn {
+  padding: 7px 10px;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .test-resource-row {
+    grid-template-columns: 92px minmax(0, 1fr) auto auto;
+    gap: 6px;
+    padding: 6px 8px;
+  }
+
+  .test-resource-btn,
+  .test-resource-set-btn {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
 }
 
 /* Grid & Buttons */

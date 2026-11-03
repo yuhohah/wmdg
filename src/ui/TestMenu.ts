@@ -4,6 +4,37 @@ import { formatHtmlReport } from '../benchmark/reporters.js';
 import { SaveSystem } from '../systems/saveSystem.js';
 import { icon } from './icons.js';
 
+export type TestResourceKey = 'faith' | 'fervor' | 'relics' | 'gnose' | 'followers';
+
+export function parseResourceInput(raw: string): number {
+  const cleaned = raw.trim().replace(/\s+/g, '');
+  if (!cleaned) return NaN;
+
+  // Suporta sufixos K, M, B, T, Q (ex: 100k, 1.5M, 2B)
+  const suffixMatch = cleaned.match(/^([+-]?\d+(?:[.,]\d+)?)\s*([kmbtq])$/i);
+  if (suffixMatch) {
+    const base = Number(suffixMatch[1].replace(',', '.'));
+    const suffix = suffixMatch[2].toLowerCase();
+    const mults: Record<string, number> = {
+      k: 1e3,
+      m: 1e6,
+      b: 1e9,
+      t: 1e12,
+      q: 1e15
+    };
+    return base * (mults[suffix] ?? 1);
+  }
+
+  // Suporta separador de milhar em pt-BR (ex: 100.000 ou 1.000.000)
+  if (/^[+-]?\d{1,3}(\.\d{3})+(,\d+)?$/.test(cleaned)) {
+    const normalized = cleaned.replace(/\./g, '').replace(',', '.');
+    return Number(normalized);
+  }
+
+  // Número padrão ou notação científica (ex: 100000, 1e15, 2,5e10)
+  return Number(cleaned.replace(',', '.'));
+}
+
 export class TestMenu {
   private game: any;
   private currentSpeed: number = 1;
@@ -131,22 +162,43 @@ export class TestMenu {
             </div>
           </div>
 
-          <!-- SEÇÃO 2: RECURSOS RÁPIDOS -->
+          <!-- SEÇÃO 2: CONCESSÃO DE RECURSOS POR INPUT -->
           <div class="test-section">
             <div class="test-section-header">
               <span class="test-section-title">${icon('gem')} CONCESSÃO DE RECURSOS</span>
+              <span class="test-section-subtitle">Aceita números, K/M/B/T/Q ou 1e15</span>
             </div>
-            <div class="test-grid">
-              <button class="test-btn test-action-btn" data-action="add-faith-100k">+100.000 Fé</button>
-              <button class="test-btn test-action-btn" data-action="add-faith-1m">+1.000.000 Fé</button>
-              <button class="test-btn test-action-btn" data-action="add-fervor-10k">+10.000 Fervor</button>
-              <button class="test-btn test-action-btn" data-action="add-fervor-100k">+100.000 Fervor</button>
-              <button class="test-btn test-action-btn" data-action="add-relics-100">+100 Relíquias</button>
-              <button class="test-btn test-action-btn" data-action="add-relics-1k">+1.000 Relíquias</button>
-              <button class="test-btn test-action-btn" data-action="add-gnose-10">+10 Gnose</button>
-              <button class="test-btn test-action-btn" data-action="add-gnose-50">+50 Gnose</button>
-              <button class="test-btn test-action-btn" data-action="add-followers-10">+10 Fiéis</button>
-              <button class="test-btn test-action-btn" data-action="add-followers-50">+50 Fiéis</button>
+            <div class="test-resource-list">
+              <div class="test-resource-row">
+                <label class="test-resource-label" for="test-input-faith">${icon('star')} <span>Fé</span></label>
+                <input id="test-input-faith" type="text" inputmode="decimal" class="test-resource-input" data-resource-input="faith" value="100000" placeholder="Valor de Fé..." />
+                <button type="button" class="test-btn test-resource-btn" data-resource-add="faith">+ Adicionar</button>
+                <button type="button" class="test-btn test-resource-set-btn" data-resource-set="faith">Definir</button>
+              </div>
+              <div class="test-resource-row">
+                <label class="test-resource-label" for="test-input-fervor">${icon('fervor')} <span>Fervor</span></label>
+                <input id="test-input-fervor" type="text" inputmode="decimal" class="test-resource-input" data-resource-input="fervor" value="10000" placeholder="Valor de Fervor..." />
+                <button type="button" class="test-btn test-resource-btn" data-resource-add="fervor">+ Adicionar</button>
+                <button type="button" class="test-btn test-resource-set-btn" data-resource-set="fervor">Definir</button>
+              </div>
+              <div class="test-resource-row">
+                <label class="test-resource-label" for="test-input-relics">${icon('gem')} <span>Relíquias</span></label>
+                <input id="test-input-relics" type="text" inputmode="decimal" class="test-resource-input" data-resource-input="relics" value="100" placeholder="Valor de Relíquias..." />
+                <button type="button" class="test-btn test-resource-btn" data-resource-add="relics">+ Adicionar</button>
+                <button type="button" class="test-btn test-resource-set-btn" data-resource-set="relics">Definir</button>
+              </div>
+              <div class="test-resource-row">
+                <label class="test-resource-label" for="test-input-gnose">${icon('gnose')} <span>Gnose</span></label>
+                <input id="test-input-gnose" type="text" inputmode="decimal" class="test-resource-input" data-resource-input="gnose" value="10" placeholder="Valor de Gnose..." />
+                <button type="button" class="test-btn test-resource-btn" data-resource-add="gnose">+ Adicionar</button>
+                <button type="button" class="test-btn test-resource-set-btn" data-resource-set="gnose">Definir</button>
+              </div>
+              <div class="test-resource-row">
+                <label class="test-resource-label" for="test-input-followers">${icon('followers')} <span>Fiéis</span></label>
+                <input id="test-input-followers" type="text" inputmode="numeric" class="test-resource-input" data-resource-input="followers" value="10" placeholder="Qtd. de Fiéis..." />
+                <button type="button" class="test-btn test-resource-btn" data-resource-add="followers">+ Adicionar</button>
+                <button type="button" class="test-btn test-resource-set-btn" data-resource-set="followers">Definir</button>
+              </div>
             </div>
           </div>
 
@@ -211,6 +263,40 @@ export class TestMenu {
       }
     });
 
+    // Resource input actions (+ Adicionar / Definir / Enter)
+    const addBtns = overlay.querySelectorAll<HTMLButtonElement>('[data-resource-add]');
+    addBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const res = btn.getAttribute('data-resource-add') as TestResourceKey | null;
+        if (res) {
+          this.applyResourceInput(res, 'add');
+        }
+      });
+    });
+
+    const setBtns = overlay.querySelectorAll<HTMLButtonElement>('[data-resource-set]');
+    setBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const res = btn.getAttribute('data-resource-set') as TestResourceKey | null;
+        if (res) {
+          this.applyResourceInput(res, 'set');
+        }
+      });
+    });
+
+    const resourceInputs = overlay.querySelectorAll<HTMLInputElement>('[data-resource-input]');
+    resourceInputs.forEach((input) => {
+      input.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const res = input.getAttribute('data-resource-input') as TestResourceKey | null;
+          if (res) {
+            this.applyResourceInput(res, 'add');
+          }
+        }
+      });
+    });
+
     // Action buttons
     const actionBtns = overlay.querySelectorAll<HTMLButtonElement>('.test-action-btn');
     actionBtns.forEach((btn) => {
@@ -221,6 +307,97 @@ export class TestMenu {
         }
       });
     });
+  }
+
+  private applyResourceInput(resource: TestResourceKey, mode: 'add' | 'set'): void {
+    const gs = this.game.gameState;
+    if (!gs || !this.overlayEl) return;
+
+    const input = this.overlayEl.querySelector<HTMLInputElement>(`[data-resource-input="${resource}"]`);
+    if (!input) return;
+
+    const amount = parseResourceInput(input.value);
+    if (!Number.isFinite(amount)) {
+      input.classList.add('input-error');
+      setTimeout(() => input.classList.remove('input-error'), 400);
+      return;
+    }
+
+    switch (resource) {
+      case 'faith': {
+        if (mode === 'add') {
+          gs.faithPoints = Math.max(0, gs.faithPoints + amount);
+          if (amount > 0) {
+            gs.totalFaithAccumulated += amount;
+          }
+        } else {
+          gs.faithPoints = Math.max(0, amount);
+          gs.totalFaithAccumulated = Math.max(gs.totalFaithAccumulated, gs.faithPoints);
+        }
+        break;
+      }
+      case 'fervor': {
+        if (mode === 'add') {
+          if (amount >= 0) {
+            gs.addFervor(amount);
+          } else {
+            gs.fervorPoints = Math.max(0, gs.fervorPoints + amount);
+          }
+        } else {
+          gs.fervorPoints = Math.max(0, amount);
+          gs.totalFervorGenerated = Math.max(gs.totalFervorGenerated, gs.fervorPoints);
+          gs.fervorPeakThisRun = Math.max(gs.fervorPeakThisRun, gs.fervorPoints);
+        }
+        break;
+      }
+      case 'relics': {
+        if (mode === 'add') {
+          if (amount >= 0) {
+            gs.addRelics(amount);
+          } else {
+            gs.relicPoints = Math.max(0, gs.relicPoints + amount);
+          }
+        } else {
+          gs.relicPoints = Math.max(0, amount);
+          gs.totalRelicsGenerated = Math.max(gs.totalRelicsGenerated, gs.relicPoints);
+          gs.relicPeakThisRun = Math.max(gs.relicPeakThisRun, gs.relicPoints);
+        }
+        break;
+      }
+      case 'gnose': {
+        if (mode === 'add') {
+          gs.gnosePoints = Math.max(0, gs.gnosePoints + amount);
+          if (amount > 0) {
+            gs.totalGnoseEarned += amount;
+          }
+        } else {
+          gs.gnosePoints = Math.max(0, amount);
+          gs.totalGnoseEarned = Math.max(gs.totalGnoseEarned, gs.gnosePoints);
+        }
+        break;
+      }
+      case 'followers': {
+        const count = Math.floor(amount);
+        if (gs.followers && gs.followers[0]) {
+          if (mode === 'add') {
+            gs.followers[0].count = Math.max(0, gs.followers[0].count + count);
+            if (count > 0) {
+              this.game.followersTab?.arena?.onFollowersAdded(count);
+            }
+          } else {
+            const nextCount = Math.max(0, count);
+            const diff = nextCount - gs.followers[0].count;
+            gs.followers[0].count = nextCount;
+            if (diff > 0) {
+              this.game.followersTab?.arena?.onFollowersAdded(diff);
+            }
+          }
+        }
+        break;
+      }
+    }
+
+    this.game.refreshAllUI?.();
   }
 
   private setupEvents(): void {
@@ -236,6 +413,9 @@ export class TestMenu {
           e.preventDefault();
           this.close();
         }
+      } else if (e.key === 'Escape' && this.isOpen) {
+        e.preventDefault();
+        target.blur();
       }
     });
   }
@@ -283,46 +463,6 @@ export class TestMenu {
         }
         return;
       }
-      case 'add-faith-100k':
-        gs.faithPoints += 100000;
-        gs.totalFaithAccumulated += 100000;
-        break;
-      case 'add-faith-1m':
-        gs.faithPoints += 1000000;
-        gs.totalFaithAccumulated += 1000000;
-        break;
-      case 'add-fervor-10k':
-        gs.addFervor(10000);
-        break;
-      case 'add-fervor-100k':
-        gs.addFervor(100000);
-        break;
-      case 'add-relics-100':
-        gs.addRelics(100);
-        break;
-      case 'add-relics-1k':
-        gs.addRelics(1000);
-        break;
-      case 'add-gnose-10':
-        gs.gnosePoints += 10;
-        gs.totalGnoseEarned += 10;
-        break;
-      case 'add-gnose-50':
-        gs.gnosePoints += 50;
-        gs.totalGnoseEarned += 50;
-        break;
-      case 'add-followers-10':
-        if (gs.followers && gs.followers[0]) {
-          gs.followers[0].count += 10;
-          this.game.followersTab?.arena?.onFollowersAdded(10);
-        }
-        break;
-      case 'add-followers-50':
-        if (gs.followers && gs.followers[0]) {
-          gs.followers[0].count += 50;
-          this.game.followersTab?.arena?.onFollowersAdded(50);
-        }
-        break;
       case 'unlock-all':
         if (gs.unlocks) {
           gs.unlocks.forEach((u: any) => {

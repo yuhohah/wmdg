@@ -1,0 +1,18 @@
+{
+  "boss": "03-odin",
+  "name": "Odin",
+  "action": "atacar",
+  "description": "One spear attack: draw the spear back, lean into a sharp forward thrust, then pull the spear back upright and recover to the starting idle stance. Raven stays on shoulder, cloak and beard follow the motion. Preserve the exact source sprite identity, outfit, weapons, size and crisp pixel art palette. All motion fits inside the canvas. Fixed front orthographic camera, no translation, no rotation of camera, no zoom, transparent background.",
+  "source": "51b321a2-3e4c-4b48-9d5a-088fc9f67eba",
+  "jobId": "da29e56d-1550-4440-8586-ba2fc9d76dd1",
+  "generatedFrames": 8,
+  "sourceFrameIncluded": true,
+  "frame_width": 192,
+  "frame_height": 192,
+  "source_frame_count": 9,
+  "sheet_frame_count": 9,
+  "frame_duration_ms": 120,
+  "loop": false,
+  "layout": "horizontal",
+  "transparent": true
+}

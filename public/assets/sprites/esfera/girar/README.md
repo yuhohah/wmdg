@@ -1,3 +1,6 @@
+> Versão anterior, substituída no jogo pelas camadas de `../layers/`.
+> A folha desta pasta é mantida apenas como histórico da animação inicial.
+
 # Esfera — rotação em sentidos opostos
 
 Animação criada no PixelLab pixelart_workbench a partir da arte aprovada.

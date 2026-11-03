@@ -1,5 +1,5 @@
 /* ===================================================
-   GUARDIÕES DA GNOSE & APOTEOSE DE ENDGAME (ANÚBIS, CRONOS, ODIN, TIAMAT)
+   GUARDIÕES DA GNOSE & APOTEOSES DE ENDGAME (ANÚBIS, HADES, ODIN, CAOS PRIMORDIAL)
    Copperplate Hermetic Treatise Style — No Countdown Timer, Altar Integrity
    =================================================== */
 
@@ -192,7 +192,7 @@ html .gnose-tier-seal .btn-challenge-guardian:disabled {
   padding: 7px 10px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content:space-between;
   gap: 10px;
   background: rgba(203, 178, 134, 0.65);
   border: 1.5px solid var(--hermetic-ink-black);
@@ -244,126 +244,177 @@ html .gnose-tier-seal .btn-challenge-guardian:disabled {
 }
 
 /* ===================================================
-   MODAL DE ARENA DE COMBATE HERMÉTICA
+   PALCO DE BATALHA NO MUNDO (AO REDOR DA ESFERA DIVINA)
    =================================================== */
 
-.boss-battle-overlay {
-  z-index: 11000 !important;
+.boss-world-stage {
+  position: absolute;
+  pointer-events: none;
+  z-index: 20;
+  user-select: none;
 }
 
-.boss-battle-overlay.open,
-.boss-battle-overlay.active {
-  opacity: 1 !important;
-  pointer-events: auto !important;
+.boss-world-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  image-rendering: pixelated;
 }
 
-.boss-battle-overlay.open .boss-battle-card,
-.boss-battle-overlay.active .boss-battle-card {
-  transform: translateY(0) !important;
+html .boss-world-interactive.boss-arena-stage {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  pointer-events: none !important;
 }
 
-.boss-battle-card {
-  max-width: 720px !important;
-  width: calc(100vw - 24px) !important;
-  max-height: calc(100dvh - 24px) !important;
-  padding: 16px 18px !important;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  color: var(--hermetic-ink-black);
+html .boss-world-hitbox.boss-attack-target {
+  position: absolute !important;
+  inset: auto !important;
   box-sizing: border-box !important;
-  overflow-y: auto;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none;
+  transform-origin: center center !important;
+  background: radial-gradient(ellipse at center, rgba(245, 158, 11, 0.08) 0%, rgba(0, 0, 0, 0) 75%) !important;
+  border: 1.5px dashed rgba(246, 220, 154, 0.45) !important;
+  border-radius: 14px !important;
+  pointer-events: auto !important;
+  cursor: crosshair !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+  z-index: 21;
 }
 
-.boss-battle-card > * {
-  flex-shrink: 0;
+html .boss-world-hitbox.boss-attack-target:hover {
+  border-color: rgba(246, 220, 154, 0.92) !important;
+  box-shadow: 0 0 22px rgba(245, 158, 11, 0.28) !important;
 }
 
-.boss-battle-header {
+html .boss-world-hitbox.boss-attack-target:active {
+  transform: scale(0.97);
+}
+
+html .boss-world-hitbox .boss-attack-caption {
+  position: absolute !important;
+  top: -28px !important;
+  bottom: auto !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  font-family: var(--font-game);
+  font-size: 14px !important;
+  font-weight: 700;
+  color: #f6dc9a;
+  padding: 2px 8px;
+  background: rgba(12, 9, 7, 0.9);
+  border: 1px solid rgba(200, 157, 84, 0.65);
+  text-shadow: 0 1px 2px #000;
+  white-space: nowrap;
+  pointer-events: none !important;
+}
+
+/* Placas de Vida no Mundo: embaixo do Boss e embaixo da Esfera respectivamente */
+.boss-world-hp-plate,
+.sphere-world-hp-plate {
+  position: absolute;
+  transform: translateX(-50%);
+  width: 244px;
+  padding: 6px 10px;
+  background: rgba(14, 11, 9, 0.92);
+  border: 1.5px solid var(--line-strong, #c89d54);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.82);
+  pointer-events: none;
+  z-index: 22;
+}
+
+.sphere-world-hp-plate {
+  width: 256px;
+  border-color: rgba(56, 189, 248, 0.65);
+}
+
+.boss-world-subline {
+  font-family: var(--font-game);
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--gold-light, #e4d2a5);
+  text-align: center;
+  margin-top: 2px;
+  min-height: 13px;
+}
+
+.sphere-world-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  border-bottom: 2px solid var(--hermetic-ink-umber);
-  padding-bottom: 8px;
+  gap: 8px;
+  margin-top: 4px;
 }
 
-.boss-identity-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.boss-emblem-box {
-  width: 44px;
-  height: 44px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  background: var(--hermetic-ink-soot);
-  color: var(--hermetic-parchment-light);
-  border: 2px solid var(--hermetic-ink-black);
-  box-shadow: inset 0 0 0 1.5px var(--hermetic-gold-ochre);
-}
-
-.boss-identity-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.boss-myth-badge {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1.2px;
-  color: var(--hermetic-crimson-ink);
-  text-transform: uppercase;
-}
-
-.boss-modal-name {
+.boss-world-combo-stat {
   font-family: var(--font-game);
-  font-size: 22px;
-  line-height: 1;
-  margin: 0;
-  color: var(--hermetic-ink-black);
-  letter-spacing: 1px;
+  font-size: 11px;
+  color: var(--bone-dim, #cbb68c);
+  font-variant-numeric: tabular-nums;
 }
 
-.boss-modal-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--hermetic-ink-sepia);
-}
-
-.btn-boss-retreat {
+html .btn-boss-retreat.btn-world-retreat {
+  pointer-events: auto !important;
+  cursor: pointer !important;
   font-family: var(--font-game);
-  font-size: 13px;
-  padding: 6px 12px;
-  flex-shrink: 0;
-  background: var(--hermetic-ink-soot);
-  color: var(--hermetic-parchment-light);
-  border: 1.5px solid var(--hermetic-ink-black);
-  box-shadow: inset 0 0 0 1px var(--hermetic-rule-brass);
-  cursor: pointer;
+  font-size: 12px !important;
+  font-weight: 700;
+  padding: 3px 10px !important;
+  background: linear-gradient(180deg, #4b1811 0%, #260c08 100%) !important;
+  color: #f6dc9a !important;
+  border: 1px solid #c89d54 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6) !important;
   text-transform: uppercase;
+  transition: transform 0.1s ease, border-color 0.15s ease;
 }
 
-.boss-modal-lore {
-  margin: 0;
-  font-size: 11.5px;
-  line-height: 1.3;
-  color: var(--hermetic-ink-umber);
-  font-style: italic;
+html .btn-boss-retreat.btn-world-retreat:hover {
+  border-color: #f6dc9a !important;
+  transform: scale(1.04);
+}
+
+html .btn-boss-retreat.btn-world-retreat:active {
+  transform: scale(0.96);
+}
+
+.boss-world-interactive .boss-rifts-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 25;
+}
+
+/* Durante a Boss Battle, oculta os fiéis e a encarnação internos dos cards (pois saem pelo mundo)
+   e atenua os cards satélites para não obstruírem a grande roda em volta do Boss e da Esfera */
+body.is-boss-battle-active #followers-walk-canvas,
+body.is-boss-battle-active #incarnation-altar-canvas,
+body.is-boss-battle-active .incarnation-blessing-light {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+body.is-boss-battle-active #card-unlocks,
+body.is-boss-battle-active .dodeca-card:not(#card-altar-sphere) {
+  opacity: 0.22;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
 }
 
 .boss-bar-section {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .boss-bar-header {
@@ -371,14 +422,14 @@ html .gnose-tier-seal .btn-challenge-guardian:disabled {
   align-items: center;
   justify-content: space-between;
   font-family: var(--font-game);
-  font-size: 12.5px;
-  gap: 8px;
+  font-size: 11.5px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .boss-bar-label {
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   color: var(--hermetic-ink-black);
 }
 
@@ -389,7 +440,7 @@ html .gnose-tier-seal .btn-challenge-guardian:disabled {
 
 .boss-bar-track {
   width: 100%;
-  height: 13px;
+  height: 11px;
   background: #1a130e;
   border: 1.5px solid var(--hermetic-ink-black);
   box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.85);
@@ -408,181 +459,9 @@ html .gnose-tier-seal .btn-challenge-guardian:disabled {
   transition: width 0.15s ease;
 }
 
-/* Painel de Ressonância dos 6 Recursos no Combate */
-.boss-synergy-panel {
-  padding: 5px 8px;
-  background: var(--void, rgba(22, 16, 12, 0.45));
-  border: 1px solid var(--line, var(--hermetic-rule-brass));
-}
-
-.boss-synergy-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: var(--font-game);
-  font-size: 12px;
-  gap: 6px;
-  cursor: pointer;
-  flex-wrap: wrap;
-  list-style: none;
-}
-
-.boss-synergy-header::-webkit-details-marker {
-  display: none;
-}
-
-.boss-synergy-title::before {
-  content: '+ ';
-}
-
-.boss-synergy-panel[open] .boss-synergy-title::before {
-  content: '− ';
-}
-
-.boss-synergy-title {
-  font-weight: 700;
-  color: var(--gold, var(--hermetic-ink-black));
-  letter-spacing: 0.4px;
-}
-
-.boss-synergy-total {
-  font-weight: 700;
-  color: var(--gold-light, var(--hermetic-crimson-ink));
-}
-
-.boss-synergy-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding-top: 6px;
-}
-
-.boss-synergy-pill {
-  font-family: var(--font-game);
-  font-size: 11.5px;
-  padding: 1px 6px;
-  background: rgba(236, 226, 200, 0.04);
-  border: 1px solid var(--line-faint, rgba(94, 70, 49, 0.35));
-  color: var(--bone-dim, var(--hermetic-ink-sepia));
-}
-
-.boss-synergy-pill.active {
-  background: var(--astral-wash, rgba(169, 155, 224, 0.15));
-  border-color: rgba(169, 155, 224, 0.5);
-  color: var(--astral-light, #c3baf0);
-  font-weight: 700;
-}
-
-.boss-penalty-hint {
-  font-size: 10.5px;
-  color: var(--hermetic-ink-sepia);
-}
-
-.boss-battle-details {
-  border-top: 1px solid var(--line, #51432a);
-  padding-top: 6px;
-  color: var(--bone-dim, #b0a38a);
-  font: 15px/1.2 var(--font-game);
-}
-
-.boss-battle-details summary {
-  cursor: pointer;
-}
-
-.boss-battle-details p {
-  margin: 8px 0 0;
-}
-
-/* Retrato interativo do guardião e fendas sobrepostas. */
-.boss-arena-stage {
-  position: relative;
-  width: 100%;
-  height: clamp(250px, 42dvh, 420px);
-  flex-shrink: 0;
-  background: #000;
-  border: 2px solid var(--hermetic-ink-black);
-  box-shadow:
-    inset 0 0 0 1.5px var(--hermetic-rule-brass),
-    inset 0 0 28px rgba(0, 0, 0, 0.9);
-  box-sizing: border-box;
-  overflow: hidden;
-  user-select: none;
-}
-
-.boss-arena-hint-top {
-  font-size: 11px;
-  color: var(--hermetic-parchment-light);
-  text-align: center;
-  line-height: 1.3;
-}
-
-.boss-attack-target {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 0 40px;
-  border: 0;
-  border-radius: 0;
-  background: #000;
-  color: #e2e8f0;
-  cursor: crosshair;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.boss-portrait {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  pointer-events: none;
-}
-
+.boss-portrait,
 .boss-portrait-fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 150px;
-  height: 150px;
-  border: 1px solid #9d8451;
-  border-radius: 50%;
-  color: #cbb983;
-}
-
-.boss-portrait-fallback .ico {
-  width: 96px;
-  height: 96px;
-}
-
-.boss-portrait[hidden],
-.boss-portrait-fallback[hidden] {
-  display: none;
-}
-
-.boss-attack-caption {
-  position: absolute;
-  bottom: 10px;
-  left: 0;
-  right: 0;
-  font-family: var(--font-game);
-  font-size: 16px;
-  color: #e4d2a5;
-  letter-spacing: 1px;
-  text-align: center;
-  pointer-events: none;
-}
-
-.boss-attack-caption span {
-  color: #aaa18d;
-  letter-spacing: 0;
-  margin-left: 8px;
-}
-
-.boss-attack-target[aria-disabled='true'] .boss-attack-caption {
-  color: #aaa18d;
+  display: none !important;
 }
 
 .boss-attack-target:focus-visible {
@@ -590,17 +469,9 @@ html .gnose-tier-seal .btn-challenge-guardian:disabled {
   outline-offset: -5px;
 }
 
-.boss-rift-target:focus-visible,
-.boss-synergy-header:focus-visible {
+.boss-rift-target:focus-visible {
   outline: 2px solid #e4d2a5;
   outline-offset: 3px;
-}
-
-.boss-rifts-layer {
-  position: absolute;
-  inset: 8px 4px 44px;
-  pointer-events: none;
-  z-index: 5;
 }
 
 .boss-rift-target {
@@ -618,17 +489,23 @@ html .gnose-tier-seal .btn-challenge-guardian:disabled {
   padding: 5px 6px;
   background: #18130b;
   border: 2px solid #c8ad71;
-  box-shadow: 0 0 0 3px #000a;
+  box-shadow: 0 0 0 3px #000a, 0 0 18px rgba(200, 173, 113, 0.35);
   color: #e4d2a5;
   font-family: var(--font-game);
   cursor: pointer;
   touch-action: manipulation;
+  transition: transform 0.1s ease;
+}
+
+.boss-rift-target:hover {
+  transform: translate(-50%, -50%) scale(1.06);
 }
 
 .boss-rift-target.is-urgent {
   border-color: #df9989;
   color: #f2c4ba;
   background: #321a16;
+  box-shadow: 0 0 0 3px #000a, 0 0 22px rgba(223, 153, 137, 0.55);
 }
 
 .boss-rift-core {
@@ -660,25 +537,9 @@ html .gnose-tier-seal .btn-challenge-guardian:disabled {
   background: currentColor;
 }
 
-.boss-combat-feedback {
-  min-height: 18px;
-  color: var(--gold-light, #e4d2a5);
-  font: 15px/1.2 var(--font-game);
-  text-align: center;
-}
-
 .altar-integrity-track.is-critical {
   outline: 1px solid #df9989;
   outline-offset: 2px;
-}
-
-.boss-combat-stats {
-  font-family: var(--font-game);
-  font-size: 11.5px;
-  color: var(--hermetic-parchment);
-  padding: 2px 0;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 860px) {
@@ -703,29 +564,5 @@ html .gnose-tier-seal .btn-challenge-guardian:disabled {
     width: 100% !important;
     text-align: center !important;
     white-space: normal !important;
-  }
-
-  .boss-battle-card {
-    padding: 12px 12px !important;
-    gap: 8px !important;
-    overflow-y: auto !important;
-  }
-
-  .boss-modal-name {
-    font-size: 18px;
-  }
-
-  .boss-bar-header {
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 480px) {
-  .boss-arena-stage {
-    height: clamp(200px, 34dvh, 280px);
-  }
-
-  .boss-synergy-header {
-    font-size: 13px;
   }
 }

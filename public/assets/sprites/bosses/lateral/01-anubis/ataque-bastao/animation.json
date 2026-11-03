@@ -1,0 +1,19 @@
+{
+  "boss": "01-anubis",
+  "name": "Anúbis",
+  "key": "ataque-bastao",
+  "label": "Bastão",
+  "sourceJobId": "48e1caba-0b1f-4561-af93-0992ce4a2631",
+  "description": "A forceful STAFF STRIKE towards the RIGHT. Anticipation: lift the staff arm overhead and lean back. Impact: swing the long staff down and forward in a wide clear arc until it points horizontally to the right, with an extended arm and bent leading knee. Recovery: draw it back upright into idle. The OTHER hand holds the balance scale unchanged. Large readable arm and staff motion; no spellcasting. STRICT side-scroller view facing RIGHT for every frame, never turn toward camera. Clear anticipation, strong action and recovery. Preserve identity and crisp bone-silver charcoal pixel art, no new colors. Keep full sprite and moving weapons inside 256x192, same planted baseline, same scale. Static camera. Transparent. Stay in place; no camera pan.",
+  "frame_count": 16,
+  "jobId": "92eff647-b493-4f3f-af06-bd0b8a602b3f",
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 17,
+  "sheet_frame_count": 17,
+  "frame_duration_ms": 90,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

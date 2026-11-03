@@ -356,7 +356,7 @@ export const initialAchievements: Achievement[] = [
     id: 'ach_boss_tiamat',
     name: 'Crepúsculo dos Deuses',
     desc: 'Subjugue o Caos Primordial após completar toda a Árvore da Gnose.',
-    lore: 'Anúbis, Cronos, Odin e o próprio Caos Primordial curvaram-se perante o Nous. Nenhum panteão resta além da Esfera.',
+    lore: 'Anúbis, Hades, Odin e o próprio Caos Primordial curvaram-se perante o Nous. Nenhum panteão resta além da Esfera.',
     icon: 'ouroboros',
     unlocked: false,
     buffText: '+100% em toda a Fé',

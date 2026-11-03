@@ -1,0 +1,19 @@
+{
+  "boss": "01-anubis",
+  "name": "Anúbis",
+  "key": "andar",
+  "label": "Andar",
+  "sourceJobId": "48e1caba-0b1f-4561-af93-0992ce4a2631",
+  "description": "A complete natural walking cycle towards the RIGHT, animated IN PLACE. In strict side profile, alternate left and right feet in long clear strides, bend knees, lift each heel, shift weight between planted feet. Staff stays carried upright and balance scale sways gently. Both hands keep their original separate objects. No sliding, no floating. STRICT side-scroller view facing RIGHT for every frame, never turn toward camera. Clear anticipation, strong action and recovery. Preserve identity and crisp bone-silver charcoal pixel art, no new colors. Keep full sprite and moving weapons inside 256x192, same planted baseline, same scale. Static camera. Transparent. Stay in place; no camera pan.",
+  "frame_count": 16,
+  "jobId": "634bdcf5-5102-408d-8e65-dc0096c1edb8",
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 17,
+  "sheet_frame_count": 17,
+  "frame_duration_ms": 90,
+  "loop": true,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

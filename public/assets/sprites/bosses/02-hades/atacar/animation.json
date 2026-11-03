@@ -1,0 +1,18 @@
+{
+  "boss": "02-hades",
+  "name": "Hades",
+  "action": "atacar",
+  "description": "One powerful attack: wind up both arms, swing the two chained hooked blades outward and forward in a broad synchronized slash, chains extend in arcs, then retract and return to the original idle stance. Preserve the exact source sprite identity, outfit, weapons, size and crisp pixel art palette. All motion fits inside the canvas. Fixed front orthographic camera, no translation, no rotation of camera, no zoom, transparent background.",
+  "source": "75783f01-5824-475a-987a-5f60df04e093",
+  "jobId": "4ebb1b79-a866-480a-b3fe-ef7698177a35",
+  "generatedFrames": 8,
+  "sourceFrameIncluded": true,
+  "frame_width": 192,
+  "frame_height": 192,
+  "source_frame_count": 9,
+  "sheet_frame_count": 9,
+  "frame_duration_ms": 120,
+  "loop": false,
+  "layout": "horizontal",
+  "transparent": true
+}

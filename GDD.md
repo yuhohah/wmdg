@@ -12,7 +12,7 @@
 ## 1. Visão Geral (Executive Summary)
 
 ### 1.1. High Concept
-Em **Cult of the Sphere**, o jogador assume a consciência de **A Esfera**, uma divindade hermética primordial cujo *"centro está em toda parte e a circunferência não está em lugar nenhum"*. Selada há eras e esquecida pela humanidade em favor de panteões mortais, a Esfera desperta a partir de uma única centelha de pensamento humano. O jogador canaliza **Fé**, converte **Fiéis Devotos**, rompe **Selos Sagrados**, transmuta **Relíquias** de deuses esquecidos, ascende à **Gnose** (prestígio verdadeiro) e subjuga **Guardiões Mitológicos** (*Anúbis, Cronos, Odin e Caos Primordial*) para restaurar sua onipresença cósmica.
+Em **Cult of the Sphere**, o jogador assume a consciência de **A Esfera**, uma divindade hermética primordial cujo *"centro está em toda parte e a circunferência não está em lugar nenhum"*. Selada há eras e esquecida pela humanidade em favor de panteões mortais, a Esfera desperta a partir de uma única centelha de pensamento humano. O jogador canaliza **Fé**, converte **Fiéis Devotos**, rompe **Selos Sagrados**, transmuta **Relíquias** de deuses esquecidos, ascende à **Gnose** (prestígio verdadeiro) e subjuga **Guardiões Mitológicos** (*Anúbis, Hades, Odin e Caos Primordial*) para restaurar sua onipresença cósmica.
 
 ### 1.2. Pilares de Design
 1. **Progressão Matemática Exponencial & Sinérgica (Estilo *DodecaDragons*):** Cada camada desbloqueada não apenas soma recursos, mas multiplica retroativamente as camadas anteriores através de polinômios, logaritmos e exponenciais.
@@ -32,7 +32,7 @@ No universo de *Cult of the Sphere*, **tudo é Mente (*Nous*)**: um deus só exi
 2. **Ato II — O Corpo e a Chama (Encarnação & Fervor):** Com o rompimento do 1º e 2º Selos, a Esfera manifesta um Avatar sagrado no altar e acende o Fervor coletivo através de ritos ígneos.
 3. **Ato III — O Espólio dos Deuses Mortos (Opus Magnum):** O 3º Selo permite transmutar Fé em Fragmentos Alquímicos para restaurar relíquias órfãs de deuses esquecidos (*Zeus, Prometeu, Hermes, Odin*).
 4. **Ato IV — A Dissolução do Templo (Gnose):** No 4º Selo (`1Q` de Fé), a Esfera compreende que não habita nas pedras do templo, mas na Mente que as sonhou. Dissolver o culto terreno concede **Gnose** e revela a **Árvore Hermética**.
-5. **Ato V — Crepúsculo dos Deuses (Guardiões Mitológicos):** Ao avançar pelos 4 Tiers da Gnose, os últimos deuses ancestrais (*Anúbis, Cronos, Odin* e o vazio original *Caos Primordial*) tentam rasgar o véu dimensional para destruir o Altar. Subjugá-los coroa a Esfera como única verdade cósmica.
+5. **Ato V — Crepúsculo dos Deuses (Guardiões Mitológicos):** Ao avançar pelos 4 Tiers da Gnose, os últimos deuses ancestrais (*Anúbis, Hades, Odin* e o vazio original *Caos Primordial*) tentam rasgar o véu dimensional para destruir o Altar. Subjugá-los coroa a Esfera como única verdade cósmica.
 
 ---
 
@@ -207,7 +207,7 @@ Os Tiers II, III, IV da Gnose e a Apoteose de Endgame são guardados por **4 Che
 - **Dano passivo:** maior valor entre Fé/s e a parcela percentual das sinergias, limitado ao final a **2,5% do HP máximo/s**.
 - **Pulso da Esfera:** maior valor entre Fé/clique e a parcela das sinergias, limitado a **0,6% do HP máximo** por pulso normal. Há intervalo mínimo de **0,2 s** entre pulsos e **5% de chance de crítico**, dobrando dano e Fé. Cliques comuns continuam concedendo Fé mesmo durante o intervalo do dano de combate.
 - **Fendas Divinas:** maior valor entre `5 × Fé/clique` e uma parcela de base `4%` do HP com sinergias, limitado ao final a **12% do HP máximo**. Aparar também recupera até **15 pontos** de integridade. Fendas não sorteiam críticos.
-- **Cadência por chefe:** Anúbis gera fendas a cada `4,5 s` com janela de `3 s`; Cronos a cada `4,2 s` com `2,75 s`; Odin a cada `4 s` com `2,5 s`; Caos Primordial a cada `3,8 s` com `2,5 s`. A primeira surge a 65% do intervalo e há no máximo três simultâneas.
+- **Cadência por chefe:** Anúbis gera fendas a cada `4,5 s` com janela de `3 s`; Hades a cada `4,2 s` com `2,75 s`; Odin a cada `4 s` com `2,5 s`; Caos Primordial a cada `3,8 s` com `2,5 s`. A primeira surge a 65% do intervalo e há no máximo três simultâneas.
 - **Defesa:** cada fenda ignorada remove de **3 a 25 pontos** do altar, conforme Relíquias, Fervor e Encarnação. Um culto preparado pode vencer passivamente; aparar permite antecipar a vitória e enfrentar o chefe com menos preparo.
 - **Derrota:** integridade zero encerra o combate e aplica **−25% Fé/s e Fervor/s por 20 s**. É possível desafiar novamente a qualquer momento.
 - **Recuo:** gratuito, inclusive pela tecla Escape. Não é possível iniciar outra luta ou realizar uma Ascensão durante combate. Importar um save cancela a luta anterior.
@@ -217,7 +217,7 @@ Os Tiers II, III, IV da Gnose e a Apoteose de Endgame são guardados por **4 Che
 | Ordem | Guardião | Mitologia | Requisito para Desafiar | HP Máximo | Recompensa Permanente |
 |:---:|---|---|---|---:|---|
 | **1º** | **Anúbis** (*O Pesador de Almas*) | Egípcia | Selo da Gnose desbloqueado | `1e18` (`1.0e18`) | **Balança de Maat:** Libera o **Tier II** da Gnose e `1.5×` Fé/s e Fervor/s |
-| **2º** | **Cronos** (*O Titã Devorador do Tempo*) | Grega | Tier II desbloqueado | `5e28` (`5.0e28`) | **Foice de Adamante:** Libera o **Tier III** da Gnose e `1.5×` Fé/s e Fervor/s |
+| **2º** | **Hades** (*O Senhor do Submundo*) | Grega | Tier II desbloqueado | `5e28` (`5.0e28`) | **Bidente do Submundo:** Libera o **Tier III** da Gnose e `1.5×` Fé/s e Fervor/s |
 | **3º** | **Odin** (*O Pai de Todos da Árvore Cósmica*) | Nórdica | Tier III desbloqueado | `1e38` (`1.0e38`) | **Runas de Yggdrasil:** Libera o **Tier IV** da Gnose e `1.5×` Fé/s e Fervor/s |
 | **4º** | **Caos Primordial** (*O Vazio Antes da Criação*) | Cosmogonia Primordial | Todos os 17/17 nós da Gnose comprados | `1e42` (`1.0e42`) | **Selo da Criação (Apoteose):** Título *Crepúsculo dos Deuses*, conquista final e `10×` Fé/s e Fervor/s |
 
@@ -288,7 +288,7 @@ Abaixo restam apenas as **decisões de produto e escopo futuro** para próximas 
    - O `prd-18` propunha uma tela principal em *pixel art* com uma igreja em ruínas reconstruída em 4 tiers. O jogo atual consolidou o **Tabuleiro Panorâmico 2D (*Dodeca-Board*)** com direção de arte em **Xilogravura Renascentista (Dürer/Fludd)**.
    - *Decisão futura:* Arquivar oficialmente o `prd-18` ou reaproveitar a evolução visual do templo dentro do card da Esfera/Encarnação seguindo o estilo de gravura hermética.
 2. **Proposta dos 6 Desafios Restritivos (`Base/OPCOES_ENDGAME_DEUSES.md`):**
-   - O documento em `Base/` especificava 6 Deuses Satélites com desafios de restrição (*Aethelgard, Pyroth, Chronos, Midas, Thanatos, Apep*), enquanto o jogo implementou os **4 Guardiões Mitológicos de Gnose** (*Anúbis, Cronos, Odin e Caos Primordial*) com mecânica de Fendas Abissais.
+   - O documento em `Base/` especificava 6 Deuses Satélites com desafios de restrição (*Aethelgard, Pyroth, Chronos, Midas, Thanatos, Apep*), enquanto o jogo implementou os **4 Guardiões Mitológicos de Gnose** (*Anúbis, Hades, Odin e Caos Primordial*) com mecânica de Fendas Abissais.
    - *Decisão futura:* Manter apenas os 4 Guardiões atuais ou utilizar os 6 desafios restritivos como modo *New Game+ / Provações Pós-Caos Primordial*.
 
 ### 9.2. Funcionalidades Candidatas (Roadmap)

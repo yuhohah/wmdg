@@ -1,0 +1,19 @@
+{
+  "boss": "01-anubis",
+  "name": "Anúbis",
+  "key": "ataque-balanca",
+  "label": "Balança",
+  "sourceJobId": "48e1caba-0b1f-4561-af93-0992ce4a2631",
+  "description": "A distinct melee attack using the BALANCE SCALE as a flail towards the RIGHT. Keep the staff planted upright in the other hand. Pull the hand holding the scale back, then thrust that arm right and whip the suspended gold pans out horizontally on their chains, so the heavy scale pans physically strike forward, then let them swing back and return to idle. The scale, not the staff, is the striking weapon. STRICT side-scroller view facing RIGHT for every frame, never turn toward camera. Clear anticipation, strong action and recovery. Preserve identity and crisp bone-silver charcoal pixel art, no new colors. Keep full sprite and moving weapons inside 256x192, same planted baseline, same scale. Static camera. Transparent. Stay in place; no camera pan.",
+  "frame_count": 16,
+  "jobId": "e579ec06-8c3e-49da-937f-83660cbd4b77",
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 17,
+  "sheet_frame_count": 17,
+  "frame_duration_ms": 90,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

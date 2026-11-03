@@ -1,0 +1,19 @@
+{
+  "boss": "02-hades",
+  "name": "Hades",
+  "key": "ataque-correntes",
+  "label": "Chicote de correntes",
+  "sourceJobId": "81865285-5a83-421b-b3c3-7539a77af39a",
+  "description": "Throw BOTH chained hooked blades forcefully to the RIGHT. Wind up with both elbows behind the body, then extend both arms and send TWO hooks far right at different heights on clearly visible taut chains. At maximum reach both hooks lead the chains horizontally. Yank both weapons back into the hands and recover to idle. The actual hooks travel, not just glowing effects. STRICT side-scroller view facing RIGHT for every frame, never turn toward camera. Clear anticipation, strong action and recovery. Preserve identity and crisp bone-silver charcoal pixel art, no new colors. Keep full sprite and moving weapons inside 256x192, same planted baseline, same scale. Static camera. Transparent. Stay in place; no camera pan.",
+  "jobId": "f65d2dcd-5454-4253-8ffd-c546ad94047d",
+  "frame_count": 16,
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 17,
+  "sheet_frame_count": 17,
+  "frame_duration_ms": 90,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

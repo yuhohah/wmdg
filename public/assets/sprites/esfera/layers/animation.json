@@ -1,0 +1,72 @@
+{
+  "purpose": "Esfera arredondada com três anéis independentes, integrada ao jogo.",
+  "canvas": [
+    384,
+    384
+  ],
+  "native_layer_size": [
+    256,
+    256
+  ],
+  "frame_rate_limit": 30,
+  "common_loop_ms": 240000,
+  "layers": [
+    {
+      "id": "globe",
+      "periodMs": 0,
+      "phase": 0,
+      "pivotX": 128,
+      "pivotY": 128
+    },
+    {
+      "id": "ring-3",
+      "periodMs": -20000,
+      "phase": 2.0943951023931953,
+      "pivotX": 130,
+      "pivotY": 131
+    },
+    {
+      "id": "ring-2",
+      "periodMs": -16000,
+      "phase": 1.0471975511965976,
+      "pivotX": 130,
+      "pivotY": 131
+    },
+    {
+      "id": "ring-1",
+      "periodMs": -12000,
+      "phase": 0,
+      "pivotX": 130,
+      "pivotY": 131
+    },
+    {
+      "id": "outer",
+      "periodMs": 24000,
+      "phase": 0,
+      "pivotX": 128,
+      "pivotY": 128
+    }
+  ],
+  "provenance": {
+    "outer_drawing": "38e4648c-a239-4712-a62f-943de86dcd6e",
+    "globe_drawing": "c519b73c-7d85-4d7e-874b-0cfc5c67fc1b",
+    "assets": [
+      {
+        "name": "ring-3",
+        "prompt": "Extract ONLY ONE narrow slate-silver elliptical armillary band, tilted diagonally from upper RIGHT to lower LEFT, steeper than 45 degrees. Remove globe, outer circle, medallions, spikes and all other bands. Reconstruct hidden portions into ONE complete closed ellipse with a hollow transparent center. Engraved silver band, charcoal shaded underside, same antique hermetic pixel style. Center 128,128, within 220px diameter. No star or rays. Transparent 256x256.",
+        "id": "2970d634-9e4f-4ebc-b66b-7682e15d2f56"
+      },
+      {
+        "name": "ring-1",
+        "prompt": "Keep exactly this SINGLE hollow elliptical ring, unchanged size, center and shape. Recolor its grey engraved band to warm bone-white ivory, with charcoal shadows and tiny tarnished gold measuring ticks. One ring only, fully transparent hollow center and outside background. Preserve crisp antique engraved pixel art. Do not add any globe, other rings, spikes, symbols in the center or new shapes.",
+        "id": "096d7530-d969-420f-94e2-2d1ba4c7bd98"
+      },
+      {
+        "name": "ring-2",
+        "prompt": "Extract ONLY ONE narrow slate-silver elliptical armillary band, tilted diagonally from upper RIGHT to lower LEFT, steeper than 45 degrees. Remove globe, outer circle, medallions, spikes and all other bands. Reconstruct hidden portions into ONE complete closed ellipse with a hollow transparent center. Engraved silver band, charcoal shaded underside, same antique hermetic pixel style. Center 128,128, within 220px diameter. No star or rays. Transparent 256x256.",
+        "id": "2970d634-9e4f-4ebc-b66b-7682e15d2f56"
+      }
+    ]
+  },
+  "still": "Composição das cinco camadas na fase inicial."
+}

@@ -339,6 +339,37 @@
   z-index: 0;
 }
 
+/* Temporary blessing light overlays the existing sprite without changing its art. */
+.incarnation-blessing-light {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background: radial-gradient(ellipse 24% 53% at 50% 65%,
+    rgba(255, 244, 208, 0.48) 0%,
+    rgba(229, 194, 115, 0.22) 42%,
+    rgba(229, 194, 115, 0) 75%);
+}
+
+.incarnation-altar-container.blessing-active .incarnation-blessing-light {
+  display: block;
+  animation: incarnation-blessing-glow 2s steps(60, end) infinite alternate;
+}
+
+@keyframes incarnation-blessing-glow {
+  from { opacity: 0.45; transform: scale(0.98); }
+  to { opacity: 0.85; transform: scale(1.04); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .incarnation-altar-container.blessing-active .incarnation-blessing-light {
+    animation: none;
+    opacity: 0.65;
+  }
+}
+
 @keyframes altar-aura-pulse {
   0%, 100% { opacity: 0.4; transform: scale(0.96); }
   50% { opacity: 0.85; transform: scale(1.04); }

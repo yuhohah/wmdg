@@ -484,7 +484,7 @@ export class GameStateManager {
     };
   }
 
-  public startBossBattle(bossId: string): boolean {
+  public startBossBattle(bossId: string, options?: { awaitProcession?: boolean }): boolean {
     const boss = GNOSE_BOSSES.find((b) => b.id === bossId);
     if (this.activeBossBattle || !boss || !this.canChallengeBoss(bossId)) {
       return false;
@@ -501,10 +501,17 @@ export class GameStateManager {
       activeRifts: [],
       riftsShattered: 0,
       riftsMissed: 0,
+      combatStarted: options?.awaitProcession ? false : true,
       phase: 1,
       comboStreak: 0
     };
     return true;
+  }
+
+  public beginBossCombat(): void {
+    if (this.activeBossBattle) {
+      this.activeBossBattle.combatStarted = true;
+    }
   }
 
   public getBossPhase(): 1 | 2 | 3 {
@@ -541,7 +548,7 @@ export class GameStateManager {
   }
 
   public clickBossRift(riftId: string): { damage: number; shattered: boolean; victory: boolean; comboStreak?: number } {
-    if (!this.activeBossBattle) {
+    if (!this.activeBossBattle || this.activeBossBattle.combatStarted === false) {
       return { damage: 0, shattered: false, victory: false };
     }
     const battle = this.activeBossBattle;
@@ -907,7 +914,7 @@ export class GameStateManager {
 
   private tickBossBattle(deltaSec: number): void {
     const battle = this.activeBossBattle;
-    if (!battle) return;
+    if (!battle || battle.combatStarted === false) return;
 
     const boss = GNOSE_BOSSES.find((b) => b.id === battle.bossId);
     if (!boss) return;
@@ -1048,7 +1055,11 @@ export class GameStateManager {
     this.totalClicks += 1;
 
     let bossClickDamage = 0;
-    if (this.activeBossBattle && this.activeBossBattle.sphereCooldownSec <= 1e-8) {
+    if (
+      this.activeBossBattle &&
+      this.activeBossBattle.combatStarted !== false &&
+      this.activeBossBattle.sphereCooldownSec <= 1e-8
+    ) {
       this.activeBossBattle.sphereCooldownSec = BOSS_SPHERE_COOLDOWN_SEC;
       const breakdown = this.getBossCombatBreakdown(this.activeBossBattle.bossId);
       bossClickDamage = breakdown.clickDamage * (isCrit ? 2 : 1);

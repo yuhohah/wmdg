@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { SphereSprite, sphereSpriteFrame } from './SphereSprite.js';
+import { SphereSprite, SPHERE_LAYERS, sphereLayerAngle } from './SphereSprite.js';
 import { SphereController } from './SphereController.js';
 import { GameStateManager } from '../../core/GameState.js';
 
@@ -8,26 +8,28 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('sphere sprite playback', () => {
+describe('independent sphere rings', () => {
   const images: Array<{ src: string; onload: (() => void) | null; onerror: (() => void) | null }> = [];
   let frame: (now: number) => void;
   let intersect: (visible: boolean) => void;
   let hidden: boolean;
   const media = { matches: false };
-  const ctx = { clearRect: vi.fn(), drawImage: vi.fn() };
+  const ctx = { clearRect: vi.fn(), drawImage: vi.fn(), save: vi.fn(), restore: vi.fn(),
+    translate: vi.fn(), rotate: vi.fn(), beginPath: vi.fn(), rect: vi.fn(), clip: vi.fn() };
 
   beforeEach(() => {
     images.length = 0;
     hidden = false;
     media.matches = false;
-    ctx.clearRect.mockClear();
-    ctx.drawImage.mockClear();
+    vi.clearAllMocks();
     vi.stubGlobal('window', { matchMedia: () => media });
     vi.stubGlobal('document', { get visibilityState() { return hidden ? 'hidden' : 'visible'; } });
     vi.stubGlobal('Image', class {
       src = '';
       onload = null;
       onerror = null;
+      complete = true;
+      naturalWidth = 256;
       constructor() { images.push(this); }
     });
     vi.stubGlobal('requestAnimationFrame', vi.fn(callback => { frame = callback; return 1; }));
@@ -46,44 +48,51 @@ describe('sphere sprite playback', () => {
     return new SphereSprite(canvas);
   };
 
-  it('crops each row correctly and wraps at the 5120ms loop boundary', () => {
-    expect(sphereSpriteFrame(0)).toEqual({ index: 0, x: 0, y: 0 });
-    expect(sphereSpriteFrame(560)).toEqual({ index: 7, x: 2688, y: 0 });
-    expect(sphereSpriteFrame(640)).toEqual({ index: 8, x: 0, y: 384 });
-    expect(sphereSpriteFrame(5119)).toEqual({ index: 63, x: 2688, y: 2688 });
-    expect(sphereSpriteFrame(5120)).toEqual({ index: 0, x: 0, y: 0 });
+  it('keeps the globe still and gives the outer and inner rings distinct periods and directions', () => {
+    const deltas = SPHERE_LAYERS.map(layer => sphereLayerAngle(layer, 1000) - sphereLayerAngle(layer, 0));
+    expect(deltas[0]).toBe(0);
+    expect(deltas.slice(1, 4).every(angle => angle < 0)).toBe(true);
+    expect(new Set(deltas.slice(1, 4)).size).toBe(3);
+    expect(deltas[4]).toBeGreaterThan(0);
+    for (const layer of SPHERE_LAYERS) {
+      expect(sphereLayerAngle(layer, 240000)).toBeCloseTo(sphereLayerAngle(layer, 0));
+    }
   });
 
-  it('loads one shared sheet and only paints changed frames while visible', () => {
+  it('loads individual parts and only animates them when visible at the visual frame rate', () => {
     const sprite = create();
-    expect(images[0].src).toContain('/assets/sprites/esfera/girar/spritesheet.png');
-    images[0].onload?.();
+    expect(images).toHaveLength(6);
+    expect(images.every(image => image.src.includes('/esfera/layers/'))).toBe(true);
+    images.slice(1).forEach(image => image.onload?.());
     frame(0);
+    frame(16);
+    expect(ctx.clearRect).toHaveBeenCalledTimes(1);
     frame(40);
-    expect(ctx.drawImage).toHaveBeenCalledTimes(1);
-    frame(80);
-    expect(ctx.drawImage).toHaveBeenLastCalledWith(images[0], 384, 0, 384, 384, 0, 0, 384, 384);
+    expect(ctx.clearRect).toHaveBeenCalledTimes(2);
+    // Each ring has a back and front pass, plus globe and outer frame.
+    expect(ctx.drawImage).toHaveBeenCalledTimes(16);
+    expect(ctx.clip).toHaveBeenCalledTimes(12);
     intersect(false);
-    frame(160);
-    expect(ctx.drawImage).toHaveBeenCalledTimes(2);
+    frame(80);
+    expect(ctx.clearRect).toHaveBeenCalledTimes(2);
     intersect(true);
     hidden = true;
-    frame(240);
-    expect(ctx.drawImage).toHaveBeenCalledTimes(2);
+    frame(120);
+    expect(ctx.clearRect).toHaveBeenCalledTimes(2);
     hidden = false;
     media.matches = true;
-    frame(320);
-    expect(ctx.drawImage).toHaveBeenLastCalledWith(images[0], 0, 0, 384, 384, 0, 0, 384, 384);
+    frame(160);
+    expect(ctx.rotate).toHaveBeenLastCalledWith(0);
     sprite.destroy();
     expect(cancelAnimationFrame).toHaveBeenCalledWith(1);
   });
 
-  it('falls back to the first pose when the sheet fails to load', () => {
+  it('keeps a rounded still visible if a layer fails without starting a partial animation', () => {
     const sprite = create();
-    images[0].onerror?.();
-    expect(images[0].src).toContain('/assets/sprites/esfera/girar/00.png');
     images[0].onload?.();
-    expect(ctx.drawImage).toHaveBeenCalledWith(images[0], 0, 0, 384, 384);
+    images[1].onerror?.();
+    images.slice(2).forEach(image => image.onload?.());
+    expect(ctx.drawImage).toHaveBeenCalledWith(images[0], 64, 64, 256, 256);
     expect(requestAnimationFrame).not.toHaveBeenCalled();
     sprite.destroy();
   });

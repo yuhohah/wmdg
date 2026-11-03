@@ -1,0 +1,18 @@
+{
+  "boss": "01-anubis",
+  "name": "Anúbis",
+  "action": "andar",
+  "description": "Walk slowly in place facing the viewer, alternate feet with a clear complete stride, shift weight, sway the kilt and balance pans gently, carry the staff steady. Seamless cycle. Preserve the exact source sprite identity, outfit, weapons, size and crisp pixel art palette. All motion fits inside the canvas. Fixed front orthographic camera, no translation, no rotation of camera, no zoom, transparent background.",
+  "source": "caeca444-7bcf-4755-a510-c387978e1473",
+  "jobId": "d3b80f13-1047-4d59-b202-dd1fa6319ff8",
+  "generatedFrames": 8,
+  "sourceFrameIncluded": true,
+  "frame_width": 192,
+  "frame_height": 192,
+  "source_frame_count": 9,
+  "sheet_frame_count": 9,
+  "frame_duration_ms": 120,
+  "loop": true,
+  "layout": "horizontal",
+  "transparent": true
+}

@@ -1,23 +1,32 @@
 import { VisualFrameClock } from '../../ui/visualTiming.js';
 
 const SIZE = 384;
-const COLUMNS = 8;
-const FRAMES = 64;
-const FRAME_MS = 80;
-const ASSET_PATH = `${import.meta.env.BASE_URL}assets/sprites/esfera/girar/`;
+const ASSET_PATH = `${import.meta.env.BASE_URL}assets/sprites/esfera/layers/`;
 
-export function sphereSpriteFrame(elapsedMs: number): { index: number; x: number; y: number } {
-  const index = Math.floor(Math.max(0, elapsedMs) / FRAME_MS) % FRAMES;
-  return { index, x: (index % COLUMNS) * SIZE, y: Math.floor(index / COLUMNS) * SIZE };
+export const SPHERE_LAYERS = [
+  { id: 'globe', periodMs: 0, phase: 0, pivotX: 128, pivotY: 128 },
+  { id: 'ring-3', periodMs: -20000, phase: Math.PI * 2 / 3, pivotX: 130, pivotY: 131 },
+  { id: 'ring-2', periodMs: -16000, phase: Math.PI / 3, pivotX: 130, pivotY: 131 },
+  { id: 'ring-1', periodMs: -12000, phase: 0, pivotX: 130, pivotY: 131 },
+  { id: 'outer', periodMs: 24000, phase: 0, pivotX: 128, pivotY: 128 },
+] as const;
+
+export function sphereLayerAngle(layer: typeof SPHERE_LAYERS[number], elapsedMs: number): number {
+  if (!layer.periodMs) return layer.phase;
+  const progress = Math.max(0, elapsedMs) % Math.abs(layer.periodMs);
+  return layer.phase + progress / layer.periodMs * Math.PI * 2;
 }
 
-/** Plays the baked counter-rotation; clicks animate the canvas, never its frame angles. */
+/** Independent engraved rings, composited at 30 FPS around the stationary globe. */
 export class SphereSprite {
-  private image = new Image();
+  private fallback = new Image();
+  private layers = SPHERE_LAYERS.map(config => ({ ...config, image: new Image() }));
   private ctx: CanvasRenderingContext2D;
   private clock = new VisualFrameClock();
   private elapsedMs = 0;
-  private lastFrame = -1;
+  private lastTime = -1;
+  private ready = false;
+  private failed = false;
   private animationId: number | null = null;
   private observer?: IntersectionObserver;
   private visible = true;
@@ -33,25 +42,54 @@ export class SphereSprite {
       });
       this.observer.observe(canvas);
     }
-    this.image.onload = () => {
-      this.draw(0);
-      this.animationId = requestAnimationFrame(this.tick);
-    };
-    this.image.onerror = () => {
-      // A failed sheet can still show the approved first pose without losing clicks.
-      this.image.onload = () => this.ctx.drawImage(this.image, 0, 0, SIZE, SIZE);
-      this.image.onerror = null;
-      this.image.src = `${ASSET_PATH}00.png`;
-    };
-    this.image.src = `${ASSET_PATH}spritesheet.png`;
+    this.fallback.onload = () => { if (!this.ready) this.drawStill(); };
+    this.fallback.src = `${ASSET_PATH}still.png`;
+    let remaining = this.layers.length;
+    for (const layer of this.layers) {
+      layer.image.onload = () => {
+        if (--remaining === 0 && !this.failed) {
+          this.ready = true;
+          this.draw(0);
+          this.animationId = requestAnimationFrame(this.tick);
+        }
+      };
+      layer.image.onerror = () => {
+        this.failed = true;
+        if (this.fallback.complete && this.fallback.naturalWidth) this.drawStill();
+      };
+      layer.image.src = `${ASSET_PATH}${layer.id}.png`;
+    }
+  }
+
+  private drawStill(): void {
+    this.ctx.clearRect(0, 0, SIZE, SIZE);
+    this.ctx.drawImage(this.fallback, 64, 64, 256, 256);
+  }
+
+  private drawLayer(layer: typeof this.layers[number], elapsedMs: number, half?: 'back' | 'front'): void {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(SIZE / 2, SIZE / 2);
+    ctx.rotate(sphereLayerAngle(layer, elapsedMs));
+    if (half) {
+      // Back arcs sit behind the globe; front arcs pass across its surface.
+      ctx.beginPath();
+      ctx.rect(-128, half === 'back' ? -128 : 0, 256, 128);
+      ctx.clip();
+    }
+    ctx.drawImage(layer.image, -layer.pivotX, -layer.pivotY, 256, 256);
+    ctx.restore();
   }
 
   private draw(elapsedMs: number): void {
-    const frame = sphereSpriteFrame(elapsedMs);
-    if (frame.index === this.lastFrame) return;
+    if (elapsedMs === this.lastTime) return;
     this.ctx.clearRect(0, 0, SIZE, SIZE);
-    this.ctx.drawImage(this.image, frame.x, frame.y, SIZE, SIZE, 0, 0, SIZE, SIZE);
-    this.lastFrame = frame.index;
+    const rings = this.layers.slice(1, 4);
+    for (const layer of rings) this.drawLayer(layer, elapsedMs, 'back');
+    this.drawLayer(this.layers[0], 0);
+    for (const layer of rings) this.drawLayer(layer, elapsedMs, 'front');
+    this.drawLayer(this.layers[4], elapsedMs);
+    this.lastTime = elapsedMs;
   }
 
   private tick = (nowMs: number): void => {
@@ -60,7 +98,8 @@ export class SphereSprite {
       if (this.reducedMotion.matches) {
         this.draw(0);
       } else {
-        this.elapsedMs = (this.elapsedMs + elapsed * 1000) % (FRAMES * FRAME_MS);
+        // These four periods align again after four minutes.
+        this.elapsedMs = (this.elapsedMs + elapsed * 1000) % 240000;
         this.draw(this.elapsedMs);
       }
     }
@@ -70,6 +109,7 @@ export class SphereSprite {
   public destroy(): void {
     if (this.animationId !== null) cancelAnimationFrame(this.animationId);
     this.observer?.disconnect();
-    this.image.onload = this.image.onerror = null;
+    this.fallback.onload = this.fallback.onerror = null;
+    for (const layer of this.layers) layer.image.onload = layer.image.onerror = null;
   }
 }
