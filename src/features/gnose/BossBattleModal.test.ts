@@ -314,7 +314,7 @@ function setupBossModalHarness(
   gameState.unlockedGnoseUpgrades.add('gn_followers_syn');
   gameState.unlockedGnoseUpgrades.add('gn_bencao_eterna');
 
-  const audio = { playTone: vi.fn(), playChime: vi.fn() } as unknown as AudioManager;
+  const audio = { playTone: vi.fn(), playChime: vi.fn(), playBossBattleMusic: vi.fn(), stopBossBattleMusic: vi.fn() } as unknown as AudioManager;
   const notifications = { showCustomPopup: vi.fn() } as unknown as NotificationManager;
 
   const modal = new BossBattleModal({
@@ -325,13 +325,14 @@ function setupBossModalHarness(
     onCameraFrame: target => cameraFrames.push(target),
   });
 
-  return { modal, gameState, worldEl, drawImageCalls, nativeScroll, cameraFrames, notifications, createControl: () => new MockElement() };
+  return { modal, audio, gameState, worldEl, drawImageCalls, nativeScroll, cameraFrames, notifications, createControl: () => new MockElement() };
 }
 
 describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox tracking', () => {
   it('follows the incarnation until the full circle is formed, then follows the distant boss before framing combat', () => {
-    const { modal, gameState, cameraFrames } = setupBossModalHarness(100);
+    const { modal, audio, gameState, cameraFrames } = setupBossModalHarness(100);
     modal.openForBoss('boss_cronos');
+    expect(audio.playBossBattleMusic).toHaveBeenCalledTimes(1);
     expect(cameraFrames.at(-1)?.phase).toBe('incarnation');
     for (let i = 0; i < 200 && modal.getChoreographySnapshot().bossState === 'awaiting_ritual'; i++) {
       const before = modal.getChoreographySnapshot();
@@ -351,6 +352,7 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     expect(modal.getChoreographySnapshot().combatStarted).toBe(true);
     expect(cameraFrames.at(-1)?.phase).toBe('combat');
     modal.close();
+    expect(audio.stopBossBattleMusic).toHaveBeenCalledTimes(1);
   });
 
   it('keeps a parried swing interrupted even when an earlier missed rift is reported in the same UI update', () => {

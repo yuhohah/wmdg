@@ -7,6 +7,8 @@
 Um idle/clicker hermético em um santuário astral navegável.
 Converta fiéis, reacenda o Fervor e confronte os deuses que ocuparam seu lugar.
 
+**Versão atual: 0.8.0** · [Changelog](CHANGELOG.md)
+
 [O jogo](#o-santuário) · [Executar](#executar-localmente) · [GDD](GDD.md) · [Fórmulas](FormulasJogo.md) · [Documentação](docs/README.md)
 
 ![Cult of the Sphere — esfera armilar, dourado sobre obsidiana e Pátio dos Fiéis](docs/screenshots/santuario.png)
@@ -89,6 +91,7 @@ O painel de desenvolvimento abre com **T** ou **F2** em ambiente de desenvolvime
 - Produção durante ausência de até **24 horas**, incluindo automações já adquiridas. Combates não continuam offline.
 - Arraste para navegar; roda do mouse ou pinça para zoom. Atalhos inferiores focam os altares.
 - Áudio ambiente e efeitos, com controles na interface; guia contextual para os primeiros passos.
+- Novidades exibidas ao abrir uma versão diferente da última vista neste navegador; histórico acessível em **Configurações → Ver novidades**.
 
 ## Por dentro do projeto
 

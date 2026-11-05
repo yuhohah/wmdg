@@ -6,6 +6,8 @@ import { AudioManager } from './systems/audio.js';
 import { NotificationManager } from './systems/notifications.js';
 import { SaveSystem, type SaveData } from './systems/saveSystem.js';
 import { SettingsModal } from './ui/SettingsModal.js';
+import { ChangelogModal } from './ui/ChangelogModal.js';
+import { GAME_VERSION } from './config/changelog.js';
 import { SaveDataModal } from './ui/SaveDataModal.js';
 import { HUDController } from './ui/HUDController.js';
 import { VisibleCardUpdates } from './ui/VisibleCardUpdates.js';
@@ -205,8 +207,12 @@ class AppManager {
     });
 
     this.formulaTooltip = new FormulaTooltip(this.gameState);
+    const changelogModal = new ChangelogModal();
+    const versionLabel = document.getElementById('game-version');
+    if (versionLabel) versionLabel.textContent = `Versão ${GAME_VERSION}`;
     this.settingsModal = new SettingsModal({
       audio: this.audio,
+      onShowChangelog: () => { void changelogModal.open(); },
       getLastSaveTime: () => this.lastSaveTime,
       onManualSave: () => this.manualSave(),
       onExportSave: () => this.saveDataModal.openExport(),
@@ -249,6 +255,7 @@ class AppManager {
       this.testMenu = new TestMenu(this);
     }
     this.registerGlobalHelpers();
+    void changelogModal.showIfUpdated();
   }
 
   private bindStartScreen(): void {

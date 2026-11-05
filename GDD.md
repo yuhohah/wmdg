@@ -103,7 +103,7 @@ São **20 nós em quatro tiers (6 / 6 / 4 / 4)**. Cada nó é comprado uma vez, 
 | III — Poder do Culto | Coro, ganho de Gnose e refinamentos herméticos. | Vitória sobre Hades. |
 | IV — Apoteose | Olho do Infinito, Gnosis Suprema, Fogo Empíreo e Opus Perfeito. | Vitória sobre Odin. |
 
-O catálogo completo, custos e pré-requisitos estão em [FormulasJogo.md](FormulasJogo.md#8-gnose-e-todos-os-upgrades) e [src/config/gnose.ts](src/config/gnose.ts).
+Os custos acima de 1.000 Gnose usam dois algarismos significativos, preservando a escala dos preços e tornando as metas mais legíveis. O catálogo completo, custos e pré-requisitos estão em [FormulasJogo.md](FormulasJogo.md#8-gnose-e-todos-os-upgrades) e [src/config/gnose.ts](src/config/gnose.ts).
 
 ### Automações
 
@@ -179,6 +179,8 @@ A **Vigília Sagrada** reproduz até 24 horas de ausência com o mesmo integrado
 O tabuleiro usa céu escuro, estrelas, inscrições e círculos alquímicos em dourado envelhecido. HUD e molduras mantêm a linguagem astral; Fiéis, Avatares, Esfera e Guardiões usam sprites animados. Canvas desenha as arenas e personagens; painéis HTML apresentam compras, fórmulas e progressão.
 
 Navegação por arraste, roda/pinça e atalhos inferiores; cards podem ser movidos e minimizados. O onboarding apresenta os primeiros marcos. A câmera acompanha procissão, chegada do boss e arena. Há trilha ambiente, efeitos sintetizados e opções de áudio e vibração.
+
+Ao abrir o jogo, a versão atual é comparada à última versão vista neste navegador. Quando são diferentes, inclusive na primeira visita, uma janela mostra o histórico do `CHANGELOG.md`, começando pela versão atual. Fechar pelo botão ou por Escape registra a versão como vista, separadamente do save da partida. **Configurações → Ver novidades** permite reabrir o histórico a qualquer momento.
 
 ## Validação e manutenção
 

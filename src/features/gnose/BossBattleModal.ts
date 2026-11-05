@@ -983,6 +983,7 @@ export class BossBattleModal {
 
     this.updateBattleCamera(0);
 
+    this.options.audio.playBossBattleMusic?.();
     this.options.audio.playTone(320, 'triangle', 0.25);
     this.updateUI();
     this.drawWorldScene();
@@ -1013,6 +1014,7 @@ export class BossBattleModal {
     }
     this.miracleBtnEl = null;
     document.body.classList.remove('is-boss-battle-active');
+    this.options.audio.stopBossBattleMusic?.();
     if (wasOpen) {
       document.getElementById('btn-zoom-reset')?.click();
       if (this.returnFocusEl?.isConnected) this.returnFocusEl.focus({ preventScroll: true });

@@ -1,0 +1,62 @@
+.changelog-dialog {
+  width: min(760px, calc(100vw - 24px));
+  max-height: calc(100dvh - 32px);
+  box-sizing: border-box;
+  overflow: hidden;
+  color: var(--text-main);
+}
+
+.changelog-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.changelog-dialog header,
+.changelog-dialog .cult-dialog-actions {
+  flex-shrink: 0;
+}
+
+.changelog-dialog h2 {
+  margin: 0 0 8px;
+  font-size: clamp(22px, 5vw, 30px);
+}
+
+.changelog-dialog p {
+  margin: 0;
+}
+
+.changelog-history {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 12px 0 2px;
+  line-height: 1.6;
+}
+
+.changelog-history section + section {
+  border-top: 1px solid var(--gold-accent);
+  margin-top: 24px;
+  padding-top: 20px;
+}
+
+.changelog-history h3 {
+  color: var(--gold-accent);
+  margin: 0;
+  font-size: 21px;
+}
+
+.changelog-history time {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.changelog-history ul {
+  list-style: disc;
+  padding-left: 22px;
+  margin: 12px 0 0;
+}
+
+.changelog-history li + li {
+  margin-top: 10px;
+}

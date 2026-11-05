@@ -3,6 +3,7 @@
 | Documento | Conteúdo |
 | --- | --- |
 | [README](../README.md) | Apresentação, capturas e execução local. |
+| [Changelog](../CHANGELOG.md) | Versão atual e histórico de mudanças do jogo. |
 | [GDD](../GDD.md) | Visão, sistemas, jornada, combate e experiência implementada. |
 | [Fórmulas](../FormulasJogo.md) | Custos, multiplicadores, limites, persistência e migrações. |
 | [Glossário](../GLOSSARY.md) | Termos do domínio. |

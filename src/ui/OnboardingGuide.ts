@@ -1,6 +1,7 @@
 import { GameStateManager } from '../core/GameState.js';
 import { NotificationManager } from '../systems/notifications.js';
 import { AudioManager } from '../systems/audio.js';
+import { formatNumber } from '../systems/calculations.js';
 import { icon } from './icons.js';
 import { CARD_TUTORIALS, type CardTutorial } from '../config/cardTutorials.js';
 
@@ -184,7 +185,7 @@ export class OnboardingGuide {
         this.hasCelebrated = true;
         this.notifications.showCustomPopup(
           'O PRIMEIRO CONVERSO',
-          'Seu primeiro fiel começou a orar no pátio: +1 Fé/s.',
+          'Seu primeiro fiel começou a orar no pátio (+1 Fé/s). Quando um fiel exibir um balão com estrela, clique nele para conceder um Milagre de Fé!',
           'followers',
           'FIÉIS'
         );
@@ -228,12 +229,13 @@ export class OnboardingGuide {
     if (tracker) tracker.style.display = '';
     if (this.currentStep === 'sphere') {
       const percent = Math.min(100, Math.floor((faith / targetFaith) * 100));
+      const fpc = formatNumber(this.gameState.getFaithPerClick());
 
       if (this.iconEl) this.iconEl.innerHTML = icon('orb');
       if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 1/2 • O DESPERTAR';
       if (this.titleEl) this.titleEl.textContent = 'Toque a Esfera';
       if (this.descEl) {
-        this.descEl.textContent = 'Você é a Esfera, selada há eras. Cada toque seu arranca Fé das mentes mortais.';
+        this.descEl.textContent = 'Você é a Esfera, selada há eras. Cada toque seu arranca Fé das mentes mortais (com 5% de chance de pulso crítico 2×).';
       }
       if (this.trackerMetaEl) this.trackerMetaEl.textContent = `Meta inicial: ${targetFaith} Fé`;
       if (this.trackerValEl) this.trackerValEl.textContent = `${faith} / ${targetFaith} Fé (${percent}%)`;
@@ -242,7 +244,7 @@ export class OnboardingGuide {
         this.trackerFillEl.style.background = 'linear-gradient(90deg, #f59e0b, #fef08a)';
       }
       if (this.actionTipEl) {
-        this.actionTipEl.textContent = 'Toque a Esfera até juntar Fé suficiente (+1 Fé por toque).';
+        this.actionTipEl.textContent = `Toque a Esfera até juntar Fé suficiente (+${fpc} Fé por toque).`;
       }
     } else {
       // Step 2: Buy follower
@@ -250,7 +252,7 @@ export class OnboardingGuide {
       if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 2/2 • CONVERTA FIÉIS';
       if (this.titleEl) this.titleEl.textContent = 'Converta seu primeiro fiel';
       if (this.descEl) {
-        this.descEl.textContent = 'Um primeiro mortal ouviu o chamado da Esfera. No Pátio dos Fiéis, converta-o: ele vai orar por você e gerar +1 Fé/s.';
+        this.descEl.textContent = 'Um primeiro mortal ouviu o chamado da Esfera. No Pátio dos Fiéis, converta-o: ele vai orar por você, gerar +1 Fé/s e pedir Milagres (balão com estrela) que rendem Fé extra.';
       }
       if (this.trackerMetaEl) this.trackerMetaEl.textContent = `Custo: ${targetFaith} Fé`;
       if (this.trackerValEl) this.trackerValEl.textContent = 'Pronto para converter!';
@@ -259,7 +261,7 @@ export class OnboardingGuide {
         this.trackerFillEl.style.background = 'linear-gradient(90deg, #22c55e, #86efac)';
       }
       if (this.actionTipEl) {
-        this.actionTipEl.textContent = 'Clique no botão "CONVERTER FIEL".';
+        this.actionTipEl.textContent = 'Clique no botão "CONVERTER FIEL" (Converter Máximo abre com 25 Fiéis).';
       }
     }
   }

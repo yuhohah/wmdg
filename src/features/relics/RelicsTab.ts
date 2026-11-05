@@ -1,4 +1,3 @@
-import { cultDialog } from '../../ui/CultDialog.js';
 import { AutomationToggle } from '../../ui/AutomationToggle.js';
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
@@ -58,10 +57,7 @@ export class RelicsTab {
 
   private bindEvents(): void {
     this.btnConvertRelicsEl?.addEventListener('click', () => {
-      const game = this.options.gameState;
-      if (game.relicConvertCooldown > 0 || game.getRelicsToGet() <= 0) return;
-      void cultDialog('Transmutação', () => `Perder ${formatNumber(game.faithPoints)} Fé para receber ${formatNumber(game.getRelicsToGet())} Fragmentos? Fiéis e produção permanecem.`, 'Transmutar', 'Cancelar')
-        .then(confirmed => { if (confirmed) this.convertFaithToRelics(); });
+      this.convertFaithToRelics();
     });
   }
 

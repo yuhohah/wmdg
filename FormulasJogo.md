@@ -267,7 +267,7 @@ Uma Ascensão com `F=1e15` dá 1 Gnose nos dois expoentes. Gastar Gnose em upgra
 
 ### 8.2 Catálogo completo dos 20 upgrades
 
-Cada upgrade é comprado uma única vez e fica permanente. Exige tier aberto, saldo de Gnose e **todos** os pré-requisitos. Os custos são fixos e não escalam. Cada compra também multiplica Fé por clique, Fé/s, Fervor/s e Fragmentos/s por 4; essa ressonância compõe MR, além do efeito individual abaixo.
+Cada upgrade é comprado uma única vez e fica permanente. Exige tier aberto, saldo de Gnose e **todos** os pré-requisitos. Os custos são fixos e não escalam; acima de 1.000 Gnose, usam dois algarismos significativos para manter metas legíveis. O arredondamento vale para o preço cobrado, não apenas para sua exibição. Cada compra também multiplica Fé por clique, Fé/s, Fervor/s e Fragmentos/s por 4; essa ressonância compõe MR, além do efeito individual abaixo.
 
 ### Tier 1
 
@@ -275,39 +275,39 @@ Cada upgrade é comprado uma única vez e fica permanente. Exige tier aberto, sa
 | --- | --- | --- | --- |
 | Emanação Primordial (`gn_init_faith`) | 1 | — | Reduz a escala de custo dos Fiéis em 0,01: de 1,10 para 1,09 antes do Cajado de Hermes. A fórmula continua custo base × escala^quantidade. Completa até 1.000 Fé na compra e em cada reinício. Concede sinergia de 1 + raiz quadrada dos Fiéis. |
 | Memória Hermética (`gn_memoria_selos`) | 77 | gn_init_faith | Abre o Selo da Encarnação imediatamente e o preserva nos reinícios de Gnose. Converter Máximo, Ritualizar Máximo e Restaurar Máximo ficam disponíveis. Os Selos de Fervor e Relíquias continuam sendo comprados com Fé. |
-| Chama Astral (`gn_init_fervor`) | 749310 | gn_init_faith | No Rito de produção de Fervor, a base de ganho passa de 2 para 2,05 e a escala de custo de 1,80 para 1,75. O expoente nível^0,6 continua igual. |
-| Alquimia Astral (`gn_relic_gain`) | 1546331765 | gn_init_faith | No Rito de Fragmentos, a base de ganho passa de 3 para 3,05 e a escala de custo de 5 para 4,90. Mantém nível^0,6 e a fórmula original da Transmutação. Exige a Fênix para usar esse Rito. |
-| Culto Autônomo (`gn_automation`) | 1816 | gn_memoria_selos | Investe em Fiéis quando isso antecipa o objetivo escolhido; reserva Fé nos últimos 180 segundos. Paga os custos normais. Pode ser ativado ou desativado para guardar Fé. |
-| Ruptura Automática (`gn_seal_automation`) | 55923 | gn_memoria_selos | Compra automaticamente todos os Selos ainda fechados, na ordem de seus pré-requisitos, pagando os custos normais com Fé. O Selo da Gnose exige apenas atingir o limiar. Repete as compras necessárias após cada Ascensão. Não preserva Selos abertos. |
+| Chama Astral (`gn_init_fervor`) | 750000 | gn_init_faith | No Rito de produção de Fervor, a base de ganho passa de 2 para 2,05 e a escala de custo de 1,80 para 1,75. O expoente nível^0,6 continua igual. |
+| Alquimia Astral (`gn_relic_gain`) | 1.5e9 | gn_init_faith | No Rito de Fragmentos, a base de ganho passa de 3 para 3,05 e a escala de custo de 5 para 4,90. Mantém nível^0,6 e a fórmula original da Transmutação. Exige a Fênix para usar esse Rito. |
+| Culto Autônomo (`gn_automation`) | 1800 | gn_memoria_selos | Investe em Fiéis quando isso antecipa o objetivo escolhido; reserva Fé nos últimos 180 segundos. Paga os custos normais. Pode ser ativado ou desativado para guardar Fé. |
+| Ruptura Automática (`gn_seal_automation`) | 56000 | gn_memoria_selos | Compra automaticamente todos os Selos ainda fechados, na ordem de seus pré-requisitos, pagando os custos normais com Fé. O Selo da Gnose exige apenas atingir o limiar. Repete as compras necessárias após cada Ascensão. Não preserva Selos abertos. |
 
 ### Tier 2
 
 | Upgrade / ID | Custo em Gnose | Pré-requisitos | Efeito completo |
 | --- | --- | --- | --- |
-| Liturgia Autônoma (`gn_ritual_automation`) | 10547999 | gn_seal_automation, gn_init_fervor | Compara o efeito relativo por custo dos Ritos de Fervor a cada segundo, usando até 100% do saldo atual de Fervor. Respeita a exigência da Fênix e o limite de 50 níveis por Rito por segundo. Possui ativar/desativar próprio. |
-| Oficina Autônoma (`gn_relic_automation`) | 127150504 | gn_seal_automation | Prioriza a primeira Fênix e depois compara o retorno por Fragmento das Relíquias acessíveis, usando até 100% do saldo de Fragmentos e respeitando o nível máximo de cada Relíquia. Possui ativar/desativar próprio. |
-| Congregação Esférica (`gn_followers_syn`) | 107263635481 | gn_memoria_selos | O total de Fiéis amplifica toda a Fé: 1 + Fiéis. A Emanação Primordial já concede 1 + raiz quadrada dos Fiéis. |
-| Vigília Perpétua (`gn_bencao_eterna`) | 2102158069257 | gn_init_fervor | Mantém a Bênção de 2× Fé/s sempre ativa enquanto a Encarnação estiver desbloqueada. |
-| Cripta Eterna (`gn_keep_relics`) | 13443656846 | gn_memoria_selos, gn_init_fervor | Preserva todos os níveis das Relíquias restauradas nos reinícios de Gnose. |
-| Convergência dos Fiéis (`gn_followers_economy`) | 19612553057056 | gn_init_faith, gn_followers_syn | Reduz a escala de custo dos Fiéis em mais 0,015: de 1,09 para 1,075 antes do Cajado de Hermes. Este passo é maior que a redução de 0,01 da Emanação Primordial. A fórmula de custo permanece igual. |
+| Liturgia Autônoma (`gn_ritual_automation`) | 11e6 | gn_seal_automation, gn_init_fervor | Compara o efeito relativo por custo dos Ritos de Fervor a cada segundo, usando até 100% do saldo atual de Fervor. Respeita a exigência da Fênix e o limite de 50 níveis por Rito por segundo. Possui ativar/desativar próprio. |
+| Oficina Autônoma (`gn_relic_automation`) | 130e6 | gn_seal_automation | Prioriza a primeira Fênix e depois compara o retorno por Fragmento das Relíquias acessíveis, usando até 100% do saldo de Fragmentos e respeitando o nível máximo de cada Relíquia. Possui ativar/desativar próprio. |
+| Congregação Esférica (`gn_followers_syn`) | 110e9 | gn_memoria_selos | O total de Fiéis amplifica toda a Fé: 1 + Fiéis. A Emanação Primordial já concede 1 + raiz quadrada dos Fiéis. |
+| Vigília Perpétua (`gn_bencao_eterna`) | 2.1e12 | gn_init_fervor | Mantém a Bênção de 2× Fé/s sempre ativa enquanto a Encarnação estiver desbloqueada. |
+| Cripta Eterna (`gn_keep_relics`) | 13e9 | gn_memoria_selos, gn_init_fervor | Preserva todos os níveis das Relíquias restauradas nos reinícios de Gnose. |
+| Convergência dos Fiéis (`gn_followers_economy`) | 20e12 | gn_init_faith, gn_followers_syn | Reduz a escala de custo dos Fiéis em mais 0,015: de 1,09 para 1,075 antes do Cajado de Hermes. Este passo é maior que a redução de 0,01 da Emanação Primordial. A fórmula de custo permanece igual. |
 
 ### Tier 3
 
 | Upgrade / ID | Custo em Gnose | Pré-requisitos | Efeito completo |
 | --- | --- | --- | --- |
-| Coro Harmônico (`gn_followers_cubic`) | 183392573867151 | gn_followers_syn | Melhora o expoente da sinergia dos Fiéis de 1 para 1,1. A fórmula continua 1 + Fiéis^expoente. |
-| Olho de Trismegisto (`gn_gnose_mult`) | 1688174629283967 | gn_bencao_eterna | A fórmula da Ascensão continua (Fé / 1Q)^expoente. Melhora apenas o expoente de 0,25 para 0,28; o requisito de 1Q continua igual. |
-| Alquimia Hermética (`gn_relic_refinement`) | 1514981284744221400 | gn_relic_gain, gn_keep_relics | No Rito de Fragmentos, melhora a base de ganho de 3,05 para 3,40 e reduz a escala de custo de 4,90 para 4,60. Os passos de +0,35 no ganho e −0,30 no custo superam os da Alquimia Astral. Mantém nível^0,6 e exige a Fênix. |
-| Fogo Hermético (`gn_fu1_boost`) | 68207446966874170000 | gn_keep_relics | Evolui a base de ganho do Rito de Fervor para 2,35, mantendo o mesmo expoente nível^0,6. Substitui a base 2,05 da Chama Astral. |
+| Coro Harmônico (`gn_followers_cubic`) | 180e12 | gn_followers_syn | Melhora o expoente da sinergia dos Fiéis de 1 para 1,1. A fórmula continua 1 + Fiéis^expoente. |
+| Olho de Trismegisto (`gn_gnose_mult`) | 1.7e15 | gn_bencao_eterna | A fórmula da Ascensão continua (Fé / 1Q)^expoente. Melhora apenas o expoente de 0,25 para 0,28; o requisito de 1Q continua igual. |
+| Alquimia Hermética (`gn_relic_refinement`) | 1.5e18 | gn_relic_gain, gn_keep_relics | No Rito de Fragmentos, melhora a base de ganho de 3,05 para 3,40 e reduz a escala de custo de 4,90 para 4,60. Os passos de +0,35 no ganho e −0,30 no custo superam os da Alquimia Astral. Mantém nível^0,6 e exige a Fênix. |
+| Fogo Hermético (`gn_fu1_boost`) | 6.8e19 | gn_keep_relics | Evolui a base de ganho do Rito de Fervor para 2,35, mantendo o mesmo expoente nível^0,6. Substitui a base 2,05 da Chama Astral. |
 
 ### Tier 4
 
 | Upgrade / ID | Custo em Gnose | Pré-requisitos | Efeito completo |
 | --- | --- | --- | --- |
-| Olho do Infinito (`gn_omniscience`) | 6.835505852917952e+21 | gn_gnose_mult, gn_automation | Fiéis e Ritos com as respectivas automações desbloqueadas deixam de consumir recursos, mas ainda exigem saldo para cada compra. Libera a geração automática de 100% da Transmutação por segundo. A Oficina Autônoma continua pagando os custos das Relíquias em Fragmentos. |
-| Gnosis Suprema (`gn_apotheosis`) | 7.921350349797226e+23 | gn_omniscience, gn_fu1_boost, gn_followers_cubic | Reduz em 0,05 a escala de custo de cada Rito, depois das melhorias específicas. A fórmula continua custo base × escala^nível. Mantém o acesso aos Avatares finais: Eclipse por 1e20 Fé e Solar por 1e30 Fé, exigindo Gnosis Suprema. |
-| Fogo Empíreo (`gn_empyrean_fire`) | 1.530668187652525e+30 | gn_init_fervor, gn_fu1_boost, gn_apotheosis | No Rito de Fervor, evolui a base de ganho de 2,35 para 2,65 e reduz sua escala de custo em mais 0,10. Com Chama Astral e Gnosis Suprema, o custo passa de 1,70 para 1,60. O ganho de +0,30 mantém o passo de +0,30 do Fogo Hermético; mantém nível^0,6. |
-| Opus Perfeito (`gn_perfect_opus`) | 2.4881152227410747e+34 | gn_relic_refinement, gn_apotheosis | No Rito de Fragmentos, evolui a base de ganho de 3,40 para 3,75 e reduz sua escala de custo em mais 0,40. Com Gnosis Suprema, o custo passa de 4,55 para 4,15. O passo de +0,35 no ganho mantém o da Alquimia Hermética e a redução de −0,40 no custo o supera. Mantém nível^0,6 e exige a Fênix. |
+| Olho do Infinito (`gn_omniscience`) | 6.8e21 | gn_gnose_mult, gn_automation | Fiéis e Ritos com as respectivas automações desbloqueadas deixam de consumir recursos, mas ainda exigem saldo para cada compra. Libera a geração automática de 100% da Transmutação por segundo. A Oficina Autônoma continua pagando os custos das Relíquias em Fragmentos. |
+| Gnosis Suprema (`gn_apotheosis`) | 7.9e23 | gn_omniscience, gn_fu1_boost, gn_followers_cubic | Reduz em 0,05 a escala de custo de cada Rito, depois das melhorias específicas. A fórmula continua custo base × escala^nível. Mantém o acesso aos Avatares finais: Eclipse por 1e20 Fé e Solar por 1e30 Fé, exigindo Gnosis Suprema. |
+| Fogo Empíreo (`gn_empyrean_fire`) | 1.5e30 | gn_init_fervor, gn_fu1_boost, gn_apotheosis | No Rito de Fervor, evolui a base de ganho de 2,35 para 2,65 e reduz sua escala de custo em mais 0,10. Com Chama Astral e Gnosis Suprema, o custo passa de 1,70 para 1,60. O ganho de +0,30 mantém o passo de +0,30 do Fogo Hermético; mantém nível^0,6. |
+| Opus Perfeito (`gn_perfect_opus`) | 2.5e34 | gn_relic_refinement, gn_apotheosis | No Rito de Fragmentos, evolui a base de ganho de 3,40 para 3,75 e reduz sua escala de custo em mais 0,40. Com Gnosis Suprema, o custo passa de 4,55 para 4,15. O passo de +0,35 no ganho mantém o da Alquimia Hermética e a redução de −0,40 no custo o supera. Mantém nível^0,6 e exige a Fênix. |
 
 ### 8.3 Particularidades dos upgrades
 

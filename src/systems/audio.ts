@@ -4,9 +4,16 @@ export interface AudioPreferences {
   sfxEnabled: boolean;
 }
 
+export type MusicTrackMode = 'background' | 'boss';
+
+export const BACKGROUND_MUSIC_SRC = '/assets/background_music.mp3';
+export const BOSS_BATTLE_MUSIC_SRC = '/assets/boss_battle.mp3';
+
 export class AudioManager {
   private audioCtx: AudioContext | null = null;
   private bgMusic: HTMLAudioElement | null = null;
+  private bossMusic: HTMLAudioElement | null = null;
+  private activeTrack: MusicTrackMode = 'background';
   private volume: number = 0.7; // default 70% volume
   private musicEnabled: boolean = true;
   private sfxEnabled: boolean = true;
@@ -65,27 +72,52 @@ export class AudioManager {
     this.initMusic();
   }
 
-  public initMusic(src: string = '/assets/soundtrack.mpeg'): void {
-    if (!this.bgMusic && src && typeof Audio !== 'undefined') {
-      this.bgMusic = new Audio(src);
+  public initMusic(
+    bgSrc: string = BACKGROUND_MUSIC_SRC,
+    bossSrc: string = BOSS_BATTLE_MUSIC_SRC
+  ): void {
+    if (typeof Audio === 'undefined') return;
+    if (!this.bgMusic && bgSrc) {
+      this.bgMusic = new Audio(bgSrc);
       this.bgMusic.loop = true;
       this.bgMusic.preload = 'auto';
       this.bgMusic.volume = this.musicEnabled ? this.volume : 0;
     }
+    if (!this.bossMusic && bossSrc) {
+      this.bossMusic = new Audio(bossSrc);
+      this.bossMusic.loop = true;
+      this.bossMusic.preload = 'auto';
+      this.bossMusic.volume = this.musicEnabled ? this.volume : 0;
+    }
+  }
+
+  private getCurrentAudioElement(): HTMLAudioElement | null {
+    return this.activeTrack === 'boss' ? this.bossMusic : this.bgMusic;
+  }
+
+  public getActiveTrack(): MusicTrackMode {
+    return this.activeTrack;
   }
 
   public playMusic(): void {
     this.init();
-    if (!this.bgMusic) return;
+    const current = this.getCurrentAudioElement();
+    const other = this.activeTrack === 'boss' ? this.bgMusic : this.bossMusic;
+
+    if (other && !other.paused) {
+      other.pause();
+    }
+
+    if (!current) return;
 
     if (!this.musicEnabled) {
-      this.bgMusic.pause();
+      current.pause();
       return;
     }
 
-    this.bgMusic.volume = this.volume;
-    if (this.bgMusic.paused) {
-      const playPromise = this.bgMusic.play();
+    current.volume = this.volume;
+    if (current.paused) {
+      const playPromise = current.play();
       if (playPromise !== undefined) {
         playPromise.catch(() => {
           // Autoplay policy prevented immediate playback; will play on next user gesture
@@ -94,14 +126,41 @@ export class AudioManager {
     }
   }
 
+  public playBossBattleMusic(): void {
+    this.init();
+    this.activeTrack = 'boss';
+    if (this.bgMusic && !this.bgMusic.paused) {
+      this.bgMusic.pause();
+    }
+    if (this.bossMusic) {
+      this.bossMusic.currentTime = 0;
+    }
+    this.playMusic();
+  }
+
+  public stopBossBattleMusic(): void {
+    this.activeTrack = 'background';
+    if (this.bossMusic) {
+      if (!this.bossMusic.paused) {
+        this.bossMusic.pause();
+      }
+      this.bossMusic.currentTime = 0;
+    }
+    this.playMusic();
+  }
+
   public pauseMusic(): void {
     if (this.bgMusic && !this.bgMusic.paused) {
       this.bgMusic.pause();
     }
+    if (this.bossMusic && !this.bossMusic.paused) {
+      this.bossMusic.pause();
+    }
   }
 
   public isMusicPaused(): boolean {
-    return !this.bgMusic || this.bgMusic.paused;
+    const current = this.getCurrentAudioElement();
+    return !current || current.paused;
   }
 
   public toggleMusic(): boolean {
@@ -112,15 +171,10 @@ export class AudioManager {
   public setMusicEnabled(enabled: boolean): void {
     this.musicEnabled = enabled;
     this.savePreferences();
-    if (this.bgMusic) {
-      if (enabled) {
-        this.bgMusic.volume = this.volume;
-        if (this.bgMusic.paused) {
-          this.bgMusic.play().catch(() => {});
-        }
-      } else {
-        this.bgMusic.pause();
-      }
+    if (enabled) {
+      this.playMusic();
+    } else {
+      this.pauseMusic();
     }
   }
 
@@ -140,8 +194,12 @@ export class AudioManager {
   public setVolume(vol: number): void {
     this.volume = Math.max(0, Math.min(1, vol));
     this.savePreferences();
+    const targetVolume = this.musicEnabled ? this.volume : 0;
     if (this.bgMusic) {
-      this.bgMusic.volume = this.musicEnabled ? this.volume : 0;
+      this.bgMusic.volume = targetVolume;
+    }
+    if (this.bossMusic) {
+      this.bossMusic.volume = targetVolume;
     }
   }
 

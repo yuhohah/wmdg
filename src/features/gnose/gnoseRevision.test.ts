@@ -292,11 +292,14 @@ describe('Gnose tree revision', () => {
   });
 
   it('keeps every prerequisite reachable and gates Primordial Chaos on all current purchases', () => {
-    const g = prepared(); g.gnosePoints = GNOSE_UPGRADES.reduce((sum, u) => sum + u.cost, 0);
+    const g = prepared();
     for (const id of ['boss_anubis', 'boss_cronos', 'boss_odin']) g.defeatedBosses.add(id);
     for (const upgrade of GNOSE_UPGRADES) {
+      // Fund each purchase directly: summing the whole tree loses the small costs at this magnitude.
+      g.gnosePoints = upgrade.cost;
       expect(g.canChallengeBoss('boss_tiamat')).toBe(false);
       expect(g.buyGnoseUpgrade(upgrade.id)).toBe(true);
+      expect(g.gnosePoints).toBe(0);
     }
     expect(g.canChallengeBoss('boss_tiamat')).toBe(true);
   });

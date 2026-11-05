@@ -3,6 +3,7 @@ import { AudioManager } from '../systems/audio.js';
 export interface SettingsModalOptions {
   audio: AudioManager;
   onOpen?: () => void;
+  onShowChangelog?: () => void;
   getLastSaveTime: () => number;
   onManualSave: () => void;
   onExportSave: () => void;
@@ -29,7 +30,7 @@ export class SettingsModal {
   private musicIconOnEl: HTMLElement | null = null;
   private musicIconOffEl: HTMLElement | null = null;
 
-  // Haptics Controls
+  // Haptics & Preferences Controls
   private hapticsToggleEl: HTMLInputElement | null = null;
   private nerdsToggleEl: HTMLInputElement | null = null;
 
@@ -74,6 +75,10 @@ export class SettingsModal {
   }
 
   private bindEvents(): void {
+    document.getElementById('btn-show-changelog')?.addEventListener('click', () => {
+      this.close();
+      this.options.onShowChangelog?.();
+    });
     if (this.nerdsToggleEl) {
       this.nerdsToggleEl.checked = this.options.isNerdsEnabled?.() ?? false;
       this.nerdsToggleEl.addEventListener('change', () => {

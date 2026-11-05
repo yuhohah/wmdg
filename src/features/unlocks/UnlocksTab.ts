@@ -96,28 +96,28 @@ export class UnlocksTab {
     if (unlock.id === 'unlock_incarnation') {
       this.notifications.showCustomPopup(
         'A ESFERA GANHOU CORPO',
-        'A Encarnação desceu ao altar e acendeu o Fervor (+1/s).',
+        'A Encarnação desceu ao altar e acendeu o Fervor (+1/s). Toque no Altar para ativar a Bênção 2× Fé/s.',
         'fervor',
         'NOVA MECÂNICA'
       );
     } else if (unlock.id === 'unlock_fervor_upgrades') {
       this.notifications.showCustomPopup(
         'RITOS DE FERVOR',
-        'As melhorias de Fervor estão liberadas no card de Fervor.',
+        'Os Ritos de Fervor estão liberados no card Fervor Sagrado. Gastar Fervor conserva o bônus do seu pico no ciclo.',
         'incarnation',
         'NOVA MECÂNICA'
       );
     } else if (unlock.id === 'unlock_relics') {
       this.notifications.showCustomPopup(
-        'O RELICÁRIO SE ABRIU',
-        'Transmute sua Fé em Fragmentos e restaure relíquias no card de Relíquias.',
+        'RELÍQUIAS DIVINAS ABERTAS',
+        'Transmute sua Fé em Fragmentos e restaure relíquias no card Relíquias Divinas.',
         'relics',
         'NOVA MECÂNICA'
       );
     } else if (unlock.id === 'unlock_gnose') {
       this.notifications.showCustomPopup(
         'A CÂMARA DA GNOSE SE ABRIU',
-        'O último selo foi rompido. Dissolva o culto terreno a partir de 1Q Fé para colher Gnose.',
+        'O último selo foi rompido sem gastar sua Fé. Ascenda a partir de 1Q Fé para colher Gnose permanente.',
         'gnose',
         'NOVA MECÂNICA'
       );
