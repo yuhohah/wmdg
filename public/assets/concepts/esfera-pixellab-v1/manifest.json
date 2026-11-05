@@ -1,0 +1,148 @@
+{
+  "generator": "PixelLab MCP / create_image_pro",
+  "direction": "Esfera simples → esfera armilar completa",
+  "created": "2026-11-03",
+  "stages": [
+    {
+      "slug": "01-nucleo",
+      "name": "Núcleo",
+      "form": "A SINGLE BARE SPHERE exactly like the reference labelled bare sphere. Absolutely NO rings, NO orbital arcs, NO grid, NO base or stand. Shading made of fine curved engraving hatching, bright bone center, dark engraved crescent at lower right.",
+      "stage": 1,
+      "file": "01-nucleo.png",
+      "job_id": "fafac772-0de1-4c52-88a6-2042b74cd8b4",
+      "request": {
+        "description": "Production-ready square 2D game asset for A Entidade Divina / Cult of the Sphere. Authentic Renaissance 16th-century occult copperplate engraving, Peter Apian cosmography, Durer woodcut. Bone-white and ash-silver engraved contours on a uniform PURE BLACK #000000 background, monochrome soot/charcoal/bone palette. Meticulous fine parallel curved hatching, cross-hatching, stippling, precise crisp linework. Centered symmetric cosmic globe floating in void. Globe center at canvas center; globe diameter 52% of canvas; outer structures fit within 86% canvas. Keep identical globe scale and position across evolution stages. No text, labels, numbers, ornamental frame, stars, people, wings, decorative flourishes, CGI, smooth gradients, neon, cartoons or painterly blur. A SINGLE BARE SPHERE exactly like the reference labelled bare sphere. Absolutely NO rings, NO orbital arcs, NO grid, NO base or stand. Shading made of fine curved engraving hatching, bright bone center, dark engraved crescent at lower right.",
+        "width": 512,
+        "height": 512,
+        "no_background": false,
+        "reference_images": [
+          {
+            "url": "upload:1f134f36-a6a1-4c35-87ac-ef03c355ceee",
+            "usage": "bare sphere: first evolution endpoint; sphere proportions, authentic curved copperplate hatching."
+          },
+          {
+            "url": "upload:e2b6dad9-dc1b-4452-a54c-40250df4c2e1",
+            "usage": "full armillary: final evolution endpoint; exact scientific orbital structure and engraving style. Invert white paper to black void and black ink to bone silver."
+          }
+        ],
+        "seed": 472103
+      },
+      "status": "completed",
+      "download_url": "https://api.pixellab.ai/mcp/images/fafac772-0de1-4c52-88a6-2042b74cd8b4/download"
+    },
+    {
+      "slug": "02-meridiano",
+      "name": "Meridiano",
+      "form": "The SAME bare engraved globe now embraced by ONE vertical meridian hoop only, a thin elliptical armillary band curving around the globe, front arc and rear arc correctly occluded. NO horizontal hoops yet, NO stand.",
+      "stage": 2,
+      "file": "02-meridiano.png",
+      "job_id": "71bdb163-14c5-46b8-9a43-598e27aa4ac2",
+      "request": {
+        "description": "Production-ready square 2D game asset for A Entidade Divina / Cult of the Sphere. Authentic Renaissance 16th-century occult copperplate engraving, Peter Apian cosmography, Durer woodcut. Bone-white and ash-silver engraved contours on a uniform PURE BLACK #000000 background, monochrome soot/charcoal/bone palette. Meticulous fine parallel curved hatching, cross-hatching, stippling, precise crisp linework. Centered symmetric cosmic globe floating in void. Globe center at canvas center; globe diameter 52% of canvas; outer structures fit within 86% canvas. Keep identical globe scale and position across evolution stages. No text, labels, numbers, ornamental frame, stars, people, wings, decorative flourishes, CGI, smooth gradients, neon, cartoons or painterly blur. The SAME bare engraved globe now embraced by ONE vertical meridian hoop only, a thin elliptical armillary band curving around the globe, front arc and rear arc correctly occluded. NO horizontal hoops yet, NO stand.",
+        "width": 512,
+        "height": 512,
+        "no_background": false,
+        "reference_images": [
+          {
+            "url": "upload:1f134f36-a6a1-4c35-87ac-ef03c355ceee",
+            "usage": "bare sphere: first evolution endpoint; sphere proportions, authentic curved copperplate hatching."
+          },
+          {
+            "url": "upload:e2b6dad9-dc1b-4452-a54c-40250df4c2e1",
+            "usage": "full armillary: final evolution endpoint; exact scientific orbital structure and engraving style. Invert white paper to black void and black ink to bone silver."
+          }
+        ],
+        "seed": 472103
+      },
+      "previous_job_id": "20bc1c21-e8f1-401d-bcd8-a48880576502",
+      "revision": "PixelLab edit_image: Single vertical hoop added to stage 1; stalled original generation cancelled.",
+      "source_job_id": "fafac772-0de1-4c52-88a6-2042b74cd8b4",
+      "status": "completed",
+      "download_url": "https://api.pixellab.ai/mcp/images/71bdb163-14c5-46b8-9a43-598e27aa4ac2/download"
+    },
+    {
+      "slug": "03-equador",
+      "name": "Equador",
+      "form": "The SAME engraved globe with ONE vertical meridian hoop and ONE horizontal equatorial elliptical band around its middle. Exactly two outer armillary rings, a restrained sparse coordinate grid on the globe, NO other orbital rings, NO stand.",
+      "stage": 3,
+      "file": "03-equador.png",
+      "job_id": "d9d2ccd6-8f61-4172-b553-1412a3cbcc64",
+      "request": {
+        "description": "Production-ready square 2D game asset for A Entidade Divina / Cult of the Sphere. Authentic Renaissance 16th-century occult copperplate engraving, Peter Apian cosmography, Durer woodcut. Bone-white and ash-silver engraved contours on a uniform PURE BLACK #000000 background, monochrome soot/charcoal/bone palette. Meticulous fine parallel curved hatching, cross-hatching, stippling, precise crisp linework. Centered symmetric cosmic globe floating in void. Globe center at canvas center; globe diameter 52% of canvas; outer structures fit within 86% canvas. Keep identical globe scale and position across evolution stages. No text, labels, numbers, ornamental frame, stars, people, wings, decorative flourishes, CGI, smooth gradients, neon, cartoons or painterly blur. The SAME engraved globe with ONE vertical meridian hoop and ONE horizontal equatorial elliptical band around its middle. Exactly two outer armillary rings, a restrained sparse coordinate grid on the globe, NO other orbital rings, NO stand.",
+        "width": 512,
+        "height": 512,
+        "no_background": false,
+        "reference_images": [
+          {
+            "url": "upload:1f134f36-a6a1-4c35-87ac-ef03c355ceee",
+            "usage": "bare sphere: first evolution endpoint; sphere proportions, authentic curved copperplate hatching."
+          },
+          {
+            "url": "upload:e2b6dad9-dc1b-4452-a54c-40250df4c2e1",
+            "usage": "full armillary: final evolution endpoint; exact scientific orbital structure and engraving style. Invert white paper to black void and black ink to bone silver."
+          }
+        ],
+        "seed": 472103
+      },
+      "previous_job_id": "2cee27b5-478e-4637-8e89-86f922f52f29",
+      "revision": "PixelLab edit_image: Removed diagonal hoop and outer circular hoop, retaining meridian and equator.",
+      "source_job_id": "2cee27b5-478e-4637-8e89-86f922f52f29",
+      "status": "completed",
+      "download_url": "https://api.pixellab.ai/mcp/images/d9d2ccd6-8f61-4172-b553-1412a3cbcc64/download"
+    },
+    {
+      "slug": "04-orbitas",
+      "name": "Órbitas",
+      "form": "The SAME engraved globe with the vertical meridian hoop, equatorial band, and ONE tilted oblique elliptical orbital hoop. Three distinct interlocking armillary rings. Fine longitude lines now mark the upper hemisphere. NO stand.",
+      "stage": 4,
+      "file": "04-orbitas.png",
+      "job_id": "319031f3-3e30-4960-b9f3-e6f63fa7f625",
+      "request": {
+        "description": "Production-ready square 2D game asset for A Entidade Divina / Cult of the Sphere. Authentic Renaissance 16th-century occult copperplate engraving, Peter Apian cosmography, Durer woodcut. Bone-white and ash-silver engraved contours on a uniform PURE BLACK #000000 background, monochrome soot/charcoal/bone palette. Meticulous fine parallel curved hatching, cross-hatching, stippling, precise crisp linework. Centered symmetric cosmic globe floating in void. Globe center at canvas center; globe diameter 52% of canvas; outer structures fit within 86% canvas. Keep identical globe scale and position across evolution stages. No text, labels, numbers, ornamental frame, stars, people, wings, decorative flourishes, CGI, smooth gradients, neon, cartoons or painterly blur. The SAME engraved globe with the vertical meridian hoop, equatorial band, and ONE tilted oblique elliptical orbital hoop. Three distinct interlocking armillary rings. Fine longitude lines now mark the upper hemisphere. NO stand.",
+        "width": 512,
+        "height": 512,
+        "no_background": false,
+        "reference_images": [
+          {
+            "url": "upload:1f134f36-a6a1-4c35-87ac-ef03c355ceee",
+            "usage": "bare sphere: first evolution endpoint; sphere proportions, authentic curved copperplate hatching."
+          },
+          {
+            "url": "upload:e2b6dad9-dc1b-4452-a54c-40250df4c2e1",
+            "usage": "full armillary: final evolution endpoint; exact scientific orbital structure and engraving style. Invert white paper to black void and black ink to bone silver."
+          }
+        ],
+        "seed": 472103
+      },
+      "status": "completed",
+      "download_url": "https://api.pixellab.ai/mcp/images/319031f3-3e30-4960-b9f3-e6f63fa7f625/download"
+    },
+    {
+      "slug": "05-plenitude-armilar",
+      "name": "Plenitude Armilar",
+      "form": "A COMPLETE ARMILLARY SPHERE closely matching the reference labelled full armillary: central globe with fine longitude hatching grid on upper hemisphere, wide equatorial band, paired surrounding latitude orbital bands, vertical enclosing meridian circle and small top and bottom polar rings on a fine vertical axis. Elegant scientific instrument structure, NO pedestal, NO stand.",
+      "stage": 5,
+      "file": "05-plenitude-armilar.png",
+      "job_id": "703d7c91-b775-4da9-ba9d-913ac787b29e",
+      "request": {
+        "description": "Production-ready square 2D game asset for A Entidade Divina / Cult of the Sphere. Authentic Renaissance 16th-century occult copperplate engraving, Peter Apian cosmography, Durer woodcut. Bone-white and ash-silver engraved contours on a uniform PURE BLACK #000000 background, monochrome soot/charcoal/bone palette. Meticulous fine parallel curved hatching, cross-hatching, stippling, precise crisp linework. Centered symmetric cosmic globe floating in void. Globe center at canvas center; globe diameter 52% of canvas; outer structures fit within 86% canvas. Keep identical globe scale and position across evolution stages. No text, labels, numbers, ornamental frame, stars, people, wings, decorative flourishes, CGI, smooth gradients, neon, cartoons or painterly blur. A COMPLETE ARMILLARY SPHERE closely matching the reference labelled full armillary: central globe with fine longitude hatching grid on upper hemisphere, wide equatorial band, paired surrounding latitude orbital bands, vertical enclosing meridian circle and small top and bottom polar rings on a fine vertical axis. Elegant scientific instrument structure, NO pedestal, NO stand.",
+        "width": 512,
+        "height": 512,
+        "no_background": false,
+        "reference_images": [
+          {
+            "url": "upload:1f134f36-a6a1-4c35-87ac-ef03c355ceee",
+            "usage": "bare sphere: first evolution endpoint; sphere proportions, authentic curved copperplate hatching."
+          },
+          {
+            "url": "upload:e2b6dad9-dc1b-4452-a54c-40250df4c2e1",
+            "usage": "full armillary: final evolution endpoint; exact scientific orbital structure and engraving style. Invert white paper to black void and black ink to bone silver."
+          }
+        ],
+        "seed": 472103
+      },
+      "status": "completed",
+      "download_url": "https://api.pixellab.ai/mcp/images/703d7c91-b775-4da9-ba9d-913ac787b29e/download"
+    }
+  ]
+}

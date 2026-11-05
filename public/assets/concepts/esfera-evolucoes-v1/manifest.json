@@ -1,0 +1,73 @@
+{
+  "title": "Evoluções da Esfera — estudo visual v1",
+  "date": "2026-11-03",
+  "provider": "PixelLab MCP",
+  "model": "pro",
+  "seed": 761103,
+  "canvas": [
+    256,
+    256
+  ],
+  "transparent": true,
+  "referenceImages": [
+    {
+      "url": "upload:a13cd853-b131-45e1-8059-db052a2d364b",
+      "usage": "FIRST evolution identity: plain engraved solid sphere, curved hatching and clear circle silhouette."
+    },
+    {
+      "url": "upload:f0b85734-aa50-4ca2-9d44-11bbe29a3340",
+      "usage": "FINAL evolution construction: use ONLY the black-and-white armillary drawing in the middle of this screenshot. Ignore phone UI and page background."
+    },
+    {
+      "url": "upload:762adba3-003f-49c8-92f7-44834bdef828",
+      "usage": "Current game reference for ivory/silver palette, crisp engraved pixel rendering on transparent background, not its ornamentation."
+    }
+  ],
+  "basePrompt": "Create ONE centered floating Hermetic Sphere deity game sprite for Cult of the Sphere, a dark Renaissance cosmography idle game. 16th-century copperplate engraving translated into crisp high-detail pixel clusters, meticulous curved parallel hatching and crosshatching, bone-white ivory and silver-grey on transparency with restrained antique brass accents under 5%. Orthographic frontal three-quarter armillary geometry, light from upper left, same perfectly round solid orb at the center. Background completely transparent; no cast shadow, no frame, no pedestal, no lettering, no UI, no eyes, no face, no clouds, no flames, no spikes, no modern gradient, no glossy CGI. Leave at least 16 pixels clear margin, consistent center at 128,128. The plain orb reference defines the actual deity and engraved surface; the phone screenshot contains the FINAL armillary construction, ignore ALL phone interface and white paper, use ONLY the armillary drawing within it. The current game sprite reference supplies palette and etched game treatment ONLY, do not copy its ornamental filigree. This is an evolution study, mechanical clarity and distinct readable silhouette at 128 pixels.",
+  "stages": [
+    {
+      "slug": "01-centelha",
+      "name": "Centelha",
+      "prompt": "STAGE 1 OF 4 — THE FIRST SPHERE. Match the supplied plain engraved ball closely: one naked ivory solid round sphere, 176 pixels in diameter, delicately engraved dark-grey curved hatching clustered on lower-right edge, calm almost blank light center, no meridians, NO rings, no aura. A timeless simple celestial marble, deliberate restraint. The silhouette is solely one perfect circle.",
+      "jobId": "4327b866-b9f6-4f37-96ff-49c0b1c12641",
+      "file": "01-centelha.png"
+    },
+    {
+      "slug": "02-despertar",
+      "name": "Despertar",
+      "prompt": "STAGE 2 OF 4 — THE FIRST ORBIT. Preserve the same solid ivory round orb, 176 pixels diameter. Add EXACTLY ONE slim antique silver equatorial ring around the orb, seen as a horizontal ellipse slightly tilted by 12 degrees, width 218 pixels; the rear arc goes behind the sphere and the front arc passes in front of the lower-middle. Etch 3 faint longitude arcs on the orb, keep its face light and uncluttered. One minute tarnished-gold mark on the equatorial ring. NO second ring, no outer circular cage, no poles, no ornamental halo. Clearly just a sphere with its first orbit.",
+      "jobId": "60b02103-cab6-4b14-8fab-573bf819122f",
+      "file": "02-despertar.png"
+    },
+    {
+      "slug": "03-convergencia",
+      "name": "Convergência",
+      "prompt": "STAGE 3 OF 4 — CROSSING ORBITS. Preserve the same ivory round globe, 164 pixels diameter, now with 5 fine meridians and 2 latitude lines. Retain the silver equatorial ellipse and add ONE open upright meridian hoop tilted diagonally about 35 degrees in the other plane, forming two visibly independent intersecting orbits around the same globe. Outer diameter 218 pixels. Fine aged-brass tick marks only at four junctions. Strong convincing front/back occlusion, clean readable construction. NO complete spherical cage, no polar caps yet, no elaborate decoration. Midpoint between single-ring and complete armillary.",
+      "jobId": "42a5850d-87c5-4931-87ab-0711b00e5f22",
+      "file": "03-convergencia.png"
+    },
+    {
+      "slug": "04-plenitude-armilar",
+      "name": "Plenitude Armilar",
+      "prompt": "STAGE 4 OF 4 — COMPLETE ARMILLARY DEITY. Faithfully echo the final supplied historic armillary drawing: a clear intact central ivory globe 148 pixels diameter with a delicate longitude/latitude grid; a large upright outer meridian circle; two horizontal elliptical latitude rings around it; one broader equatorial band; a slim continuous vertical polar axis and small elliptical polar hoops above and below the globe. Whole construction fits inside 224 pixels diameter. Delicate engraved silver metal, tiny old-gold accents at cardinal marks only. Each band looks mechanically separate with consistent back/front occlusion. Keep the open air gaps and solid globe easily readable. It is a scholarly armillary instrument like the reference, not an ornate fantasy clock, no spikes or medallions.",
+      "jobId": "bd9c7bdf-32f0-4473-9433-74f3fd25b146",
+      "file": "04-plenitude-armilar.png"
+    }
+  ],
+  "animation": {
+    "model": "PixelLab PixMiniMax H3",
+    "source": "03-convergencia.png",
+    "jobId": "64828b68-e2c9-48f6-9f3b-0747210ea72b",
+    "seed": 761104,
+    "generatedFrames": 16,
+    "prompt": "Rigid armillary mechanism, restrained seamless half-turn rotation. Central orb is a BLANK IVORY MATHEMATICAL SPHERE bearing ONLY fine regular longitude/latitude grid and curved engraving hatching. NOT Earth: absolutely NO continents, maps, islands, geographic shapes, stains or new markings. Preserve the abstract grid as its lines slowly drift across the spherical surface. Thin silver hoops turn slowly about the fixed vertical axis, maintaining their exact number, rigid circular shape, thickness and proper front/back occlusion. Fixed upper-left light, locked camera, centered orb, constant size and upright axis. No bobbing, no morphing, no tilting the whole object. Return exactly to the initial pose for a calm loop. Preserve crisp limited-color engraved pixel clusters and transparency.",
+    "totalFrames": 17,
+    "file": "animation/animation.json",
+    "review": "No geography; hoop geometry and globe proportions require stabilization before production.",
+    "earlierTrial": {
+      "jobId": "a51092dc-c741-485a-93e0-f51d52426a03",
+      "generatedFrames": 32,
+      "review": "Rejected: invented continents and changed hoop geometry. Original trial remains in PixelLab gallery; only refined animation stored here."
+    }
+  }
+}

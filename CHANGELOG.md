@@ -8,6 +8,8 @@ Para as próximas versões, usamos `MAJOR.MINOR.PATCH`: novidades e mudanças re
 
 ## 0.8.1 — 2026-11-04
 
+- A Esfera ganha cinco formas animadas que acompanham a Encarnação: o núcleo inicial gira, o desbloqueio revela Meridiano, e as evoluções seguintes revelam Equador, Órbitas e Plenitude Armilar. Órbitas usa a segunda versão da animação, e Plenitude Armilar mantém a primeira animação criada, tanto no Avatar do Eclipse quanto no Solar.
+- A forma da Esfera é atualizada automaticamente ao carregar o progresso e após a Ascensão. A preferência por movimento reduzido exibe imagens estáticas de cada forma.
 - Aparar um ataque bloqueia o golpe sem causar dano à Esfera nem ao Guardião, inclusive nos ataques especiais. A aparada mantém a carga de +25% da Esfera, e a interface deixa de anunciar dano ao boss.
 - A balança de Anúbis apresenta dois balões **APARAR**, cada um com um número diferente acima. Escolher apenas o maior bloqueia o ataque sem dano; clicar no menor causa o dobro do dano normal à Esfera; clicar no maior e depois no menor causa o triplo. Se nenhum for escolhido, o ataque causa dano normal uma única vez.
 - A vitória ganha uma animação com o desaparecimento do Guardião. Depois, a Encarnação conduz os Fiéis de volta às suas posições no pátio, espera todos chegarem e retorna ao próprio altar. A câmera acompanha o retorno, e o resultado da batalha aparece ao final da sequência.

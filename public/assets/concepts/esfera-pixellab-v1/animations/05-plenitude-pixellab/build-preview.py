@@ -1,0 +1,39 @@
+"""Embed the PixelLab frames into a standalone playback page."""
+from pathlib import Path
+import base64
+import json
+
+root = Path(__file__).resolve().parent
+frames = sorted((root / 'frames').glob('*.png'))
+manifest = json.loads((root / 'manifest.json').read_text())
+frames = frames[:manifest.get('playback_frame_count',len(frames))]
+assert frames, 'Run export.py first'
+paths = [str(p.resolve()) for p in frames]
+embedded = ['data:image/png;base64,' + base64.b64encode(p.read_bytes()).decode() for p in frames]
+template = '''<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Plenitude Armilar — aros independentes · PixelLab</title><style>
+body{margin:0;font-family:var(--font-sans,system-ui);color:var(--foreground,#ddd)}
+.art{max-width:512px;margin:auto;border-radius:12px;overflow:hidden;background:#000}
+canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+.controls{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px;margin:14px 0}
+button,select{font:inherit;color:inherit;background:var(--secondary,#28282c);border:1px solid var(--border,#555);border-radius:6px;padding:7px 12px}
+.timeline{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--muted-foreground,#aaa);font-size:12px}input{width:min(300px,60%)}p{text-align:center;font-size:13px;color:var(--muted-foreground,#999);margin:12px 0}
+</style><div class="art"><canvas id="animation" width="256" height="256" aria-label="Animação da imagem original de Plenitude Armilar criada no PixelLab"></canvas></div>
+<div class="controls"><button id="play">Pausar</button><label>Velocidade <select id="speed"><option value=".5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><button id="reset">Reiniciar</button></div>
+<label class="timeline">Quadro <input id="frame" type="range" min="0" max="__MAX__" step="1" value="0"><output id="counter">1 / __COUNT__</output></label><p>PixelLab · Plenitude Armilar · aros independentes · 256 × 256</p>
+<script>
+const sources=__SOURCES__;
+const canvas=document.getElementById('animation'),ctx=canvas.getContext('2d'),slider=document.getElementById('frame'),play=document.getElementById('play');
+let frames=[],position=0,speed=1,playing=true,last=null;
+function render(){const i=Math.floor(position)%frames.length;if(!frames[i])return;ctx.fillStyle='#000000';ctx.fillRect(0,0,256,256);ctx.drawImage(frames[i],0,0);slider.value=i;document.getElementById('counter').textContent=(i+1)+' / '+frames.length;}
+Promise.all(sources.map(src=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=src}))).then(images=>{frames=images;render();console.log('PixelLab frames loaded: '+frames.length)}).catch(()=>console.error('Falha ao carregar quadros PixelLab'));
+function tick(now){if(last!==null&&playing&&frames.length)position=(position+Math.min((now-last),100)*speed/120)%frames.length;last=now;render();requestAnimationFrame(tick)}requestAnimationFrame(tick);
+play.onclick=()=>{playing=!playing;play.textContent=playing?'Pausar':'Continuar'};
+document.getElementById('speed').onchange=e=>speed=Number(e.target.value);
+document.getElementById('reset').onclick=()=>{position=0;render()};
+slider.oninput=()=>{playing=false;play.textContent='Continuar';position=Number(slider.value);render()};
+window.pixelLabPlayback={setFrame(i){playing=false;position=i;render()},get frameCount(){return frames.length}};
+</script></html>'''
+template=template.replace('__MAX__',str(len(frames)-1)).replace('__COUNT__',str(len(frames)))
+(root / 'preview.html').write_text(template.replace('__SOURCES__', json.dumps(embedded)))
+(root / 'inline-preview.html').write_text(template.replace('__SOURCES__', json.dumps(paths)))
+print(f'Built standalone and inline preview for {len(frames)} frames')

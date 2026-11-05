@@ -1,0 +1,34 @@
+{
+  "stage": 3,
+  "name": "Equador",
+  "size": [
+    512,
+    512
+  ],
+  "duration_seconds": 8,
+  "base": "../../01-nucleo.png",
+  "technique": "SVG/SMIL; globo PixelLab fixo, grade e aros vetoriais",
+  "rings": [
+    {
+      "id": "meridian",
+      "radius": 174,
+      "beta": 1.5707963267948966,
+      "phase": 1.2740903539558606,
+      "sign": 1,
+      "tilt": 0.17453292519943295,
+      "direction": "positivo",
+      "degrees_per_second": 45
+    },
+    {
+      "id": "equator",
+      "radius": 148,
+      "beta": 0.20943951023931953,
+      "phase": 0,
+      "sign": -1,
+      "tilt": 0,
+      "direction": "negativo",
+      "degrees_per_second": -45
+    }
+  ],
+  "integrated_in_game": false
+}

@@ -430,6 +430,7 @@ class AppManager {
 
   private applySaveData(save: SaveData): void {
     this.gameState.applySaveData(save);
+    this.sphere.syncProgress();
   }
 
   private saveProgress(): boolean {

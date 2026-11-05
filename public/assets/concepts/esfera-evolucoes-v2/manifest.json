@@ -1,0 +1,53 @@
+{
+  "title": "Evoluções da Esfera — fusão com a arte atual",
+  "version": 2,
+  "date": "2026-11-03",
+  "provider": "PixelLab MCP",
+  "model": "pro",
+  "seed": 761203,
+  "canvas": [
+    256,
+    256
+  ],
+  "transparent": true,
+  "currentGameReference": {
+    "file": "../../sprites/esfera/layers/still.png",
+    "sha256": "21a1e9a10ab1a80e2fa7e20897939a54c4fb345110c9e88d3e52758177b674c9",
+    "upload": "upload:6355c51f-25fd-431f-8fe6-65da98123fa8"
+  },
+  "stages": [
+    {
+      "name": "Centelha Sagrada",
+      "file": "01-centelha-sagrada.png",
+      "base": "../esfera-evolucoes-v1/01-centelha.png",
+      "baseJob": "4327b866-b9f6-4f37-96ff-49c0b1c12641",
+      "jobId": "b68f4971-a234-4e92-a520-4f274031e9ae",
+      "prompt": "Create ONE evolution sprite for Cult of the Sphere, 256x256 transparent PNG. A deliberate FUSION, not merely a recolor: preserve the silhouette and stage complexity of the EVOLUTION BASE reference, and adopt the ACTUAL GAME SPHERE's engraved metal construction, thin alchemical rim, subtle antique-brass accents and unmistakable small luminous ivory circular core. The game reference is the style AND identity anchor, not just a palette. 16th-century Hermetic copperplate/woodcut engraving in crisp pixel clusters: curved hatching, fine etched geometry, bone-white, smoky silver, charcoal shadows, old gold on selected bands only (under 5% of canvas). Front three-quarter celestial construction; light upper-left; circular celestial core centered precisely at 128,128 across every evolution. Keep a solid/readable spherical body in early stages, progressively reveal the airy silver wireframe mechanism in advanced stages. Same coherent deity throughout. Entire silhouette within x16..239,y16..239; no pedestal, floor, background, words, phone UI, modern gloss, neon, faces, eyes, continents, clouds, flames, spiky sun rays, cartoon proportions. Leave open air between the rings and believable front/back occlusion. ONE sprite, no comparison sheet, no labels.\nEVOLUTION 1 OF 4. Fuse the plain ivory engraved orb with the game's sacred glowing nucleus and engraved rim. Preserve a nearly naked smooth round orb, diameter 172 pixels. Introduce a SMALL 10-pixel bone-white luminous circular seed exactly in its center, surrounded by one thin dark engraved circular socket. Keep curved hatched shading on lower-right. Only a hairline engraved antique-silver circumference with four tiny old-gold alignment marks around the orb's rim. NO free-floating orbital bands yet, NO external armillary cage. Restrained first awakening: recognizably the original plain ball, now carrying the same divine seed as the actual game sphere."
+    },
+    {
+      "name": "Despertar Ritual",
+      "file": "02-despertar-ritual.png",
+      "base": "../esfera-evolucoes-v1/02-despertar.png",
+      "baseJob": "60b02103-cab6-4b14-8fab-573bf819122f",
+      "jobId": "e4491f10-f6e5-4a63-9a13-c22ccf888bb3",
+      "prompt": "ONE 256x256 transparent evolution sprite for Cult of the Sphere. FUSE the EVOLUTION BASE's silhouette and structural complexity with the ACTUAL GAME SPHERE's engraved metal construction, alchemical rim, silver lattice, small luminous ivory circular nucleus and restrained old-gold bandwork. Strong identity fusion, not merely a recolor. 16th-century Hermetic copperplate engraving in crisp pixel clusters, curved hatching, ivory, smoky silver and charcoal, gold accents under 5%. Light upper-left. Centered spherical core at 128,128; all art inside x16..239,y16..239. Early stages retain solid globe volume; later stages reveal the airy mechanism. Believable front/back occlusion and open gaps. No background, text, pedestal, face, eyes, continents, neon, CGI gloss, spikes, cartoon, or extra objects. One sprite only.\nEVOLUTION 2 OF 4. Preserve the BASE's plain ivory sphere wrapped in ONE oblique equatorial elliptical band. Replace the utilitarian thin band with the actual game's narrow aged-brass band: delicately etched alchemical tickmarks and geometric cuts, NOT readable text. Keep orb 164 pixels diameter; band 216 pixels wide, inclined around 30 degrees from lower-left to upper-right. Fine silver meridian lines are visible across the orb. The same 10-pixel luminous ivory circular seed sits at exact center in a tiny dark bezel. The first engraved silver rim follows the globe's circumference, no separate circular cage yet. Two minute seals at the equatorial band's joining points. CLEARLY only one independent orbital band, an early evolution, not the complete game design."
+    },
+    {
+      "name": "Convergência Hermética",
+      "file": "03-convergencia-hermetica.png",
+      "base": "../esfera-evolucoes-v1/03-convergencia.png",
+      "baseJob": "42a5850d-87c5-4931-87ab-0711b00e5f22",
+      "jobId": "6e88246d-00fc-4158-9151-6f555d08cf69",
+      "prompt": "ONE 256x256 transparent evolution sprite for Cult of the Sphere. FUSE the EVOLUTION BASE's silhouette and structural complexity with the ACTUAL GAME SPHERE's engraved metal construction, alchemical rim, silver lattice, small luminous ivory circular nucleus and restrained old-gold bandwork. Strong identity fusion, not merely a recolor. 16th-century Hermetic copperplate engraving in crisp pixel clusters, curved hatching, ivory, smoky silver and charcoal, gold accents under 5%. Light upper-left. Centered spherical core at 128,128; all art inside x16..239,y16..239. Early stages retain solid globe volume; later stages reveal the airy mechanism. Believable front/back occlusion and open gaps. No background, text, pedestal, face, eyes, continents, neon, CGI gloss, spikes, cartoon, or extra objects. One sprite only.\nEVOLUTION 3 OF 4. Preserve the BASE's crossed orbital planes and increasing meridian grid. Borrow the actual game's crossed ENGRAVED smoky-silver broad meridian bands and ONE narrow old-gold diagonal band. Outer diameter 216 pixels, globe 146 pixels. The globe starts opening into a silver armillary lattice: alternate clear windowed regions with ivory hatched curved edge segments, so this is a luminous celestial mechanism, not an Earth map or a fully opaque billiard ball. Show the same small luminous ivory circular seed at exact center with dark surrounding void. Add one slim outer circular astrolabe rim with four tiny engraved round seals at cardinal positions; these must remain subordinate and not grow spikes. Three clean orbital planes, plenty of negative space. Intermediate complexity: omit the final polar cap hoops."
+    },
+    {
+      "name": "Plenitude Divina",
+      "file": "04-plenitude-divina.png",
+      "base": "../esfera-evolucoes-v1/04-plenitude-armilar.png",
+      "baseJob": "bd9c7bdf-32f0-4473-9433-74f3fd25b146",
+      "jobId": "ed9e0c7e-c96a-46e8-b7b8-8cfffcc00781",
+      "prompt": "ONE 256x256 transparent evolution sprite for Cult of the Sphere. FUSE the EVOLUTION BASE's silhouette and structural complexity with the ACTUAL GAME SPHERE's engraved metal construction, alchemical rim, silver lattice, small luminous ivory circular nucleus and restrained old-gold bandwork. Strong identity fusion, not merely a recolor. 16th-century Hermetic copperplate engraving in crisp pixel clusters, curved hatching, ivory, smoky silver and charcoal, gold accents under 5%. Light upper-left. Centered spherical core at 128,128; all art inside x16..239,y16..239. Early stages retain solid globe volume; later stages reveal the airy mechanism. Believable front/back occlusion and open gaps. No background, text, pedestal, face, eyes, continents, neon, CGI gloss, spikes, cartoon, or extra objects. One sprite only.\nEVOLUTION 4 OF 4. Combine the COMPLETE ARMILLARY BASE construction—meridian circle, equator, latitude hoops, vertical axis and small polar hoops—with the actual game's ornate silver engraved bandwork, old-gold diagonal equatorial ribbon, open celestial lattice and bright tiny circular nucleus. Overall diameter at most 220 pixels with safe clear margins. Orb/lattice 144 pixels, nucleus 12 pixels at exact center. Aged-silver front/back meridians, one restrained gold ribbon inclined lower-left to upper-right, fine ivory latitude-longitude lattice surrounding the illuminated central seed. Retain only light ivory hatched hemispherical edges, with dark transparent voids so the luminous core reads immediately. A thin engraved outer astrolabe rim carries four tiny round seals (NOT spikes), and refined small elliptical polar hoops preserve the historic base reference. Richest stage but mechanically readable, no extra decorative explosion. It must feel like the game's existing sphere evolved through the four bases."
+    }
+  ],
+  "scope": "Four new visual concepts. Original v1 concepts and runtime game sphere are preserved."
+}

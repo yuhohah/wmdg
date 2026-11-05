@@ -1,0 +1,24 @@
+{
+  "source": "../../04-orbitas.png",
+  "input": "input.png",
+  "provider": "PixelLab MCP",
+  "tool": "animate_image_pixminimax",
+  "job_id": "92cac4d5-3b60-444e-a74a-384fbca2ed58",
+  "asset_id": "70790ce5-22cb-540e-8f15-02e4ff9d6e9a",
+  "request": {
+    "description": "Animate ONLY the separate armillary rings in this original image. The central engraved globe must remain completely stationary: locked position, size, lighting, longitude lines and hatching texture. The outer circular support frame stays fixed. The upright meridian ring makes a smooth clockwise revolution around the globe's vertical axis; the equatorial band counter-rotates in the opposite direction; the oblique diagonal hoop rotates slowly around its own tilted axis. Independent rigid mechanical rotations at constant speed, correctly alternating front and rear occlusion around the globe and at ring crossings. Rings keep their circular shape, width, number and radius: no bending, melting, merging or passing through each other. Preserve this exact original bone-and-silver Renaissance engraved artwork, black background, fixed orthographic camera, no camera orbit, no zoom, no added objects or particles. Complete a seamless cycle returning to the initial orientation.",
+    "first_frame_url": "upload:955df713-5166-441d-b706-cd9b179afea7",
+    "last_frame_url": "upload:955df713-5166-441d-b706-cd9b179afea7",
+    "frame_count": 24,
+    "no_background": false,
+    "enhance_prompt": false,
+    "seed": 472103,
+    "subject_description": "Original antique engraved armillary sphere with an immobile central globe and three independent orbital bands inside a circular support",
+    "initial_pose": "The exact supplied original frame: vertical meridian, horizontal equatorial band and oblique ring around the stationary globe"
+  },
+  "receipt": "id: 92cac4d5-3b60-444e-a74a-384fbca2ed58\njob_id: 92cac4d5-3b60-444e-a74a-384fbca2ed58\ndescription: Animate ONLY the separate armillary rings in this original image. The central engraved globe must remain completely stationary: locked position, size, lighting, longitude lines and hatching texture. The outer circular support frame stays fixed. The upright meridian ring makes a smooth clockwise revolution around the globe's vertical axis; the equatorial band counter-rotates in the opposite direction; the oblique diagonal hoop rotates slowly around its own tilted axis. Independent rigid mechanical rotations at constant speed, correctly alternating front and rear occlusion around the globe and at ring crossings. Rings keep their circular shape, width, number and radius: no bending, melting, merging or passing through each other. Preserve this exact original bone-and-silver Renaissance engraved artwork, black background, fixed orthographic camera, no camera orbit, no zoom, no added objects or particles. Complete a seamless cycle returning to the initial orientation.\nframes: 24\nsize: 256x256px\ntransparent: False\nlast_frame: yes (animating toward it)\nseed: 472103\ncost: 3 generations\nstatus: processing (~1-5 min)\n\nhint: get_image(job_id=\"92cac4d5-3b60-444e-a74a-384fbca2ed58\")\nwithout get_image: GET https://api.pixellab.ai/mcp/images/92cac4d5-3b60-444e-a74a-384fbca2ed58/download (423 + Retry-After until ready; ?index=N for the Nth of several images)\nasset_id: 70790ce5-22cb-540e-8f15-02e4ff9d6e9a\nasset_status: pending (saved to your gallery when generation completes)",
+  "status": "completed",
+  "downloaded_frame_count": 25,
+  "playback_frame_ms": 160,
+  "gif": "animation.gif"
+}

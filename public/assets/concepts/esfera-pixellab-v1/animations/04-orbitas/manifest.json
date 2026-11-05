@@ -1,0 +1,46 @@
+{
+  "stage": 4,
+  "name": "Órbitas",
+  "size": [
+    512,
+    512
+  ],
+  "cycle_seconds": 48,
+  "renderer": "WebGL, rigid annular meshes, per-fragment depth buffer",
+  "base": "../../01-nucleo.png",
+  "globe_radius": 130,
+  "rings": [
+    {
+      "name": "Meridiano",
+      "radius": 174,
+      "width": 7,
+      "thickness": 2,
+      "period_seconds": 12,
+      "direction": 1
+    },
+    {
+      "name": "Equador",
+      "radius": 150,
+      "width": 9,
+      "thickness": 2,
+      "period_seconds": 16,
+      "direction": -1
+    },
+    {
+      "name": "Órbita oblíqua",
+      "radius": 199,
+      "width": 8,
+      "thickness": 2,
+      "period_seconds": 24,
+      "direction": 1
+    },
+    {
+      "name": "Moldura fixa",
+      "radius": 222,
+      "width": 5,
+      "thickness": 2,
+      "period_seconds": null
+    }
+  ],
+  "integrated_in_game": false
+}

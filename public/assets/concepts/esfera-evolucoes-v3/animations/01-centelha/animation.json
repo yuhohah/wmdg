@@ -1,0 +1,21 @@
+{
+  "canvas": [
+    256,
+    256
+  ],
+  "frameDurationMs": 350,
+  "loop": true,
+  "frames": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png",
+    "04.png",
+    "05.png",
+    "06.png",
+    "07.png"
+  ],
+  "closingFrame": "08.png",
+  "jobId": "00cfa0c2-336b-4c82-afb9-e2d281ed74d6",
+  "sourceModel": "PixelLab animate_image"
+}

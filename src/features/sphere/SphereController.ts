@@ -4,7 +4,7 @@ import { NotificationManager } from '../../systems/notifications.js';
 import { calculateMiracleReward, formatNumber } from '../../systems/calculations.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 import { effectEasing } from '../../ui/visualTiming.js';
-import { SphereSprite } from './SphereSprite.js';
+import { SphereVisual } from './SphereVisual.js';
 
 export interface SphereControllerOptions {
   gameState: GameStateManager;
@@ -20,7 +20,9 @@ export class SphereController {
   private triggerHaptic: (pattern: number | number[]) => void;
 
   private divineSphereBtn: HTMLElement | null = null;
-  private sphereAnimation: SphereSprite | null = null;
+  private sphereAnimation: SphereVisual | null = null;
+  private unsubscribeState?: () => void;
+  private unsubscribeTick?: () => void;
   private sphereGlobe: HTMLElement | null = null;
   private shockPool: HTMLElement[] = [];
   private shockIndex: number = 0;
@@ -40,12 +42,12 @@ export class SphereController {
     this.divineSphereBtn = document.getElementById('divine-sphere-btn');
     if (!this.divineSphereBtn) return;
 
-    // The sprite contains both rotation directions; pulse its canvas on clicks.
+    // Pulse the wrapper independently of the approved animation inside it.
     this.divineSphereBtn.innerHTML =
-      '<canvas class="sphere-layer sphere-globe sphere-sprite" aria-hidden="true"></canvas>';
-    const canvas = this.divineSphereBtn.querySelector<HTMLCanvasElement>('.sphere-sprite')!;
-    this.sphereGlobe = canvas;
-    this.sphereAnimation = new SphereSprite(canvas);
+      '<div class="sphere-layer sphere-globe sphere-sprite" aria-hidden="true"></div>';
+    this.sphereGlobe = this.divineSphereBtn.querySelector<HTMLElement>('.sphere-sprite')!;
+    this.sphereAnimation = new SphereVisual(this.sphereGlobe);
+    this.syncProgress();
     for (let i = 0; i < 3; i++) {
       const wave = document.createElement('span');
       wave.className = 'sphere-shock';
@@ -76,12 +78,21 @@ export class SphereController {
   }
 
   private bindEvents(): void {
-    this.divineSphereBtn?.addEventListener('click', (e: MouseEvent) => {
-      this.onSphereClicked(e);
-    });
+    this.divineSphereBtn?.addEventListener('click', this.handleClick);
+    this.unsubscribeState = events.on(GameEvents.STATE_CHANGED, this.syncProgress);
+    this.unsubscribeTick = events.on(GameEvents.GAME_TICK, this.syncProgress);
   }
 
+  private handleClick = (e: MouseEvent): void => this.onSphereClicked(e);
+
+  public syncProgress = (): void => {
+    this.sphereAnimation?.setProgress(this.gameState.isIncarnationUnlocked(), this.gameState.incarnationStage);
+  };
+
   public destroy(): void {
+    this.unsubscribeState?.();
+    this.unsubscribeTick?.();
+    this.divineSphereBtn?.removeEventListener('click', this.handleClick);
     this.sphereAnimation?.destroy();
   }
 

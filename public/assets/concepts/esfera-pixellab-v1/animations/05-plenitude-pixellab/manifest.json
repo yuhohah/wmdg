@@ -1,0 +1,47 @@
+{
+  "source": "../../05-plenitude-armilar.png",
+  "tool": "PixelLab MCP animate_image",
+  "job_id": "dae856b6-655a-4902-89b6-daab03083931",
+  "request": {
+    "action": "Perfect continuous loop of the ring mechanism: each metal hoop spins independently around the central stationary ivory ball. Upper latitude hoop clockwise, equatorial band counterclockwise, lower latitude hoop clockwise, upright meridian hoop rotating vertically, small polar hoops rotating gently. Rigid smooth motion, individual axes, correct overlap in front and behind. Preserve the exact source image, number and shape of hoops, engraved linework, black background and stationary camera. The ball's original hatch pattern stays unchanged, no new drawings. Seamless return to first pose, no stopping, rocking, sudden jump or reversal.",
+    "first_frame_url": "upload:ad4cb03b-8bf5-423d-994d-4856523e543f",
+    "last_frame_url": "upload:ad4cb03b-8bf5-423d-994d-4856523e543f",
+    "frame_count": 8,
+    "no_background": false,
+    "seed": 572113
+  },
+  "receipt": "id: dae856b6-655a-4902-89b6-daab03083931\njob_id: dae856b6-655a-4902-89b6-daab03083931\naction: Perfect continuous loop of the ring mechanism: each metal hoop spins independently around the central stationary ivory ball. Upper latitude hoop clockwise, equatorial band counterclockwise, lower latitude hoop clockwise, upright meridian hoop rotating vertically, small polar hoops rotating gently. Rigid smooth motion, individual axes, correct overlap in front and behind. Preserve the exact source image, number and shape of hoops, engraved linework, black background and stationary camera. The ball's original hatch pattern stays unchanged, no new drawings. Seamless return to first pose, no stopping, rocking, sudden jump or reversal.\nframes: 8\nsize: 256x256px\ntransparent: False\nlast_frame: yes (interpolating to it)\nseed: 572113\nasset_id: 8804bd0d-8c34-5df6-92cc-00f39b436782\nasset_status: pending (saved when generation completes)\ncost: 8 generations\nstatus: processing (~30-180s)\n\nhint: get_image(job_id=\"dae856b6-655a-4902-89b6-daab03083931\")\nwithout get_image: GET https://api.pixellab.ai/mcp/images/dae856b6-655a-4902-89b6-daab03083931/download (423 + Retry-After until ready; ?index=N for the Nth of several images)",
+  "status": "completed",
+  "previous_attempts": [
+    "../05-plenitude-pixellab-attempt1",
+    "../05-plenitude-pixellab-attempt2"
+  ],
+  "previous_findings": "PixMiniMax changed the nucleus and invented geography in both attempts; switching animation model.",
+  "playback_frame_count": 7,
+  "redundant_endpoint_removed": true,
+  "endpoint_distance": 0.5831298828125,
+  "endpoint_removal_threshold": 8.467772165934244,
+  "transition_mean_absolute_rgb": [
+    11.224533081054688,
+    13.696619669596354,
+    16.98480733235677,
+    19.137847900390625,
+    22.441136678059895,
+    21.074620564778645,
+    14.589614868164062
+  ],
+  "apng": "animation.apng",
+  "downloaded_frame_count": 9,
+  "playback_frame_ms": 120,
+  "gif": "animation.gif",
+  "redundant_endpoint_count": 2,
+  "total_generations_spent": 20,
+  "validation": {
+    "apng_preserves_selected_frames": true,
+    "frame_count": 7,
+    "cycle_ms": 840,
+    "seam_mean_absolute_rgb": 14.589614868164062,
+    "average_transition_mean_absolute_rgb": 17.02131144205729,
+    "observations": "Nucleus and background preserved better than PixMiniMax attempts. Meridian movement is stronger; smaller-ring spins are subtle. Minor contour variation; exact independent kinematics not guaranteed."
+  }
+}

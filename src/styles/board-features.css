@@ -34,6 +34,8 @@
 /* The armillary sphere floats framed in the centre of the cosmic oculus */
 #card-altar-sphere {
   backdrop-filter: none !important;
+  /* Blend at the card's stacking context so opaque black asset backgrounds disappear. */
+  mix-blend-mode: screen;
 }
 
 #card-altar-sphere .dodeca-card-body,
@@ -87,7 +89,7 @@
   transform: none;
 }
 
-/* Sprite sheet is cropped on canvas; click pulses run on the compositor. */
+/* Approved images animate inside a separate wrapper, preserving click pulses. */
 #card-altar-sphere .sphere-layer {
   position: absolute;
   inset: 0;
@@ -104,6 +106,26 @@
 #card-altar-sphere .sphere-sprite {
   display: block;
   image-rendering: pixelated;
+}
+
+#card-altar-sphere .sphere-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+#card-altar-sphere .sphere-art-spinning {
+  animation: sphere-initial-spin 24s linear infinite;
+}
+
+@keyframes sphere-initial-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #card-altar-sphere .sphere-art-spinning { animation: none; }
 }
 
 /* Expanding gold wave on each click (pooled, animated via Web Animations) */

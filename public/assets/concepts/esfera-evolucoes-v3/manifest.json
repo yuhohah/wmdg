@@ -1,0 +1,197 @@
+{
+  "version": 3,
+  "scope": "Conceitos visuais; sem integração no runtime",
+  "generator": "PixelLab create_image_pro",
+  "rejected": [
+    {
+      "job_id": "4b84a17b-1545-473d-8007-f4b819fce8c2",
+      "reason": "Escala e textura destoaram da primeira etapa; substituída."
+    },
+    {
+      "job_id": "c1a8fa22-3ea4-4e05-ad00-566498cfcf41",
+      "reason": "Substituída a pedido do usuário: arcos defeituosos."
+    }
+  ],
+  "stages": [
+    {
+      "stage": 1,
+      "slug": "01-centelha",
+      "name": "Centelha",
+      "design": "A nearly plain solid ivory globe with delicate edge hatching. Only a tiny 2 pixel ivory fleck at center, nearly invisible. Absolutely NO central circles, socket, medallion, concentric target, raised bezel, aperture or rings. No orbit rings, grid or gold. Very subtle silver outline.",
+      "description": "ONE centered 2D celestial sphere game sprite, transparent 256x256. Consistent diameter 208 pixels and fixed center (128,128), generous clear margin. Renaissance hermetic copperplate engraving, precise fine hatching, ivory bone and tarnished silver, soot ink, muted antique gold under 5%. Match the supplied game's engraved material, NOT its complexity. This is one step in a SEVEN step VERY GRADUAL evolution; add only the explicitly described geometry. No text, pedestal, stars, particles, faces, CGI, plastic or neon. Retain identical illumination from upper left and delicate etched texture. STAGE 1/7: A nearly plain solid ivory globe with delicate edge hatching. Only a tiny 2 pixel ivory fleck at center, nearly invisible. Absolutely NO central circles, socket, medallion, concentric target, raised bezel, aperture or rings. No orbit rings, grid or gold. Very subtle silver outline.",
+      "width": 256,
+      "height": 256,
+      "no_background": true,
+      "seed": 73017,
+      "style_image_url": "upload:6355c51f-25fd-431f-8fe6-65da98123fa8",
+      "style_copy": [
+        "color_palette",
+        "shading",
+        "outline"
+      ],
+      "reference_images": [
+        {
+          "url": "https://api.pixellab.ai/mcp/images/4327b866-b9f6-4f37-96ff-49c0b1c12641/download",
+          "usage": "plain ivory globe shape and fine etched texture only; no center ornament"
+        }
+      ],
+      "job_id": "06765a07-8efa-48d7-8820-6ea85a47f3e8"
+    },
+    {
+      "stage": 2,
+      "slug": "02-traco",
+      "name": "Primeiro Traço",
+      "design": "Same plain solid ivory globe and tiny 2 pixel central fleck. Add ONLY one faint longitude curve and one faint latitude curve etched ON the surface, and a slightly clearer thin silver rim. NO external hoops, gold, central bezel or ornaments.",
+      "description": "Refine the supplied nearly plain ivory etched sphere by adding ONLY one faint longitude curve and one faint horizontal latitude curve on its surface. Preserve EXACTLY the reference's 184 pixel globe diameter, centered at (128,128), lighting, delicate crosshatching, circular outline and ivory color. This is a tiny incremental step, not a redesign. No center dot, no central detail, no rings, gold, ornaments or extra rim. NO coarse checkerboard dithering, no thick jagged pixels. Transparent 256x256 game sprite, fine Renaissance copperplate engraving matching the reference.",
+      "width": 256,
+      "height": 256,
+      "no_background": true,
+      "seed": 73017,
+      "style_image_url": "https://api.pixellab.ai/mcp/images/06765a07-8efa-48d7-8820-6ea85a47f3e8/download",
+      "style_copy": [
+        "color_palette",
+        "outline",
+        "detail",
+        "shading"
+      ],
+      "reference_images": [
+        {
+          "url": "https://api.pixellab.ai/mcp/images/06765a07-8efa-48d7-8820-6ea85a47f3e8/download",
+          "usage": "preserve exact sphere, scale, shading and hatching; only add two faint surface curves"
+        }
+      ],
+      "job_id": "650fbe8a-82cc-4252-8516-4b8f6f86b54f"
+    },
+    {
+      "stage": 3,
+      "slug": "03-equilibrio",
+      "name": "Equilíbrio",
+      "design": "Same mostly plain solid ivory globe, tiny 2 pixel center fleck, faint sparse coordinate curves. Add ONLY one extremely slender SILVER equatorial orbital ellipse tilted 20 degrees. It is a plain wire, not a broad band. No gold, outer halo, medallions or other hoops.",
+      "description": "ONE centered 2D celestial sphere game sprite, transparent 256x256. Consistent diameter 208 pixels and fixed center (128,128), generous clear margin. Renaissance hermetic copperplate engraving, precise fine hatching, ivory bone and tarnished silver, soot ink, muted antique gold under 5%. Match the supplied game's engraved material, NOT its complexity. This is one step in a SEVEN step VERY GRADUAL evolution; add only the explicitly described geometry. No text, pedestal, stars, particles, faces, CGI, plastic or neon. Retain identical illumination from upper left and delicate etched texture. STAGE 3/7: Same mostly plain solid ivory globe, tiny 2 pixel center fleck, faint sparse coordinate curves. Add ONLY one extremely slender SILVER equatorial orbital ellipse tilted 20 degrees. It is a plain wire, not a broad band. No gold, outer halo, medallions or other hoops.",
+      "width": 256,
+      "height": 256,
+      "no_background": true,
+      "seed": 73017,
+      "style_image_url": "upload:6355c51f-25fd-431f-8fe6-65da98123fa8",
+      "style_copy": [
+        "color_palette",
+        "shading",
+        "outline"
+      ],
+      "reference_images": [
+        {
+          "url": "https://api.pixellab.ai/mcp/images/60b02103-cab6-4b14-8fab-573bf819122f/download",
+          "usage": "approximate globe identity; reduce complexity to the exact stage description"
+        }
+      ],
+      "job_id": "5348be9e-d982-4e32-93c4-a937d2c82964"
+    },
+    {
+      "stage": 4,
+      "slug": "04-alinhamento",
+      "name": "Alinhamento",
+      "design": "Same solid ivory globe, tiny center fleck, sparse faint grid and one slender tilted silver equatorial ellipse. Add a second slender vertical meridian hoop, with only a hairline aged-gold accent on a short arc of the first ring. Keep globe completely solid. No broad ornate bands, outer halo or medallions.",
+      "description": "ONE centered 2D celestial sphere game sprite, transparent 256x256. Consistent diameter 208 pixels and fixed center (128,128), generous clear margin. Renaissance hermetic copperplate engraving, precise fine hatching, ivory bone and tarnished silver, soot ink, muted antique gold under 5%. Match the supplied game's engraved material, NOT its complexity. This is one step in a SEVEN step VERY GRADUAL evolution; add only the explicitly described geometry. No text, pedestal, stars, particles, faces, CGI, plastic or neon. Retain identical illumination from upper left and delicate etched texture. STAGE 4/7: Same solid ivory globe, tiny center fleck, sparse faint grid and one slender tilted silver equatorial ellipse. Add a second slender vertical meridian hoop, with only a hairline aged-gold accent on a short arc of the first ring. Keep globe completely solid. No broad ornate bands, outer halo or medallions.",
+      "width": 256,
+      "height": 256,
+      "no_background": true,
+      "seed": 73017,
+      "style_image_url": "upload:6355c51f-25fd-431f-8fe6-65da98123fa8",
+      "style_copy": [
+        "color_palette",
+        "shading",
+        "outline"
+      ],
+      "reference_images": [
+        {
+          "url": "https://api.pixellab.ai/mcp/images/60b02103-cab6-4b14-8fab-573bf819122f/download",
+          "usage": "approximate globe identity; reduce complexity to the exact stage description"
+        }
+      ],
+      "job_id": "e0907688-42ef-4fcb-a8f8-515dcb3f638e",
+      "revision": {
+        "tool": "PixelLab edit_image",
+        "image_urls": [
+          "https://api.pixellab.ai/mcp/images/5348be9e-d982-4e32-93c4-a937d2c82964/download"
+        ],
+        "description": "Keep this exact ivory engraved globe and its single thin tilted silver orbit, same scale, center, illumination and hatching. Add ONE slender vertical silver meridian hoop perpendicular to the existing orbit. Both hoops must be smooth complete ellipses with constant thin width, anatomically correct front/back occlusion: the rear half is hidden by the solid globe, the front half is visible. No tangled intersections, doubled strips, broken arcs or broad bands. No extra gold, central detail or ornaments. Two coherent rings only. This is stage 4 between a one-ring globe and an armillary. Fine Renaissance engraving, transparent background.",
+        "width": 256,
+        "height": 256,
+        "no_background": true,
+        "seed": 74021
+      }
+    },
+    {
+      "stage": 5,
+      "slug": "05-convergencia",
+      "name": "Convergência",
+      "design": "Same ivory globe and two slender crossed hoops as previous stage. Make the sparse surface grid a little clearer. Ring width increases only slightly, with extremely sparse engraving and a fine aged-gold edge. Open just two SMALL dark windows near the globe's outer edges, leaving 85 percent of ivory globe solid. Tiny central spark 3 pixels. NO extra orbit halo or seals.",
+      "description": "ONE centered 2D celestial sphere game sprite, transparent 256x256. Consistent diameter 208 pixels and fixed center (128,128), generous clear margin. Renaissance hermetic copperplate engraving, precise fine hatching, ivory bone and tarnished silver, soot ink, muted antique gold under 5%. Match the supplied game's engraved material, NOT its complexity. This is one step in a SEVEN step VERY GRADUAL evolution; add only the explicitly described geometry. No text, pedestal, stars, particles, faces, CGI, plastic or neon. Retain identical illumination from upper left and delicate etched texture. STAGE 5/7: Same ivory globe and two slender crossed hoops as previous stage. Make the sparse surface grid a little clearer. Ring width increases only slightly, with extremely sparse engraving and a fine aged-gold edge. Open just two SMALL dark windows near the globe's outer edges, leaving 85 percent of ivory globe solid. Tiny central spark 3 pixels. NO extra orbit halo or seals.",
+      "width": 256,
+      "height": 256,
+      "no_background": true,
+      "seed": 73017,
+      "style_image_url": "upload:6355c51f-25fd-431f-8fe6-65da98123fa8",
+      "style_copy": [
+        "color_palette",
+        "shading",
+        "outline"
+      ],
+      "reference_images": [
+        {
+          "url": "https://api.pixellab.ai/mcp/images/42a5850d-87c5-4931-87ab-0711b00e5f22/download",
+          "usage": "approximate globe identity; reduce complexity to the exact stage description"
+        }
+      ],
+      "job_id": "473b3c9b-6bdc-49a5-a98b-9e573c4dd86f"
+    },
+    {
+      "stage": 6,
+      "slug": "06-despertar-armilar",
+      "name": "Despertar Armilar",
+      "design": "Same sphere and two crossed silver hoops, now modestly engraved. An additional thin outer circular rim appears. Four small openings reveal inner fine wireframe ribs but at least 60 percent of the ivory globe remains solid. One slender aged-gold diagonal ring, no wide solid gold. Tiny 3 pixel central spark. No polar towers or large seals. This must be visibly between a solid globe and an open armillary.",
+      "description": "ONE centered 2D celestial sphere game sprite, transparent 256x256. Consistent diameter 208 pixels and fixed center (128,128), generous clear margin. Renaissance hermetic copperplate engraving, precise fine hatching, ivory bone and tarnished silver, soot ink, muted antique gold under 5%. Match the supplied game's engraved material, NOT its complexity. This is one step in a SEVEN step VERY GRADUAL evolution; add only the explicitly described geometry. No text, pedestal, stars, particles, faces, CGI, plastic or neon. Retain identical illumination from upper left and delicate etched texture. STAGE 6/7: Same sphere and two crossed silver hoops, now modestly engraved. An additional thin outer circular rim appears. Four small openings reveal inner fine wireframe ribs but at least 60 percent of the ivory globe remains solid. One slender aged-gold diagonal ring, no wide solid gold. Tiny 3 pixel central spark. No polar towers or large seals. This must be visibly between a solid globe and an open armillary.",
+      "width": 256,
+      "height": 256,
+      "no_background": true,
+      "seed": 73017,
+      "style_image_url": "upload:6355c51f-25fd-431f-8fe6-65da98123fa8",
+      "style_copy": [
+        "color_palette",
+        "shading",
+        "outline"
+      ],
+      "reference_images": [
+        {
+          "url": "https://api.pixellab.ai/mcp/images/42a5850d-87c5-4931-87ab-0711b00e5f22/download",
+          "usage": "approximate globe identity; reduce complexity to the exact stage description"
+        }
+      ],
+      "job_id": "0ab26434-e75c-4300-89ed-cce21d1cc280"
+    },
+    {
+      "stage": 7,
+      "slug": "07-plenitude",
+      "name": "Plenitude",
+      "design": "Final refined armillary: preserve at least 35 percent ivory globe panels between fine wireframe ribs, with three restrained engraved crossed silver hoops, one slender gold accent, thin outer rim with four TINY etched seals. Subtle short polar axis. Tiny luminous center no more than 4 pixels, no large bright core. Richer than prior stage but NOT a drastic jump or a fully hollow empty cage.",
+      "description": "ONE centered 2D celestial sphere game sprite, transparent 256x256. Consistent diameter 208 pixels and fixed center (128,128), generous clear margin. Renaissance hermetic copperplate engraving, precise fine hatching, ivory bone and tarnished silver, soot ink, muted antique gold under 5%. Match the supplied game's engraved material, NOT its complexity. This is one step in a SEVEN step VERY GRADUAL evolution; add only the explicitly described geometry. No text, pedestal, stars, particles, faces, CGI, plastic or neon. Retain identical illumination from upper left and delicate etched texture. STAGE 7/7: Final refined armillary: preserve at least 35 percent ivory globe panels between fine wireframe ribs, with three restrained engraved crossed silver hoops, one slender gold accent, thin outer rim with four TINY etched seals. Subtle short polar axis. Tiny luminous center no more than 4 pixels, no large bright core. Richer than prior stage but NOT a drastic jump or a fully hollow empty cage.",
+      "width": 256,
+      "height": 256,
+      "no_background": true,
+      "seed": 73017,
+      "style_image_url": "upload:6355c51f-25fd-431f-8fe6-65da98123fa8",
+      "style_copy": [
+        "color_palette",
+        "shading",
+        "outline"
+      ],
+      "reference_images": [
+        {
+          "url": "https://api.pixellab.ai/mcp/images/ed9e0c7e-c96a-46e8-b7b8-8cfffcc00781/download",
+          "usage": "approximate globe identity; reduce complexity to the exact stage description"
+        }
+      ],
+      "job_id": "656fe06c-f850-4631-b653-51f258461c18"
+    }
+  ]
+}
