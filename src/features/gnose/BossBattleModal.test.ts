@@ -434,6 +434,37 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     modal.close();
   });
 
+  it.each([false, true])('shows numbered APARAR balloons and reports the scale penalty (higher first: %s)', higherFirst => {
+    const { modal, gameState, worldEl } = setupBossModalHarness(100);
+    expect(modal.openForBoss('boss_anubis', { isRematch: true })).toBe(true);
+    gameState.beginBossCombat();
+    gameState.spawnBossRift({ forceSpecial: true });
+    modal.updateUI();
+    const stage = worldEl.children[0];
+    const layer = stage.querySelector('#boss-rifts-layer')!;
+    const [lower, higher] = [...gameState.activeBossBattle!.activeRifts]
+      .sort((a, b) => a.scaleValue! - b.scaleValue!);
+    expect(layer.children).toHaveLength(2);
+    for (const rift of [lower, higher]) {
+      const button = layer.children.find(el => el.getAttribute('data-rift-id') === rift.id)!;
+      expect(button.innerHTML).toContain(`<span class="boss-rift-number">${rift.scaleValue}</span>`);
+      expect(button.innerHTML).toContain('>APARAR</span>');
+      expect(button.getAttribute('aria-label')).toContain(String(rift.scaleValue));
+    }
+    const hp = gameState.activeBossBattle!.bossHp;
+    if (higherFirst) {
+      layer.children.find(el => el.getAttribute('data-rift-id') === higher.id)!.dispatchClick();
+      expect(gameState.activeBossBattle!.altarIntegrity).toBe(100);
+      expect(layer.children).toHaveLength(1);
+    }
+    layer.children.find(el => el.getAttribute('data-rift-id') === lower.id)!.dispatchClick();
+    expect(gameState.activeBossBattle!.bossHp).toBe(hp);
+    expect(layer.children).toHaveLength(0);
+    expect(stage.querySelector('#boss-combat-feedback')!.textContent)
+      .toContain(`Balança: dano ×${higherFirst ? 3 : 2}!`);
+    modal.close();
+  });
+
   it('keeps the Boss hidden until the ritual completes, then tracks the Boss sprite silhouette on every frame across descent, idle, attack lunge, and parry', () => {
     const { modal, gameState, worldEl, drawImageCalls } = setupBossModalHarness(100);
     expect(modal.openForBoss('boss_cronos')).toBe(true);
@@ -513,7 +544,11 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
 
     // 6. Clicking APARAR interrupts the attack and immediately snaps both sprite and hitbox back to idle frame 0
     drawImageCalls.length = 0;
+    const hpBeforeParry = gameState.activeBossBattle!.bossHp;
+    const integrityBeforeParry = gameState.activeBossBattle!.altarIntegrity;
     riftsLayer.children[0].dispatchClick();
+    expect(gameState.activeBossBattle!.bossHp).toBe(hpBeforeParry);
+    expect(gameState.activeBossBattle!.altarIntegrity).toBe(integrityBeforeParry);
     assertHitboxWrapsLastBossDraw();
 
     modal.close();
@@ -699,6 +734,75 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     modal.close();
   });
 
+  it.each([1, 4])('leads every Faithful home before returning to the actual altar at speed %s', speed => {
+    const { modal, gameState, worldEl, notifications, cameraFrames, drawImageCalls } = setupBossModalHarness(100, {
+      incarnationBox: { x: 650, y: 420, w: 420, h: 210 },
+      followersBox: { x: 2400, y: 1100, w: 512, h: 240 }
+    });
+    expect(modal.openForBoss('boss_cronos')).toBe(true);
+    for (let i = 0; i < 250 && modal.getChoreographySnapshot().bossState !== 'idle'; i++) {
+      modal.stepSceneForTest(0.2);
+    }
+    const before = modal.getChoreographySnapshot();
+    expect(before.incState).toBe('guarding');
+    const battle = gameState.activeBossBattle!;
+    battle.bossHp = 1;
+    battle.sphereCooldownSec = 0;
+    gameState.addClick(() => 0.5);
+    expect(gameState.activeBossBattle).toBeNull();
+    expect(gameState.isBossDefeated('boss_cronos')).toBe(true);
+    modal.updateUI(); // State refreshes must not close the victory scene.
+    modal.stepSceneForTest(1.5);
+    expect(modal.getChoreographySnapshot().incState).toBe('leading_return');
+    expect(modal.getChoreographySnapshot().followers.map(f => [f.x, f.y]))
+      .toEqual(before.followers.map(f => [f.x, f.y]));
+    expect(worldEl.children[0].querySelector('#boss-arena-attack-btn')!.style.display).toBe('none');
+    modal.setSpeedMultiplier(speed);
+    let sawWalkHome = false;
+    for (let i = 0; i < 400 && modal.isOpen(); i++) {
+      const previous = modal.getChoreographySnapshot();
+      drawImageCalls.length = 0;
+      modal.stepSceneForTest(0.1);
+      const snapshot = modal.getChoreographySnapshot();
+      expect(Math.hypot(snapshot.incX - previous.incX, snapshot.incY - previous.incY))
+        .toBeLessThanOrEqual(460 * speed * 0.1 + 0.01);
+      if (modal.isOpen()) {
+        expect(notifications.showCustomPopup).not.toHaveBeenCalled();
+        expect(drawImageCalls.some(c => c.sw === 256 && c.sh === 192)).toBe(false);
+        expect(cameraFrames.at(-1)?.phase).toBe('incarnation');
+      }
+      if (snapshot.incState === 'returning_to_altar') {
+        sawWalkHome = true;
+        expect(snapshot.followers.every(f => f.state === 'waiting_in_patio')).toBe(true);
+        for (const f of snapshot.followers) {
+          const home = snapshot.followerHomes.find(h => h.id === f.id)!;
+          expect({ x: f.x, y: f.y }).toEqual({ x: home.x, y: home.y });
+        }
+      }
+    }
+    expect(sawWalkHome).toBe(true);
+    expect(modal.isOpen()).toBe(false);
+    const end = modal.getChoreographySnapshot();
+    expect({ x: end.incX, y: end.incY }).toEqual(before.incarnationHome);
+    expect(document.body.classList.contains('is-boss-battle-active')).toBe(false);
+    expect(notifications.showCustomPopup).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps defeat on its existing short climax without starting a victory return', () => {
+    const { modal, gameState, notifications } = setupBossModalHarness(100);
+    modal.openForBoss('boss_cronos');
+    for (let i = 0; i < 200 && modal.getChoreographySnapshot().bossState !== 'idle'; i++) {
+      modal.stepSceneForTest(0.2);
+    }
+    gameState.activeBossBattle!.altarIntegrity = 0.01;
+    gameState.tick(0.1);
+    expect(gameState.activeBossBattle).toBeNull();
+    modal.stepSceneForTest(1.5);
+    expect(modal.isOpen()).toBe(false);
+    expect(modal.getChoreographySnapshot().incState).toBe('guarding');
+    expect(notifications.showCustomPopup).toHaveBeenCalledTimes(1);
+  });
+
   it('renders Fulgor Divino on the Sphere, 1.5s Faithful Miracles on the circle, Phase II special attacks, and a 1.5s visual climax', () => {
     const { modal, gameState, worldEl, drawImageCalls, notifications } = setupBossModalHarness(100);
     expect(modal.openForBoss('boss_cronos')).toBe(true);
@@ -754,7 +858,7 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     const lastBossDraw = [...drawImageCalls].reverse().find(c => c.sw === 256 && c.sh === 192)!;
     expect((lastBossDraw.img as { src: string }).src).toContain('/02-hades/ataque-correntes/spritesheet.png');
 
-    // 4. ~1.5s visual climax on victory before closing the stage and showing popup
+    // 4. Victory climax runs before the return procession and result popup
     battle.bossHp = 1;
     battle.sphereCooldownSec = 0;
     gameState.addClick(() => 0.5);
@@ -764,7 +868,11 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     modal.stepSceneForTest(0.8);
     expect(modal.isOpen()).toBe(true);
     modal.stepSceneForTest(0.8);
+    expect(modal.isOpen()).toBe(true);
+    expect(modal.getChoreographySnapshot().incState).toBe('leading_return');
+    expect(notifications.showCustomPopup).not.toHaveBeenCalled();
+    for (let i = 0; i < 400 && modal.isOpen(); i++) modal.stepSceneForTest(0.1);
     expect(modal.isOpen()).toBe(false);
-    expect(notifications.showCustomPopup).toHaveBeenCalled();
+    expect(notifications.showCustomPopup).toHaveBeenCalledTimes(1);
   });
 });

@@ -149,7 +149,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(gameState.relicUpgrades[0].level).toBe(15);
   });
 
-  it('breaks an unprepared Sphere with a mild curse and rewards a prepared cult that wins by parrying', () => {
+  it('breaks an unprepared Sphere with a mild curse and rewards a prepared cult that wins by parrying and using Fulgor', () => {
     gameState.totalGnoseEarned = 5;
     gameState.followers[0].count = 10;
 
@@ -184,11 +184,14 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     gameState.followers[0].count = 120;
     const preparedFps = gameState.getFaithPerSecond();
     expect(gameState.startBossBattle('boss_anubis')).toBe(true);
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 120; i++) {
       if (!gameState.activeBossBattle) break;
       gameState.spawnBossRift();
-      const riftId = gameState.activeBossBattle.activeRifts[0].id;
+      const riftId = gameState.activeBossBattle.activeRifts
+        .filter(r => !r.scaleHigherSelected)
+        .sort((a, b) => (b.scaleValue ?? 0) - (a.scaleValue ?? 0))[0].id;
       gameState.clickBossRift(riftId);
+      gameState.triggerSphereFulgor();
     }
 
     expect(gameState.activeBossBattle).toBeNull();
@@ -215,11 +218,14 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     gameState.relicUpgrades.forEach(u => { u.level = 10; });
     gameState.incarnationStage = 5;
     expect(gameState.startBossBattle('boss_tiamat')).toBe(true);
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 120; i++) {
       if (!gameState.activeBossBattle) break;
       gameState.spawnBossRift();
-      const riftId = gameState.activeBossBattle.activeRifts[0].id;
+      const riftId = gameState.activeBossBattle.activeRifts
+        .filter(r => !r.scaleHigherSelected)
+        .sort((a, b) => (b.scaleValue ?? 0) - (a.scaleValue ?? 0))[0].id;
       gameState.clickBossRift(riftId);
+      gameState.triggerSphereFulgor();
     }
 
     expect(gameState.isBossDefeated('boss_tiamat')).toBe(true);
@@ -227,7 +233,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     expect(newlyUnlocked.some((a) => a.id === 'ach_boss_tiamat')).toBe(true);
   });
 
-  it('scales Boss Battle HP bar drain, Click damage, Rift damage, and Altar protection across all 6 cult resources', () => {
+  it('scales Boss Battle HP bar drain, Click damage and Altar protection across all 6 cult resources', () => {
     gameState.totalGnoseEarned = 1;
     const base = gameState.getBossCombatBreakdown('boss_anubis');
 
@@ -258,7 +264,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
     gameState.relicUpgrades[0].level = 5;
     const afterRelics = gameState.getBossCombatBreakdown('boss_anubis');
     expect(afterRelics.relicsBonus).toBeGreaterThan(afterFervor.relicsBonus);
-    expect(afterRelics.riftDamage).toBeGreaterThan(afterFervor.riftDamage);
+    expect(afterRelics.riftDamage).toBe(0);
     expect(afterRelics.altarPressurePerSec).toBeLessThan(base.altarPressurePerSec);
 
     // 5. Advancing Encarnação increases incarnationBonus, click damage, and passive DPS

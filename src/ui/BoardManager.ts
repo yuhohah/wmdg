@@ -36,6 +36,7 @@ export class BoardManager {
 
   // Quick Navigation & Cards
   private cards = new Map<string, HTMLElement>();
+  private completedCards = new Set<string>();
   private quickNavBtns = new Map<string, HTMLButtonElement>();
   public currentFocusedCardId: string = 'card-altar-sphere';
 
@@ -98,24 +99,15 @@ export class BoardManager {
       if (!header || !body) return;
 
       body.id ||= `${card.id}-body`;
-      const title = header.querySelector('.dodeca-card-title')?.textContent?.trim() ?? 'card';
       const toggle = document.createElement('button');
       toggle.type = 'button';
       toggle.className = 'dodeca-card-btn-toggle';
       toggle.setAttribute('aria-controls', body.id);
-      const updateToggle = () => {
-        const collapsed = card.classList.contains('collapsed');
-        toggle.textContent = collapsed ? '+' : '−';
-        toggle.setAttribute('aria-expanded', String(!collapsed));
-        toggle.setAttribute('aria-label', `${collapsed ? 'Expandir' : 'Minimizar'} ${title}`);
-        toggle.title = `${collapsed ? 'Expandir' : 'Minimizar'} ${title}`;
-      };
-      updateToggle();
       toggle.addEventListener('click', () => {
-        card.classList.toggle('collapsed');
-        updateToggle();
+        this.setCardCollapsed(card.id, !card.classList.contains('collapsed'));
       });
       header.appendChild(toggle);
+      this.setCardCollapsed(card.id, card.classList.contains('collapsed'));
     });
 
     // 1. Mouse Wheel Zoom (centered at mouse coordinates)
@@ -298,6 +290,34 @@ export class BoardManager {
         }
       }));
     });
+  }
+
+  public setCardCollapsed(cardId: string, collapsed: boolean): void {
+    const card = this.cards.get(cardId);
+    if (!card) return;
+    const toggle = card.querySelector<HTMLButtonElement>('.dodeca-card-btn-toggle');
+    const body = card.querySelector<HTMLElement>('.dodeca-card-body');
+    const title = card.querySelector('.dodeca-card-title')?.textContent?.trim() ?? 'card';
+    if (collapsed && document.activeElement && body?.contains(document.activeElement)) {
+      toggle?.focus({ preventScroll: true });
+    }
+    card.classList.toggle('collapsed', collapsed);
+    if (toggle) {
+      toggle.textContent = collapsed ? '+' : '−';
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+      toggle.setAttribute('aria-label', `${collapsed ? 'Expandir' : 'Minimizar'} ${title}`);
+      toggle.title = `${collapsed ? 'Expandir' : 'Minimizar'} ${title}`;
+    }
+  }
+
+  /** Collapse on completion once, allowing manual reopening until purchases reset. */
+  public setCardCompleted(cardId: string, complete: boolean): void {
+    if (!complete) {
+      this.completedCards.delete(cardId);
+    } else if (!this.completedCards.has(cardId) && this.cards.has(cardId)) {
+      this.completedCards.add(cardId);
+      this.setCardCollapsed(cardId, true);
+    }
   }
 
   // Abort an in-progress pan (a long press turned it into a card drag) and undo its small drift

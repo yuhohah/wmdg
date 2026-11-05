@@ -48,6 +48,32 @@ function cultAtReadiness(readiness: number, bossId = 'boss_anubis') {
 }
 
 describe('Boss battle invariants', () => {
+  it.each(['standard', 'anubis_scales', 'hades_chains', 'odin_raven', 'chaos_orbit'] as const)(
+    'parries %s without damaging either combatant or triggering a phase shockwave', kind => {
+      const g = preparedCult();
+      g.startBossBattle('boss_anubis');
+      const battle = g.activeBossBattle!;
+      battle.altarIntegrity = 60;
+      // Close enough to the phase boundary that the old parry damage triggered a shockwave.
+      battle.bossHp = battle.bossMaxHp * 0.601;
+      battle.activeRifts = [{
+        id: 'parry', kind, groupId: 'attack', xPercent: 50, yPercent: 50,
+        remainingSec: 2, maxSec: 2
+      }];
+      const hp = battle.bossHp;
+      const result = g.clickBossRift('parry');
+      expect(result.shattered).toBe(true);
+      expect(result.damage).toBe(0);
+      expect(result.victory).toBe(false);
+      expect(battle.bossHp).toBe(hp);
+      expect(battle.altarIntegrity).toBe(60);
+      expect(battle.phase).toBe(1);
+      expect(battle.activeRifts).toHaveLength(0);
+      expect(battle.sphereCharge).toBe(25);
+      expect(battle.comboStreak).toBe(1);
+    }
+  );
+
   it.each(GNOSE_BOSSES)('enforces both readiness thresholds against $name', boss => {
     for (const threshold of [BOSS_DAMAGE_READINESS_THRESHOLD, BOSS_DEFENSE_READINESS_THRESHOLD]) {
       const below = cultAtReadiness(threshold - 1e-6, boss.id).getBossCombatBreakdown(boss.id);
@@ -165,7 +191,7 @@ describe('Boss battle invariants', () => {
     const after = g.getBossCombatBreakdown();
     expect(after.passiveDps).toBeGreaterThan(before.passiveDps);
     expect(after.clickDamage).toBeGreaterThan(before.clickDamage);
-    expect(after.riftDamage).toBeGreaterThan(before.riftDamage);
+    expect(after.riftDamage).toBe(0);
     if (resource !== 'faith') expect(after.altarDamageOnMiss).toBeLessThan(before.altarDamageOnMiss);
     expect(g.startBossBattle('boss_anubis')).toBe(true);
     const hp = g.activeBossBattle!.bossHp;
@@ -361,11 +387,12 @@ describe('Boss battle invariants', () => {
     expect(firstRes.shattered).toBe(true);
     expect(battle.comboStreak).toBe(1);
 
-    // Second consecutive rift deals higher damage due to comboStreak
+    // Consecutive parries build the combo without dealing damage
     g.spawnBossRift();
     const secondRes = g.clickBossRift(battle.activeRifts[0].id);
     expect(secondRes.shattered).toBe(true);
-    expect(secondRes.damage).toBeGreaterThan(firstRes.damage);
+    expect(firstRes.damage).toBe(0);
+    expect(secondRes.damage).toBe(0);
     expect(battle.comboStreak).toBe(2);
 
     // Missing a rift resets comboStreak
@@ -415,7 +442,7 @@ describe('Boss battle invariants', () => {
     const battle = g.activeBossBattle!;
     battle.altarIntegrity = 60;
 
-    // 1. APARAR charges the Sphere (+25%) and damages Boss, but NEVER heals Sphere Integrity
+    // 1. APARAR charges the Sphere (+25%) without changing either combatant's health
     g.spawnBossRift({ forceStandard: true });
     const parryRes = g.clickBossRift(battle.activeRifts[0].id);
     expect(parryRes.shattered).toBe(true);
@@ -455,6 +482,89 @@ describe('Boss battle invariants', () => {
     expect(g.activeBossBattle!.activeMiracle).toBeNull();
   });
 
+  describe('Anubis numbered scales', () => {
+    function scalesBattle() {
+      const g = preparedCult();
+      g.startBossBattle('boss_anubis');
+      const battle = g.activeBossBattle!;
+      g.spawnBossRift({ forceSpecial: true });
+      const [lower, higher] = [...battle.activeRifts].sort((a, b) => a.scaleValue! - b.scaleValue!);
+      return { g, battle, lower, higher };
+    }
+
+    it('spawns two distinct positive numbers and varies which side has the larger number', () => {
+      const { g, battle, lower, higher } = scalesBattle();
+      expect(lower.scaleValue).toBeGreaterThan(0);
+      expect(higher.scaleValue).toBeGreaterThan(lower.scaleValue!);
+      expect(lower.slotIndex).not.toBe(higher.slotIndex);
+      battle.activeRifts = [];
+      g.spawnBossRift({ forceSpecial: true });
+      const nextHigher = battle.activeRifts.reduce((a, b) => a.scaleValue! > b.scaleValue! ? a : b);
+      expect(nextHigher.slotIndex).not.toBe(higher.slotIndex);
+    });
+
+    it.each([false, true])('deals the proper penalty when higher was clicked first: %s', higherFirst => {
+      const { g, battle, lower, higher } = scalesBattle();
+      const hp = battle.bossHp;
+      const baseDamage = g.getBossCombatBreakdown().altarDamageOnMiss;
+      if (higherFirst) {
+        g.clickBossRift(higher.id);
+        expect(battle.altarIntegrity).toBe(100);
+      }
+      const result = g.clickBossRift(lower.id);
+      const multiplier = higherFirst ? 3 : 2;
+      expect(result.shattered).toBe(false);
+      expect(result.scaleDamageMultiplier).toBe(multiplier);
+      expect(result.altarDamageTaken).toBeCloseTo(baseDamage * multiplier);
+      expect(battle.altarIntegrity).toBeCloseTo(100 - baseDamage * multiplier);
+      expect(battle.bossHp).toBe(hp);
+      expect(battle.activeRifts).toHaveLength(0);
+      expect(battle.comboStreak).toBe(0);
+      const integrity = battle.altarIntegrity;
+      expect(g.clickBossRift(lower.id).shattered).toBe(false);
+      expect(g.clickBossRift(higher.id).shattered).toBe(false);
+      expect(battle.altarIntegrity).toBe(integrity);
+    });
+
+    it('blocks with only the higher number and lets the lower expire harmlessly', () => {
+      const { g, battle, lower, higher } = scalesBattle();
+      const control = scalesBattle();
+      control.battle.activeRifts = [];
+      const hp = battle.bossHp;
+      expect(g.clickBossRift(higher.id).shattered).toBe(true);
+      expect(battle.bossHp).toBe(hp);
+      expect(battle.altarIntegrity).toBe(100);
+      expect(battle.sphereCharge).toBe(25);
+      const duration = lower.maxSec + 0.01;
+      g.tick(duration);
+      control.g.tick(duration);
+      expect(battle.altarIntegrity).toBe(control.battle.altarIntegrity);
+      expect(battle.riftsMissed).toBe(0);
+      expect(battle.comboStreak).toBe(1);
+      expect(battle.activeRifts.some(r => r.id === lower.id)).toBe(false);
+    });
+
+    it('charges a single normal miss when neither number is selected', () => {
+      const { g, battle, lower } = scalesBattle();
+      const control = scalesBattle();
+      control.battle.activeRifts = [];
+      const baseDamage = g.getBossCombatBreakdown().altarDamageOnMiss;
+      g.tick(lower.maxSec + 0.01);
+      control.g.tick(lower.maxSec + 0.01);
+      expect(battle.riftsMissed).toBe(1);
+      expect(battle.altarIntegrity).toBeCloseTo(control.battle.altarIntegrity - baseDamage);
+    });
+
+    it('ends the battle when a wrong choice breaks the Sphere', () => {
+      const { g, battle, lower } = scalesBattle();
+      battle.altarIntegrity = 1;
+      g.clickBossRift(lower.id);
+      expect(g.activeBossBattle).toBeNull();
+      expect(g.isBossDefeated('boss_anubis')).toBe(false);
+      expect(g.bossCurseTimerSec).toBeGreaterThan(0);
+    });
+  });
+
   it('implements all 4 Guardian signature Attack 2 patterns in Phases II & III', () => {
     const g = preparedCult();
     GNOSE_UPGRADES.forEach(u => g.unlockedGnoseUpgrades.add(u.id));
@@ -462,21 +572,16 @@ describe('Boss battle invariants', () => {
     g.defeatedBosses.add('boss_cronos');
     g.defeatedBosses.add('boss_odin');
 
-    // 1. Anubis (anubis_scales): 2 scale rifts; parrying both awakens a Faithful Miracle on the wheel
+    // 1. Anubis: choose only the larger numbered scale.
     g.startBossBattle('boss_anubis', { isRematch: true });
     g.activeBossBattle!.bossHp = g.activeBossBattle!.bossMaxHp * 0.5;
     g.activeBossBattle!.highestPhaseShocked = 2;
-    g.activeBossBattle!.activeMiracle = null;
     g.spawnBossRift({ forceSpecial: true });
-    expect(g.activeBossBattle!.activeRifts).toHaveLength(2);
-    expect(g.activeBossBattle!.activeRifts[0].kind).toBe('anubis_scales');
-    expect(g.activeBossBattle!.activeRifts[0].attackIndex).toBe(1);
-    const scaleIds = g.activeBossBattle!.activeRifts.map(r => r.id);
-    expect(g.clickBossRift(scaleIds[0]).miracleAwakened).toBe(false);
-    const secondScale = g.clickBossRift(scaleIds[1]);
-    expect(secondScale.specialBonusTriggered).toBe(true);
-    expect(secondScale.miracleAwakened).toBe(true);
-    expect(g.activeBossBattle!.activeMiracle).not.toBeNull();
+    const scales = [...g.activeBossBattle!.activeRifts].sort((a, b) => a.scaleValue! - b.scaleValue!);
+    expect(scales).toHaveLength(2);
+    expect(scales[0].scaleValue).toBeLessThan(scales[1].scaleValue!);
+    expect(g.clickBossRift(scales[1].id).shattered).toBe(true);
+    expect(g.activeBossBattle!.activeRifts).toHaveLength(1);
     g.retreatBossBattle();
 
     // 2. Hades (hades_chains): 2 crimson shackles reduce player click damage by 50% until broken
@@ -497,7 +602,7 @@ describe('Boss battle invariants', () => {
     expect(g.getBossCombatBreakdown('boss_cronos').clickDamage).toBeCloseTo(baseClick, 2);
     g.retreatBossBattle();
 
-    // 3. Odin (odin_raven): 1 swift raven seal with critical window (1.6x damage + delays next attack)
+    // 3. Odin (odin_raven): intercepting the raven early delays the next attack
     g.startBossBattle('boss_odin', { isRematch: true });
     g.activeBossBattle!.bossHp = g.activeBossBattle!.bossMaxHp * 0.5;
     g.activeBossBattle!.highestPhaseShocked = 2;
@@ -505,14 +610,13 @@ describe('Boss battle invariants', () => {
     expect(g.activeBossBattle!.activeRifts).toHaveLength(1);
     expect(g.activeBossBattle!.activeRifts[0].kind).toBe('odin_raven');
     const timerBeforeRaven = g.activeBossBattle!.riftSpawnTimerSec;
-    const baseRiftDmg = g.getBossCombatBreakdown('boss_odin').riftDamage;
     const ravenRes = g.clickBossRift(g.activeBossBattle!.activeRifts[0].id);
     expect(ravenRes.specialBonusTriggered).toBe(true);
-    expect(ravenRes.damage).toBeGreaterThan(baseRiftDmg * 1.4);
+    expect(ravenRes.damage).toBe(0);
     expect(g.activeBossBattle!.riftSpawnTimerSec).toBeGreaterThan(timerBeforeRaven + 1.0);
     g.retreatBossBattle();
 
-    // 4. Primordial Chaos (chaos_orbit): 3 orbital seals; shattering all 3 triggers massive rupture damage
+    // 4. Primordial Chaos (chaos_orbit): safely intercept all 3 orbital seals
     g.startBossBattle('boss_tiamat');
     g.activeBossBattle!.bossHp = g.activeBossBattle!.bossMaxHp * 0.5;
     g.activeBossBattle!.highestPhaseShocked = 2;
@@ -524,7 +628,7 @@ describe('Boss battle invariants', () => {
     const d2 = g.clickBossRift(orbitIds[1]).damage;
     const d3 = g.clickBossRift(orbitIds[2]);
     expect(d3.specialBonusTriggered).toBe(true);
-    expect(d3.damage).toBeGreaterThan(d1 + d2);
+    expect([d1, d2, d3.damage]).toEqual([0, 0, 0]);
     g.retreatBossBattle();
   });
 

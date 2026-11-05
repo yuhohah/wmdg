@@ -77,7 +77,7 @@ export interface BattleFollowerSnapshot {
   id: number;
   x: number;
   y: number;
-  state: 'waiting_in_patio' | 'following_in_line' | 'encircling';
+  state: 'waiting_in_patio' | 'following_in_line' | 'encircling' | 'returning_to_patio';
   trailS: number;
   stopS: number;
 }
@@ -92,7 +92,7 @@ interface BattleFollowerActor {
   y: number;
   trailS: number;
   stopS: number;
-  state: 'waiting_in_patio' | 'following_in_line' | 'encircling';
+  state: 'waiting_in_patio' | 'following_in_line' | 'encircling' | 'returning_to_patio';
   walkCycle: number;
   prayCycle: number;
   facing: 1 | -1;
@@ -406,7 +406,7 @@ export class BossBattleModal {
   private incX = INCARNATION_FALLBACK_SPAWN.x;
   private incY = INCARNATION_FALLBACK_SPAWN.y;
   private incFacing: 1 | -1 = 1;
-  private incState: 'walking_to_patio' | 'gathering_at_patio' | 'leading_procession' | 'guarding' =
+  private incState: 'walking_to_patio' | 'gathering_at_patio' | 'leading_procession' | 'guarding' | 'leading_return' | 'returning_to_altar' =
     'walking_to_patio';
   private incTimerSec = 0;
   private incWalkCycle = 0;
@@ -415,6 +415,10 @@ export class BossBattleModal {
     x: BOSS_SPHERE_CENTER.x + SACRED_CIRCLE_RADIUS,
     y: BOSS_SPHERE_CENTER.y,
   };
+
+  private returnPath: PathSample[] = [];
+  private returnS = 0;
+  private followerReturnPaths = new Map<number, { path: PathSample[]; s: number }>();
 
   private patioGatherSpot = { x: 2200, y: 1165 };
   private outboundPath: PathSample[] = [];
@@ -460,7 +464,7 @@ export class BossBattleModal {
     bossX: number;
     bossY: number;
     combatStarted: boolean;
-    incState: 'walking_to_patio' | 'gathering_at_patio' | 'leading_procession' | 'guarding';
+    incState: 'walking_to_patio' | 'gathering_at_patio' | 'leading_procession' | 'guarding' | 'leading_return' | 'returning_to_altar';
     incX: number;
     incY: number;
     incGuardSpot: { x: number; y: number };
@@ -471,8 +475,12 @@ export class BossBattleModal {
     circleStartS: number;
     followers: BattleFollowerSnapshot[];
     climaxRemainingSec: number;
+    incarnationHome: { x: number; y: number };
+    followerHomes: Array<{ id: number; x: number; y: number }>;
   } {
     return {
+      incarnationHome: { x: this.outboundPath[0]?.x ?? this.incX, y: this.outboundPath[0]?.y ?? this.incY },
+      followerHomes: this.followerActors.map(f => ({ id: f.id, x: f.startX, y: f.startY })),
       bossState: this.bossState,
       bossX: this.bossX,
       bossY: this.bossY,
@@ -1185,6 +1193,9 @@ export class BossBattleModal {
     this.incTimerSec = 0;
     this.incWalkCycle = 0;
     this.incCallRingProgress = 0;
+    this.returnPath = [];
+    this.returnS = 0;
+    this.followerReturnPaths.clear();
 
     this.buildProcessionRoutes({ x: this.incX, y: this.incY }, fBox);
 
@@ -1347,7 +1358,9 @@ export class BossBattleModal {
 
   private updateBattleCamera(elapsedSec: number): void {
     let target: BattleCameraTarget;
-    if (this.bossState === 'awaiting_ritual') {
+    if (this.incState === 'leading_return' || this.incState === 'returning_to_altar') {
+      target = { phase: 'incarnation', x: this.incX, y: this.incY - 65, width: 900, height: 700 };
+    } else if (this.bossState === 'awaiting_ritual') {
       target = { phase: 'incarnation', x: this.incX, y: this.incY - 65, width: 680, height: 560 };
     } else if (this.bossState === 'walking') {
       target = { phase: 'boss', x: this.bossX, y: this.bossY - 90, width: 760, height: 580 };
@@ -1436,6 +1449,11 @@ export class BossBattleModal {
   }
 
   private syncAttackHitbox(renderFrame: BossRenderFrame): void {
+    if (this.climaxState) {
+      if (this.attackBtnEl) this.attackBtnEl.style.display = 'none';
+      if (this.bossHpPlateEl) this.bossHpPlateEl.style.display = 'none';
+      return;
+    }
     const bossVisible = this.bossState !== 'awaiting_ritual' && !this.climaxState;
     const displayVal = bossVisible ? '' : 'none';
 
@@ -1477,15 +1495,85 @@ export class BossBattleModal {
     return `Ritual: roda ${encircling}/${total}`;
   }
 
+  private beginVictoryReturn(): void {
+    this.incState = 'leading_return';
+    this.incCallRingProgress = 0;
+    this.bossHitFlashSec = 0;
+    // The guard station is also the circle entrance. Retrace its approach to the patio.
+    const approach = this.processionPath.filter(p => p.s <= this.circleStartS + 0.01).reverse();
+    this.returnPath = buildPolyline([{ x: this.incX, y: this.incY }, ...approach]);
+    this.returnS = 0;
+    this.followerReturnPaths.clear();
+    for (const f of this.followerActors) {
+      // Finish the clockwise arc to the exit, then follow the Incarnation home.
+      const remainingArc = this.processionPath.filter(p => p.s > f.trailS);
+      const path = buildPolyline([
+        { x: f.x, y: f.y }, ...remainingArc, ...approach,
+        { x: f.startX, y: f.startY }
+      ]);
+      this.followerReturnPaths.set(f.id, { path, s: 0 });
+      f.state = 'returning_to_patio';
+    }
+    this.setText(this.combatFeedbackEl, 'Vitória! A Encarnação conduz os Fiéis de volta ao pátio.');
+    this.attackBtnEl?.setAttribute('aria-disabled', 'true');
+    if (this.attackBtnEl) this.attackBtnEl.style.display = 'none';
+    if (this.bossHpPlateEl) this.bossHpPlateEl.style.display = 'none';
+  }
+
+  private updateVictoryReturn(dt: number, elapsedSec: number): void {
+    this.returnS = Math.min(polylineLength(this.returnPath), this.returnS + PROCESSION_QUEUE_SPEED * dt);
+    const sample = samplePolylineAt(this.returnPath, this.returnS);
+    this.incX = sample.x;
+    this.incY = sample.y;
+    if (Math.abs(sample.dx) > 0.2) this.incFacing = sample.dx >= 0 ? 1 : -1;
+    this.incWalkCycle += dt / 0.15;
+
+    if (this.incState === 'leading_return') {
+      for (const f of this.followerActors) {
+        const route = this.followerReturnPaths.get(f.id);
+        if (!route || f.state === 'waiting_in_patio') continue;
+        route.s = Math.min(polylineLength(route.path), route.s + PROCESSION_QUEUE_SPEED * dt);
+        const point = samplePolylineAt(route.path, route.s);
+        f.x = point.x;
+        f.y = point.y;
+        if (Math.abs(point.dx) > 0.2) f.facing = point.dx >= 0 ? 1 : -1;
+        f.walkCycle += dt / 0.14;
+        if (route.s >= polylineLength(route.path)) {
+          f.x = f.startX;
+          f.y = f.startY;
+          f.state = 'waiting_in_patio';
+        }
+      }
+      if (this.returnS >= polylineLength(this.returnPath) &&
+          this.followerActors.every(f => f.state === 'waiting_in_patio')) {
+        this.incState = 'returning_to_altar';
+        this.returnPath = buildPolyline([...this.outboundPath].reverse());
+        this.returnS = 0;
+        this.setText(this.combatFeedbackEl, 'Os Fiéis estão no pátio. A Encarnação retorna ao altar.');
+      }
+    } else if (this.returnS >= polylineLength(this.returnPath)) {
+      this.close();
+      return;
+    }
+    this.updateBattleCamera(elapsedSec);
+  }
+
   private updateWorldScene(elapsedSec: number): void {
     const frameScale = visualFrameScale(elapsedSec);
     const dt = elapsedSec * Math.max(0.25, Math.min(this.speedMultiplier, 4));
 
+    if (this.climaxState && (this.incState === 'leading_return' || this.incState === 'returning_to_altar')) {
+      this.updateVictoryReturn(dt, elapsedSec);
+      return;
+    }
+
     if (this.climaxState) {
+      this.followerActors.forEach(f => { f.prayCycle = (f.prayCycle + elapsedSec) % 3.3; });
       this.climaxState.remainingSec = Math.max(0, this.climaxState.remainingSec - elapsedSec);
       this.bossHitFlashSec = this.climaxState.victory ? 0.5 : 0;
       if (this.climaxState.remainingSec <= 0) {
-        this.close();
+        if (this.climaxState.victory) this.beginVictoryReturn();
+        else this.close();
       }
       return;
     }
@@ -1992,7 +2080,7 @@ export class BossBattleModal {
           const animState =
             f.state === 'encircling'
               ? 'pray'
-              : f.state === 'following_in_line'
+              : (f.state === 'following_in_line' || f.state === 'returning_to_patio')
                 ? 'walk'
                 : 'idle';
           const { action, frame } = followerAnimationFrame(animState, f.walkCycle, f.prayCycle, false);
@@ -2051,6 +2139,8 @@ export class BossBattleModal {
         if (incSprites) {
           const isWalking =
             this.incState === 'walking_to_patio' ||
+            this.incState === 'returning_to_altar' ||
+            (this.incState === 'leading_return' && this.returnS < polylineLength(this.returnPath)) ||
             (this.incState === 'leading_procession' &&
               Math.hypot(
                 this.incX - this.incGuardSpot.x,
@@ -2082,11 +2172,15 @@ export class BossBattleModal {
 
         if (this.incState !== 'guarding') {
           const caption =
-            this.incState === 'walking_to_patio'
-              ? '\u2726 BUSCANDO OS FIÉIS \u2726'
-              : this.incState === 'gathering_at_patio'
-                ? '\u2726 CONVOCANDO A FILA \u2726'
-                : '\u2726 FORMANDO A RODA SAGRADA \u2726';
+            this.incState === 'leading_return'
+              ? '\u2726 DE VOLTA AO PÁTIO \u2726'
+              : this.incState === 'returning_to_altar'
+                ? '\u2726 RETORNANDO AO ALTAR \u2726'
+                : this.incState === 'walking_to_patio'
+                  ? '\u2726 BUSCANDO OS FIÉIS \u2726'
+                  : this.incState === 'gathering_at_patio'
+                    ? '\u2726 CONVOCANDO A FILA \u2726'
+                    : '\u2726 FORMANDO A RODA SAGRADA \u2726';
           ctx.save();
           ctx.font = '700 13px VT323, monospace';
           ctx.textAlign = 'center';
@@ -2098,7 +2192,7 @@ export class BossBattleModal {
     });
 
     // Boss Sprite
-    if (this.bossState !== 'awaiting_ritual') {
+    if (this.bossState !== 'awaiting_ritual' && !(climax?.victory && climax.remainingSec <= 0)) {
       drawList.push({
         y: this.bossY,
         draw: () => {
@@ -2111,6 +2205,7 @@ export class BossBattleModal {
             ctx.save();
             if (climax?.victory) {
               ctx.filter = 'brightness(2.35) contrast(1.25)';
+              ctx.globalAlpha = Math.max(0, climax.remainingSec / climax.totalSec);
             } else if (this.bossHitFlashSec > 0) {
               ctx.filter = 'brightness(1.75) contrast(1.15)';
             }
@@ -2137,10 +2232,14 @@ export class BossBattleModal {
     }
 
     // 5. ~1.5s Climax Overlay on the World Stage (Victory Dissolution Beams or Defeat Sphere Fracture)
-    if (climax) {
+    if (climax && climax.remainingSec > 0) {
       const progress = 1 - climax.remainingSec / Math.max(0.1, climax.totalSec);
       ctx.save();
       if (climax.victory) {
+        ctx.fillStyle = '#fff3c4';
+        ctx.font = '700 32px VT323, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('VITÓRIA', sphereLocalX, sphereLocalY - 240 - progress * 20);
         ctx.strokeStyle = 'rgba(255, 240, 187, 0.72)';
         ctx.lineWidth = 2.5;
         for (const f of this.followerActors) {
@@ -2333,8 +2432,6 @@ export class BossBattleModal {
     }
 
     const comboStreak = battle.comboStreak ?? 0;
-    const comboMult = 1 + Math.min(0.3, comboStreak * 0.05);
-    const effectiveRiftPct = Math.min(0.12, breakdown.riftHpFraction * comboMult);
 
     if (this.attackDamageEl) {
       this.setText(this.attackDamageEl, `\u2212${(breakdown.clickHpFraction * 100).toFixed(2)}%`);
@@ -2392,12 +2489,12 @@ export class BossBattleModal {
           : '';
         this.setText(
           this.combatStatsEl,
-          `${warning}${defenseWarning}Fendas: ${battle.riftsShattered} \u00b7 Combo: \u00d7${comboMult.toFixed(2)} \u00b7 Fulgor: ${Math.floor(battle.sphereCharge ?? 0)}%`
+          `${warning}${defenseWarning}Fendas: ${battle.riftsShattered} \u00b7 Combo: ${comboStreak} \u00b7 Fulgor: ${Math.floor(battle.sphereCharge ?? 0)}%`
         );
       }
     }
 
-    this.syncRiftsDOM(battle.activeRifts, effectiveRiftPct);
+    this.syncRiftsDOM(battle.activeRifts);
     this.syncMiracleDOM(battle.activeMiracle ?? null);
     this.syncAttackHitbox(this.resolveBossRenderFrame(battle.bossId));
   }
@@ -2508,11 +2605,10 @@ export class BossBattleModal {
     };
   }
 
-  private syncRiftsDOM(activeRifts: BossRift[], riftHpFraction: number): void {
+  private syncRiftsDOM(activeRifts: BossRift[]): void {
     if (!this.riftsLayerEl) return;
 
     const activeIds = new Set(activeRifts.map((r) => r.id));
-    const riftPctLabel = `-${(riftHpFraction * 100).toFixed(1)}%`;
 
     // Remove expired/shattered rift elements (keep miracle button intact)
     Array.from(this.riftsLayerEl.children).forEach((child) => {
@@ -2543,7 +2639,7 @@ export class BossBattleModal {
       );
       const labelText =
         kind === 'anubis_scales'
-          ? 'BALANÇA'
+          ? 'APARAR'
           : kind === 'hades_chains'
             ? 'GRILHÃO'
             : kind === 'odin_raven'
@@ -2553,14 +2649,14 @@ export class BossBattleModal {
                 : 'APARAR';
       const detailText =
         kind === 'anubis_scales'
-          ? `${riftPctLabel} • Desperta Milagre`
+          ? 'Escolha apenas o maior'
           : kind === 'hades_chains'
             ? 'Cliques -50% • Quebrar'
             : kind === 'odin_raven'
-              ? 'Crítico ×1.6 + Atraso'
+              ? 'Aparar • Atrasa ataque'
               : kind === 'chaos_orbit'
-                ? `${riftPctLabel} • Ruptura ×3`
-                : `${riftPctLabel} essência`;
+                ? 'Aparar os três selos'
+                : '+25% de carga da Esfera';
 
       let riftEl = this.riftsLayerEl!.querySelector<HTMLButtonElement>(
         `[data-rift-id="${rift.id}"]`
@@ -2572,10 +2668,13 @@ export class BossBattleModal {
         riftEl.className = `boss-rift-target${kindClass}`;
         riftEl.setAttribute('data-rift-id', rift.id);
         riftEl.setAttribute('data-rift-kind', kind);
-        riftEl.setAttribute('aria-label', `${labelText}: aparar golpe do Guardião e carregar a Esfera`);
+        riftEl.setAttribute('aria-label', kind === 'anubis_scales'
+          ? `Aparar balança: ${rift.scaleValue}. Escolha apenas o maior número.`
+          : `${labelText}: aparar golpe do Guardião e carregar a Esfera`);
         riftEl.style.left = `${pos.x}px`;
         riftEl.style.top = `${pos.y}px`;
         riftEl.innerHTML = `
+          ${kind === 'anubis_scales' ? `<span class="boss-rift-number">${rift.scaleValue}</span>` : ''}
           <span class="boss-rift-core" aria-hidden="true">${icon('shield')}</span>
           <span class="boss-rift-label">${labelText}</span>
           <span class="boss-rift-damage">${detailText}</span>
@@ -2584,9 +2683,22 @@ export class BossBattleModal {
         `;
         riftEl.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation();
-          const maxHp = this.options.gameState.activeBossBattle?.bossMaxHp ?? 1;
           const res = this.options.gameState.clickBossRift(rift.id);
-          if (res.shattered) {
+          if (res.altarDamageTaken !== undefined) {
+            this.lastRiftsMissed = this.options.gameState.activeBossBattle?.riftsMissed ?? this.lastRiftsMissed;
+            this.spherePulseAlpha = 0.9;
+            this.showHitFeedback(
+              `Balança: dano ×${res.scaleDamageMultiplier}!`,
+              `Número menor escolhido: −${res.altarDamageTaken.toFixed(1)}% da Esfera.`
+            );
+            this.options.spawnFloatingText(
+              e.clientX || window.innerWidth / 2, e.clientY || window.innerHeight / 2,
+              `−${res.altarDamageTaken.toFixed(1)}% ESFERA (×${res.scaleDamageMultiplier})`
+            );
+            this.updateUI();
+            this.drawWorldScene();
+            events.emit(GameEvents.STATE_CHANGED);
+          } else if (res.shattered) {
             // Parry interrupts/cancels the Boss's attack swing and flashes the Boss sprite
             this.attackedRiftIds.add(rift.id);
             this.bossHitFlashSec = 0.28;
@@ -2597,18 +2709,17 @@ export class BossBattleModal {
             this.lastRiftsMissed = this.options.gameState.activeBossBattle?.riftsMissed ?? this.lastRiftsMissed;
             // A stale target from another pending rift cannot immediately replay the cancelled swing.
             this.options.gameState.activeBossBattle?.activeRifts.forEach(r => this.attackedRiftIds.add(r.id));
-            const actualPct = ((res.damage / maxHp) * 100).toFixed(1);
             const comboTag = (res.comboStreak ?? 1) > 1 ? ` (Combo \u00d7${res.comboStreak})` : '';
-            let specialMsg = `\u2212${actualPct}% de essência.`;
+            let specialMsg = res.kind === 'anubis_scales'
+              ? 'Ataque bloqueado! Não clique no número menor.'
+              : '+25% de carga da Esfera.';
             if (res.specialBonusTriggered) {
-              if (res.kind === 'anubis_scales') {
-                specialMsg = `\u2212${actualPct}% HP • Milagre despertado na Roda dos Fiéis!`;
-              } else if (res.kind === 'hades_chains') {
-                specialMsg = `\u2212${actualPct}% HP • Grilhões quebrados (Cliques 100%)!`;
+              if (res.kind === 'hades_chains') {
+                specialMsg = 'Grilhões quebrados (Cliques 100%)!';
               } else if (res.kind === 'odin_raven') {
-                specialMsg = `\u2212${actualPct}% HP • Corvo Crítico interceptado!`;
+                specialMsg = 'Corvo interceptado! Próximo ataque atrasado.';
               } else if (res.kind === 'chaos_orbit') {
-                specialMsg = `\u2212${actualPct}% HP • Colapso Orbital revertido!`;
+                specialMsg = 'Colapso Orbital revertido!';
               }
             }
             this.showHitFeedback(`Ataque aparado!${comboTag}`, specialMsg);
@@ -2618,7 +2729,7 @@ export class BossBattleModal {
             this.options.spawnFloatingText(
               x,
               y,
-              `\u2726 APARADO! -${actualPct}% HP`
+              '\u2726 APARADO!'
             );
             this.updateUI();
             this.drawWorldScene();

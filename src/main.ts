@@ -7,6 +7,8 @@ import { NotificationManager } from './systems/notifications.js';
 import { SaveSystem, type SaveData } from './systems/saveSystem.js';
 import { SettingsModal } from './ui/SettingsModal.js';
 import { ChangelogModal } from './ui/ChangelogModal.js';
+import { GNOSE_UPGRADES } from './config/gnose.js';
+import { INCARNATION_STAGES } from './config/incarnation.js';
 import { GAME_VERSION } from './config/changelog.js';
 import { SaveDataModal } from './ui/SaveDataModal.js';
 import { HUDController } from './ui/HUDController.js';
@@ -294,6 +296,7 @@ class AppManager {
       this.statsTab.updateUI();
       this.achievementsTab.checkAchievements();
       this.achievementsTab.updateRealtime();
+      this.updateCompletedCards();
       this.cardUpdates.update();
       if (this.gnoseTab.bossBattleModal.isOpen()) this.gnoseTab.bossBattleModal.updateUI();
       this.onboardingGuide.update();
@@ -303,6 +306,7 @@ class AppManager {
     events.on(GameEvents.GAME_TICK, () => {
       this.statsTab.updateUI();
       this.achievementsTab.checkAchievements();
+      this.updateCompletedCards();
       this.cardUpdates.update();
       if (this.gnoseTab.bossBattleModal.isOpen()) this.gnoseTab.bossBattleModal.updateUI();
       this.achievementsTab.updateRealtime();
@@ -369,7 +373,16 @@ class AppManager {
     }
   }
 
+  private updateCompletedCards(): void {
+    const gs = this.gameState;
+    this.board.setCardCompleted('card-relics', gs.relicUpgrades.length > 0 &&
+      gs.relicUpgrades.every(relic => relic.level >= relic.maxLevel));
+    this.board.setCardCompleted('card-incarnation', gs.incarnationStage >= INCARNATION_STAGES.at(-1)!.stage);
+    this.board.setCardCompleted('card-gnose', GNOSE_UPGRADES.every(upgrade => gs.hasGnoseUpgrade(upgrade.id)));
+  }
+
   public renderAllLists(): void {
+    this.updateCompletedCards();
     this.cardUpdates.invalidateAll();
     this.achievementsTab.renderList();
   }

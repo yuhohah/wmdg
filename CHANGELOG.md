@@ -2,9 +2,16 @@
 
 Histórico de mudanças de *Cult of the Sphere*, em ordem da versão mais recente para a mais antiga.
 
-A versão atual é **0.8.0**. A numeração anterior foi atribuída retrospectivamente aos últimos dez commits: o mais antigo corresponde à 0.7.0, os oito seguintes vão de 0.7.1 a 0.7.8 e o mais recente inicia a 0.8.0. As datas anteriores são as dos commits de referência, não datas de publicação. A 0.8.0 também reúne as mudanças locais mais recentes.
+A versão atual é **0.8.1**. A numeração anterior foi atribuída retrospectivamente aos últimos dez commits: o mais antigo corresponde à 0.7.0, os oito seguintes vão de 0.7.1 a 0.7.8 e o mais recente inicia a 0.8.0. As datas anteriores são as dos commits de referência, não datas de publicação. A 0.8.0 também reúne as mudanças locais mais recentes.
 
 Para as próximas versões, usamos `MAJOR.MINOR.PATCH`: novidades e mudanças relevantes de jogabilidade avançam o número do meio; correções e ajustes menores avançam o último. Enquanto o jogo estiver em desenvolvimento, o primeiro número permanece em zero. Cada nova versão deve atualizar este arquivo, `package.json` e a versão do projeto em `package-lock.json`.
+
+## 0.8.1 — 2026-11-04
+
+- Aparar um ataque bloqueia o golpe sem causar dano à Esfera nem ao Guardião, inclusive nos ataques especiais. A aparada mantém a carga de +25% da Esfera, e a interface deixa de anunciar dano ao boss.
+- A balança de Anúbis apresenta dois balões **APARAR**, cada um com um número diferente acima. Escolher apenas o maior bloqueia o ataque sem dano; clicar no menor causa o dobro do dano normal à Esfera; clicar no maior e depois no menor causa o triplo. Se nenhum for escolhido, o ataque causa dano normal uma única vez.
+- A vitória ganha uma animação com o desaparecimento do Guardião. Depois, a Encarnação conduz os Fiéis de volta às suas posições no pátio, espera todos chegarem e retorna ao próprio altar. A câmera acompanha o retorno, e o resultado da batalha aparece ao final da sequência.
+- Os menus de Relíquias, Encarnação e Gnose são minimizados automaticamente quando todas as melhorias são concluídas. Eles podem ser reabertos manualmente e voltam a minimizar ao concluir novamente as compras após um reset.
 
 ## 0.8.0 — 2026-11-04
 

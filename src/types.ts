@@ -160,6 +160,8 @@ export interface BossRift {
   attackIndex?: 0 | 1;
   groupId?: string;
   slotIndex?: number;
+  scaleValue?: number;
+  scaleHigherSelected?: boolean;
 }
 
 export interface ActiveBossMiracle {

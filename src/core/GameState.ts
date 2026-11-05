@@ -27,7 +27,6 @@ import {
   BOSS_MAX_ALTAR_INTEGRITY,
   BOSS_MAX_PASSIVE_HP_PER_SEC,
   BOSS_MAX_CLICK_HP_FRACTION,
-  BOSS_MAX_RIFT_HP_FRACTION,
   BOSS_SPHERE_COOLDOWN_SEC,
   BOSS_DAMAGE_READINESS_THRESHOLD,
   BOSS_DEFENSE_READINESS_THRESHOLD,
@@ -494,18 +493,9 @@ export class GameStateManager {
     const clickDamage = rawClickDamage * chainPenaltyMult * damageMultiplier;
     const clickHpFraction = clickDamage / bossMaxHp;
 
-    const baseRiftPct = boss.riftDamagePercent;
-    const riftDamage = damageMultiplier * Math.min(
-      bossMaxHp * BOSS_MAX_RIFT_HP_FRACTION,
-      Math.max(
-        fpc * 5,
-        bossMaxHp *
-          baseRiftPct *
-          (0.8 + 0.2 * cultReadiness) *
-          (1 + bonusSum * 0.06 + relicsBonus * 0.1 + gnoseBonus * 0.08)
-      )
-    );
-    const riftHpFraction = riftDamage / bossMaxHp;
+    // Parrying is defensive: it charges the Sphere without dealing damage.
+    const riftDamage = 0;
+    const riftHpFraction = 0;
 
     // FULGOR DIVINO (100% Sphere Astral Charge): pure attack beam (~10% max HP scaled by cultReadiness, no heal)
     const fulgorHpFraction = damageMultiplier * Math.min(0.14, Math.max(0.06, 0.08 + 0.02 * Math.min(2.0, cultReadiness)));
@@ -787,6 +777,8 @@ export class GameStateManager {
         { xPercent: 22, yPercent: 50, slotIndex: 0 },
         { xPercent: 78, yPercent: 50, slotIndex: 1 }
       ];
+      const lowerValue = 1 + ((wave * 7) % 40);
+      const higherValue = lowerValue + 1 + ((wave * 11) % 40);
       for (const pos of positions) {
         this.riftIdCounter += 1;
         battle.activeRifts.push({
@@ -796,6 +788,7 @@ export class GameStateManager {
           remainingSec: baseWindowSec * 1.15,
           maxSec: baseWindowSec * 1.15,
           kind: 'anubis_scales',
+          scaleValue: pos.slotIndex === Math.floor(wave / 2) % 2 ? higherValue : lowerValue,
           attackIndex: 1,
           groupId,
           slotIndex: pos.slotIndex
@@ -868,6 +861,8 @@ export class GameStateManager {
     kind?: BossRiftKind;
     specialBonusTriggered?: boolean;
     miracleAwakened?: boolean;
+    altarDamageTaken?: number;
+    scaleDamageMultiplier?: number;
   } {
     if (!this.activeBossBattle || this.activeBossBattle.combatStarted === false) {
       return { damage: 0, shattered: false, victory: false };
@@ -882,12 +877,31 @@ export class GameStateManager {
     const kind: BossRiftKind = rift.kind ?? 'standard';
     const groupId = rift.groupId;
 
-    const breakdown = this.getBossCombatBreakdown(battle.bossId);
+    if (kind === 'anubis_scales') {
+      const siblings = battle.activeRifts.filter(r => r.kind === kind && r.groupId === groupId);
+      const isLower = rift.scaleHigherSelected === true ||
+        siblings.some(r => (r.scaleValue ?? 0) > (rift.scaleValue ?? 0));
+      if (isLower) {
+        const multiplier = rift.scaleHigherSelected ? 3 : 2;
+        const damage = this.getBossCombatBreakdown(battle.bossId).altarDamageOnMiss * multiplier;
+        const before = battle.altarIntegrity;
+        battle.activeRifts = battle.activeRifts.filter(r => !siblings.includes(r));
+        battle.altarIntegrity = Math.max(0, before - damage);
+        battle.riftsMissed += 1;
+        battle.comboStreak = 0;
+        if (battle.altarIntegrity <= 0) this.completeBossBattle(false);
+        return {
+          damage: 0, shattered: false, victory: false, kind,
+          altarDamageTaken: before - battle.altarIntegrity,
+          scaleDamageMultiplier: multiplier
+        };
+      }
+      // Keep the lower balloon clickable, but harmless if its window expires.
+      siblings.forEach(r => { if (r !== rift) r.scaleHigherSelected = true; });
+    }
+
     const nextCombo = (battle.comboStreak ?? 0) + 1;
     battle.comboStreak = nextCombo;
-    // Combo streak rewards active rift defense (+5% per consecutive rift, up to +30%)
-    const comboMult = 1 + Math.min(0.3, (nextCombo - 1) * 0.05);
-    let damage = Math.min(battle.bossMaxHp * BOSS_MAX_RIFT_HP_FRACTION, breakdown.riftDamage * comboMult);
 
     battle.activeRifts.splice(idx, 1);
     battle.riftsShattered += 1;
@@ -896,57 +910,29 @@ export class GameStateManager {
     battle.sphereCharge = Math.min(100, (battle.sphereCharge ?? 0) + 25);
 
     let specialBonusTriggered = false;
-    let miracleAwakened = false;
+    const miracleAwakened = false;
     const siblingsRemaining = groupId
       ? battle.activeRifts.filter((r) => r.groupId === groupId).length
       : 0;
 
-    if (kind === 'anubis_scales' && siblingsRemaining === 0) {
-      // Anubis Judgment of the Scales: parrying both scale pans awakens a Faithful Miracle on the wheel
-      specialBonusTriggered = true;
-      miracleAwakened = true;
-      this.spawnBossMiracle();
-    } else if (kind === 'hades_chains' && siblingsRemaining === 0) {
+    if (kind === 'hades_chains' && siblingsRemaining === 0) {
       // Hades Chains broken: restores full click power
       specialBonusTriggered = true;
     } else if (kind === 'odin_raven') {
-      // Odin Raven: fast critical window (parrying while >= 35% of window remains deals 1.6x crit and delays Odin's next attack)
+      // Intercepting the raven early delays Odin's next attack.
       const isCritParry = rift.remainingSec >= rift.maxSec * 0.35;
       if (isCritParry) {
-        damage = Math.min(battle.bossMaxHp * 0.12, damage * 1.6);
         battle.riftSpawnTimerSec += 1.4;
         specialBonusTriggered = true;
       }
     } else if (kind === 'chaos_orbit' && siblingsRemaining === 0) {
-      // Primordial Chaos Orbital Collapse: shattering all 3 orbital seals triggers massive rupture damage
-      const ruptureDamage = breakdown.canDamageBoss
-        ? Math.max(damage * 1.5, battle.bossMaxHp * 0.065 * Math.min(1, breakdown.cultReadiness))
-        : 0;
-      damage += ruptureDamage;
+      // All orbital seals have been safely intercepted.
       specialBonusTriggered = true;
     }
 
-    // Note: APARAR no longer heals Altar Integrity directly (Q17: 100% of healing comes from Faithful Miracles)
-    battle.bossHp = Math.max(0, battle.bossHp - damage);
-    battle.phase = this.getBossPhase();
-
-    if (battle.bossHp <= 0) {
-      this.completeBossBattle(true);
-      return {
-        damage,
-        shattered: true,
-        victory: true,
-        comboStreak: nextCombo,
-        kind,
-        specialBonusTriggered,
-        miracleAwakened
-      };
-    }
-
-    this.checkAndApplyBossPhaseTransitions();
-
+    // A parry changes neither combatant's health and cannot trigger phase shockwaves.
     return {
-      damage,
+      damage: 0,
       shattered: true,
       victory: false,
       comboStreak: nextCombo,
@@ -1311,15 +1297,21 @@ export class GameStateManager {
     battle.phase = phase;
 
     // 1. Update active rifts & check for expired rifts first so defeat on expiry takes precedence over passive tick victory
-    for (let i = battle.activeRifts.length - 1; i >= 0; i--) {
-      const rift = battle.activeRifts[i];
+    for (const rift of [...battle.activeRifts].reverse()) {
+      const i = battle.activeRifts.indexOf(rift);
+      if (i === -1) continue;
       rift.remainingSec -= deltaSec;
       if (rift.remainingSec <= 0) {
         battle.activeRifts.splice(i, 1);
+        if (rift.kind === 'anubis_scales') {
+          battle.activeRifts = battle.activeRifts.filter(r =>
+            r.kind !== 'anubis_scales' || r.groupId !== rift.groupId);
+          if (rift.scaleHigherSelected) continue;
+        }
         battle.riftsMissed += 1;
         battle.comboStreak = 0;
         const missMult =
-          rift.kind === 'anubis_scales' || rift.kind === 'hades_chains'
+          rift.kind === 'hades_chains'
             ? 0.5
             : rift.kind === 'chaos_orbit'
               ? 0.4
