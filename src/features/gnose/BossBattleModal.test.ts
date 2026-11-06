@@ -451,7 +451,7 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
       const button = layer.children.find(el => el.getAttribute('data-rift-id') === rift.id)!;
       expect(button.innerHTML).toContain(`<span class="boss-rift-number"><small>PESO</small>${rift.scaleValue}</span>`);
       expect(button.innerHTML).toContain('Clique no maior peso');
-      expect(button.innerHTML).toContain('>APARAR</span>');
+      expect(button.innerHTML).toContain('>PESAR</span>');
       expect(button.getAttribute('aria-label')).toContain(String(rift.scaleValue));
     }
     const hp = gameState.activeBossBattle!.bossHp;

@@ -145,9 +145,9 @@ export class SphereController {
     return finalReward;
   }
 
-  public spawnFloatingText(x: number, y: number, text: string): void {
+  public spawnFloatingText(x: number, y: number, text: string, small = false): void {
     const floatEl = document.createElement('div');
-    floatEl.className = 'floating-faith-num';
+    floatEl.className = small ? 'floating-faith-num is-small' : 'floating-faith-num';
     floatEl.textContent = text;
     floatEl.style.left = `${x}px`;
     floatEl.style.top = `${y}px`;

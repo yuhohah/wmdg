@@ -13,7 +13,7 @@ export interface GnoseTabOptions {
   gameState: GameStateManager;
   audio: AudioManager;
   notifications: NotificationManager;
-  spawnFloatingText: (x: number, y: number, text: string) => void;
+  spawnFloatingText: (x: number, y: number, text: string, small?: boolean) => void;
   onGnoseReset?: () => void;
   onUpgradePurchased?: (upg: GnoseUpgrade) => void;
   onBossDefeated?: () => void;

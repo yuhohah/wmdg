@@ -140,7 +140,7 @@ class AppManager {
       gameState: this.gameState,
       audio: this.audio,
       notifications: this.notifications,
-      spawnFloatingText: (x, y, t) => this.sphere.spawnFloatingText(x, y, t),
+      spawnFloatingText: (x, y, t, small) => this.sphere.spawnFloatingText(x, y, t, small),
       onGnoseReset: () => {
         this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
         this.refreshAllUI();

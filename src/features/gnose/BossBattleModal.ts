@@ -21,7 +21,7 @@ export interface BossBattleModalOptions {
   gameState: GameStateManager;
   audio: AudioManager;
   notifications: NotificationManager;
-  spawnFloatingText: (x: number, y: number, text: string) => void;
+  spawnFloatingText: (x: number, y: number, text: string, small?: boolean) => void;
   onBattleEnded?: (boss: GnoseBoss, victory: boolean) => void;
   onCameraFrame?: (target: BattleCameraTarget, elapsedSec: number) => void;
 }
@@ -365,29 +365,52 @@ export function bossHpLabel(phase: number, hpPercent: number, passiveVictorySec:
   return Number.isFinite(passiveVictorySec) ? `${label} · ~${passiveVictorySec}s` : label;
 }
 
-// World-space half sizes at zoom scale 1, matching .boss-world-hp-plate and .boss-rift-target
-const PLATE_HALF_WIDTH = 122;
-const PLATE_HEIGHT = 90;
-const RIFT_HALF_WIDTH = 69;
-const RIFT_HALF_HEIGHT = 60;
-const RIFT_PLATE_GAP = 8;
+// Cards sit on an arc around the Sphere, on the side away from the Guardian (degrees, 0 = right, -90 = up).
+// The arc stops short of the Guardian on one end and the Sphere's health plate on the other.
+const PARRY_ARC_START_DEG = -105;
+const PARRY_ARC_SPAN_DEG = 113;
 
-export function keepClearOfPlate(
-  pos: { x: number; y: number },
-  plate: { centerX: number; top: number },
-  towardX: number,
-  scale: number,
-  multiCard = false
+export function parryCardPosition(
+  rift: Pick<BossRift, 'kind' | 'slotIndex' | 'xPercent' | 'yPercent'>,
+  sphere: { x: number; y: number },
+  elapsedSec: number,
+  scale: number
 ): { x: number; y: number } {
-  const reachX = (PLATE_HALF_WIDTH + RIFT_HALF_WIDTH) * scale + RIFT_PLATE_GAP;
-  const halfCard = RIFT_HALF_HEIGHT * scale + RIFT_PLATE_GAP;
-  const touches = Math.abs(pos.x - plate.centerX) < reachX
-    && pos.y + halfCard > plate.top
-    && pos.y - halfCard < plate.top + PLATE_HEIGHT * scale;
-  if (!touches) return pos;
-  // Sideways keeps a lone card off the Guardian's hitbox; sibling cards would land on each other.
-  if (multiCard) return { x: pos.x, y: plate.top - halfCard };
-  return { x: plate.centerX + (towardX >= plate.centerX ? reachX : -reachX), y: pos.y };
+  const slot = rift.slotIndex ?? 0;
+  let degrees: number;
+  if (rift.kind === 'anubis_scales' || rift.kind === 'hades_chains') {
+    degrees = slot === 0 ? -80 : -5;
+  } else if (rift.kind === 'odin_raven') {
+    degrees = -45;
+  } else if (rift.kind === 'chaos_orbit') {
+    degrees = [-100, -45, 5][slot] + Math.sin(elapsedSec * 0.55) * 3;
+  } else {
+    const turn = (Math.atan2(rift.yPercent - 50, rift.xPercent - 50) + Math.PI) / (Math.PI * 2);
+    degrees = PARRY_ARC_START_DEG + turn * PARRY_ARC_SPAN_DEG;
+  }
+  // Cards grow as the camera zooms out, so the arc widens with them
+  const radius = 120 + 110 * scale;
+  const radians = (degrees * Math.PI) / 180;
+  return {
+    x: Math.round(sphere.x + Math.cos(radians) * radius),
+    y: Math.round(sphere.y + Math.sin(radians) * radius),
+  };
+}
+
+const TRAIL_HOLD_SEC = 0.35;
+const TRAIL_SHRINK_PERCENT_PER_SEC = 40;
+
+export interface DamageTrail {
+  value: number;
+  holdSec: number;
+}
+
+// The pause only re-arms once the trail catches up, so rapid hits cannot freeze it.
+export function stepDamageTrail(trail: DamageTrail, currentPercent: number, elapsedSec: number): DamageTrail {
+  if (currentPercent >= trail.value) return { value: currentPercent, holdSec: TRAIL_HOLD_SEC };
+  if (trail.holdSec > 0) return { value: trail.value, holdSec: Math.max(0, trail.holdSec - elapsedSec) };
+  const value = trail.value - TRAIL_SHRINK_PERCENT_PER_SEC * elapsedSec;
+  return value <= currentPercent ? { value: currentPercent, holdSec: TRAIL_HOLD_SEC } : { value, holdSec: 0 };
 }
 
 export class BossBattleModal {
@@ -399,6 +422,10 @@ export class BossBattleModal {
   private bossHpPlateEl: HTMLElement | null = null;
   private bossWorldHpLabelEl: HTMLElement | null = null;
   private bossHpFillEl: HTMLElement | null = null;
+  private bossHpTrailEl: HTMLElement | null = null;
+  private altarTrailEl: HTMLElement | null = null;
+  private bossTrail: DamageTrail = { value: 100, holdSec: 0 };
+  private altarTrail: DamageTrail = { value: 100, holdSec: 0 };
   private bossHpValEl: HTMLElement | null = null;
 
   private sphereHpPlateEl: HTMLElement | null = null;
@@ -732,6 +759,7 @@ export class BossBattleModal {
             <span class="boss-bar-val" id="boss-hp-val">100%</span>
           </div>
           <div class="boss-bar-track boss-hp-track" role="progressbar" aria-label="Essência do guardião" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+            <div class="boss-bar-trail" id="boss-hp-trail" style="width: 100%;"></div>
             <div class="boss-bar-fill boss-hp-fill" id="boss-hp-fill" style="width: 100%;"></div>
           </div>
           <div class="boss-world-subline" id="boss-combat-feedback" role="status" aria-atomic="true"></div>
@@ -744,6 +772,7 @@ export class BossBattleModal {
             <span class="boss-bar-val" id="boss-altar-val">100%</span>
           </div>
           <div class="boss-bar-track altar-integrity-track" role="progressbar" aria-label="Integridade do altar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+            <div class="boss-bar-trail" id="boss-altar-trail" style="width: 100%;"></div>
             <div class="boss-bar-fill altar-integrity-fill" id="boss-altar-fill" style="width: 100%;"></div>
           </div>
           <div class="sphere-world-actions">
@@ -795,6 +824,8 @@ export class BossBattleModal {
     this.bossHpPlateEl = stage.querySelector('#boss-world-hp-plate');
     this.bossWorldHpLabelEl = stage.querySelector('#boss-world-hp-label');
     this.bossHpFillEl = stage.querySelector('#boss-hp-fill');
+    this.bossHpTrailEl = stage.querySelector('#boss-hp-trail');
+    this.altarTrailEl = stage.querySelector('#boss-altar-trail');
     this.bossHpValEl = stage.querySelector('#boss-hp-val');
 
     this.sphereHpPlateEl = stage.querySelector('#sphere-world-hp-plate');
@@ -855,7 +886,8 @@ export class BossBattleModal {
         this.options.spawnFloatingText(
           e.clientX,
           e.clientY - 28,
-          `−${(breakdown.clickHpFraction * 100).toFixed(2)}%`
+          `−${(breakdown.clickHpFraction * 100).toFixed(2)}%`,
+          true
         );
       }
       this.updateUI();
@@ -918,13 +950,14 @@ export class BossBattleModal {
       this.options.spawnFloatingText(
         x,
         y,
-        isCrit ? `✦ CRÍTICO! −${pct}%` : `−${pct}%`
+        isCrit ? `✦ CRÍTICO! −${pct}%` : `−${pct}%`,
+        true
       );
     } else {
       if (!this.options.gameState.getBossCombatBreakdown(battle.bossId).canDamageBoss) {
         this.showHitFeedback(`Sem dano: Prontidão abaixo de ${BOSS_DAMAGE_READINESS_THRESHOLD * 100}%.`);
       }
-      this.options.spawnFloatingText(x, y, `+${formatNumber(fpc)} FÉ`);
+      this.options.spawnFloatingText(x, y, `+${formatNumber(fpc)} FÉ`, true);
     }
     this.updateUI();
     events.emit(GameEvents.STATE_CHANGED);
@@ -973,6 +1006,8 @@ export class BossBattleModal {
     this.activeBossIdForScene = bossId;
     this.lastRiftsMissed = 0;
     this.lastPhase = 1;
+    this.bossTrail = { value: 100, holdSec: 0 };
+    this.altarTrail = { value: 100, holdSec: 0 };
     this.isBattleActive = true;
     this.climaxState = null;
     this.fulgorBeamAlpha = 0;
@@ -1350,6 +1385,7 @@ export class BossBattleModal {
       if (frameSec !== null && document.visibilityState !== 'hidden') {
         const elapsedSec = Math.min(0.1, frameSec);
         this.updateWorldScene(elapsedSec);
+        this.updateDamageTrails(elapsedSec);
         if (this.isBattleActive) {
           this.drawWorldScene();
         }
@@ -1359,6 +1395,15 @@ export class BossBattleModal {
       }
     };
     this.animFrameId = requestAnimationFrame(step);
+  }
+
+  private updateDamageTrails(elapsedSec: number): void {
+    const battle = this.options.gameState.activeBossBattle;
+    if (!battle) return;
+    this.bossTrail = stepDamageTrail(this.bossTrail, (battle.bossHp / battle.bossMaxHp) * 100, elapsedSec);
+    this.altarTrail = stepDamageTrail(this.altarTrail, (battle.altarIntegrity / battle.maxAltarIntegrity) * 100, elapsedSec);
+    if (this.bossHpTrailEl) this.bossHpTrailEl.style.width = `${this.bossTrail.value.toFixed(2)}%`;
+    if (this.altarTrailEl) this.altarTrailEl.style.width = `${this.altarTrail.value.toFixed(2)}%`;
   }
 
   private triggerBossAttackSwing(rift?: BossRift): void {
@@ -2507,10 +2552,9 @@ export class BossBattleModal {
       }
     }
 
-    const renderFrame = this.resolveBossRenderFrame(battle.bossId);
-    this.syncRiftsDOM(battle.activeRifts, renderFrame);
+    this.syncRiftsDOM(battle.activeRifts);
     this.syncMiracleDOM(battle.activeMiracle ?? null);
-    this.syncAttackHitbox(renderFrame);
+    this.syncAttackHitbox(this.resolveBossRenderFrame(battle.bossId));
   }
 
   private syncMiracleDOM(miracle: ActiveBossMiracle | null): void {
@@ -2569,54 +2613,7 @@ export class BossBattleModal {
     );
   }
 
-  private computeRiftStagePosition(
-    rift: BossRift,
-    strikeZoneCenterX: number,
-    strikeZoneCenterY: number,
-    spanX: number,
-    spanY: number
-  ): { x: number; y: number } {
-    const sphereLocalX = BOSS_SPHERE_CENTER.x - this.stageOriginX;
-    const sphereLocalY = BOSS_SPHERE_CENTER.y - this.stageOriginY;
-    const kind = rift.kind ?? 'standard';
-    const slot = rift.slotIndex ?? 0;
-
-    if (kind === 'anubis_scales') {
-      return {
-        x: Math.round(sphereLocalX + (slot === 0 ? -185 : 185)),
-        y: Math.round(sphereLocalY - 10),
-      };
-    }
-    if (kind === 'hades_chains') {
-      return {
-        x: Math.round(sphereLocalX + (slot === 0 ? -125 : 125)),
-        y: Math.round(sphereLocalY + (slot === 0 ? -78 : 78)),
-      };
-    }
-    if (kind === 'odin_raven') {
-      return {
-        x: Math.round(strikeZoneCenterX + 35),
-        y: Math.round(strikeZoneCenterY - 70),
-      };
-    }
-    if (kind === 'chaos_orbit') {
-      const elapsed = this.options.gameState.activeBossBattle?.elapsedCombatSec ?? 0;
-      const angle = -Math.PI / 2 + slot * ((Math.PI * 2) / 3) + elapsed * 0.55;
-      return {
-        x: Math.round(sphereLocalX + Math.cos(angle) * 175),
-        y: Math.round(sphereLocalY + Math.sin(angle) * 175),
-      };
-    }
-
-    const offsetX = ((rift.xPercent - 50) / 72) * spanX;
-    const offsetY = ((rift.yPercent - 50) / 64) * spanY;
-    return {
-      x: Math.round(strikeZoneCenterX + offsetX),
-      y: Math.round(strikeZoneCenterY + offsetY),
-    };
-  }
-
-  private syncRiftsDOM(activeRifts: BossRift[], renderFrame: BossRenderFrame): void {
+  private syncRiftsDOM(activeRifts: BossRift[]): void {
     if (!this.riftsLayerEl) return;
 
     const activeIds = new Set(activeRifts.map((r) => r.id));
@@ -2633,27 +2630,16 @@ export class BossBattleModal {
       }
     });
 
-    // Position "APARAR" prompts in the strike zone between the Boss (1415) and the Sphere (1740)
-    const strikeZoneCenterX = (this.bossX + BOSS_SPHERE_CENTER.x) * 0.5 - this.stageOriginX + 20;
-    const strikeZoneCenterY = BOSS_SPHERE_CENTER.y - this.stageOriginY - 25;
-    const spanX = 320;
-    const spanY = 250;
     const promptScale = Number(document.getElementById('dodeca-board-world')?.style.getPropertyValue('--boss-prompt-scale')) || 1;
-    const plate = { centerX: renderFrame.lx, top: renderFrame.ly + 30 };
-    const sphereLocalX = BOSS_SPHERE_CENTER.x - this.stageOriginX;
+    const sphereLocal = { x: BOSS_SPHERE_CENTER.x - this.stageOriginX, y: BOSS_SPHERE_CENTER.y - this.stageOriginY };
+    const elapsedCombatSec = this.options.gameState.activeBossBattle?.elapsedCombatSec ?? 0;
 
     activeRifts.forEach((rift) => {
       const kind = rift.kind ?? 'standard';
-      const pos = keepClearOfPlate(
-        this.computeRiftStagePosition(rift, strikeZoneCenterX, strikeZoneCenterY, spanX, spanY),
-        plate,
-        sphereLocalX,
-        promptScale,
-        kind === 'anubis_scales' || kind === 'hades_chains' || kind === 'chaos_orbit'
-      );
+      const pos = parryCardPosition(rift, sphereLocal, elapsedCombatSec, promptScale);
       const labelText =
         kind === 'anubis_scales'
-          ? 'APARAR'
+          ? 'PESAR'
           : kind === 'hades_chains'
             ? 'GRILHÃO'
             : kind === 'odin_raven'
@@ -2683,7 +2669,7 @@ export class BossBattleModal {
         riftEl.setAttribute('data-rift-id', rift.id);
         riftEl.setAttribute('data-rift-kind', kind);
         riftEl.setAttribute('aria-label', kind === 'anubis_scales'
-          ? `Aparar balança: peso ${rift.scaleValue}. Escolha apenas o maior peso.`
+          ? `Pesar: peso ${rift.scaleValue}. Escolha apenas o maior peso.`
           : `${labelText}: aparar golpe do Guardião e carregar a Esfera`);
         riftEl.style.left = `${pos.x}px`;
         riftEl.style.top = `${pos.y}px`;
