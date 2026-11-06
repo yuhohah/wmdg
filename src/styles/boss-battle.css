@@ -517,6 +517,19 @@ body.is-boss-battle-active .board-quicknav-bar {
   transition: opacity 0.35s ease, visibility 0.35s;
 }
 
+/* O Pátio some aos poucos quando a procissão parte, depois de os Fiéis se reunirem nele */
+/* !important e dois IDs: board-layout.css fixa a transição dos cards arrastáveis com !important */
+body.is-boss-battle-active #dodeca-board-world #card-followers {
+  transition: opacity 1.2s ease, visibility 1.2s !important;
+}
+
+/* A Encarnação busca os Fiéis no Pátio e os traz de volta após a vitória */
+body.is-boss-battle-active.is-courtyard-visible #dodeca-board-world #card-followers {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s ease, visibility 0.6s !important;
+}
+
 .boss-bar-section {
   display: flex;
   flex-direction: column;

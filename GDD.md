@@ -1,6 +1,6 @@
 # Cult of the Sphere — Game Design Document
 
-**Estado:** jogo implementado no workspace · **Versão:** 0.9.0 · **Revisão:** 06/11/2026
+**Estado:** jogo implementado no workspace · **Versão:** 0.9.1 · **Revisão:** 06/11/2026
 **Gênero:** idle / incremental / clicker · **Plataforma:** navegador desktop e mobile
 **Tecnologia:** TypeScript, Vite, Canvas 2D e CSS
 
@@ -149,7 +149,7 @@ A Esfera começa com 100 de integridade e sofre pressão contínua, além das pe
 
 ### Tela da luta
 
-Durante o duelo, os menus, as linhas que os ligam à Esfera e a barra de navegação inferior ficam ocultos; voltam ao fim da luta. Os cartões de aparar surgem em um arco ao redor da Esfera, do lado oposto ao Guardião, sem cobrir o alvo dos cliques nem as barras de vida. Essas barras e os cartões acompanham o zoom para continuar legíveis com a câmera afastada.
+Durante o duelo, os menus, as linhas que os ligam à Esfera e a barra de navegação inferior ficam ocultos; voltam ao fim da luta. O Pátio dos Fiéis é a exceção: continua visível enquanto a Encarnação reúne os Fiéis, some aos poucos quando a procissão parte e reaparece no início do retorno após a vitória. Os cartões de aparar surgem em um arco ao redor da Esfera, do lado oposto ao Guardião, sem cobrir o alvo dos cliques nem as barras de vida. Essas barras e os cartões acompanham o zoom para continuar legíveis com a câmera afastada.
 
 As barras do Guardião e da Esfera mantêm um rastro do dano recente, que encolhe depois de um instante. A barra do Guardião mostra a fase, a vida e o tempo estimado de vitória só com dano passivo. Os números de dano por golpe são discretos; aparo, Fulgor e milagre têm destaque maior.
 

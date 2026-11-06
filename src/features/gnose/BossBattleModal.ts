@@ -1080,7 +1080,7 @@ export class BossBattleModal {
       this.phaseBannerEl.style.display = 'none';
     }
     this.miracleBtnEl = null;
-    document.body.classList.remove('is-boss-battle-active');
+    document.body.classList.remove('is-boss-battle-active', 'is-courtyard-visible');
     this.options.audio.stopBossBattleMusic?.();
     if (wasOpen) {
       document.getElementById('btn-zoom-reset')?.click();
@@ -1249,6 +1249,7 @@ export class BossBattleModal {
     this.incY = incBox.y + incBox.h - 12;
     this.incFacing = fBox.x >= this.incX ? 1 : -1;
     this.incState = 'walking_to_patio';
+    document.body.classList.add('is-courtyard-visible');
     this.incTimerSec = 0;
     this.incWalkCycle = 0;
     this.incCallRingProgress = 0;
@@ -1566,6 +1567,7 @@ export class BossBattleModal {
 
   private beginVictoryReturn(): void {
     this.incState = 'leading_return';
+    document.body.classList.add('is-courtyard-visible');
     this.incCallRingProgress = 0;
     this.bossHitFlashSec = 0;
     // The guard station is also the circle entrance. Retrace its approach to the patio.
@@ -1708,6 +1710,7 @@ export class BossBattleModal {
       this.incFacing = BOSS_SPHERE_CENTER.x >= this.incX ? 1 : -1;
       if (this.incTimerSec >= 0.6) {
         this.incState = 'leading_procession';
+        document.body.classList.remove('is-courtyard-visible');
         this.incTimerSec = 0;
       }
     } else if (this.incState === 'leading_procession') {

@@ -125,7 +125,7 @@ function setupBossModalHarness(
 
     public classList = {
       add: (c: string) => this.classes.add(c),
-      remove: (c: string) => this.classes.delete(c),
+      remove: (...names: string[]) => names.forEach(c => this.classes.delete(c)),
       contains: (c: string) => this.classes.has(c),
       toggle: (c: string, force?: boolean) => {
         const shouldAdd = force ?? !this.classes.has(c);
@@ -753,6 +753,45 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     expect(done.followers.every((f) => f.state === 'encircling')).toBe(true);
 
     modal.close();
+  });
+
+  it('shows the courtyard while the Faithful gather and return, and hides it during the procession and fight', () => {
+    const { modal, gameState } = setupBossModalHarness(100);
+    const courtyardVisible = () => document.body.classList.contains('is-courtyard-visible');
+    expect(modal.openForBoss('boss_cronos')).toBe(true);
+
+    while (modal.getChoreographySnapshot().incState !== 'leading_procession') {
+      expect(courtyardVisible()).toBe(true);
+      modal.stepSceneForTest(0.1);
+    }
+    expect(courtyardVisible()).toBe(false);
+
+    for (let i = 0; i < 250 && modal.getChoreographySnapshot().bossState !== 'idle'; i++) {
+      modal.stepSceneForTest(0.2);
+      expect(courtyardVisible()).toBe(false);
+    }
+
+    const battle = gameState.activeBossBattle!;
+    battle.bossHp = 1;
+    battle.sphereCooldownSec = 0;
+    gameState.addClick(() => 0.5);
+    modal.updateUI();
+    modal.stepSceneForTest(1.5);
+    expect(modal.getChoreographySnapshot().incState).toBe('leading_return');
+    expect(courtyardVisible()).toBe(true);
+
+    for (let i = 0; i < 800 && modal.isOpen(); i++) modal.stepSceneForTest(0.1);
+    expect(modal.isOpen()).toBe(false);
+    expect(courtyardVisible()).toBe(false);
+  });
+
+  it('clears the courtyard state when retreating during the gathering', () => {
+    const { modal, gameState } = setupBossModalHarness(100);
+    expect(modal.openForBoss('boss_cronos')).toBe(true);
+    expect(document.body.classList.contains('is-courtyard-visible')).toBe(true);
+    gameState.retreatBossBattle();
+    modal.close();
+    expect(document.body.classList.contains('is-courtyard-visible')).toBe(false);
   });
 
   it.each([1, 4])('leads every Faithful home before returning to the actual altar at speed %s', speed => {
