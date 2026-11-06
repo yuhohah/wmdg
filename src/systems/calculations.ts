@@ -226,6 +226,11 @@ export function calculateGnoseToGet(faith: number, gainExponent: number = 0.25):
   return Math.max(1, Math.floor(Math.pow(faith / 1e15, gainExponent)));
 }
 
+export function calculateFaithForNextGnose(faith: number, gainExponent: number = 0.25): number {
+  if (faith < 1e15) return 1e15;
+  return 1e15 * Math.pow(calculateGnoseToGet(faith, gainExponent) + 1, 1 / gainExponent);
+}
+
 export function calculateTotalGnoseMultiplier(totalGnoseEarned: number): number {
   if (totalGnoseEarned <= 0) return 1.0;
   return 1 + Math.pow(totalGnoseEarned, 0.35) * 1.5;

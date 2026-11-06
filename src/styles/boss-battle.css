@@ -143,12 +143,6 @@
 
 .gnose-tier-padlock .ico { width: 40px; height: 40px; }
 
-.gnose-tier-seal-title {
-  font-size: 13px;
-  letter-spacing: 2px;
-  color: #ab9365;
-}
-
 html .gnose-tier-seal .btn-challenge-guardian {
   display: inline-flex;
   align-items: center;
@@ -174,18 +168,14 @@ html .gnose-tier-seal .btn-challenge-guardian:disabled {
   outline-offset: 3px;
 }
 
-.gnose-guardian-requirement,
-.gnose-guardian-power {
+.gnose-guardian-requirement {
   font-size: 14px;
   overflow-wrap: anywhere;
 }
 
-.gnose-guardian-power { color: #99896c; }
-
 @media (max-width: 480px) {
   .gnose-tier-seal { padding: 10px; }
   .gnose-tier-seal-content { padding: 12px; }
-  .gnose-tier-seal-title { letter-spacing: 1px; }
 }
 
 @media (max-width: 860px) {

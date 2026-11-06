@@ -45,7 +45,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 1,
     cost: 1,
     prerequisites: [],
-    effectText: 'Fiéis: escala de custo −0,01',
+    effectText: 'Fiéis mais baratos · mais Fé por Fiel · começa com 1.000 Fé',
   },
   {
     id: 'gn_memoria_selos',
@@ -57,7 +57,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 1,
     cost: 77,
     prerequisites: ['gn_init_faith'],
-    effectText: 'Selo da Encarnação permanente · Converter Máximo',
+    effectText: 'Selo da Encarnação permanente · compra em massa',
   },
   {
     id: 'gn_init_fervor',
@@ -69,7 +69,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 1,
     cost: 750_000,
     prerequisites: ['gn_init_faith'],
-    effectText: 'Rito de Fervor: ganho 2 → 2,05; custo 1,80 → 1,75',
+    effectText: 'Rito de Fervor mais forte e mais barato',
   },
   {
     id: 'gn_relic_gain',
@@ -81,7 +81,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 1,
     cost: 1.5e9,
     prerequisites: ['gn_init_faith'],
-    effectText: 'Rito de Fragmentos: ganho 3 → 3,05; custo 5 → 4,90',
+    effectText: 'Rito de Fragmentos mais forte e mais barato',
   },
   {
     id: 'gn_automation',
@@ -93,7 +93,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 1,
     cost: 1_800,
     prerequisites: ['gn_memoria_selos'],
-    effectText: 'Auto-Fiéis · compra com Fé disponível · ativar/desativar',
+    effectText: 'Compra Fiéis automaticamente',
   },
   {
     id: 'gn_seal_automation',
@@ -105,7 +105,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 1,
     cost: 56_000,
     prerequisites: ['gn_memoria_selos'],
-    effectText: 'Compra automática de todos os Selos com Fé',
+    effectText: 'Rompe os Selos automaticamente',
   },
   {
     id: 'gn_ritual_automation',
@@ -117,7 +117,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 2,
     cost: 11e6,
     prerequisites: ['gn_seal_automation', 'gn_init_fervor'],
-    effectText: 'Auto-Ritos · usa todo o Fervor · ativar/desativar',
+    effectText: 'Compra Ritos automaticamente',
   },
   {
     id: 'gn_relic_automation',
@@ -129,7 +129,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 2,
     cost: 130e6,
     prerequisites: ['gn_seal_automation'],
-    effectText: 'Auto-Relíquias · usa todos os Fragmentos · ativar/desativar',
+    effectText: 'Compra Relíquias automaticamente',
   },
   {
     id: 'gn_followers_syn',
@@ -165,7 +165,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 2,
     cost: 13e9,
     prerequisites: ['gn_memoria_selos', 'gn_init_fervor'],
-    effectText: 'Preserva Relíquias nos reinícios',
+    effectText: 'Relíquias não se perdem ao Ascender',
   },
   {
     id: 'gn_followers_economy',
@@ -177,7 +177,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 2,
     cost: 20e12,
     prerequisites: ['gn_init_faith', 'gn_followers_syn'],
-    effectText: 'Fiéis: escala de custo −0,015 adicional',
+    effectText: 'Fiéis ainda mais baratos',
   },
   {
     id: 'gn_followers_cubic',
@@ -189,7 +189,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 3,
     cost: 180e12,
     prerequisites: ['gn_followers_syn'],
-    effectText: 'Sinergia dos Fiéis: expoente 1 → 1,1',
+    effectText: 'Fiéis aumentam ainda mais a Fé',
   },
   {
     id: 'gn_gnose_mult',
@@ -201,7 +201,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 3,
     cost: 1.7e15,
     prerequisites: ['gn_bencao_eterna'],
-    effectText: 'Ascensão: expoente 0,25 → 0,28',
+    effectText: 'Mais Gnose a cada Ascensão',
   },
   {
     id: 'gn_relic_refinement',
@@ -213,7 +213,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 3,
     cost: 1.5e18,
     prerequisites: ['gn_relic_gain', 'gn_keep_relics'],
-    effectText: 'Fragmentos: ganho 3,05 → 3,40; custo 4,90 → 4,60',
+    effectText: 'Rito de Fragmentos ainda mais forte e barato',
   },
   {
     id: 'gn_fu1_boost',
@@ -225,7 +225,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 3,
     cost: 6.8e19,
     prerequisites: ['gn_keep_relics'],
-    effectText: 'Rito de Fervor: ganho 2,05 → 2,35',
+    effectText: 'Rito de Fervor ainda mais forte',
   },
   {
     id: 'gn_omniscience',
@@ -237,7 +237,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 4,
     cost: 6.8e21,
     prerequisites: ['gn_gnose_mult', 'gn_automation'],
-    effectText: 'Fiéis/Ritos automáticos sem gasto · Transmutação 100%/s',
+    effectText: 'Fiéis e Ritos automáticos de graça · Transmutação automática',
   },
   {
     id: 'gn_apotheosis',
@@ -249,7 +249,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 4,
     cost: 7.9e23,
     prerequisites: ['gn_omniscience', 'gn_fu1_boost', 'gn_followers_cubic'],
-    effectText: 'Ritos: escala de custo −0,05 · Avatares finais',
+    effectText: 'Ritos mais baratos · libera os Avatares finais',
   },
   {
     id: 'gn_empyrean_fire',
@@ -261,7 +261,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 4,
     cost: 1.5e30,
     prerequisites: ['gn_init_fervor', 'gn_fu1_boost', 'gn_apotheosis'],
-    effectText: 'Fervor: ganho 2,35 → 2,65; custo −0,10 adicional',
+    effectText: 'Rito de Fervor muito mais forte e barato',
   },
   {
     id: 'gn_perfect_opus',
@@ -273,7 +273,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 4,
     cost: 2.5e34,
     prerequisites: ['gn_relic_refinement', 'gn_apotheosis'],
-    effectText: 'Fragmentos: ganho 3,40 → 3,75; custo −0,40 adicional',
+    effectText: 'Rito de Fragmentos muito mais forte e barato',
   }
 ];
 
@@ -318,5 +318,4 @@ export const PROGRESSION_BALANCE = {
 
 for (const upgrade of GNOSE_UPGRADES) {
   upgrade.desc += ' Cada nó assimilado também multiplica Fé por clique, Fé/s, Fervor/s e Fragmentos/s por 4, permanentemente.';
-  upgrade.effectText += ' · produção ×4';
 }

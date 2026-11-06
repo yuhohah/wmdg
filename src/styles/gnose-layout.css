@@ -95,13 +95,20 @@
   height: 24px;
 }
 
-#card-gnose .gnose-tier-seal-title {
-  font-size: 12px;
-  letter-spacing: 0.6px;
+#card-gnose .gnose-tier-seal :is(.btn-challenge-guardian, .gnose-guardian-readiness) {
+  grid-column: 1 / -1;
 }
 
-#card-gnose .gnose-tier-seal :is(.btn-challenge-guardian, .gnose-guardian-requirement, .gnose-guardian-power, .gnose-guardian-readiness) {
-  grid-column: 1 / -1;
+#card-gnose .gnose-guardian-requirement {
+  align-self: center;
+}
+
+#card-gnose .gnose-guardian-readiness {
+  white-space: pre-line;
+}
+
+#card-gnose .gnose-guardian-readiness:empty {
+  display: none;
 }
 
 html #card-gnose .gnose-tier-seal .btn-challenge-guardian {
@@ -111,7 +118,7 @@ html #card-gnose .gnose-tier-seal .btn-challenge-guardian {
   white-space: normal;
 }
 
-#card-gnose :is(.gnose-guardian-requirement, .gnose-guardian-power) {
+#card-gnose .gnose-guardian-requirement {
   font-size: 13px;
   line-height: 1.35;
 }
