@@ -41,25 +41,24 @@ export class UnlocksTab {
     });
   }
 
+  // Separate from renderList: a hidden card never becomes visible, so it would never render again.
+  public syncVisibility(): void {
+    const hasUnlock = !!this.getCurrentUnlock();
+    const cardUnlocksEl = document.getElementById('card-unlocks');
+    const rayEl = document.getElementById('ray-unlocks');
+    const quickBtn = document.querySelector<HTMLElement>('.quicknav-btn[data-target="card-unlocks"]');
+
+    if (cardUnlocksEl) cardUnlocksEl.style.display = hasUnlock ? 'flex' : 'none';
+    if (rayEl) rayEl.style.display = hasUnlock ? '' : 'none';
+    if (quickBtn) quickBtn.style.display = hasUnlock ? 'inline-flex' : 'none';
+  }
+
   public renderList(): void {
     if (!this.unlocksListEl) return;
     this.unlocksListEl.innerHTML = '';
 
     const currentUnlock = this.getCurrentUnlock();
-    const cardUnlocksEl = document.getElementById('card-unlocks');
-    const rayEl = document.getElementById('ray-unlocks');
-    const quickBtn = document.querySelector<HTMLElement>('.quicknav-btn[data-target="card-unlocks"]');
-
-    if (!currentUnlock) {
-      if (cardUnlocksEl) cardUnlocksEl.style.display = 'none';
-      if (rayEl) rayEl.style.display = 'none';
-      if (quickBtn) quickBtn.style.display = 'none';
-      return;
-    }
-
-    if (cardUnlocksEl) cardUnlocksEl.style.display = 'flex';
-    if (rayEl) rayEl.style.display = '';
-    if (quickBtn) quickBtn.style.display = 'inline-flex';
+    if (!currentUnlock) return;
 
     const canAfford = this.gameState.faithPoints >= currentUnlock.cost;
     const btn = document.createElement('button');

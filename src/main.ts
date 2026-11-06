@@ -359,6 +359,7 @@ class AppManager {
     this.fervorTab.setHudVisibility(ferv);
     this.relicsTab.setHudVisibility(rel);
     this.gnoseTab.setHudVisibility(gno);
+    this.unlocksTab.syncVisibility();
 
     if (this.board) {
       this.board.setCardUnlocked('card-incarnation', inc);
