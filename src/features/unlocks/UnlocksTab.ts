@@ -111,7 +111,7 @@ export class UnlocksTab {
       this.notifications.showCustomPopup(
         'RELÍQUIAS DIVINAS ABERTAS',
         'Transmute sua Fé em Fragmentos e restaure relíquias no card Relíquias Divinas.',
-        'relics',
+        'gem',
         'NOVA MECÂNICA'
       );
     } else if (unlock.id === 'unlock_gnose') {

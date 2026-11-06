@@ -231,14 +231,6 @@ body {
   height: 100%;
 }
 
-.dodeca-card-tag {
-  background: transparent;
-  border: 1px solid var(--line);
-  color: var(--gold);
-  font-size: 12px;
-  letter-spacing: 1px;
-}
-
 .dodeca-card-body::-webkit-scrollbar-track {
   background: transparent;
 }
