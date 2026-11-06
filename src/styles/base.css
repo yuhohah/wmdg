@@ -40,6 +40,8 @@
   box-sizing: border-box;
   user-select: none;
   -webkit-user-select: none;
+  /* Removes the blue box mobile browsers flash over tapped elements */
+  -webkit-tap-highlight-color: transparent;
 }
 
 html, body {
