@@ -1,11 +1,11 @@
 # Capturas da interface
 
-Capturadas em **03/11/2026**, no navegador, a partir do servidor Vite local. São telas reais do jogo em uma sessão isolada de demonstração, com recursos preparados pelas ferramentas de desenvolvimento. Os saldos não representam uma medição de progressão ou uma campanha concluída.
+Capturadas em **06/11/2026**, na versão 0.9.0, no navegador, a partir do build local. São telas reais do jogo em uma sessão isolada de demonstração, com recursos preparados em um save de teste. Os saldos não representam uma medição de progressão ou uma campanha concluída.
 
 | Arquivo | Cena |
 | --- | --- |
 | [santuario.png](santuario.png) | Esfera, HUD astral e Pátio dos Fiéis. |
-| [gnose.png](gnose.png) | Árvore Hermética, tiers e indicadores de prontidão. |
+| [gnose.png](gnose.png) | Câmara da Gnose, Árvore Hermética, tiers e prontidão. |
 | [duelo-anubis.png](duelo-anubis.png) | Anúbis, Esfera, círculo de Fiéis e ação de aparar. |
 
 ## Atualizar
