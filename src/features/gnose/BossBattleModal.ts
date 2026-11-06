@@ -1,7 +1,7 @@
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { NotificationManager } from '../../systems/notifications.js';
-import { GNOSE_BOSSES, BOSS_DAMAGE_READINESS_THRESHOLD, BOSS_DEFENSE_READINESS_THRESHOLD } from '../../config/bosses.js';
+import { GNOSE_BOSSES, BOSS_DAMAGE_READINESS_THRESHOLD } from '../../config/bosses.js';
 import { formatNumber } from '../../systems/calculations.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 import type { ActiveBossMiracle, BossRift, CultPillarStatus, GnoseBoss } from '../../types.js';
@@ -358,6 +358,38 @@ function loadIncarnationProcessionSprites(): IncarnationWalkSprite[] {
   return cachedIncarnationWalkSprites;
 }
 
+export function bossHpLabel(phase: number, hpPercent: number, passiveVictorySec: number): string {
+  const phaseTag = phase === 3 ? 'Fase III' : phase === 2 ? 'Fase II' : 'Fase I';
+  // Rounded up so a living Guardian never reads 0%
+  const label = `${phaseTag} · ${Math.ceil(hpPercent)}%`;
+  return Number.isFinite(passiveVictorySec) ? `${label} · ~${passiveVictorySec}s` : label;
+}
+
+// World-space half sizes at zoom scale 1, matching .boss-world-hp-plate and .boss-rift-target
+const PLATE_HALF_WIDTH = 122;
+const PLATE_HEIGHT = 90;
+const RIFT_HALF_WIDTH = 69;
+const RIFT_HALF_HEIGHT = 60;
+const RIFT_PLATE_GAP = 8;
+
+export function keepClearOfPlate(
+  pos: { x: number; y: number },
+  plate: { centerX: number; top: number },
+  towardX: number,
+  scale: number,
+  multiCard = false
+): { x: number; y: number } {
+  const reachX = (PLATE_HALF_WIDTH + RIFT_HALF_WIDTH) * scale + RIFT_PLATE_GAP;
+  const halfCard = RIFT_HALF_HEIGHT * scale + RIFT_PLATE_GAP;
+  const touches = Math.abs(pos.x - plate.centerX) < reachX
+    && pos.y + halfCard > plate.top
+    && pos.y - halfCard < plate.top + PLATE_HEIGHT * scale;
+  if (!touches) return pos;
+  // Sideways keeps a lone card off the Guardian's hitbox; sibling cards would land on each other.
+  if (multiCard) return { x: pos.x, y: plate.top - halfCard };
+  return { x: plate.centerX + (towardX >= plate.centerX ? reachX : -reachX), y: pos.y };
+}
+
 export class BossBattleModal {
   private options: BossBattleModalOptions;
   private worldStageEl: HTMLElement | null = null;
@@ -650,7 +682,7 @@ export class BossBattleModal {
 
     if (this.sphereHpPlateEl) {
       this.sphereHpPlateEl.style.left = `${sphereLocalX}px`;
-      this.sphereHpPlateEl.style.top = `${sphereLocalY + 186}px`;
+      this.sphereHpPlateEl.style.top = `${sphereLocalY + 206}px`;
     }
     if (this.fulgorBtnEl) {
       this.fulgorBtnEl.style.left = `${sphereLocalX}px`;
@@ -706,7 +738,7 @@ export class BossBattleModal {
         </div>
 
         <!-- BARRA 2: VIDA / INTEGRIDADE DA ESFERA + BOTÃO RECUAR (EMBAIXO DA ESFERA CENTRAL) -->
-        <div class="boss-bar-section altar-integrity-section sphere-world-hp-plate" id="sphere-world-hp-plate" style="left: ${sphereLocalX}px; top: ${sphereLocalY + 186}px;">
+        <div class="boss-bar-section altar-integrity-section sphere-world-hp-plate" id="sphere-world-hp-plate" style="left: ${sphereLocalX}px; top: ${sphereLocalY + 206}px;">
           <div class="boss-bar-header">
             <span class="boss-bar-label">${icon('shield')} INTEGRIDADE DA ESFERA</span>
             <span class="boss-bar-val" id="boss-altar-val">100%</span>
@@ -818,15 +850,12 @@ export class BossBattleModal {
       }
       this.bossHitFlashSec = 0.18;
       const breakdown = this.options.gameState.getBossCombatBreakdown(battle.bossId);
-      this.showHitFeedback(
-        'Pulso da Esfera!',
-        `\u2212${(breakdown.clickHpFraction * 100).toFixed(2)}% de essência`
-      );
+      this.showHitFeedback(`−${(breakdown.clickHpFraction * 100).toFixed(2)}%`);
       if (e.clientX && e.clientY) {
         this.options.spawnFloatingText(
           e.clientX,
           e.clientY - 28,
-          `\u2726 -${formatNumber(breakdown.clickDamage)} HP`
+          `−${(breakdown.clickHpFraction * 100).toFixed(2)}%`
         );
       }
       this.updateUI();
@@ -859,15 +888,12 @@ export class BossBattleModal {
     this.fulgorBeamAlpha = 1.0;
     this.bossHitFlashSec = 0.35;
     this.options.audio.playTone(960, 'triangle', 0.24);
-    const pct = ((res.damage / Math.max(1, maxHp)) * 100).toFixed(1);
-    this.showHitFeedback(
-      'Fulgor Divino disparado!',
-      `\u2212${pct}% de essência do Guardião`
-    );
+    const pct = ((res.damage / Math.max(1, maxHp)) * 100).toFixed(0);
+    this.showHitFeedback(`Fulgor Divino! −${pct}%`);
     this.options.spawnFloatingText(
       x,
       y,
-      `\u2726 FULGOR DIVINO! -${formatNumber(res.damage)} HP (-${pct}%)`
+      `✦ FULGOR DIVINO! −${pct}%`
     );
     this.updateUI();
     this.drawWorldScene();
@@ -887,18 +913,16 @@ export class BossBattleModal {
     if (bossClickDamage > 0) {
       this.bossHitFlashSec = 0.18;
       this.options.audio.playTone(640 + Math.random() * 140, 'sine', 0.08);
-      this.showHitFeedback(
-        isCrit ? 'Golpe crítico!' : 'Golpe desferido.',
-        `\u2212${((bossClickDamage / battle.bossMaxHp) * 100).toFixed(2)}% de essência`
-      );
+      const pct = ((bossClickDamage / battle.bossMaxHp) * 100).toFixed(2);
+      this.showHitFeedback(`${isCrit ? 'Crítico! ' : ''}−${pct}%`);
       this.options.spawnFloatingText(
         x,
         y,
-        `\u2726 ${isCrit ? 'CRÍTICO! ' : ''}-${formatNumber(bossClickDamage)} HP (-${((bossClickDamage / battle.bossMaxHp) * 100).toFixed(2)}%)`
+        isCrit ? `✦ CRÍTICO! −${pct}%` : `−${pct}%`
       );
     } else {
       if (!this.options.gameState.getBossCombatBreakdown(battle.bossId).canDamageBoss) {
-        this.showHitFeedback('Recursos insuficientes.', `Prontidão mínima para causar dano: ${BOSS_DAMAGE_READINESS_THRESHOLD * 100}%.`);
+        this.showHitFeedback(`Sem dano: Prontidão abaixo de ${BOSS_DAMAGE_READINESS_THRESHOLD * 100}%.`);
       }
       this.options.spawnFloatingText(x, y, `+${formatNumber(fpc)} FÉ`);
     }
@@ -914,8 +938,8 @@ export class BossBattleModal {
     if (el && el.textContent !== value) el.textContent = value;
   }
 
-  private showHitFeedback(label: string, detail: string): void {
-    this.setText(this.combatFeedbackEl, `${label} ${detail}`);
+  private showHitFeedback(text: string): void {
+    this.setText(this.combatFeedbackEl, text);
     if (typeof window === 'undefined' || !window.matchMedia) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     this.attackBtnEl?.getAnimations?.().forEach((animation) => animation.cancel());
@@ -979,7 +1003,7 @@ export class BossBattleModal {
 
     this.setText(
       this.combatFeedbackEl,
-      'A Encarnação reúne a roda dos Fiéis antes da descida do Guardião...'
+      'A roda dos Fiéis está se formando...'
     );
 
     if (this.riftsLayerEl) {
@@ -1757,7 +1781,7 @@ export class BossBattleModal {
         if (boss) {
           this.setText(
             this.combatFeedbackEl,
-            `${boss.name} se aproxima da Esfera! Prepare-se para aparar os golpes.`
+            `${boss.name} se aproxima. Prepare-se para aparar!`
           );
         }
         this.options.audio.playTone(240, 'sawtooth', 0.22);
@@ -2361,14 +2385,14 @@ export class BossBattleModal {
       this.options.audio.playChime();
       this.setText(
         this.combatFeedbackEl,
-        `\u2726 CLÍMAX DIVINO: A Roda dos Fiéis dissolve ${boss.name}! \u2726`
+        `A Roda dos Fiéis dissolve ${boss.name}!`
       );
       if (this.bossHpFillEl) this.bossHpFillEl.style.width = '0%';
     } else {
       this.options.audio.playTone(150, 'sawtooth', 0.35);
       this.setText(
         this.combatFeedbackEl,
-        `\u2726 ESCUDO ROMPIDO: A Esfera Divina trinca diante de ${boss.name}! \u2726`
+        `A Esfera trinca diante de ${boss.name}!`
       );
       if (this.altarIntegrityFillEl) this.altarIntegrityFillEl.style.width = '0%';
     }
@@ -2394,7 +2418,7 @@ export class BossBattleModal {
       if (this.bossParryRecoverySec <= 0) this.spherePulseAlpha = 0.9;
       this.setText(
         this.combatFeedbackEl,
-        `Golpe não aparado! \u2212${breakdown.altarDamageOnMiss.toFixed(0)}% da Esfera (Combo reiniciado).`
+        `Golpe não aparado! −${breakdown.altarDamageOnMiss.toFixed(0)}% da Esfera.`
       );
     } else if (phase > this.lastPhase) {
       this.lastPhase = phase;
@@ -2403,14 +2427,14 @@ export class BossBattleModal {
       this.options.audio.playTone(phase === 3 ? 165 : 195, 'sawtooth', 0.32);
       const bannerText =
         phase === 3
-          ? 'FASE III — FÚRIA PRIMORDIAL (\u221230% INTEGRIDADE DA ESFERA)'
-          : 'FASE II — O GUARDIÃO DESPERTA (\u221215% INTEGRIDADE DA ESFERA)';
+          ? 'FASE III — FÚRIA PRIMORDIAL'
+          : 'FASE II — O GUARDIÃO DESPERTA';
       this.showPhaseBanner(bannerText);
       const phaseLabel =
         phase === 3
-          ? 'Fase III: Fúria Primordial! (\u221230% Esfera)'
-          : 'Fase II: O Guardião Desperta! (\u221215% Esfera)';
-      this.setText(this.combatFeedbackEl, `${phaseLabel} Fendas mais rápidas.`);
+          ? 'Fase III: −30% da Esfera.'
+          : 'Fase II: −15% da Esfera.';
+      this.setText(this.combatFeedbackEl, `${phaseLabel} Golpes mais rápidos.`);
     }
 
     const hpPercent = Math.max(0, Math.min(100, (battle.bossHp / battle.bossMaxHp) * 100));
@@ -2421,15 +2445,7 @@ export class BossBattleModal {
     }
     const remainingPassiveSec =
       breakdown.passiveDps > 0 ? Math.ceil(battle.bossHp / breakdown.passiveDps) : Infinity;
-    const etaStr = Number.isFinite(remainingPassiveSec) ? `~${remainingPassiveSec}s` : '\u221e';
-    if (this.bossHpValEl) {
-      const dpsPctStr = (breakdown.passiveHpFractionPerSec * 100).toFixed(2);
-      const phaseTag = phase === 3 ? 'Fase III' : phase === 2 ? 'Fase II' : 'Fase I';
-      this.setText(
-        this.bossHpValEl,
-        `${phaseTag} \u00b7 ${hpPercent.toFixed(1)}% (-${dpsPctStr}%/s \u2022 ${etaStr})`
-      );
-    }
+    this.setText(this.bossHpValEl, bossHpLabel(phase, hpPercent, remainingPassiveSec));
 
     const comboStreak = battle.comboStreak ?? 0;
 
@@ -2455,7 +2471,7 @@ export class BossBattleModal {
         this.setText(
           this.fulgorBtnEl,
           !breakdown.canDamageBoss
-            ? 'FULGOR BLOQUEADO: RECURSOS INSUFICIENTES'
+            ? 'FULGOR BLOQUEADO'
             : ready
             ? `\u2726 FULGOR DIVINO! (\u2212${(breakdown.fulgorHpFraction * 100).toFixed(0)}%)`
             : `FULGOR ${charge}%`
@@ -2482,21 +2498,19 @@ export class BossBattleModal {
         this.setText(this.combatStatsEl, this.formatRitualStatsLabel());
       } else {
         const warning = !breakdown.canDamageBoss
-          ? `Sem dano: prontidão mínima ${BOSS_DAMAGE_READINESS_THRESHOLD * 100}%. `
-          : '';
-        const defenseWarning = !breakdown.canWithstandBoss
-          ? `Esfera em colapso: proteção exige ${BOSS_DEFENSE_READINESS_THRESHOLD * 100}%. `
-          : '';
-        this.setText(
-          this.combatStatsEl,
-          `${warning}${defenseWarning}Fendas: ${battle.riftsShattered} \u00b7 Combo: ${comboStreak} \u00b7 Fulgor: ${Math.floor(battle.sphereCharge ?? 0)}%`
-        );
+          ? `Sem dano: Prontidão abaixo de ${BOSS_DAMAGE_READINESS_THRESHOLD * 100}%.`
+          : !breakdown.canWithstandBoss
+            ? 'Um golpe não aparado destrói a Esfera.'
+            : '';
+        const combo = comboStreak > 0 ? `Combo ×${comboStreak}` : '';
+        this.setText(this.combatStatsEl, [warning, combo].filter(Boolean).join(' '));
       }
     }
 
-    this.syncRiftsDOM(battle.activeRifts);
+    const renderFrame = this.resolveBossRenderFrame(battle.bossId);
+    this.syncRiftsDOM(battle.activeRifts, renderFrame);
     this.syncMiracleDOM(battle.activeMiracle ?? null);
-    this.syncAttackHitbox(this.resolveBossRenderFrame(battle.bossId));
+    this.syncAttackHitbox(renderFrame);
   }
 
   private syncMiracleDOM(miracle: ActiveBossMiracle | null): void {
@@ -2534,10 +2548,7 @@ export class BossBattleModal {
         if (res.triggered) {
           this.miracleBeam = { fromX: lx, fromY: ly + 18, alpha: 1.0 };
           this.options.audio.playChime();
-          this.showHitFeedback(
-            'Milagre dos Fiéis canalizado!',
-            `+${res.healed.toFixed(0)}% Integridade da Esfera.`
-          );
+          this.showHitFeedback(`Milagre! +${res.healed.toFixed(0)}% da Esfera.`);
           const x = e.clientX || window.innerWidth / 2;
           const y = e.clientY || window.innerHeight / 2;
           this.options.spawnFloatingText(x, y, '\u2726 MILAGRE! +10% ESFERA');
@@ -2605,7 +2616,7 @@ export class BossBattleModal {
     };
   }
 
-  private syncRiftsDOM(activeRifts: BossRift[]): void {
+  private syncRiftsDOM(activeRifts: BossRift[], renderFrame: BossRenderFrame): void {
     if (!this.riftsLayerEl) return;
 
     const activeIds = new Set(activeRifts.map((r) => r.id));
@@ -2627,15 +2638,18 @@ export class BossBattleModal {
     const strikeZoneCenterY = BOSS_SPHERE_CENTER.y - this.stageOriginY - 25;
     const spanX = 320;
     const spanY = 250;
+    const promptScale = Number(document.getElementById('dodeca-board-world')?.style.getPropertyValue('--boss-prompt-scale')) || 1;
+    const plate = { centerX: renderFrame.lx, top: renderFrame.ly + 30 };
+    const sphereLocalX = BOSS_SPHERE_CENTER.x - this.stageOriginX;
 
     activeRifts.forEach((rift) => {
       const kind = rift.kind ?? 'standard';
-      const pos = this.computeRiftStagePosition(
-        rift,
-        strikeZoneCenterX,
-        strikeZoneCenterY,
-        spanX,
-        spanY
+      const pos = keepClearOfPlate(
+        this.computeRiftStagePosition(rift, strikeZoneCenterX, strikeZoneCenterY, spanX, spanY),
+        plate,
+        sphereLocalX,
+        promptScale,
+        kind === 'anubis_scales' || kind === 'hades_chains' || kind === 'chaos_orbit'
       );
       const labelText =
         kind === 'anubis_scales'
@@ -2643,20 +2657,20 @@ export class BossBattleModal {
           : kind === 'hades_chains'
             ? 'GRILHÃO'
             : kind === 'odin_raven'
-              ? 'CORVO CRÍTICO'
+              ? 'CORVO'
               : kind === 'chaos_orbit'
                 ? 'COLAPSO'
                 : 'APARAR';
       const detailText =
         kind === 'anubis_scales'
-          ? 'Escolha apenas o maior'
+          ? 'Clique no maior peso'
           : kind === 'hades_chains'
-            ? 'Cliques -50% • Quebrar'
+            ? 'Quebre para recuperar os cliques'
             : kind === 'odin_raven'
-              ? 'Aparar • Atrasa ataque'
+              ? 'Apare para atrasar o ataque'
               : kind === 'chaos_orbit'
-                ? 'Aparar os três selos'
-                : '+25% de carga da Esfera';
+                ? 'Apare os três selos'
+                : '+25% de Fulgor';
 
       let riftEl = this.riftsLayerEl!.querySelector<HTMLButtonElement>(
         `[data-rift-id="${rift.id}"]`
@@ -2669,13 +2683,14 @@ export class BossBattleModal {
         riftEl.setAttribute('data-rift-id', rift.id);
         riftEl.setAttribute('data-rift-kind', kind);
         riftEl.setAttribute('aria-label', kind === 'anubis_scales'
-          ? `Aparar balança: ${rift.scaleValue}. Escolha apenas o maior número.`
+          ? `Aparar balança: peso ${rift.scaleValue}. Escolha apenas o maior peso.`
           : `${labelText}: aparar golpe do Guardião e carregar a Esfera`);
         riftEl.style.left = `${pos.x}px`;
         riftEl.style.top = `${pos.y}px`;
         riftEl.innerHTML = `
-          ${kind === 'anubis_scales' ? `<span class="boss-rift-number">${rift.scaleValue}</span>` : ''}
-          <span class="boss-rift-core" aria-hidden="true">${icon('shield')}</span>
+          ${kind === 'anubis_scales'
+            ? `<span class="boss-rift-number"><small>PESO</small>${rift.scaleValue}</span>`
+            : `<span class="boss-rift-core" aria-hidden="true">${icon('shield')}</span>`}
           <span class="boss-rift-label">${labelText}</span>
           <span class="boss-rift-damage">${detailText}</span>
           <span class="boss-rift-timer"></span>
@@ -2687,10 +2702,7 @@ export class BossBattleModal {
           if (res.altarDamageTaken !== undefined) {
             this.lastRiftsMissed = this.options.gameState.activeBossBattle?.riftsMissed ?? this.lastRiftsMissed;
             this.spherePulseAlpha = 0.9;
-            this.showHitFeedback(
-              `Balança: dano ×${res.scaleDamageMultiplier}!`,
-              `Número menor escolhido: −${res.altarDamageTaken.toFixed(1)}% da Esfera.`
-            );
+            this.showHitFeedback(`Peso menor! −${res.altarDamageTaken.toFixed(0)}% da Esfera (×${res.scaleDamageMultiplier}).`);
             this.options.spawnFloatingText(
               e.clientX || window.innerWidth / 2, e.clientY || window.innerHeight / 2,
               `−${res.altarDamageTaken.toFixed(1)}% ESFERA (×${res.scaleDamageMultiplier})`
@@ -2709,20 +2721,20 @@ export class BossBattleModal {
             this.lastRiftsMissed = this.options.gameState.activeBossBattle?.riftsMissed ?? this.lastRiftsMissed;
             // A stale target from another pending rift cannot immediately replay the cancelled swing.
             this.options.gameState.activeBossBattle?.activeRifts.forEach(r => this.attackedRiftIds.add(r.id));
-            const comboTag = (res.comboStreak ?? 1) > 1 ? ` (Combo \u00d7${res.comboStreak})` : '';
+            const comboTag = (res.comboStreak ?? 1) > 1 ? ` Combo ×${res.comboStreak} ·` : '';
             let specialMsg = res.kind === 'anubis_scales'
-              ? 'Ataque bloqueado! Não clique no número menor.'
-              : '+25% de carga da Esfera.';
+              ? 'Não clique no peso menor.'
+              : '+25% de Fulgor';
             if (res.specialBonusTriggered) {
               if (res.kind === 'hades_chains') {
-                specialMsg = 'Grilhões quebrados (Cliques 100%)!';
+                specialMsg = 'Grilhões quebrados! Cliques normais de novo.';
               } else if (res.kind === 'odin_raven') {
                 specialMsg = 'Corvo interceptado! Próximo ataque atrasado.';
               } else if (res.kind === 'chaos_orbit') {
-                specialMsg = 'Colapso Orbital revertido!';
+                specialMsg = 'Colapso revertido!';
               }
             }
-            this.showHitFeedback(`Ataque aparado!${comboTag}`, specialMsg);
+            this.showHitFeedback(`Aparado!${comboTag} ${specialMsg}`);
             this.options.audio.playTone(880, 'triangle', 0.16);
             const x = e.clientX || window.innerWidth / 2;
             const y = e.clientY || window.innerHeight / 2;

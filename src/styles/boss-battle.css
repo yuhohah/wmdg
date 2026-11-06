@@ -348,7 +348,9 @@ html .boss-world-hitbox .boss-attack-caption {
 .boss-world-hp-plate,
 .sphere-world-hp-plate {
   position: absolute;
-  transform: translateX(-50%);
+  /* Same counter-zoom as the parry cards, so the text stays readable when zoomed out */
+  transform: translateX(-50%) scale(var(--boss-prompt-scale, 1));
+  transform-origin: top center;
   width: 244px;
   padding: 6px 10px;
   background: rgba(14, 11, 9, 0.92);
@@ -365,12 +367,12 @@ html .boss-world-hitbox .boss-attack-caption {
 
 .boss-world-subline {
   font-family: var(--font-game);
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.2;
   color: var(--gold-light, #e4d2a5);
   text-align: center;
   margin-top: 2px;
-  min-height: 13px;
+  min-height: 16px;
 }
 
 .sphere-world-actions {
@@ -383,7 +385,7 @@ html .boss-world-hitbox .boss-attack-caption {
 
 .boss-world-combo-stat {
   font-family: var(--font-game);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--bone-dim, #cbb68c);
   font-variant-numeric: tabular-nums;
 }
@@ -612,15 +614,20 @@ body.is-boss-battle-active .dodeca-card:not(#card-altar-sphere) {
 }
 
 .boss-rift-number {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  text-shadow: 0 2px 4px #000, 0 0 8px #000;
-  font-size: 32px;
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  font-size: 34px;
   font-weight: 800;
   line-height: 1;
   color: #fff0bb;
+}
+
+.boss-rift-number small {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #d4b575;
 }
 
 .boss-rift-target.boss-rift-hades-chains {

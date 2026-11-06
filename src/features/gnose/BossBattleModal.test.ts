@@ -112,7 +112,9 @@ function setupBossModalHarness(
     public offsetWidth = 0;
     public offsetHeight = 0;
     public offsetParent: MockElement | null = null;
-    public style: Record<string, string> = {};
+    public style = Object.create({
+      getPropertyValue(this: Record<string, string>, name: string) { return this[name] ?? ''; },
+    }) as Record<string, string>;
     public children: MockElement[] = [];
     public parentElement: MockElement | null = null;
     public isConnected = true;
@@ -447,7 +449,8 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     expect(layer.children).toHaveLength(2);
     for (const rift of [lower, higher]) {
       const button = layer.children.find(el => el.getAttribute('data-rift-id') === rift.id)!;
-      expect(button.innerHTML).toContain(`<span class="boss-rift-number">${rift.scaleValue}</span>`);
+      expect(button.innerHTML).toContain(`<span class="boss-rift-number"><small>PESO</small>${rift.scaleValue}</span>`);
+      expect(button.innerHTML).toContain('Clique no maior peso');
       expect(button.innerHTML).toContain('>APARAR</span>');
       expect(button.getAttribute('aria-label')).toContain(String(rift.scaleValue));
     }
@@ -461,7 +464,25 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     expect(gameState.activeBossBattle!.bossHp).toBe(hp);
     expect(layer.children).toHaveLength(0);
     expect(stage.querySelector('#boss-combat-feedback')!.textContent)
-      .toContain(`Balança: dano ×${higherFirst ? 3 : 2}!`);
+      .toContain(`Peso menor! `);
+    expect(stage.querySelector('#boss-combat-feedback')!.textContent)
+      .toContain(`(×${higherFirst ? 3 : 2})`);
+    modal.close();
+  });
+
+  it('reports a parry and keeps only the combo below the Sphere', () => {
+    const { modal, gameState, worldEl } = setupBossModalHarness(100);
+    expect(modal.openForBoss('boss_anubis', { isRematch: true })).toBe(true);
+    gameState.beginBossCombat();
+    gameState.spawnBossRift();
+    modal.updateUI();
+    const stage = worldEl.children[0];
+    const stats = stage.querySelector('#boss-combat-stats')!;
+    expect(stats.textContent).not.toContain('Combo');
+    stage.querySelector('#boss-rifts-layer')!.children[0].dispatchClick();
+    expect(stage.querySelector('#boss-combat-feedback')!.textContent).toBe('Aparado! +25% de Fulgor');
+    modal.updateUI();
+    expect(stats.textContent).toBe('Combo ×1');
     modal.close();
   });
 
