@@ -283,7 +283,7 @@ class AppManager {
             this.pendingOfflineNotice.title,
             this.pendingOfflineNotice.desc,
             'hourglass',
-            'VIGÍLIA SAGRADA'
+            ''
           );
           this.pendingOfflineNotice = undefined;
         }
@@ -337,7 +337,7 @@ class AppManager {
           this.saveProgress();
           this.refreshAllUI();
           if (this.pendingOfflineNotice) {
-            this.notifications.showCustomPopup(this.pendingOfflineNotice.title, this.pendingOfflineNotice.desc, 'hourglass', 'VIGÍLIA SAGRADA');
+            this.notifications.showCustomPopup(this.pendingOfflineNotice.title, this.pendingOfflineNotice.desc, 'hourglass', '');
             this.pendingOfflineNotice = undefined;
           }
         }
@@ -477,7 +477,7 @@ class AppManager {
 
       this.pendingOfflineNotice = {
         title: `VIGÍLIA SAGRADA (${timeStr})`,
-        desc: `Durante sua ausência, o culto continuou ardendo: ${parts.join(', ')} acumulados.`
+        desc: `Durante sua ausência, o culto continuou ardendo: ${parts.join(', ')}.`
       };
     }
   }

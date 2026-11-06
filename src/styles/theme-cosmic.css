@@ -322,12 +322,6 @@ body {
   box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.6) !important;
 }
 
-.followers-arena-hint {
-  background: rgba(9, 10, 15, 0.8) !important;
-  border: 1px solid var(--line-faint) !important;
-  color: var(--bone-mute) !important;
-}
-
 /* Engraved scenery stays behind the transparent character canvases. */
 #card-followers .followers-arena-container {
   background: #090a0f url('/assets/backgrounds/followers-courtyard-v1.png') center / cover no-repeat !important;

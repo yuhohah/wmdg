@@ -130,7 +130,7 @@ export class NotificationManager {
       ${iconHtml}
       <div class="ach-popup-content">
         <div class="ach-popup-header-row">
-          <span class="ach-popup-badge">${badge}</span>
+          ${badge ? `<span class="ach-popup-badge">${badge}</span>` : ''}
           <button type="button" class="ach-popup-close" aria-label="Fechar">&times;</button>
         </div>
         <div class="ach-popup-title">${title}</div>

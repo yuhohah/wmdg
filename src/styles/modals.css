@@ -457,6 +457,7 @@
 }
 
 .ach-popup-close {
+  margin-left: auto;
   background: none;
   border: none;
   color: #94a3b8;

@@ -16,6 +16,20 @@ describe("NotificationManager deduplication logic", () => {
     expect(trans1).toBe(trans2);
   });
 
+  it("omits the badge from a custom popup when none is given", () => {
+    const appended: any[] = [];
+    (globalThis as any).document = {
+      getElementById: () => ({ appendChild: (el: any) => appended.push(el) }),
+      createElement: () => ({ addEventListener: () => {}, querySelector: () => null }),
+    };
+    const notifs = new NotificationManager();
+    notifs.showCustomPopup("COM ETIQUETA", "Texto", "bell", "AVISO");
+    notifs.showCustomPopup("SEM ETIQUETA", "Texto", "bell", "");
+    expect(appended[0].innerHTML).toContain("ach-popup-badge");
+    expect(appended[1].innerHTML).not.toContain("ach-popup-badge");
+    expect(appended[1].innerHTML).toContain("SEM ETIQUETA");
+  });
+
   it("blocks duplicate notifications from appearing more than once", () => {
     const appended: any[] = [];
     const mockContainer = {
