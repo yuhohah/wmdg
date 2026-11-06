@@ -20,6 +20,22 @@ export interface GnoseTabOptions {
   onBattleCamera?: (target: BattleCameraTarget, elapsedSec: number) => void;
 }
 
+function joinList(items: string[]): string {
+  return `${items.slice(0, -1).join(', ')} e ${items[items.length - 1]}`;
+}
+
+export function ascensionSummary(gs: GameStateManager): string {
+  const keepRelics = gs.hasGnoseUpgrade('gn_keep_relics');
+  const keepEncarnacao = gs.hasGnoseUpgrade('gn_memoria_selos');
+  const lost = ['Fé', 'Fiéis', 'Fervor', 'Ritos', 'Avatar', 'Fragmentos', ...(keepRelics ? [] : ['Relíquias']), 'Selos'];
+  const kept = [
+    'Gnose', 'nós da Árvore', 'Guardiões derrotados', 'conquistas',
+    ...(keepRelics ? ['níveis de Relíquias'] : []),
+    ...(keepEncarnacao ? ['Selo da Encarnação'] : []),
+  ];
+  return `Seu culto recomeça do início e você recebe +${formatNumber(gs.getGnoseToGet())} Gnose.\n\nVocê perde: ${joinList(lost)}.\nVocê mantém: ${joinList(kept)}.`;
+}
+
 export class GnoseTab {
   private options: GnoseTabOptions;
   public bossBattleModal: BossBattleModal;
@@ -108,25 +124,15 @@ export class GnoseTab {
     }
 
     if (this.options.gameState.confirmGnoseReset) {
-      const keepSelos = this.options.gameState.hasGnoseUpgrade('gn_memoria_selos');
-      const keepRelics = this.options.gameState.hasGnoseUpgrade('gn_keep_relics');
-      const details = () => [
-        `Você receberá +${formatNumber(this.options.gameState.getGnoseToGet())} Gnose. Perderá ${formatNumber(this.options.gameState.faithPoints)} Fé, ${this.options.gameState.getTotalFollowersCount()} Fiéis, ${formatNumber(this.options.gameState.fervorPoints)} Fervor, ${formatNumber(this.options.gameState.relicPoints)} Fragmentos, ${this.options.gameState.fervorUpgrades.reduce((sum, u) => sum + u.level, 0)} níveis de Ritos e o Avatar atual (estágio ${this.options.gameState.incarnationStage}). Os picos deste ciclo também zeram.`,
-        keepSelos
-          ? 'Memória Hermética preserva somente o Selo da Encarnação.'
-          : 'Fé, Fiéis, Fervor, Relíquias e os Selos iniciais serão reiniciados.',
-        keepRelics ? 'Os níveis de suas Relíquias serão preservados (Cripta Eterna).' : `Os ${this.options.gameState.relicUpgrades.reduce((sum, r) => sum + r.level, 0)} níveis de Relíquias serão perdidos.`
-      ]
-        .filter(Boolean)
-        .join(' ');
-
       const confirmed = await cultDialog(
         'Ascensão Gnóstica',
-        () => `Dissolver o culto terreno para ascender no Nous? ${details()}`,
+        () => ascensionSummary(this.options.gameState),
         'Ascender',
         'Cancelar'
       );
       if (!confirmed) return;
+      // Only the first Ascension needs the warning; the toggle can turn it back on.
+      if (this.options.gameState.gnoseResets === 0) this.options.gameState.confirmGnoseReset = false;
     }
 
     this.executeGnoseReset();

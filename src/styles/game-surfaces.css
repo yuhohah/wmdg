@@ -122,7 +122,7 @@ input[type=range]::-moz-range-thumb { width:12px; height:18px; border:2px solid 
 .cult-dialog { margin:auto; padding:20px; width:min(500px,90vw); }
 .cult-dialog::backdrop { background:#17110dd9; }
 .cult-dialog h2 { font:30px var(--font-game); margin-bottom:12px; }
-.cult-dialog p { margin-bottom:20px; }
+.cult-dialog p { margin-bottom:20px; white-space:pre-line; }
 .cult-dialog-actions { display:flex; gap:12px; justify-content:flex-end; }
 button:focus-visible,input:focus-visible,textarea:focus-visible { outline:2px solid #ad793a; outline-offset:3px; }
 @media (max-height:760px) and (min-width:861px) {
