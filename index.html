@@ -81,8 +81,8 @@
             aria-label="Grimório de Conquistas"><span data-icon="laurel"></span>
           </button>
           <button id="music-quick-btn" class="icon-btn-gold"
-            aria-label="Trilha Sonora">
-            <span id="music-icon-on" data-icon="lyre"></span><span id="music-icon-off" data-icon="lyre-off" style="display: none;"></span>
+            aria-label="Desligar música" title="Desligar música">
+            <span id="music-icon-on" data-icon="music"></span><span id="music-icon-off" data-icon="music-off" style="display: none;"></span>
           </button>
           <button id="settings-btn" class="icon-btn-gold" aria-label="Configurações"><span data-icon="gear"></span>
           </button>
@@ -627,6 +627,15 @@
               <div class="setting-desc">Sons de rituais e cliques</div>
             </div>
             <input type="checkbox" id="sfx-toggle" style="accent-color: var(--gold-accent);" checked>
+          </div>
+
+          <div class="setting-item">
+            <div>
+              <div class="setting-name">Volume dos Efeitos</div>
+              <div class="setting-desc">Ajustar só os sons de rituais e cliques</div>
+            </div>
+            <input type="range" id="sfx-volume-slider" aria-label="Volume dos Efeitos" style="accent-color: var(--gold-accent);" min="0" max="100"
+              value="100">
           </div>
 
           <div class="setting-item">

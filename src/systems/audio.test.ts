@@ -25,6 +25,87 @@ class MockAudio {
   }
 }
 
+describe('AudioManager sound effects volume', () => {
+  const PREF_KEY = 'cult_audio_preferences';
+  let store: Map<string, string>;
+  let gains: number[];
+
+  beforeEach(() => {
+    gains = [];
+    store = new Map<string, string>();
+    MockAudio.instances = [];
+    vi.stubGlobal('Audio', MockAudio);
+    vi.stubGlobal('localStorage', {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => store.set(k, v),
+    });
+    class MockAudioContext {
+      public currentTime = 0;
+      public state = 'running';
+      public destination = {};
+      createOscillator() {
+        return { type: 'sine', frequency: { setValueAtTime: vi.fn() }, connect: vi.fn(), start: vi.fn(), stop: vi.fn() };
+      }
+      createGain() {
+        return {
+          gain: { setValueAtTime: (v: number) => gains.push(v), exponentialRampToValueAtTime: vi.fn() },
+          connect: vi.fn(),
+        };
+      }
+    }
+    vi.stubGlobal('window', { AudioContext: MockAudioContext });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('keeps the current loudness by default', () => {
+    const audio = new AudioManager();
+    audio.setVolume(0.5);
+    audio.playTone(440);
+    expect(gains[0]).toBeCloseTo(0.09);
+  });
+
+  it('scales effects by both the effects and the general volume', () => {
+    const audio = new AudioManager();
+    audio.setVolume(0.5);
+    audio.setSfxVolume(0.5);
+    audio.playTone(440);
+    expect(gains[0]).toBeCloseTo(0.045);
+  });
+
+  it('leaves the music volume alone', () => {
+    const audio = new AudioManager();
+    audio.setVolume(0.6);
+    audio.setSfxVolume(0.1);
+    expect(MockAudio.instances[0].volume).toBeCloseTo(0.6);
+    expect(MockAudio.instances[1].volume).toBeCloseTo(0.6);
+  });
+
+  it('is silent at zero', () => {
+    const audio = new AudioManager();
+    audio.setSfxVolume(0);
+    audio.playTone(440);
+    expect(gains).toEqual([]);
+  });
+
+  it('remembers the choice and clamps it', () => {
+    new AudioManager().setSfxVolume(0.25);
+    expect(new AudioManager().getSfxVolume()).toBe(0.25);
+    const audio = new AudioManager();
+    audio.setSfxVolume(5);
+    expect(audio.getSfxVolume()).toBe(1);
+  });
+
+  it('accepts preferences saved before this setting existed', () => {
+    store.set(PREF_KEY, JSON.stringify({ volume: 0.4, musicEnabled: true, sfxEnabled: true }));
+    const audio = new AudioManager();
+    expect(audio.getVolume()).toBe(0.4);
+    expect(audio.getSfxVolume()).toBe(1);
+  });
+});
+
 describe('AudioManager background and boss battle soundtrack switching', () => {
   beforeEach(() => {
     MockAudio.instances = [];
