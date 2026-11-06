@@ -62,7 +62,8 @@
 .dodeca-board-world::after {
   content: '';
   position: absolute;
-  inset: 0;
+  /* Top matches WORLD_TOP in BoardLayout.ts */
+  inset: -800px 0 0;
   z-index: 2;
   pointer-events: none;
   background-image: radial-gradient(circle, rgba(229, 212, 180, 0.22) 1.2px, transparent 1.6px);

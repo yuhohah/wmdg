@@ -3,6 +3,20 @@ import { BoardManager } from './BoardManager.js';
 
 afterEach(() => vi.unstubAllGlobals());
 
+describe('board camera limits', () => {
+  it('reaches cards placed above the world origin, but no further', () => {
+    const board: BoardManager = Object.create(BoardManager.prototype);
+    for (const [key, value] of Object.entries({
+      viewportEl: { clientWidth: 1280, clientHeight: 800 },
+      worldEl: { offsetWidth: 6880, offsetHeight: 4240 },
+      panX: 0, panY: 5000, zoom: 1,
+    })) Reflect.set(board, key, value);
+    Reflect.get(board, 'clampPan').call(board);
+    // Viewport centre (400) shows world y = -800
+    expect(Reflect.get(board, 'panY')).toBe(1200);
+  });
+});
+
 describe('board camera after native focus scrolling', () => {
   it('frames a world actor on entry and follows its movement smoothly without native scrolling', () => {
     vi.stubGlobal('document', { querySelector: () => null });

@@ -38,7 +38,9 @@ export interface BoardLayoutHost {
 }
 
 const WORLD_W = 6880;
-const WORLD_H = 3840;
+const WORLD_H = 4240;
+// The Sphere sits near the world origin, so long cards need room at negative y to fit above it
+export const WORLD_TOP = -800;
 const GRID = 20;
 const GAP = 20;
 const SNAP_RADIUS = 90;
@@ -369,7 +371,7 @@ export class BoardLayout {
   private clamp(p: Point, size: { w: number; h: number }): Point {
     return {
       x: Math.min(Math.max(0, p.x), Math.max(0, Math.max(WORLD_W, this.worldEl.offsetWidth) - size.w)),
-      y: Math.min(Math.max(0, p.y), Math.max(0, Math.max(WORLD_H, this.worldEl.offsetHeight) - size.h)),
+      y: Math.min(Math.max(WORLD_TOP, p.y), Math.max(WORLD_TOP, Math.max(WORLD_H, this.worldEl.offsetHeight) - size.h)),
     };
   }
 

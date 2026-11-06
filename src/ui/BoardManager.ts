@@ -1,4 +1,4 @@
-import { BoardLayout } from './BoardLayout.js';
+import { BoardLayout, WORLD_TOP } from './BoardLayout.js';
 
 export class BoardManager {
   private viewportEl: HTMLElement | null = null;
@@ -346,7 +346,7 @@ export class BoardManager {
     const halfW = (this.viewportEl.clientWidth || window.innerWidth) / 2;
     const halfH = (this.viewportEl.clientHeight || window.innerHeight) / 2;
     const centerX = Math.min(this.worldEl.offsetWidth, Math.max(0, (halfW - this.panX) / this.zoom));
-    const centerY = Math.min(this.worldEl.offsetHeight, Math.max(0, (halfH - this.panY) / this.zoom));
+    const centerY = Math.min(this.worldEl.offsetHeight, Math.max(WORLD_TOP, (halfH - this.panY) / this.zoom));
     this.panX = halfW - centerX * this.zoom;
     this.panY = halfH - centerY * this.zoom;
   }
