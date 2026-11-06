@@ -497,7 +497,8 @@ html .btn-boss-retreat.btn-world-retreat:active {
 }
 
 /* Durante a Boss Battle, oculta os fiéis e a encarnação internos dos cards (pois saem pelo mundo)
-   e atenua os cards satélites para não obstruírem a grande roda em volta do Boss e da Esfera */
+   e esconde os cards satélites e seus raios para deixar só a roda em volta do Boss e da Esfera.
+   Usa visibility, não display: a coreografia mede a posição do Pátio e do Altar nesses cards. */
 body.is-boss-battle-active #followers-walk-canvas,
 body.is-boss-battle-active #incarnation-altar-canvas,
 body.is-boss-battle-active .incarnation-blessing-light {
@@ -506,10 +507,13 @@ body.is-boss-battle-active .incarnation-blessing-light {
 }
 
 body.is-boss-battle-active #card-unlocks,
-body.is-boss-battle-active .dodeca-card:not(#card-altar-sphere) {
-  opacity: 0.22;
+body.is-boss-battle-active .dodeca-card:not(#card-altar-sphere),
+body.is-boss-battle-active .board-constellation-lines,
+body.is-boss-battle-active .board-quicknav-bar {
+  opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.35s ease, visibility 0.35s;
 }
 
 .boss-bar-section {
