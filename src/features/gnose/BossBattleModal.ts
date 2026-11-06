@@ -2292,7 +2292,7 @@ export class BossBattleModal {
         const bestSec = this.options.gameState.getBossBestTimeSec(boss.id) ?? durationSec;
         this.options.notifications.showCustomPopup(
           `${boss.name.toUpperCase()} SUBJUGADO!`,
-          `Duelo relembrado em ${durationSec.toFixed(1)}s (Melhor tempo: ${bestSec.toFixed(1)}s). ${boss.rewardName}: ${boss.rewardDesc}`,
+          `Duelo relembrado em ${durationSec.toFixed(1)}s (melhor tempo: ${bestSec.toFixed(1)}s).`,
           boss.symbol,
           'MEMÓRIA DE DUELO'
         );
@@ -2307,10 +2307,10 @@ export class BossBattleModal {
     } else {
       this.options.audio.playTone(150, 'sawtooth', 0.35);
       const [p1, p2] = lowestTwoPillars;
-      const diagnosis = `Diagnóstico (Prontidão ${(cultReadiness * 100).toFixed(0)}%): fortaleça ${p1.label} (${Math.round(p1.readiness * 100)}% — ${p1.recommendation}) e ${p2.label} (${Math.round(p2.readiness * 100)}% — ${p2.recommendation}).`;
+      const diagnosis = `Prontidão ${(cultReadiness * 100).toFixed(0)}%: fortaleça ${p1.label} e ${p2.label}.`;
       const cursePrefix = isRematch
-        ? 'Revanche encerrada sem Maldição Divina.'
-        : 'Maldição Divina Leve: -25% de Fé/s e Fervor/s por 20 segundos.';
+        ? 'Revanche sem Maldição.'
+        : 'Maldição: -25% de Fé/s e Fervor/s por 20s.';
       this.options.notifications.showCustomPopup(
         `ALTAR ROMPIDO POR ${boss.name.toUpperCase()}`,
         `${cursePrefix} ${diagnosis}`,

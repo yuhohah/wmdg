@@ -177,7 +177,6 @@ export interface CultPillarStatus {
   id: CultPillarId;
   label: string;
   readiness: number;
-  recommendation: string;
 }
 
 export interface ActiveBossBattle {

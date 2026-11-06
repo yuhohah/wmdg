@@ -147,12 +147,6 @@ export class GnoseTab {
         window.innerHeight / 2,
         `+${formatNumber(result.gained)} GNOSE!`
       );
-      this.options.notifications.showCustomPopup(
-        'ASCENSÃO GNÓSTICA',
-        `O templo dissolveu-se em pura Mente: +${formatNumber(result.gained)} Gnose assimilada.`,
-        'gnose',
-        'PRESTÍGIO'
-      );
       this.updateUI();
       this.renderTree();
       this.options.onGnoseReset?.();
@@ -174,12 +168,6 @@ export class GnoseTab {
     const success = gs.buyGnoseUpgrade(upg.id);
     if (success) {
       this.options.audio.playTone(820, 'triangle', 0.22);
-      this.options.notifications.showCustomPopup(
-        upg.name,
-        upg.effectText,
-        upg.icon || 'star',
-        'GNOSE ASSIMILADA'
-      );
       this.updateUI();
       this.renderTree();
       this.options.onUpgradePurchased?.(upg);

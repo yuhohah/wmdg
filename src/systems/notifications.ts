@@ -2,6 +2,11 @@ import type { Achievement } from '../types.js';
 import { DISPLAY_CONFIG } from '../config/display.js';
 import { icon as renderIcon, iconOrText } from '../ui/icons.js';
 
+/** Long enough to read the text: about 45 ms per character, between 4 and 8 seconds. */
+export function notificationDurationMs(text: string): number {
+  return Math.max(4000, Math.min(8000, 2000 + text.length * 45));
+}
+
 export class NotificationManager {
   private container!: HTMLElement;
   private shownNotificationKeys: Set<string> = new Set<string>();
@@ -99,7 +104,7 @@ export class NotificationManager {
       </div>
     `;
 
-    this.bindPopupLifecycle(popup, key);
+    this.bindPopupLifecycle(popup, notificationDurationMs(`${ach.name}${ach.desc}${ach.buffText ?? ''}`), key);
     this.container.appendChild(popup);
   }
 
@@ -138,11 +143,11 @@ export class NotificationManager {
       </div>
     `;
 
-    this.bindPopupLifecycle(popup, key);
+    this.bindPopupLifecycle(popup, notificationDurationMs(`${title}${desc}`), key);
     this.container.appendChild(popup);
   }
 
-  private bindPopupLifecycle(popup: HTMLElement, key?: string): void {
+  private bindPopupLifecycle(popup: HTMLElement, durationMs: number, key?: string): void {
     let closed = false;
     const closePopup = () => {
       if (closed) return;
@@ -166,7 +171,22 @@ export class NotificationManager {
       });
     }
 
-    // Auto-dismiss after 2s (visible for exactly 2 seconds)
-    setTimeout(closePopup, 2000);
+    const timerBar = popup.querySelector<HTMLElement>('.ach-popup-timer-bar');
+    if (timerBar) timerBar.style.animationDuration = `${durationMs}ms`;
+
+    // Hovering pauses the timer here and the bar in CSS, so both stay in step.
+    let remainingMs = durationMs;
+    let startedAt = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    const startTimer = () => {
+      startedAt = Date.now();
+      timer = setTimeout(closePopup, remainingMs);
+    };
+    popup.addEventListener('mouseenter', () => {
+      clearTimeout(timer);
+      remainingMs -= Date.now() - startedAt;
+    });
+    popup.addEventListener('mouseleave', startTimer);
+    startTimer();
   }
 }

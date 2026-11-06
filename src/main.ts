@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { ElapsedTimeCredit } from './systems/elapsedTime.js';
+import { ElapsedTimeCredit, buildOfflineNotice } from './systems/elapsedTime.js';
 // --- App Manager for Cult of the Sphere (Modular Orchestrator) ---
 
 import { AudioManager } from './systems/audio.js';
@@ -31,7 +31,6 @@ import { BoardManager } from './ui/BoardManager.js';
 import { hydrateIcons } from './ui/icons.js';
 import { cultDialog } from './ui/CultDialog.js';
 import { TestMenu } from './ui/TestMenu.js';
-import { formatNumber } from './systems/calculations.js';
 
 export function isDevMode(): boolean {
   if (typeof window === 'undefined') return false;
@@ -97,7 +96,6 @@ class AppManager {
     this.sphere = new SphereController({
       gameState: this.gameState,
       audio: this.audio,
-      notifications: this.notifications,
       triggerHaptic: (pattern) => this.triggerHaptic(pattern)
     });
 
@@ -130,7 +128,6 @@ class AppManager {
     this.relicsTab = new RelicsTab({
       gameState: this.gameState,
       audio: this.audio,
-      notifications: this.notifications,
       spawnFloatingText: (x, y, t) => this.sphere.spawnFloatingText(x, y, t),
       onRelicsTransmuted: () => events.emit(GameEvents.STATE_CHANGED),
       onUpgradePurchased: () => {
@@ -159,7 +156,6 @@ class AppManager {
     this.unlocksTab = new UnlocksTab({
       gameState: this.gameState,
       audio: this.audio,
-      notifications: this.notifications,
       onUnlockPurchased: () => {
         this.refreshAllUI();
       }
@@ -204,7 +200,6 @@ class AppManager {
 
     this.onboardingGuide = new OnboardingGuide({
       gameState: this.gameState,
-      notifications: this.notifications,
       audio: this.audio
     });
 
@@ -463,23 +458,8 @@ class AppManager {
     if (!lastTimestamp || lastTimestamp <= 0) return;
     const now = Date.now();
     const elapsedSec = (now - lastTimestamp) / 1000;
-    const { faithGained, fervorGained, relicGained } = new ElapsedTimeCredit(lastTimestamp).consume(this.gameState, now);
-
-    if (faithGained > 0 || fervorGained > 0 || relicGained > 0) {
-      const minutes = Math.floor(elapsedSec / 60);
-      const hours = (elapsedSec / 3600).toFixed(1);
-      const timeStr = elapsedSec >= 3600 ? `${hours}h` : `${minutes}m`;
-
-      const parts: string[] = [];
-      if (faithGained > 0) parts.push(`+${formatNumber(faithGained)} Fé`);
-      if (fervorGained > 0) parts.push(`+${formatNumber(fervorGained)} Fervor`);
-      if (relicGained > 0) parts.push(`+${formatNumber(relicGained)} Fragmentos`);
-
-      this.pendingOfflineNotice = {
-        title: `VIGÍLIA SAGRADA (${timeStr})`,
-        desc: `Durante sua ausência, o culto continuou ardendo: ${parts.join(', ')}.`
-      };
-    }
+    const gains = new ElapsedTimeCredit(lastTimestamp).consume(this.gameState, now);
+    this.pendingOfflineNotice = buildOfflineNotice(elapsedSec, gains) ?? this.pendingOfflineNotice;
   }
 
   private manualSave(): void {

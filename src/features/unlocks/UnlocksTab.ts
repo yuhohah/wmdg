@@ -1,7 +1,6 @@
 import type { MechanicUnlock } from '../../types.js';
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
-import { NotificationManager } from '../../systems/notifications.js';
 import { formatNumber } from '../../systems/calculations.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 import { icon } from '../../ui/icons.js';
@@ -9,14 +8,12 @@ import { icon } from '../../ui/icons.js';
 export interface UnlocksTabOptions {
   gameState: GameStateManager;
   audio: AudioManager;
-  notifications: NotificationManager;
   onUnlockPurchased?: (unlock: MechanicUnlock) => void;
 }
 
 export class UnlocksTab {
   private gameState: GameStateManager;
   private audio: AudioManager;
-  private notifications: NotificationManager;
   private onUnlockPurchased?: (unlock: MechanicUnlock) => void;
 
   private unlocksListEl: HTMLElement | null = null;
@@ -24,7 +21,6 @@ export class UnlocksTab {
   constructor(options: UnlocksTabOptions) {
     this.gameState = options.gameState;
     this.audio = options.audio;
-    this.notifications = options.notifications;
     this.onUnlockPurchased = options.onUnlockPurchased;
 
     this.initElements();
@@ -91,36 +87,6 @@ export class UnlocksTab {
     if (!this.gameState.buyUnlock(unlock)) {
       this.audio.playTone(180, 'sawtooth', 0.1);
       return;
-    }
-
-    if (unlock.id === 'unlock_incarnation') {
-      this.notifications.showCustomPopup(
-        'A ESFERA GANHOU CORPO',
-        'A Encarnação desceu ao altar e acendeu o Fervor (+1/s). Toque no Altar para ativar a Bênção 2× Fé/s.',
-        'fervor',
-        'NOVA MECÂNICA'
-      );
-    } else if (unlock.id === 'unlock_fervor_upgrades') {
-      this.notifications.showCustomPopup(
-        'RITOS DE FERVOR',
-        'Os Ritos de Fervor estão liberados no card Fervor Sagrado. Gastar Fervor conserva o bônus do seu pico no ciclo.',
-        'incarnation',
-        'NOVA MECÂNICA'
-      );
-    } else if (unlock.id === 'unlock_relics') {
-      this.notifications.showCustomPopup(
-        'RELÍQUIAS DIVINAS ABERTAS',
-        'Transmute sua Fé em Fragmentos e restaure relíquias no card Relíquias Divinas.',
-        'gem',
-        'NOVA MECÂNICA'
-      );
-    } else if (unlock.id === 'unlock_gnose') {
-      this.notifications.showCustomPopup(
-        'A CÂMARA DA GNOSE SE ABRIU',
-        'O último selo foi rompido sem gastar sua Fé. Ascenda a partir de 1Q Fé para colher Gnose permanente.',
-        'gnose',
-        'NOVA MECÂNICA'
-      );
     }
 
     this.audio.playChime();

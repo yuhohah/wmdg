@@ -1,6 +1,5 @@
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
-import { NotificationManager } from '../../systems/notifications.js';
 import { calculateMiracleReward, formatNumber } from '../../systems/calculations.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 import { effectEasing } from '../../ui/visualTiming.js';
@@ -9,14 +8,12 @@ import { SphereVisual } from './SphereVisual.js';
 export interface SphereControllerOptions {
   gameState: GameStateManager;
   audio: AudioManager;
-  notifications: NotificationManager;
   triggerHaptic: (pattern: number | number[]) => void;
 }
 
 export class SphereController {
   private gameState: GameStateManager;
   private audio: AudioManager;
-  private notifications: NotificationManager;
   private triggerHaptic: (pattern: number | number[]) => void;
 
   private divineSphereBtn: HTMLElement | null = null;
@@ -31,7 +28,6 @@ export class SphereController {
   constructor(options: SphereControllerOptions) {
     this.gameState = options.gameState;
     this.audio = options.audio;
-    this.notifications = options.notifications;
     this.triggerHaptic = options.triggerHaptic;
 
     this.initElements();
@@ -142,13 +138,6 @@ export class SphereController {
     this.triggerHaptic([20, 30, 20]);
 
     this.spawnFloatingText(clientX, clientY, `MILAGRE! +${formatNumber(finalReward)} FÉ`);
-
-    this.notifications.showCustomPopup(
-      'Milagre Concedido!',
-      `Um fiel pediu um sinal, e você respondeu: +${formatNumber(finalReward)} Fé.`,
-      '',
-      'GRAÇA DIVINA'
-    );
 
     events.emit(GameEvents.MIRACLE_GRANTED, finalReward);
     events.emit(GameEvents.STATE_CHANGED);

@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GameStateManager } from '../core/GameState.js';
-import { NotificationManager } from '../systems/notifications.js';
 import { CARD_TUTORIALS, cardTutorialKey } from '../config/cardTutorials.js';
 import { OnboardingGuide } from './OnboardingGuide.js';
 
@@ -44,7 +43,7 @@ describe('progressive card tutorial', () => {
 
   function guide() {
     const focus = vi.fn();
-    return { tour: new OnboardingGuide({ gameState: game, notifications: new NotificationManager(), onFocusCard: focus }), focus };
+    return { tour: new OnboardingGuide({ gameState: game, onFocusCard: focus }), focus };
   }
 
   it('keeps the initial tutorial before explaining newly available cards', () => {

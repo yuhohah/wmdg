@@ -1,5 +1,4 @@
 import { GameStateManager } from '../core/GameState.js';
-import { NotificationManager } from '../systems/notifications.js';
 import { AudioManager } from '../systems/audio.js';
 import { formatNumber } from '../systems/calculations.js';
 import { icon } from './icons.js';
@@ -7,7 +6,6 @@ import { CARD_TUTORIALS, cardTutorialKey, type CardTutorial } from '../config/ca
 
 export interface OnboardingGuideOptions {
   gameState: GameStateManager;
-  notifications: NotificationManager;
   audio?: AudioManager;
   onFocusCard?: (cardId: string, immediate?: boolean) => void;
 }
@@ -16,7 +14,6 @@ export type SpotlightStep = 'sphere' | 'buy_follower' | 'complete';
 
 export class OnboardingGuide {
   private gameState: GameStateManager;
-  private notifications: NotificationManager;
   private audio?: AudioManager;
   private onFocusCard?: (cardId: string, immediate?: boolean) => void;
 
@@ -43,14 +40,12 @@ export class OnboardingGuide {
 
   private currentStep: SpotlightStep = 'sphere';
   private isDismissed: boolean = false;
-  private hasCelebrated: boolean = false;
   private isPositioning: boolean = false;
   private cardTutorial: CardTutorial | null = null;
   private canPresent: boolean = false;
 
   constructor(options: OnboardingGuideOptions) {
     this.gameState = options.gameState;
-    this.notifications = options.notifications;
     this.audio = options.audio;
     this.onFocusCard = options.onFocusCard;
 
@@ -181,15 +176,6 @@ export class OnboardingGuide {
 
     // Condition 1: Tour complete (already has 1 or more followers)
     if (followerCount >= 1) {
-      if (!this.hasCelebrated && this.gameState.totalClicks > 0) {
-        this.hasCelebrated = true;
-        this.notifications.showCustomPopup(
-          'O PRIMEIRO CONVERSO',
-          'Seu primeiro fiel começou a orar no pátio (+1 Fé/s). Quando um fiel exibir um balão com estrela, clique nele para conceder um Milagre de Fé!',
-          'followers',
-          'FIÉIS'
-        );
-      }
       this.dismiss();
       return;
     }
