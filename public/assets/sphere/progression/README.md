@@ -11,3 +11,5 @@
 A Plenitude usa a primeira animação entregue da esfera 5, antes dos testes de contrarrotação; as tentativas descartadas não entram no jogo. As artes animadas foram copiadas sem modificar os arquivos originais. Os PNGs de cada forma são apresentados quando movimento reduzido está ativo, o altar está fora da tela ou a página está oculta. Falhas de carregamento da animação também usam a imagem estática.
 
 A forma acompanha o estado atual: restauração/importação do save, desbloqueio, evolução e Ascensão. Não cria estado adicional no save nem modifica custos, bônus ou requisitos da Encarnação.
+
+As pastas de origem citadas acima saíram do repositório e continuam disponíveis no histórico do Git. Os arquivos desta pasta são cópias idênticas das animações aprovadas.

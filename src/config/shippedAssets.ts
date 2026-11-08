@@ -3,7 +3,6 @@
 const LEFT_OUT = [
   /\.(py|md|html|gif)$/,
   /\.prompt\.txt$/,
-  /^assets\/bosses\//,
   /^assets\/backgrounds\/.*\.png$/,
 ];
 

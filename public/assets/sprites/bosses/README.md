@@ -17,3 +17,5 @@ Cada pasta de boss contém `andar/` e `atacar/`, com frames PNG transparentes de
 - Atacar: ação única com recuperação; a prévia repete os ataques apenas para inspeção.
 - `preview.html`: prévia com pausa e controle de velocidade.
 - `manifest.json`: fontes, prompts, IDs de geração e dimensões.
+
+As pastas da versão frontal saíram do repositório e continuam disponíveis no histórico do Git; `manifest.json` e `preview.html` desta pasta ainda se referem a elas.

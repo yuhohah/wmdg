@@ -43,7 +43,6 @@ describe('assets published with the game', () => {
     'assets/sprites/esfera/girar/preview.gif',
     'assets/backgrounds/followers-courtyard-v1.png',
     'assets/backgrounds/followers-courtyard-v1.prompt.txt',
-    'assets/bosses/anubis-concept-v1.png',
     'assets/sphere/progression/generate.py',
   ])('leaves out %s', path => {
     expect(isShippedAsset(path)).toBe(false);

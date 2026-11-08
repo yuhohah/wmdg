@@ -35,3 +35,5 @@ As animações foram solicitadas como uma volta completa em torno do eixo vertic
 Manter o núcleo fixo e discreto. Girar os anéis em camadas separadas e em velocidades próximas, com o mesmo pivô em todas as etapas. A textura do globo precisa de rotação própria para transmitir volume; girar somente o PNG plano produz o efeito de uma moeda. A troca entre evoluções pode usar uma transição curta de opacidade, preservando a escala e o centro.
 
 Antes de produção, separar globo, arcos e ornamentos em camadas e conferir a leitura no tamanho real da interface. A geração independente das imagens pode variar a espessura dos traços e o enquadramento; o manifesto descreve a intenção, e os PNGs registram o resultado efetivo.
+
+A pasta `animations/` saiu do repositório e continua disponível no histórico do Git.

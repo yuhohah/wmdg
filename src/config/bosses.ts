@@ -24,7 +24,6 @@ export const BOSS_UNPREPARED_PRESSURE_PER_SEC = BOSS_MAX_ALTAR_INTEGRITY / 4;
 export const GNOSE_BOSSES: GnoseBoss[] = [
   {
     id: 'boss_anubis',
-    portraitSrc: '/assets/bosses/anubis-concept-v1.png',
     name: 'Anúbis',
     title: 'O Pesador de Almas',
     mythology: 'Mitologia Egípcia',
