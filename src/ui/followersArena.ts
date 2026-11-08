@@ -2,7 +2,7 @@ import {
   FOLLOWER_FRAME_SIZE, PRAYER_DURATION, PRAYER_SEQUENCE_DURATION, followerAnimationFrame,
   loadFollowerSprites, visibleFollowerTiers, type FollowerTier,
 } from './followerVisuals.js';
-import { VisualFrameClock, visualFrameScale } from './visualTiming.js';
+import { scheduleVisualFrame, VisualFrameClock, visualFrameScale } from './visualTiming.js';
 
 export interface Walker {
   id: number;
@@ -31,7 +31,7 @@ export class FollowersArena {
   private ctx: CanvasRenderingContext2D;
   public walkers: Walker[] = [];
   private nextId: number = 1;
-  private animFrameId: number | null = null;
+  private cancelFrame: (() => void) | null = null;
   private width: number = 380;
   private height: number = 220;
   private dpr: number = 1;
@@ -509,15 +509,13 @@ export class FollowersArena {
         this.update(elapsedSec);
         if (this.isOnScreen && document.visibilityState !== 'hidden') this.draw();
       }
-      this.animFrameId = requestAnimationFrame(loop);
+      this.cancelFrame = scheduleVisualFrame(this.isOnScreen, loop);
     };
-    this.animFrameId = requestAnimationFrame(loop);
+    this.cancelFrame = scheduleVisualFrame(this.isOnScreen, loop);
   }
 
   public destroy(): void {
-    if (this.animFrameId !== null) {
-      cancelAnimationFrame(this.animFrameId);
-      this.animFrameId = null;
-    }
+    this.cancelFrame?.();
+    this.cancelFrame = null;
   }
 }

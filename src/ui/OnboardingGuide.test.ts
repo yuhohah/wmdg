@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GameStateManager } from '../core/GameState.js';
-import { NotificationManager } from '../systems/notifications.js';
-import { CARD_TUTORIALS } from '../config/cardTutorials.js';
+import { CARD_TUTORIALS, cardTutorialKey } from '../config/cardTutorials.js';
 import { OnboardingGuide } from './OnboardingGuide.js';
 
 function element() {
@@ -16,6 +15,7 @@ function element() {
 describe('progressive card tutorial', () => {
   const nodes = new Map<string, ReturnType<typeof element>>();
   let modalOpen = false;
+  let modalQueries = 0;
   let game: GameStateManager;
 
   beforeEach(() => {
@@ -28,7 +28,7 @@ describe('progressive card tutorial', () => {
         if (!nodes.has(id)) nodes.set(id, element());
         return nodes.get(id);
       },
-      querySelectorAll: () => modalOpen ? [element()] : [],
+      querySelectorAll: () => { modalQueries++; return modalOpen ? [element()] : []; },
       querySelector: () => null,
     });
     game = new GameStateManager();
@@ -44,7 +44,7 @@ describe('progressive card tutorial', () => {
 
   function guide() {
     const focus = vi.fn();
-    return { tour: new OnboardingGuide({ gameState: game, notifications: new NotificationManager(), onFocusCard: focus }), focus };
+    return { tour: new OnboardingGuide({ gameState: game, onFocusCard: focus }), focus };
   }
 
   it('keeps the initial tutorial before explaining newly available cards', () => {
@@ -82,6 +82,44 @@ describe('progressive card tutorial', () => {
     expect(focus).toHaveBeenCalledTimes(5);
   });
 
+  it('holds the Guardian tutorial until the first Ascension, then shows it once', () => {
+    game.unlocks.forEach(u => { u.unlocked = true; });
+    CARD_TUTORIALS.slice(0, 5).forEach(t => game.seenCardTutorials.add(cardTutorialKey(t)));
+    const { tour, focus } = guide();
+    tour.update();
+    expect(focus).not.toHaveBeenCalled();
+    game.gnoseResets = 1;
+    tour.update();
+    expect(focus).toHaveBeenCalledWith('card-gnose', true);
+    expect(nodes.get('spotlight-balloon-title')?.textContent).toBe(CARD_TUTORIALS[5].title);
+    tour.dismiss();
+    expect(game.seenCardTutorials.has(cardTutorialKey(CARD_TUTORIALS[5]))).toBe(true);
+    tour.update();
+    expect(nodes.get('spotlight-tour-overlay')?.style.display).toBe('none');
+    expect(focus).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not search the page on every tick when no tutorial is pending', () => {
+    game.unlocks.forEach(u => { u.unlocked = true; });
+    game.gnoseResets = 1;
+    CARD_TUTORIALS.forEach(t => game.seenCardTutorials.add(cardTutorialKey(t)));
+    const { tour, focus } = guide();
+    modalQueries = 0;
+    for (let i = 0; i < 20; i++) tour.update();
+    expect(modalQueries).toBe(0);
+    expect(focus).not.toHaveBeenCalled();
+    expect(nodes.get('spotlight-tour-overlay')?.style.display).toBe('none');
+  });
+
+  it('still waits for modals while a tutorial is pending', () => {
+    game.seenCardTutorials.add('card-unlocks');
+    game.unlocks.find(u => u.id === 'unlock_incarnation')!.unlocked = true;
+    const { tour } = guide();
+    modalQueries = 0;
+    tour.update();
+    expect(modalQueries).toBe(1);
+  });
+
   it('waits for modal closure and for the unlocked card to be visible', () => {
     game.seenCardTutorials.add('card-unlocks');
     game.unlocks.find(u => u.id === 'unlock_incarnation')!.unlocked = true;
@@ -101,11 +139,11 @@ describe('progressive card tutorial', () => {
   it('persists acknowledgements across saves and Gnose, and clears them for a new game', () => {
     game.unlocks.forEach(u => { u.unlocked = true; });
     game.faithPoints = 1e18;
-    CARD_TUTORIALS.forEach(t => game.seenCardTutorials.add(t.cardId));
+    CARD_TUTORIALS.forEach(t => game.seenCardTutorials.add(cardTutorialKey(t)));
     expect(game.performGnoseReset().success).toBe(true);
     const loaded = new GameStateManager();
     loaded.applySaveData(game.buildSaveData());
-    expect([...loaded.seenCardTutorials]).toEqual(CARD_TUTORIALS.map(t => t.cardId));
+    expect([...loaded.seenCardTutorials]).toEqual(CARD_TUTORIALS.map(cardTutorialKey));
     loaded.resetToDefaults();
     expect(loaded.seenCardTutorials.size).toBe(0);
     const legacy = game.buildSaveData();

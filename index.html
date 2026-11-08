@@ -81,8 +81,8 @@
             aria-label="Grimório de Conquistas"><span data-icon="laurel"></span>
           </button>
           <button id="music-quick-btn" class="icon-btn-gold"
-            aria-label="Trilha Sonora">
-            <span id="music-icon-on" data-icon="lyre"></span><span id="music-icon-off" data-icon="lyre-off" style="display: none;"></span>
+            aria-label="Desligar música" title="Desligar música">
+            <span id="music-icon-on" data-icon="music"></span><span id="music-icon-off" data-icon="music-off" style="display: none;"></span>
           </button>
           <button id="settings-btn" class="icon-btn-gold" aria-label="Configurações"><span data-icon="gear"></span>
           </button>
@@ -146,7 +146,6 @@
                 <div class="dodeca-card-title-group">
                   <span class="dodeca-card-icon" data-icon="sphere"></span>
                   <h3 class="dodeca-card-title">Altar da Esfera</h3>
-                  <span class="dodeca-card-tag">Relicário</span>
                 </div>
               </div>
               <div class="dodeca-card-body">
@@ -175,7 +174,6 @@
                 <div class="dodeca-card-title-group">
                   <span class="dodeca-card-icon" data-icon="followers"></span>
                   <h3 class="dodeca-card-title">Pátio dos Fiéis</h3>
-                  <span class="dodeca-card-tag">Congregação</span>
                 </div>
               </div>
               <div class="dodeca-card-body">
@@ -194,9 +192,6 @@
                   <!-- Pátio dos Fiéis Hermético (Walking & Praying Cultists Arena) -->
                   <div class="followers-arena-container" id="followers-arena-container">
                     <canvas id="followers-walk-canvas" class="followers-walk-canvas transparent-arena" width="400" height="220"></canvas>
-                    <div class="followers-arena-overlay">
-                      <span class="followers-arena-hint">PÁTIO HERMÉTICO</span>
-                    </div>
                   </div>
 
                   <label class="card-automation-toggle" id="auto-followers-wrap" hidden>
@@ -251,7 +246,6 @@
                 <div class="dodeca-card-title-group">
                   <span class="dodeca-card-icon" data-icon="fervor"></span>
                   <h3 class="dodeca-card-title">Fervor Sagrado</h3>
-                  <span class="dodeca-card-tag">Chama</span>
                 </div>
               </div>
               <div class="dodeca-card-body">
@@ -279,7 +273,6 @@
                 <div class="dodeca-card-title-group">
                   <span class="dodeca-card-icon" data-icon="incarnation"></span>
                   <h3 class="dodeca-card-title">Encarnação Sagrada</h3>
-                  <span class="dodeca-card-tag">Ascensão</span>
                 </div>
               </div>
               <div class="dodeca-card-body">
@@ -349,9 +342,8 @@
             <div id="card-relics" class="dodeca-card card-locked" style="display: none;">
               <div class="dodeca-card-header">
                 <div class="dodeca-card-title-group">
-                  <span class="dodeca-card-icon" data-icon="relics"></span>
+                  <span class="dodeca-card-icon" data-icon="gem"></span>
                   <h3 class="dodeca-card-title">Relíquias Divinas</h3>
-                  <span class="dodeca-card-tag">Transmutação</span>
                 </div>
               </div>
               <div class="dodeca-card-body">
@@ -393,7 +385,6 @@
                 <div class="dodeca-card-title-group">
                   <span class="dodeca-card-icon" data-icon="gnose"></span>
                   <h3 class="dodeca-card-title">Câmara da Gnose</h3>
-                  <span class="dodeca-card-tag">Prestígio</span>
                 </div>
               </div>
               <div class="dodeca-card-body">
@@ -405,31 +396,23 @@
                       </button>
                       <div class="gnose-stats-grid">
                         <div class="gnose-stat-box">
-                          <span class="gnose-stat-label">SALDO</span>
+                          <span class="gnose-stat-label">GNOSE</span>
                           <span id="gnose-balance-val" class="gnose-stat-val">0</span>
                         </div>
                         <div class="gnose-stat-box">
-                          <span class="gnose-stat-label">TOTAL</span>
-                          <span id="gnose-total-val" class="gnose-stat-val">0</span>
-                        </div>
-                        <div class="gnose-stat-box">
-                          <span class="gnose-stat-label">GNOSE HISTÓRICA</span>
+                          <span class="gnose-stat-label">BÔNUS PERMANENTE</span>
                           <span id="gnose-passive-mult-val" class="gnose-stat-val">×1</span>
-                        </div>
-                        <div class="gnose-stat-box">
-                          <span class="gnose-stat-label">ASCENSÕES</span>
-                          <span id="gnose-resets-val" class="gnose-stat-val">0</span>
                         </div>
                       </div>
                     </div>
 
-                    <p class="gnose-req-hint">Cada nó assimilado dá produção ×4 permanente, além de seu efeito próprio.</p>
+                    <p class="gnose-req-hint">Cada nó também multiplica sua produção por 4.</p>
                     <div class="gnose-controls-row">
-                      <span class="gnose-req-hint" id="gnose-req-hint">Requer 1Q Fé</span>
+                      <span class="gnose-req-hint" id="gnose-req-hint">Ascensão com 1Q de Fé</span>
                       <div class="gnose-toggles-group">
                         <label class="gnose-toggle-label">
                           <input type="checkbox" id="gnose-confirm-toggle" checked />
-                          <span>Confirmar</span>
+                          <span>Confirmar Ascensão</span>
                         </label>
                       </div>
                     </div>
@@ -457,7 +440,7 @@
             <button class="quicknav-btn" data-target="card-unlocks"><span class="quicknav-ico" data-icon="unlock"></span> <span>Desbloqueio</span></button>
             <button class="quicknav-btn" data-target="card-fervor" id="quicknav-fervor" style="display: none;"><span class="quicknav-ico" data-icon="fervor"></span> <span>Fervor</span></button>
             <button class="quicknav-btn" data-target="card-incarnation" id="quicknav-incarnation" style="display: none;"><span class="quicknav-ico" data-icon="incarnation"></span> <span>Encarnação</span></button>
-            <button class="quicknav-btn" data-target="card-relics" id="quicknav-relics" style="display: none;"><span class="quicknav-ico" data-icon="relics"></span> <span>Relíquias</span></button>
+            <button class="quicknav-btn" data-target="card-relics" id="quicknav-relics" style="display: none;"><span class="quicknav-ico" data-icon="gem"></span> <span>Relíquias</span></button>
             <button class="quicknav-btn" data-target="card-gnose" id="quicknav-gnose" style="display: none;"><span class="quicknav-ico" data-icon="gnose"></span> <span>Gnose</span></button>
           </nav>
 
@@ -644,6 +627,15 @@
               <div class="setting-desc">Sons de rituais e cliques</div>
             </div>
             <input type="checkbox" id="sfx-toggle" style="accent-color: var(--gold-accent);" checked>
+          </div>
+
+          <div class="setting-item">
+            <div>
+              <div class="setting-name">Volume dos Efeitos</div>
+              <div class="setting-desc">Ajustar só os sons de rituais e cliques</div>
+            </div>
+            <input type="range" id="sfx-volume-slider" aria-label="Volume dos Efeitos" style="accent-color: var(--gold-accent);" min="0" max="100"
+              value="100">
           </div>
 
           <div class="setting-item">

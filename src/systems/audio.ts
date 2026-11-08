@@ -1,5 +1,6 @@
 export interface AudioPreferences {
   volume: number;
+  sfxVolume: number;
   musicEnabled: boolean;
   sfxEnabled: boolean;
 }
@@ -15,6 +16,7 @@ export class AudioManager {
   private bossMusic: HTMLAudioElement | null = null;
   private activeTrack: MusicTrackMode = 'background';
   private volume: number = 0.7; // default 70% volume
+  private sfxVolume: number = 1; // relative to the general volume
   private musicEnabled: boolean = true;
   private sfxEnabled: boolean = true;
   private static readonly PREF_KEY = 'cult_audio_preferences';
@@ -32,6 +34,9 @@ export class AudioManager {
         if (typeof parsed.volume === 'number' && !isNaN(parsed.volume)) {
           this.volume = Math.max(0, Math.min(1, parsed.volume));
         }
+        if (typeof parsed.sfxVolume === 'number' && !isNaN(parsed.sfxVolume)) {
+          this.sfxVolume = Math.max(0, Math.min(1, parsed.sfxVolume));
+        }
         if (typeof parsed.musicEnabled === 'boolean') {
           this.musicEnabled = parsed.musicEnabled;
         }
@@ -48,6 +53,7 @@ export class AudioManager {
     try {
       const prefs: AudioPreferences = {
         volume: this.volume,
+        sfxVolume: this.sfxVolume,
         musicEnabled: this.musicEnabled,
         sfxEnabled: this.sfxEnabled,
       };
@@ -80,13 +86,14 @@ export class AudioManager {
     if (!this.bgMusic && bgSrc) {
       this.bgMusic = new Audio(bgSrc);
       this.bgMusic.loop = true;
-      this.bgMusic.preload = 'auto';
+      // Streams on play: these tracks are the largest files in the game.
+      this.bgMusic.preload = 'none';
       this.bgMusic.volume = this.musicEnabled ? this.volume : 0;
     }
     if (!this.bossMusic && bossSrc) {
       this.bossMusic = new Audio(bossSrc);
       this.bossMusic.loop = true;
-      this.bossMusic.preload = 'auto';
+      this.bossMusic.preload = 'none';
       this.bossMusic.volume = this.musicEnabled ? this.volume : 0;
     }
   }
@@ -207,8 +214,18 @@ export class AudioManager {
     return this.volume;
   }
 
+  public setSfxVolume(vol: number): void {
+    this.sfxVolume = Math.max(0, Math.min(1, vol));
+    this.savePreferences();
+  }
+
+  public getSfxVolume(): number {
+    return this.sfxVolume;
+  }
+
   public playTone(freq: number, type: OscillatorType = 'sine', duration: number = 0.1): void {
-    if (!this.sfxEnabled) return;
+    const loudness = this.volume * this.sfxVolume * 0.18;
+    if (!this.sfxEnabled || loudness <= 0) return;
     this.init();
     if (!this.audioCtx) return;
 
@@ -219,8 +236,7 @@ export class AudioManager {
       osc.type = type;
       osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime);
 
-      const sfxVol = Math.max(0.005, this.volume * 0.18);
-      gain.gain.setValueAtTime(sfxVol, this.audioCtx.currentTime);
+      gain.gain.setValueAtTime(Math.max(0.005, loudness), this.audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.0001, this.audioCtx.currentTime + duration);
 
       osc.connect(gain);

@@ -1,7 +1,6 @@
 import { AutomationToggle } from '../../ui/AutomationToggle.js';
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
-import { NotificationManager } from '../../systems/notifications.js';
 import { RelicUpgrade } from '../../types.js';
 import { DISPLAY_CONFIG } from '../../config/display.js';
 import { formatNumber } from '../../systems/calculations.js';
@@ -9,7 +8,6 @@ import { formatNumber } from '../../systems/calculations.js';
 export interface RelicsTabOptions {
   gameState: GameStateManager;
   audio: AudioManager;
-  notifications: NotificationManager;
   spawnFloatingText: (x: number, y: number, text: string) => void;
   onRelicsTransmuted?: () => void;
   onUpgradePurchased?: () => void;
@@ -70,15 +68,6 @@ export class RelicsTab {
         window.innerHeight / 2,
         `+${formatNumber(result.gained)} FRAGMENTOS!`
       );
-      if (!this.options.gameState.hasSeenTransmutationNotification) {
-        this.options.notifications.showCustomPopup(
-          'TRANSMUTAÇÃO',
-          `Sua Fé virou +${formatNumber(result.gained)} Fragmentos de deuses caídos.`,
-          'relics',
-          'TRANSMUTAÇÃO'
-        );
-        this.options.gameState.hasSeenTransmutationNotification = true;
-      }
       this.updateUI();
       this.renderList();
       this.options.onRelicsTransmuted?.();

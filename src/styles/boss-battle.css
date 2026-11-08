@@ -143,12 +143,6 @@
 
 .gnose-tier-padlock .ico { width: 40px; height: 40px; }
 
-.gnose-tier-seal-title {
-  font-size: 13px;
-  letter-spacing: 2px;
-  color: #ab9365;
-}
-
 html .gnose-tier-seal .btn-challenge-guardian {
   display: inline-flex;
   align-items: center;
@@ -174,18 +168,14 @@ html .gnose-tier-seal .btn-challenge-guardian:disabled {
   outline-offset: 3px;
 }
 
-.gnose-guardian-requirement,
-.gnose-guardian-power {
+.gnose-guardian-requirement {
   font-size: 14px;
   overflow-wrap: anywhere;
 }
 
-.gnose-guardian-power { color: #99896c; }
-
 @media (max-width: 480px) {
   .gnose-tier-seal { padding: 10px; }
   .gnose-tier-seal-content { padding: 12px; }
-  .gnose-tier-seal-title { letter-spacing: 1px; }
 }
 
 @media (max-width: 860px) {
@@ -358,7 +348,9 @@ html .boss-world-hitbox .boss-attack-caption {
 .boss-world-hp-plate,
 .sphere-world-hp-plate {
   position: absolute;
-  transform: translateX(-50%);
+  /* Same counter-zoom as the parry cards, so the text stays readable when zoomed out */
+  transform: translateX(-50%) scale(var(--boss-prompt-scale, 1));
+  transform-origin: top center;
   width: 244px;
   padding: 6px 10px;
   background: rgba(14, 11, 9, 0.92);
@@ -375,12 +367,12 @@ html .boss-world-hitbox .boss-attack-caption {
 
 .boss-world-subline {
   font-family: var(--font-game);
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.2;
   color: var(--gold-light, #e4d2a5);
   text-align: center;
   margin-top: 2px;
-  min-height: 13px;
+  min-height: 16px;
 }
 
 .sphere-world-actions {
@@ -393,7 +385,7 @@ html .boss-world-hitbox .boss-attack-caption {
 
 .boss-world-combo-stat {
   font-family: var(--font-game);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--bone-dim, #cbb68c);
   font-variant-numeric: tabular-nums;
 }
@@ -501,11 +493,13 @@ html .btn-boss-retreat.btn-world-retreat:active {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85);
   pointer-events: none;
   white-space: nowrap;
-  z-index: 28;
+  /* Below .boss-rifts-layer: a parry card's instructions matter more than the banner */
+  z-index: 24;
 }
 
 /* Durante a Boss Battle, oculta os fiéis e a encarnação internos dos cards (pois saem pelo mundo)
-   e atenua os cards satélites para não obstruírem a grande roda em volta do Boss e da Esfera */
+   e esconde os cards satélites e seus raios para deixar só a roda em volta do Boss e da Esfera.
+   Usa visibility, não display: a coreografia mede a posição do Pátio e do Altar nesses cards. */
 body.is-boss-battle-active #followers-walk-canvas,
 body.is-boss-battle-active #incarnation-altar-canvas,
 body.is-boss-battle-active .incarnation-blessing-light {
@@ -514,10 +508,26 @@ body.is-boss-battle-active .incarnation-blessing-light {
 }
 
 body.is-boss-battle-active #card-unlocks,
-body.is-boss-battle-active .dodeca-card:not(#card-altar-sphere) {
-  opacity: 0.22;
+body.is-boss-battle-active .dodeca-card:not(#card-altar-sphere),
+body.is-boss-battle-active .board-constellation-lines,
+body.is-boss-battle-active .board-quicknav-bar {
+  opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.35s ease, visibility 0.35s;
+}
+
+/* O Pátio some aos poucos quando a procissão parte, depois de os Fiéis se reunirem nele */
+/* !important e dois IDs: board-layout.css fixa a transição dos cards arrastáveis com !important */
+body.is-boss-battle-active #dodeca-board-world #card-followers {
+  transition: opacity 1.2s ease, visibility 1.2s !important;
+}
+
+/* A Encarnação busca os Fiéis no Pátio e os traz de volta após a vitória */
+body.is-boss-battle-active.is-courtyard-visible #dodeca-board-world #card-followers {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s ease, visibility 0.6s !important;
 }
 
 .boss-bar-section {
@@ -554,6 +564,27 @@ body.is-boss-battle-active .dodeca-card:not(#card-altar-sphere) {
   border: 1.5px solid var(--hermetic-ink-black);
   box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.85);
   overflow: hidden;
+}
+
+/* Recent damage stays visible behind the fill, then shrinks away */
+.boss-bar-track {
+  position: relative;
+}
+
+.boss-bar-fill {
+  position: relative;
+}
+
+.boss-bar-trail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: #fff0bb;
+}
+
+.altar-integrity-track .boss-bar-trail {
+  background: #e05555;
 }
 
 .boss-hp-fill {
@@ -622,15 +653,20 @@ body.is-boss-battle-active .dodeca-card:not(#card-altar-sphere) {
 }
 
 .boss-rift-number {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  text-shadow: 0 2px 4px #000, 0 0 8px #000;
-  font-size: 32px;
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  font-size: 34px;
   font-weight: 800;
   line-height: 1;
   color: #fff0bb;
+}
+
+.boss-rift-number small {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #d4b575;
 }
 
 .boss-rift-target.boss-rift-hades-chains {

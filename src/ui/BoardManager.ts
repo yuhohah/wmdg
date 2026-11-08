@@ -1,4 +1,12 @@
-import { BoardLayout } from './BoardLayout.js';
+import { BoardLayout, WORLD_TOP } from './BoardLayout.js';
+
+interface FollowMeasure {
+  width: number;
+  height: number;
+  top: number;
+  worldWidth: number;
+  worldHeight: number;
+}
 
 export class BoardManager {
   private viewportEl: HTMLElement | null = null;
@@ -18,6 +26,11 @@ export class BoardManager {
   private targetPanY: number = 0;
   private targetZoom: number = 1.0;
   private isCameraTransitioning: boolean = false;
+
+  // Reading layout right after writing to the page forces a full layout, so the per-frame
+  // battle camera reuses these until the window resizes or the camera is framed again.
+  private followMeasure: FollowMeasure | null = null;
+  private promptScale: number = -1;
 
   // Dragging State
   private isPointerDown: boolean = false;
@@ -90,6 +103,8 @@ export class BoardManager {
 
   private bindEvents(): void {
     if (!this.viewportEl || !this.worldEl) return;
+
+    this.viewportEl.addEventListener('scroll', () => this.recoverNativeScroll(), { passive: true });
 
     this.cards.forEach((card) => {
       // The sphere has no visible header.
@@ -281,6 +296,7 @@ export class BoardManager {
 
     // 8. Window Resize: re-center active card inside safe viewport
     window.addEventListener('resize', () => {
+      this.invalidateFollowMeasure();
       // Let responsive card sizes and overlap resolution settle before framing them.
       window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
         if (this.currentFocusedCardId) {
@@ -341,31 +357,41 @@ export class BoardManager {
   }
 
   // Keep the camera centre inside the play area so panning never drifts off into the void
-  private clampPan(): void {
+  private clampPan(measure?: FollowMeasure): void {
     if (!this.viewportEl || !this.worldEl) return;
-    const halfW = (this.viewportEl.clientWidth || window.innerWidth) / 2;
-    const halfH = (this.viewportEl.clientHeight || window.innerHeight) / 2;
-    const centerX = Math.min(this.worldEl.offsetWidth, Math.max(0, (halfW - this.panX) / this.zoom));
-    const centerY = Math.min(this.worldEl.offsetHeight, Math.max(0, (halfH - this.panY) / this.zoom));
+    const halfW = (measure?.width ?? (this.viewportEl.clientWidth || window.innerWidth)) / 2;
+    const halfH = (measure?.height ?? (this.viewportEl.clientHeight || window.innerHeight)) / 2;
+    const worldWidth = measure?.worldWidth ?? this.worldEl.offsetWidth;
+    const worldHeight = measure?.worldHeight ?? this.worldEl.offsetHeight;
+    const centerX = Math.min(worldWidth, Math.max(0, (halfW - this.panX) / this.zoom));
+    const centerY = Math.min(worldHeight, Math.max(WORLD_TOP, (halfH - this.panY) / this.zoom));
     this.panX = halfW - centerX * this.zoom;
     this.panY = halfH - centerY * this.zoom;
   }
 
-  private applyTransform(): void {
-    if (!this.worldEl) return;
-    // Native focus scrolling is independent of pan and can make the left side unreachable.
-    // Recover that offset as well, including sessions already shifted before this fix.
+  // Native focus scrolling is independent of pan and can make the left side unreachable.
+  // Recover that offset as well, including sessions already shifted before this fix.
+  private recoverNativeScroll(): void {
     if (this.viewportEl?.scrollLeft) this.viewportEl.scrollLeft = 0;
     if (this.viewportEl?.scrollTop) this.viewportEl.scrollTop = 0;
-    this.clampPan();
-    this.worldEl.style.setProperty('--boss-prompt-scale', String(Math.min(2.4, 1 / this.zoom)));
+  }
+
+  private applyTransform(measure?: FollowMeasure): void {
+    if (!this.worldEl) return;
+    if (!measure) this.recoverNativeScroll();
+    this.clampPan(measure);
+    // A variable on the world root restyles every card, so write it only when it visibly changes.
+    const promptScale = Math.round(Math.min(2.4, 1 / this.zoom) * 100) / 100;
+    if (promptScale !== this.promptScale) {
+      this.promptScale = promptScale;
+      this.worldEl.style.setProperty('--boss-prompt-scale', String(promptScale));
+    }
     this.worldEl.style.setProperty('transform', `translate3d(${this.panX}px, ${this.panY}px, 0) scale(${this.zoom})`, 'important');
   }
 
   private updateZoomIndicator(): void {
-    if (this.zoomLevelEl) {
-      this.zoomLevelEl.textContent = `${Math.round(this.zoom * 100)}%`;
-    }
+    const text = `${Math.round(this.zoom * 100)}%`;
+    if (this.zoomLevelEl && this.zoomLevelEl.textContent !== text) this.zoomLevelEl.textContent = text;
   }
 
   public zoomAtCenter(factor: number): void {
@@ -392,10 +418,9 @@ export class BoardManager {
   public followWorldTarget(target: { x: number; y: number; width: number; height: number }, elapsedSec: number): void {
     if (!this.viewportEl || !this.worldEl) return;
     this.isCameraTransitioning = false;
-    const width = this.viewportEl.clientWidth || window.innerWidth;
-    const height = this.viewportEl.clientHeight || window.innerHeight;
-    const hud = document.querySelector<HTMLElement>('.top-hud-bar')?.getBoundingClientRect();
-    const top = Math.max(90, hud ? hud.bottom + 12 : 90);
+    if (elapsedSec <= 0) this.invalidateFollowMeasure();
+    const measure = this.followMeasure ??= this.measureFollow(this.viewportEl, this.worldEl);
+    const { width, height, top } = measure;
     const bottom = 100;
     const zoom = Math.max(this.minZoom, Math.min(1.1, (width - 64) / target.width, (height - top - bottom) / target.height));
     const panX = width / 2 - target.x * zoom;
@@ -404,13 +429,30 @@ export class BoardManager {
     this.panX += (panX - this.panX) * blend;
     this.panY += (panY - this.panY) * blend;
     this.zoom += (zoom - this.zoom) * blend;
-    this.applyTransform();
+    this.applyTransform(measure);
     this.updateZoomIndicator();
+  }
+
+  private invalidateFollowMeasure(): void {
+    this.followMeasure = null;
+  }
+
+  private measureFollow(viewportEl: HTMLElement, worldEl: HTMLElement): FollowMeasure {
+    this.recoverNativeScroll();
+    const hud = document.querySelector<HTMLElement>('.top-hud-bar')?.getBoundingClientRect();
+    return {
+      width: viewportEl.clientWidth || window.innerWidth,
+      height: viewportEl.clientHeight || window.innerHeight,
+      top: Math.max(90, hud ? hud.bottom + 12 : 90),
+      worldWidth: worldEl.offsetWidth,
+      worldHeight: worldEl.offsetHeight,
+    };
   }
 
   public centerOnCard(cardId: string, immediate: boolean = false): void {
     const card = this.cards.get(cardId);
     if (!card || !this.viewportEl) return;
+    this.invalidateFollowMeasure();
 
     this.currentFocusedCardId = cardId;
 

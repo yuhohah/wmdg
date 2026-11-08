@@ -1,7 +1,6 @@
 import type { MechanicUnlock } from '../../types.js';
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
-import { NotificationManager } from '../../systems/notifications.js';
 import { formatNumber } from '../../systems/calculations.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 import { icon } from '../../ui/icons.js';
@@ -9,14 +8,12 @@ import { icon } from '../../ui/icons.js';
 export interface UnlocksTabOptions {
   gameState: GameStateManager;
   audio: AudioManager;
-  notifications: NotificationManager;
   onUnlockPurchased?: (unlock: MechanicUnlock) => void;
 }
 
 export class UnlocksTab {
   private gameState: GameStateManager;
   private audio: AudioManager;
-  private notifications: NotificationManager;
   private onUnlockPurchased?: (unlock: MechanicUnlock) => void;
 
   private unlocksListEl: HTMLElement | null = null;
@@ -24,7 +21,6 @@ export class UnlocksTab {
   constructor(options: UnlocksTabOptions) {
     this.gameState = options.gameState;
     this.audio = options.audio;
-    this.notifications = options.notifications;
     this.onUnlockPurchased = options.onUnlockPurchased;
 
     this.initElements();
@@ -45,25 +41,24 @@ export class UnlocksTab {
     });
   }
 
+  // Separate from renderList: a hidden card never becomes visible, so it would never render again.
+  public syncVisibility(): void {
+    const hasUnlock = !!this.getCurrentUnlock();
+    const cardUnlocksEl = document.getElementById('card-unlocks');
+    const rayEl = document.getElementById('ray-unlocks');
+    const quickBtn = document.querySelector<HTMLElement>('.quicknav-btn[data-target="card-unlocks"]');
+
+    if (cardUnlocksEl) cardUnlocksEl.style.display = hasUnlock ? 'flex' : 'none';
+    if (rayEl) rayEl.style.display = hasUnlock ? '' : 'none';
+    if (quickBtn) quickBtn.style.display = hasUnlock ? 'inline-flex' : 'none';
+  }
+
   public renderList(): void {
     if (!this.unlocksListEl) return;
     this.unlocksListEl.innerHTML = '';
 
     const currentUnlock = this.getCurrentUnlock();
-    const cardUnlocksEl = document.getElementById('card-unlocks');
-    const rayEl = document.getElementById('ray-unlocks');
-    const quickBtn = document.querySelector<HTMLElement>('.quicknav-btn[data-target="card-unlocks"]');
-
-    if (!currentUnlock) {
-      if (cardUnlocksEl) cardUnlocksEl.style.display = 'none';
-      if (rayEl) rayEl.style.display = 'none';
-      if (quickBtn) quickBtn.style.display = 'none';
-      return;
-    }
-
-    if (cardUnlocksEl) cardUnlocksEl.style.display = 'flex';
-    if (rayEl) rayEl.style.display = '';
-    if (quickBtn) quickBtn.style.display = 'inline-flex';
+    if (!currentUnlock) return;
 
     const canAfford = this.gameState.faithPoints >= currentUnlock.cost;
     const btn = document.createElement('button');
@@ -91,36 +86,6 @@ export class UnlocksTab {
     if (!this.gameState.buyUnlock(unlock)) {
       this.audio.playTone(180, 'sawtooth', 0.1);
       return;
-    }
-
-    if (unlock.id === 'unlock_incarnation') {
-      this.notifications.showCustomPopup(
-        'A ESFERA GANHOU CORPO',
-        'A Encarnação desceu ao altar e acendeu o Fervor (+1/s). Toque no Altar para ativar a Bênção 2× Fé/s.',
-        'fervor',
-        'NOVA MECÂNICA'
-      );
-    } else if (unlock.id === 'unlock_fervor_upgrades') {
-      this.notifications.showCustomPopup(
-        'RITOS DE FERVOR',
-        'Os Ritos de Fervor estão liberados no card Fervor Sagrado. Gastar Fervor conserva o bônus do seu pico no ciclo.',
-        'incarnation',
-        'NOVA MECÂNICA'
-      );
-    } else if (unlock.id === 'unlock_relics') {
-      this.notifications.showCustomPopup(
-        'RELÍQUIAS DIVINAS ABERTAS',
-        'Transmute sua Fé em Fragmentos e restaure relíquias no card Relíquias Divinas.',
-        'relics',
-        'NOVA MECÂNICA'
-      );
-    } else if (unlock.id === 'unlock_gnose') {
-      this.notifications.showCustomPopup(
-        'A CÂMARA DA GNOSE SE ABRIU',
-        'O último selo foi rompido sem gastar sua Fé. Ascenda a partir de 1Q Fé para colher Gnose permanente.',
-        'gnose',
-        'NOVA MECÂNICA'
-      );
     }
 
     this.audio.playChime();

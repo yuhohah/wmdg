@@ -3,7 +3,7 @@ import {
   INCARNATION_FRAME_SIZE, incarnationStageIndex, incarnationParticleColors,
   loadIncarnationSprites, type IncarnationSprite,
 } from './incarnationSprites.js';
-import { VisualFrameClock, visualFrameScale } from './visualTiming.js';
+import { scheduleVisualFrame, VisualFrameClock, visualFrameScale } from './visualTiming.js';
 
 export interface IncarnationAltarOptions {
   onAltarClick?: (e?: MouseEvent) => void;
@@ -30,7 +30,7 @@ export class IncarnationAltar {
   private loreEl: HTMLElement | null = null;
 
   private currentStage: number = 1;
-  private animFrameId: number | null = null;
+  private cancelFrame: (() => void) | null = null;
   private width: number = 380;
   private height: number = 210;
   private dpr: number = 1;
@@ -288,15 +288,13 @@ export class IncarnationAltar {
         this.update(elapsedSec);
         if (this.isOnScreen && document.visibilityState !== 'hidden') this.draw();
       }
-      this.animFrameId = requestAnimationFrame(loop);
+      this.cancelFrame = scheduleVisualFrame(this.isOnScreen, loop);
     };
-    this.animFrameId = requestAnimationFrame(loop);
+    this.cancelFrame = scheduleVisualFrame(this.isOnScreen, loop);
   }
 
   public destroy(): void {
-    if (this.animFrameId !== null) {
-      cancelAnimationFrame(this.animFrameId);
-      this.animFrameId = null;
-    }
+    this.cancelFrame?.();
+    this.cancelFrame = null;
   }
 }

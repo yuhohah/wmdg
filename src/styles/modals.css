@@ -457,6 +457,7 @@
 }
 
 .ach-popup-close {
+  margin-left: auto;
   background: none;
   border: none;
   color: #94a3b8;
@@ -524,7 +525,11 @@
   background: linear-gradient(90deg, #71717a, #ffffff);
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
   width: 100%;
-  animation: popupTimerProgress 5s linear forwards;
+  animation: popupTimerProgress linear forwards;
+}
+
+.ach-popup-toast:hover .ach-popup-timer-bar {
+  animation-play-state: paused;
 }
 
 @keyframes popupTimerProgress {

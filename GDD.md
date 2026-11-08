@@ -1,6 +1,6 @@
 # Cult of the Sphere — Game Design Document
 
-**Estado:** jogo implementado no workspace · **Revisão:** 03/11/2026
+**Estado:** jogo implementado no workspace · **Versão:** 0.9.1 · **Revisão:** 06/11/2026
 **Gênero:** idle / incremental / clicker · **Plataforma:** navegador desktop e mobile
 **Tecnologia:** TypeScript, Vite, Canvas 2D e CSS
 
@@ -80,12 +80,14 @@ Custos por nível são fixos. O melhor resultado de Transmutação manual alimen
 
 A Ascensão Gnóstica exige acesso à Gnose e pelo menos 1e15 Fé. O ganho é `floor((Fé / 1e15)^expoente)`, com expoente 0,25 ou 0,28 com Olho de Trismegisto. Não é permitida durante combate.
 
+A Câmara da Gnose mostra quanta Fé falta para a próxima Gnose. A primeira Ascensão pede confirmação, listando o que se perde e o que se mantém; depois disso a confirmação fica desligada e pode ser reativada pela opção **Confirmar Ascensão**.
+
 | Reinicia | Permanece |
 | --- | --- |
 | Fiéis, Fervor, Ritos e Avatar. | Saldo e histórico de Gnose, nós assimilados. |
 | Fragmentos, melhor Transmutação e picos do ciclo. | Conquistas, vitórias, melhores tempos de duelo e históricos de recursos. |
 | Relíquias sem Cripta Eterna. | Relíquias com Cripta Eterna. |
-| Selos de Fervor e Relíquias. | Acesso à Gnose; Encarnação com Memória Hermética. |
+| Selos de Fervor e Relíquias; Encarnação sem Memória Hermética. | Acesso à Gnose; Encarnação com Memória Hermética. |
 | Fé atual: 1, ou 1.000 com Emanação Primordial. | Preferências de automação. |
 
 Históricos permanentes participam do combate. Os bônus econômicos de Fervor e Arca usam os picos do ciclo, que zeram ao ascender.
@@ -99,17 +101,17 @@ São **20 nós em quatro tiers (6 / 6 / 4 / 4)**. Cada nó é comprado uma vez, 
 | Tier | Identidade | Abertura |
 | --- | --- | --- |
 | I — Despertar & Automação | Emanação, Memória, Fiéis automáticos, Selos automáticos, Chama e Alquimia Astrais. | Acesso à Gnose. |
-| II — Persistência & Economia | Ritos e Relíquias automáticos, Cripta, sinergia dos Fiéis e Bênção permanente. | Vitória sobre Anúbis. |
+| II — Persistência & Economia | Ritos e Relíquias automáticos, Cripta, sinergia e economia dos Fiéis e Bênção permanente. | Vitória sobre Anúbis. |
 | III — Poder do Culto | Coro, ganho de Gnose e refinamentos herméticos. | Vitória sobre Hades. |
 | IV — Apoteose | Olho do Infinito, Gnosis Suprema, Fogo Empíreo e Opus Perfeito. | Vitória sobre Odin. |
 
-Os custos acima de 1.000 Gnose usam dois algarismos significativos, preservando a escala dos preços e tornando as metas mais legíveis. O catálogo completo, custos e pré-requisitos estão em [FormulasJogo.md](FormulasJogo.md#8-gnose-e-todos-os-upgrades) e [src/config/gnose.ts](src/config/gnose.ts).
+Cada nó exibe nome e efeito em linguagem simples; os valores exatos ficam na opção **Nerds** das configurações. Os custos acima de 1.000 Gnose usam dois algarismos significativos, preservando a escala dos preços e tornando as metas mais legíveis. O catálogo completo, custos e pré-requisitos estão em [FormulasJogo.md](FormulasJogo.md#8-gnose-e-todos-os-upgrades) e [src/config/gnose.ts](src/config/gnose.ts).
 
 ### Automações
 
 Auto-Fiéis, Auto-Ritos, Auto-Relíquias e Auto-Transmutação têm controles independentes. As compras automáticas operam em ciclos de um segundo e validam desbloqueios e saldos.
 
-Auto-Fiéis considera o objetivo escolhido e uma reserva de Fé; Auto-Ritos escolhe retorno marginal por custo; Auto-Relíquias prioriza a primeira Fênix e depois o retorno das compras. Olho do Infinito permite Fiéis e Ritos automáticos sem gasto, mas Relíquias continuam custando Fragmentos. Ruptura Automática reabre Selos elegíveis na ordem, com a cobrança normal dos três primeiros.
+Auto-Fiéis compra com toda a Fé disponível; por isso o controle permite pausá-lo para guardar Fé. Auto-Ritos escolhe retorno marginal por custo, com até 50 níveis por Rito a cada ciclo; Auto-Relíquias prioriza a primeira Fênix e depois o retorno das compras. Olho do Infinito permite Fiéis e Ritos automáticos sem gasto, mas Relíquias continuam custando Fragmentos. Ruptura Automática reabre Selos elegíveis na ordem, com a cobrança normal dos três primeiros.
 
 ## Guardiões e proteção da Esfera
 
@@ -132,18 +134,24 @@ Cada Guardião tem metas próprias de Fé, Fiéis, Fervor e Ritos, Fragmentos e 
 - **De 60% até menos de 80%:** ataques causam dano, mas a proteção é insuficiente. A pressão drena pelo menos 25 pontos de integridade por segundo e qualquer erro de aparo é fatal.
 - **A partir de 80%:** a proteção usa mitigação de todos os sistemas do culto. Dano e resistência continuam escalando com o desenvolvimento, até seus limites.
 
-A prontidão e os pilares fracos aparecem antes do duelo; a arena avisa sobre dano bloqueado e colapso da proteção. As metas numéricas e coeficientes estão na [referência de combate](FormulasJogo.md#11-bosses-e-combate).
+A Câmara da Gnose mostra a prontidão e os pilares a fortalecer do Guardião que já pode ser desafiado; os demais mostram só o requisito que falta. A arena avisa sobre dano bloqueado e colapso da proteção. As metas numéricas e coeficientes estão na [referência de combate](FormulasJogo.md#11-bosses-e-combate).
 
 ### Preparação cênica e ações
 
 A Encarnação vai ao Pátio, reúne os Fiéis e conduz a procissão ao círculo. O Guardião chega depois. Não há dano, pressão ou novas fendas durante a preparação; a luta começa quando ele alcança o ponto de combate.
 
 1. **Atacar o Guardião:** até cinco pulsos de dano por segundo simulado, com cooldown de 0,2 s. Há 5% de chance de crítico dobrado. Cliques continuam gerando Fé.
-2. **Aparar:** clicar nas fendas antes de expirarem interrompe o golpe. Aparos causam dano, alimentam o combo e dão 25 pontos de carga; não curam a Esfera.
-3. **Fulgor Divino:** com carga 100, a Esfera dispara um ataque e esvazia a carga. Cliques de combate acrescentam 8 pontos. O disparo exige prontidão de ataque e não cura.
+2. **Aparar:** clicar nos cartões antes de expirarem bloqueia o golpe e dá 25 pontos de carga. O aparo não causa dano ao Guardião nem cura a Esfera. O combo conta os aparos seguidos e zera ao errar; é apenas informativo.
+3. **Fulgor Divino:** com carga 100, o botão sobre a Esfera dispara um ataque e esvazia a carga. Cliques de combate acrescentam 8 pontos. O disparo exige prontidão de ataque e não cura.
 4. **Milagre dos Fiéis na roda:** pedido de 1,5 segundo que recupera até 10 pontos de integridade. É a fonte de cura do combate.
 
 A Esfera começa com 100 de integridade e sofre pressão contínua, além das perdas por golpes não aparados. Não há contagem regressiva de duelo.
+
+### Tela da luta
+
+Durante o duelo, os menus, as linhas que os ligam à Esfera e a barra de navegação inferior ficam ocultos; voltam ao fim da luta. O Pátio dos Fiéis é a exceção: continua visível enquanto a Encarnação reúne os Fiéis, some aos poucos quando a procissão parte e reaparece no início do retorno após a vitória. Os cartões de aparar surgem em um arco ao redor da Esfera, do lado oposto ao Guardião, sem cobrir o alvo dos cliques nem as barras de vida. Essas barras e os cartões acompanham o zoom para continuar legíveis com a câmera afastada.
+
+As barras do Guardião e da Esfera mantêm um rastro do dano recente, que encolhe depois de um instante. A barra do Guardião mostra a fase, a vida e o tempo estimado de vitória só com dano passivo. Os números de dano por golpe são discretos; aparo, Fulgor e milagre têm destaque maior.
 
 ### Fases e assinaturas
 
@@ -153,16 +161,16 @@ Nas fases avançadas, ataques comuns alternam com a assinatura do Guardião:
 
 | Guardião | Ataque especial |
 | --- | --- |
-| Anúbis | Duas balanças; aparar ambas desperta um milagre. |
-| Hades | Duas correntes; enquanto restar uma, dano de clique reduzido pela metade. |
-| Odin | Corvo com janela crítica; um aparo cedo amplia o dano e adia o ataque seguinte. |
-| Caos Primordial | Três selos orbitais; completar o grupo causa ruptura adicional. |
+| Anúbis | Dois cartões **PESAR**, cada um com um peso. Escolher o maior bloqueia o ataque; escolher o menor causa o dobro do dano de um erro, ou o triplo se o maior já tiver sido escolhido. Deixar expirar sem escolher causa dano normal. |
+| Hades | Duas correntes; enquanto restar uma, o dano de clique cai pela metade. Uma corrente não aparada causa metade do dano de um erro. |
+| Odin | Corvo com janela de resposta menor; um aparo cedo adia em 1,4 s o ataque seguinte. |
+| Caos Primordial | Três selos em arco ao redor da Esfera; cada selo não aparado causa 40% do dano de um erro. |
 
-O dano passivo é limitado a 1,8% do HP máximo/s; o clique normal a 0,45% antes do crítico; o aparo comum com combo a 8,5%. Fulgor e assinaturas têm limites próprios. Todos respeitam o limiar mínimo de ataque.
+Com proteção insuficiente, qualquer erro é fatal, sem essas reduções. O dano passivo é limitado a 1,8% do HP máximo/s e o clique normal a 0,45% antes do crítico; o Fulgor causa de cerca de 5% a 12%, conforme a prontidão. Todos respeitam o limiar mínimo de ataque.
 
 ### Resultado e revanche
 
-HP do boss em zero concede vitória e recompensa permanente. Integridade da Esfera em zero encerra em derrota; na campanha aplica maldição de 20 segundos, reduzindo Fé/s e Fervor/s em 25%. Recuar não aplica maldição. A interface mostra um breve clímax visual e diagnóstico dos pilares mais fracos na derrota.
+HP do boss em zero concede vitória e recompensa permanente. Integridade da Esfera em zero encerra em derrota; na campanha aplica maldição de 20 segundos, reduzindo Fé/s e Fervor/s em 25%. Recuar não aplica maldição. A interface mostra um breve clímax visual. Na vitória, a Encarnação conduz os Fiéis de volta ao Pátio antes de retornar ao altar; na derrota, um aviso indica a prontidão e os dois pilares mais fracos.
 
 **Relembrar Duelo** repete Guardiões já subjugados, sem recompensas duplicadas nem maldição por derrota. Vitórias registram o melhor tempo. A conclusão de campanha usada pelo benchmark exige os vinte nós e o Caos Primordial derrotado. Não há sistema de New Game+ implementado.
 
@@ -172,19 +180,25 @@ O Grimório reúne vinte conquistas de cliques, Fiéis, produção, Gnose e vit�
 
 O progresso é salvo no navegador a cada 20 segundos, ao ocultar a aba e ao fechar, com backup e exportação/importação Base64. Uma batalha ativa é transitória e não é retomada de um save.
 
-A **Vigília Sagrada** reproduz até 24 horas de ausência com o mesmo integrador da produção online, em passos de até 0,1 segundo. Inclui automações adquiridas, Bênção e maldição; não executa combate, cliques, coleta de milagres, evolução manual de Avatar ou Ascensão. O período é creditado uma única vez e o excesso acima de 24 horas é descartado.
+A **Vigília Sagrada** reproduz até 24 horas de ausência com o mesmo integrador da produção online, em passos de até 0,1 segundo. Inclui automações adquiridas, Bênção e maldição; não executa combate, cliques, coleta de milagres, evolução manual de Avatar ou Ascensão. O período é creditado uma única vez e o excesso acima de 24 horas é descartado. O resumo dos ganhos só aparece depois de pelo menos um minuto fora do jogo.
 
 ## Interface, arte e áudio
 
-O tabuleiro usa céu escuro, estrelas, inscrições e círculos alquímicos em dourado envelhecido. HUD e molduras mantêm a linguagem astral; Fiéis, Avatares, Esfera e Guardiões usam sprites animados. Canvas desenha as arenas e personagens; painéis HTML apresentam compras, fórmulas e progressão.
+O tabuleiro usa céu escuro, estrelas, inscrições e círculos alquímicos em dourado envelhecido. HUD e molduras mantêm a linguagem astral; Fiéis, Avatares, Esfera e Guardiões usam sprites animados; a Esfera tem cinco formas que acompanham a Encarnação. Canvas desenha as arenas e personagens; painéis HTML apresentam compras, fórmulas e progressão.
 
-Navegação por arraste, roda/pinça e atalhos inferiores; cards podem ser movidos e minimizados. O onboarding apresenta os primeiros marcos. A câmera acompanha procissão, chegada do boss e arena. Há trilha ambiente, efeitos sintetizados e opções de áudio e vibração.
+Navegação por arraste, roda/pinça e atalhos inferiores. Os cards podem ser movidos, inclusive acima e abaixo da Esfera, e minimizados; Relíquias, Encarnação e Gnose minimizam sozinhos ao serem concluídos. A câmera acompanha procissão, chegada do boss e arena.
+
+O onboarding apresenta os primeiros passos. Depois, um tutorial explica cada mecânica ao ser liberada, separando lore e instrução; os Guardiões têm tutorial próprio após a primeira Ascensão.
+
+As notificações ficam reservadas a marcos e confirmações: conquistas, evolução da Encarnação, resultado de duelos, salvamento, exportação, importação e resumo da ausência. Cada uma permanece de 4 a 8 segundos conforme o tamanho do texto, com barra de tempo, e pausa com o mouse em cima.
+
+Há trilha ambiente, música de combate e efeitos sintetizados. As configurações oferecem volume geral, volume dos efeitos, liga/desliga de música e efeitos e vibração; o HUD tem um atalho para a música.
 
 Ao abrir o jogo, a versão atual é comparada à última versão vista neste navegador. Quando são diferentes, inclusive na primeira visita, uma janela mostra o histórico do `CHANGELOG.md`, começando pela versão atual. Fechar pelo botão ou por Escape registra a versão como vista, separadamente do save da partida. **Configurações → Ver novidades** permite reabrir o histórico a qualquer momento.
 
 ## Validação e manutenção
 
-`npm test` verifica regras, progressão, persistência, interface e simulação; `npm run build` verifica tipos e produz o build. O painel T/F2 oferece velocidade, recursos de teste e benchmark em Web Worker.
+`npm test` verifica regras, progressão, persistência, interface e simulação; `npm run build` verifica tipos e produz o build. A pasta `public/` também guarda fontes de arte (conceitos, quadros soltos, prévias e scripts); o build publica apenas os arquivos que o jogo carrega, conforme `src/config/shippedAssets.ts`. O painel de testes (T/F2), disponível em modo de desenvolvimento, oferece velocidade, recursos de teste e benchmark em Web Worker.
 
 A [metodologia do benchmark](docs/progression/README.md) separa regras do jogo de hipóteses de comportamento. Resultados de versões anteriores e propostas substituídas foram retirados da documentação vigente. Novas medições devem registrar versão do código, seed, perfil, horizonte e conclusão real.
 

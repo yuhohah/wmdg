@@ -2,9 +2,29 @@
 
 Histórico de mudanças de *Cult of the Sphere*, em ordem da versão mais recente para a mais antiga.
 
-A versão atual é **0.8.1**. A numeração anterior foi atribuída retrospectivamente aos últimos dez commits: o mais antigo corresponde à 0.7.0, os oito seguintes vão de 0.7.1 a 0.7.8 e o mais recente inicia a 0.8.0. As datas anteriores são as dos commits de referência, não datas de publicação. A 0.8.0 também reúne as mudanças locais mais recentes.
+A versão atual é **0.9.1**. A numeração anterior foi atribuída retrospectivamente aos últimos dez commits: o mais antigo corresponde à 0.7.0, os oito seguintes vão de 0.7.1 a 0.7.8 e o mais recente inicia a 0.8.0. As datas anteriores são as dos commits de referência, não datas de publicação. A 0.8.0 também reúne as mudanças locais mais recentes.
 
 Para as próximas versões, usamos `MAJOR.MINOR.PATCH`: novidades e mudanças relevantes de jogabilidade avançam o número do meio; correções e ajustes menores avançam o último. Enquanto o jogo estiver em desenvolvimento, o primeiro número permanece em zero. Cada nova versão deve atualizar este arquivo, `package.json` e a versão do projeto em `package-lock.json`.
+
+## 0.9.1 — 2026-11-06
+
+- O Pátio dos Fiéis agora continua visível enquanto a Encarnação reúne os Fiéis para o duelo e vai ficando transparente quando a procissão parte. Depois da vitória, ele reaparece a tempo de receber todos de volta.
+- O jogo ficou mais leve, principalmente no celular. As músicas só são baixadas quando começam a tocar, os fundos do Pátio e do Altar ficaram cerca de 17 vezes menores, e cada luta carrega apenas os sprites do Guardião enfrentado. As animações fora da tela deixam de rodar a cada quadro, e a câmera das lutas deixou de recalcular a página a cada quadro.
+
+## 0.9.0 — 2026-11-06
+
+- Corrigido o problema que deixava o jogador preso apenas com o Pátio dos Fiéis depois de uma Ascensão: o card de Desbloqueios agora volta na hora, sem precisar recarregar a página.
+- Durante as lutas, os menus e a barra inferior desaparecem para deixar a tela limpa, e voltam ao final do combate.
+- Os cartões de aparar agora surgem ao redor da Esfera, afastados do Guardião, sem cobrir o alvo dos seus golpes nem as barras de vida.
+- A balança de Anúbis ganhou um cartão próprio, **PESAR**, com o peso visível dentro dele. Escolha sempre o maior peso.
+- As barras de vida do Guardião e da Esfera mostram um rastro do dano recebido, e os números de dano ficaram menores. Os textos da luta também ficaram mais curtos e continuam legíveis com a câmera afastada.
+- A Câmara da Gnose foi reorganizada: agora mostra quanta Fé falta para a próxima Gnose, exibe o nome de cada nó e explica seus efeitos em linguagem simples.
+- A confirmação da Ascensão ficou mais curta e aparece apenas na primeira vez. A opção **Confirmar Ascensão** permite reativá-la.
+- Os tutoriais foram reescritos com explicações mais claras, e os Guardiões ganharam um tutorial próprio depois da primeira Ascensão.
+- As notificações foram revisadas: as repetitivas saíram, as restantes ficam na tela conforme o tamanho do texto e pausam com o mouse em cima, e a barra de tempo agora termina junto com elas. O aviso da Vigília Sagrada só aparece depois de pelo menos um minuto fora do jogo.
+- O menu de configurações ganhou o controle **Volume dos Efeitos**, e o botão de música agora mostra notas musicais, riscadas quando a música está desligada.
+- O quadro ficou mais alto, para que menus compridos caibam acima e abaixo da Esfera. O card de Relíquias Divinas passou a usar o diamante dos Fragmentos, e as etiquetas dos cards saíram.
+- No celular, a caixa azul que aparecia ao tocar na Esfera e nos botões foi removida.
 
 ## 0.8.1 — 2026-11-04
 

@@ -83,6 +83,7 @@ function setupBossModalHarness(
     fillText: vi.fn(),
     translate: vi.fn(),
     scale: vi.fn(),
+    setTransform: vi.fn(),
     drawImage: vi.fn(
       (
         img: unknown,
@@ -112,7 +113,9 @@ function setupBossModalHarness(
     public offsetWidth = 0;
     public offsetHeight = 0;
     public offsetParent: MockElement | null = null;
-    public style: Record<string, string> = {};
+    public style = Object.create({
+      getPropertyValue(this: Record<string, string>, name: string) { return this[name] ?? ''; },
+    }) as Record<string, string>;
     public children: MockElement[] = [];
     public parentElement: MockElement | null = null;
     public isConnected = true;
@@ -123,7 +126,7 @@ function setupBossModalHarness(
 
     public classList = {
       add: (c: string) => this.classes.add(c),
-      remove: (c: string) => this.classes.delete(c),
+      remove: (...names: string[]) => names.forEach(c => this.classes.delete(c)),
       contains: (c: string) => this.classes.has(c),
       toggle: (c: string, force?: boolean) => {
         const shouldAdd = force ?? !this.classes.has(c);
@@ -447,8 +450,9 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     expect(layer.children).toHaveLength(2);
     for (const rift of [lower, higher]) {
       const button = layer.children.find(el => el.getAttribute('data-rift-id') === rift.id)!;
-      expect(button.innerHTML).toContain(`<span class="boss-rift-number">${rift.scaleValue}</span>`);
-      expect(button.innerHTML).toContain('>APARAR</span>');
+      expect(button.innerHTML).toContain(`<span class="boss-rift-number"><small>PESO</small>${rift.scaleValue}</span>`);
+      expect(button.innerHTML).toContain('Clique no maior peso');
+      expect(button.innerHTML).toContain('>PESAR</span>');
       expect(button.getAttribute('aria-label')).toContain(String(rift.scaleValue));
     }
     const hp = gameState.activeBossBattle!.bossHp;
@@ -461,7 +465,25 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     expect(gameState.activeBossBattle!.bossHp).toBe(hp);
     expect(layer.children).toHaveLength(0);
     expect(stage.querySelector('#boss-combat-feedback')!.textContent)
-      .toContain(`Balança: dano ×${higherFirst ? 3 : 2}!`);
+      .toContain(`Peso menor! `);
+    expect(stage.querySelector('#boss-combat-feedback')!.textContent)
+      .toContain(`(×${higherFirst ? 3 : 2})`);
+    modal.close();
+  });
+
+  it('reports a parry and keeps only the combo below the Sphere', () => {
+    const { modal, gameState, worldEl } = setupBossModalHarness(100);
+    expect(modal.openForBoss('boss_anubis', { isRematch: true })).toBe(true);
+    gameState.beginBossCombat();
+    gameState.spawnBossRift();
+    modal.updateUI();
+    const stage = worldEl.children[0];
+    const stats = stage.querySelector('#boss-combat-stats')!;
+    expect(stats.textContent).not.toContain('Combo');
+    stage.querySelector('#boss-rifts-layer')!.children[0].dispatchClick();
+    expect(stage.querySelector('#boss-combat-feedback')!.textContent).toBe('Aparado! +25% de Fulgor');
+    modal.updateUI();
+    expect(stats.textContent).toBe('Combo ×1');
     modal.close();
   });
 
@@ -732,6 +754,60 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     expect(done.followers.every((f) => f.state === 'encircling')).toBe(true);
 
     modal.close();
+  });
+
+  it('shows the courtyard while the Faithful gather and return, and hides it during the procession and fight', () => {
+    const { modal, gameState } = setupBossModalHarness(100);
+    const courtyardVisible = () => document.body.classList.contains('is-courtyard-visible');
+    expect(modal.openForBoss('boss_cronos')).toBe(true);
+
+    while (modal.getChoreographySnapshot().incState !== 'leading_procession') {
+      expect(courtyardVisible()).toBe(true);
+      modal.stepSceneForTest(0.1);
+    }
+    expect(courtyardVisible()).toBe(false);
+
+    for (let i = 0; i < 250 && modal.getChoreographySnapshot().bossState !== 'idle'; i++) {
+      modal.stepSceneForTest(0.2);
+      expect(courtyardVisible()).toBe(false);
+    }
+
+    const battle = gameState.activeBossBattle!;
+    battle.bossHp = 1;
+    battle.sphereCooldownSec = 0;
+    gameState.addClick(() => 0.5);
+    modal.updateUI();
+    modal.stepSceneForTest(1.5);
+    expect(modal.getChoreographySnapshot().incState).toBe('leading_return');
+    expect(courtyardVisible()).toBe(true);
+
+    for (let i = 0; i < 800 && modal.isOpen(); i++) modal.stepSceneForTest(0.1);
+    expect(modal.isOpen()).toBe(false);
+    expect(courtyardVisible()).toBe(false);
+  });
+
+  it('holds the large battle canvas only while a fight is open', () => {
+    const { modal, gameState, worldEl } = setupBossModalHarness(100);
+    expect(modal.openForBoss('boss_cronos')).toBe(true);
+    const canvas = worldEl.children[0].querySelector('#boss-world-canvas') as unknown as { width: number; height: number };
+    expect(canvas.width).toBeGreaterThan(1000);
+    expect(canvas.height).toBeGreaterThan(1000);
+    gameState.retreatBossBattle();
+    modal.close();
+    expect(canvas.width).toBe(1);
+    expect(canvas.height).toBe(1);
+    expect(modal.openForBoss('boss_cronos')).toBe(true);
+    expect(canvas.width).toBeGreaterThan(1000);
+    modal.close();
+  });
+
+  it('clears the courtyard state when retreating during the gathering', () => {
+    const { modal, gameState } = setupBossModalHarness(100);
+    expect(modal.openForBoss('boss_cronos')).toBe(true);
+    expect(document.body.classList.contains('is-courtyard-visible')).toBe(true);
+    gameState.retreatBossBattle();
+    modal.close();
+    expect(document.body.classList.contains('is-courtyard-visible')).toBe(false);
   });
 
   it.each([1, 4])('leads every Faithful home before returning to the actual altar at speed %s', speed => {

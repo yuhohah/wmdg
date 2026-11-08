@@ -24,7 +24,7 @@
   top: 0;
   left: 0;
   width: 6880px;
-  height: 3840px;
+  height: 4240px;
   transform-origin: 0 0;
   will-change: transform;
 }
@@ -131,17 +131,6 @@
   letter-spacing: 1px;
   margin: 0;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
-}
-
-.dodeca-card-tag {
-  font-family: var(--font-game);
-  font-size: 10px;
-  color: #c49850;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 1px 6px;
-  border-radius: 2px;
-  border: 1px solid rgba(196, 152, 80, 0.3);
-  text-transform: uppercase;
 }
 
 .dodeca-card-actions {

@@ -21,7 +21,6 @@ export interface SaveData {
     hasSeenIntro?: boolean;
     seenCardTutorials?: string[];
     nerdsEnabled?: boolean;
-    hasSeenTransmutationNotification?: boolean;
   };
   followers: Array<{ id: string; count: number }>;
   fervorUpgrades: Array<{ id: string; level: number }>;

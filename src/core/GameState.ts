@@ -104,7 +104,6 @@ export class GameStateManager {
   public hasSeenIntro: boolean = false;
   public seenCardTutorials: Set<string> = new Set();
   public nerdsEnabled: boolean = false;
-  public hasSeenTransmutationNotification: boolean = false;
 
   // Optional callback when an active boss battle concludes during tick or click
   public onBossBattleFinished?: (result: {
@@ -135,7 +134,6 @@ export class GameStateManager {
     this.hasSeenIntro = false;
     this.seenCardTutorials.clear();
     this.nerdsEnabled = false;
-    this.hasSeenTransmutationNotification = false;
 
     this.gnosePoints = 0;
     this.totalGnoseEarned = 0;
@@ -405,38 +403,32 @@ export class GameStateManager {
       {
         id: 'faith',
         label: 'Fé',
-        readiness: faithReadiness,
-        recommendation: 'Acumule mais Fé e amplie sua geração de Fé/s'
+        readiness: faithReadiness
       },
       {
         id: 'followers',
         label: 'Fiéis',
-        readiness: followersReadiness,
-        recommendation: `Recrute mais Fiéis Devotos no Pátio (meta: ${req.followers}+)`
+        readiness: followersReadiness
       },
       {
         id: 'fervor',
         label: 'Fervor',
-        readiness: fervorReadiness,
-        recommendation: `Eleve os Ritos de Fervor (meta: ${req.fervorLevels}+ níveis)`
+        readiness: fervorReadiness
       },
       {
         id: 'relics',
         label: 'Relíquias',
-        readiness: relicsReadiness,
-        recommendation: `Transmute Fragmentos e aprimore Relíquias na Cripta (meta: ${req.relicLevels}+ níveis)`
+        readiness: relicsReadiness
       },
       {
         id: 'incarnation',
         label: 'Encarnação',
-        readiness: incarnationReadiness,
-        recommendation: `Evolua o Estágio do Avatar no Altar (meta: Estágio ${req.incarnationStage}+) e ative a Bênção`
+        readiness: incarnationReadiness
       },
       {
         id: 'gnose',
         label: 'Gnose',
-        readiness: gnoseReadiness,
-        recommendation: `Realize Ascensões Gnósticas e assimile mais nós na Árvore (meta: ${req.gnoseNodes}+ nós)`
+        readiness: gnoseReadiness
       }
     ];
 
@@ -1729,8 +1721,7 @@ export class GameStateManager {
         incarnationBoostTimer: this.incarnationBoostTimer,
         hasSeenIntro: this.hasSeenIntro,
         seenCardTutorials: Array.from(this.seenCardTutorials),
-        nerdsEnabled: this.nerdsEnabled,
-        hasSeenTransmutationNotification: this.hasSeenTransmutationNotification
+        nerdsEnabled: this.nerdsEnabled
       },
       followers: this.followers.map((f) => ({ id: f.id, count: f.count })),
       fervorUpgrades: this.fervorUpgrades.map((u) => ({ id: u.id, level: u.level })),
@@ -1782,7 +1773,6 @@ export class GameStateManager {
     this.nerdsEnabled = save.stats.nerdsEnabled === true;
     this.seenCardTutorials = new Set(Array.isArray(save.stats.seenCardTutorials)
       ? save.stats.seenCardTutorials.filter(id => typeof id === 'string') : []);
-    this.hasSeenTransmutationNotification = save.stats.hasSeenTransmutationNotification === true;
 
     if (Array.isArray(save.followers)) {
       save.followers.forEach((savedItem) => {

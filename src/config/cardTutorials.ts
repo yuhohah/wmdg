@@ -1,29 +1,39 @@
 export const CARD_TUTORIALS = [
   {
     cardId: 'card-unlocks', icon: 'unlock', title: 'Os Selos Sagrados',
-    lore: 'Os antigos guardiões dividiram seus poderes e os prenderam atrás de selos. Cada ruptura devolve ao culto uma parte do que foi esquecido.',
-    basics: 'Junte a Fé indicada e clique no Selo para abrir uma nova mecânica em sequência. Os três primeiros Selos consomem Fé; o Selo da Gnose apenas exige atingir 1Q Fé no saldo, sem gastá-la.',
+    lore: 'Os antigos guardiões repartiram o poder da Esfera e o prenderam atrás de selos. Cada ruptura devolve ao culto uma parte do que foi esquecido.',
+    basics: 'Gaste a Fé indicada para romper cada Selo e liberar uma nova mecânica. O último, da Gnose, não gasta Fé: basta ter 1Q.',
   },
   {
     cardId: 'card-incarnation', unlockId: 'unlock_incarnation', icon: 'incarnation', title: 'Uma forma para a Esfera',
     lore: 'Uma Mente não arde sem um corpo. Você desce ao altar como uma centelha e a primeira chama do culto desperta.',
-    basics: 'Clique no Altar para acumular a Bênção de 2× Fé/s (+10s por toque, até 60s). Gaste Fé em Evoluir para multiplicar o Fervor/s e ampliar o Multiplicador dos Fiéis.',
+    basics: 'Agora você produz Fervor, que fortalece sua Fé. Cada clique no Altar soma 10s de Bênção (até 60s), que dobra sua Fé/s. Evoluir gasta Fé e aumenta muito o Fervor/s e o Multiplicador dos Fiéis.',
   },
   {
     cardId: 'card-fervor', unlockId: 'unlock_fervor_upgrades', icon: 'fervor', title: 'O fogo que recorda',
-    lore: 'Seus Fiéis alimentam uma chama mais antiga que o templo. Em cada rito, o fogo devolve uma lembrança do seu poder.',
-    basics: 'Gaste Fervor nos Ritos para melhorar cliques, Fiéis e produção no ciclo atual. O bônus passivo de Fé usa o maior saldo (pico) de Fervor do ciclo — gastar nos Ritos não reduz sua força!',
+    lore: 'Seu novo corpo despertou uma chama mais antiga que o templo. Em cada rito, o fogo devolve uma lembrança do seu poder.',
+    basics: 'Gaste Fervor nos Ritos para fortalecer cliques, Fiéis e a produção de Fervor. Pode gastar sem medo: o bônus do Fervor na Fé usa o maior saldo que você já alcançou.',
   },
   {
-    cardId: 'card-relics', unlockId: 'unlock_relics', icon: 'relics', title: 'Vestígios de deuses caídos',
-    lore: 'Enquanto a Esfera dormia, outros deuses nasceram e foram esquecidos. Seus Fragmentos aguardam em Relíquias Divinas.',
-    basics: 'Transmute sua Fé atual em Fragmentos: Fiéis, Fervor, Ritos e Avatar permanecem intactos, e sua maior Transmutação gera Fragmentos/s passivos. Gastar Fragmentos nas Relíquias preserva o bônus de pico da Arca.',
+    cardId: 'card-relics', unlockId: 'unlock_relics', icon: 'gem', title: 'Vestígios de deuses caídos',
+    lore: 'Enquanto a Esfera dormia, outros deuses nasceram e foram esquecidos. Seus Fragmentos ainda guardam poder, à espera de quem restaure suas relíquias.',
+    basics: 'Transmutar troca toda a sua Fé por Fragmentos, sem afetar o resto. Sua melhor Transmutação aumenta seus Fragmentos/s. Gaste-os em Relíquias para fortalecer o culto.',
   },
   {
     cardId: 'card-gnose', unlockId: 'unlock_gnose', icon: 'gnose', title: 'Além da matéria: o Nous',
     lore: 'Acima dos templos e dos deuses repousa a Mente pura. Dissolver o próprio culto é o primeiro passo para lembrar quem você era.',
-    basics: 'Ascenda (1Q+ Fé) para colher Gnose: o total acumulado dá bônus passivo permanente e cada nó assimilado multiplica a produção por 4×. Nos Guardiões (60%+ Prontidão para dano, 80%+ defesa), ataque, apare fendas para carregar o Fulgor Divino e clique nos Milagres da roda para curar a Esfera.',
+    basics: 'Com 1Q de Fé você pode Ascender: o culto recomeça e você ganha Gnose, que dá bônus permanente. Mais Fé, mais Gnose. Gaste-a na Árvore Hermética: cada nó multiplica sua produção por 4.',
+  },
+  {
+    cardId: 'card-gnose', seenKey: 'guardians', unlockId: 'unlock_gnose', requiresAscension: true, icon: 'swords', title: 'Os Guardiões dos panteões',
+    lore: 'Os Guardiões ainda reinam sobre os panteões e temem o que a Esfera começa a lembrar. Para retomar o que é seu, será preciso enfrentá-los.',
+    basics: 'Abaixo de 60% de Prontidão você não causa dano; abaixo de 80%, um golpe não aparado destrói a Esfera. Clique no Guardião para atacar, nas fendas para aparar e nos Milagres para curar. Atacar e aparar carregam o Fulgor Divino.',
   },
 ] as const;
 
 export type CardTutorial = typeof CARD_TUTORIALS[number];
+
+// Saved in seenCardTutorials; defaults to cardId so existing saves stay valid
+export function cardTutorialKey(tutorial: CardTutorial): string {
+  return 'seenKey' in tutorial ? tutorial.seenKey : tutorial.cardId;
+}

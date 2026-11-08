@@ -78,9 +78,9 @@ describe('release announcements', () => {
     expect(dialogs).toHaveLength(1);
   });
 
-  it('ships the current release first with dated, nonempty notes for all eleven versions', () => {
+  it('ships the current release first with dated, nonempty notes for all thirteen versions', () => {
     expect(RELEASE_NOTES[0].version).toBe(GAME_VERSION);
-    expect(RELEASE_NOTES).toHaveLength(11);
+    expect(RELEASE_NOTES).toHaveLength(13);
     for (const release of RELEASE_NOTES) {
       expect(release.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(release.changes.length).toBeGreaterThan(0);

@@ -112,6 +112,12 @@
   animation: floatFaithNumber 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+/* Frequent combat numbers stay out of the way of the fight */
+.floating-faith-num.is-small {
+  font-size: 13px;
+  font-weight: 700;
+}
+
 @keyframes floatFaithNumber {
   0% {
     opacity: 1;

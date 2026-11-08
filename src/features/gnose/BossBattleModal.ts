@@ -1,7 +1,7 @@
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { NotificationManager } from '../../systems/notifications.js';
-import { GNOSE_BOSSES, BOSS_DAMAGE_READINESS_THRESHOLD, BOSS_DEFENSE_READINESS_THRESHOLD } from '../../config/bosses.js';
+import { GNOSE_BOSSES, BOSS_DAMAGE_READINESS_THRESHOLD } from '../../config/bosses.js';
 import { formatNumber } from '../../systems/calculations.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 import type { ActiveBossMiracle, BossRift, CultPillarStatus, GnoseBoss } from '../../types.js';
@@ -21,7 +21,7 @@ export interface BossBattleModalOptions {
   gameState: GameStateManager;
   audio: AudioManager;
   notifications: NotificationManager;
-  spawnFloatingText: (x: number, y: number, text: string) => void;
+  spawnFloatingText: (x: number, y: number, text: string, small?: boolean) => void;
   onBattleEnded?: (boss: GnoseBoss, victory: boolean) => void;
   onCameraFrame?: (target: BattleCameraTarget, elapsedSec: number) => void;
 }
@@ -170,7 +170,7 @@ const BOSS_DEFAULT_BOUNDS: Record<string, SpriteFrameBounds> = {
 
 const INCARNATION_FILES = ['01-neofito', '02-consagrado', '03-ancestral', '04-eclipse', '05-solar'] as const;
 
-let cachedBossSprites: Record<string, BossLateralSprites> | null = null;
+const cachedBossSprites = new Map<string, BossLateralSprites>();
 let cachedIncarnationWalkSprites: IncarnationWalkSprite[] | null = null;
 const spriteFrameBoundsCache = new WeakMap<HTMLImageElement, Map<number, SpriteFrameBounds>>();
 let boundsProbeCanvas: HTMLCanvasElement | null = null;
@@ -315,28 +315,35 @@ function getBossFrameBounds(
   }
 }
 
-function loadBossLateralSprites(): Record<string, BossLateralSprites> {
-  if (cachedBossSprites) return cachedBossSprites;
+export function loadBossSprites(bossId: string): BossLateralSprites | undefined {
+  const cached = cachedBossSprites.get(bossId);
+  if (cached) return cached;
+  const cfg = BOSS_SPRITE_FOLDERS[bossId];
+  if (!cfg) return undefined;
   const base = `${import.meta.env.BASE_URL}assets/sprites/bosses/`;
-  const map: Record<string, BossLateralSprites> = {};
-  for (const [bossId, cfg] of Object.entries(BOSS_SPRITE_FOLDERS)) {
-    const load = (rel: string) => {
-      const img = new Image();
-      img.addEventListener('load', notifyBossSpriteLoaded, { once: true });
-      img.src = `${base}${cfg.folder}/${rel}`;
-      return img;
-    };
-    map[bossId] = {
-      idle: load('idle.png'),
-      walk: load('andar/spritesheet.png'),
-      attacks: [
-        load(`${cfg.attacks[0]}/spritesheet.png`),
-        load(`${cfg.attacks[1]}/spritesheet.png`),
-      ],
-    };
-  }
-  cachedBossSprites = map;
-  return map;
+  const load = (rel: string) => {
+    const img = new Image();
+    img.addEventListener('load', notifyBossSpriteLoaded, { once: true });
+    img.src = `${base}${cfg.folder}/${rel}`;
+    return img;
+  };
+  const sprites: BossLateralSprites = {
+    idle: load('idle.png'),
+    walk: load('andar/spritesheet.png'),
+    attacks: [
+      load(`${cfg.attacks[0]}/spritesheet.png`),
+      load(`${cfg.attacks[1]}/spritesheet.png`),
+    ],
+  };
+  cachedBossSprites.set(bossId, sprites);
+  return sprites;
+}
+
+const PHONE_MAX_WIDTH = 860;
+
+/** The stage spans thousands of world pixels; phones show it zoomed out, so they draw fewer. */
+export function battleCanvasScale(viewportWidth: number): number {
+  return viewportWidth <= PHONE_MAX_WIDTH ? 0.6 : 1;
 }
 
 function bossSheetFrameCount(sheet: HTMLImageElement | undefined): number {
@@ -358,15 +365,75 @@ function loadIncarnationProcessionSprites(): IncarnationWalkSprite[] {
   return cachedIncarnationWalkSprites;
 }
 
+export function bossHpLabel(phase: number, hpPercent: number, passiveVictorySec: number): string {
+  const phaseTag = phase === 3 ? 'Fase III' : phase === 2 ? 'Fase II' : 'Fase I';
+  // Rounded up so a living Guardian never reads 0%
+  const label = `${phaseTag} · ${Math.ceil(hpPercent)}%`;
+  return Number.isFinite(passiveVictorySec) ? `${label} · ~${passiveVictorySec}s` : label;
+}
+
+// Cards sit on an arc around the Sphere, on the side away from the Guardian (degrees, 0 = right, -90 = up).
+// The arc stops short of the Guardian on one end and the Sphere's health plate on the other.
+const PARRY_ARC_START_DEG = -105;
+const PARRY_ARC_SPAN_DEG = 113;
+
+export function parryCardPosition(
+  rift: Pick<BossRift, 'kind' | 'slotIndex' | 'xPercent' | 'yPercent'>,
+  sphere: { x: number; y: number },
+  elapsedSec: number,
+  scale: number
+): { x: number; y: number } {
+  const slot = rift.slotIndex ?? 0;
+  let degrees: number;
+  if (rift.kind === 'anubis_scales' || rift.kind === 'hades_chains') {
+    degrees = slot === 0 ? -80 : -5;
+  } else if (rift.kind === 'odin_raven') {
+    degrees = -45;
+  } else if (rift.kind === 'chaos_orbit') {
+    degrees = [-100, -45, 5][slot] + Math.sin(elapsedSec * 0.55) * 3;
+  } else {
+    const turn = (Math.atan2(rift.yPercent - 50, rift.xPercent - 50) + Math.PI) / (Math.PI * 2);
+    degrees = PARRY_ARC_START_DEG + turn * PARRY_ARC_SPAN_DEG;
+  }
+  // Cards grow as the camera zooms out, so the arc widens with them
+  const radius = 120 + 110 * scale;
+  const radians = (degrees * Math.PI) / 180;
+  return {
+    x: Math.round(sphere.x + Math.cos(radians) * radius),
+    y: Math.round(sphere.y + Math.sin(radians) * radius),
+  };
+}
+
+const TRAIL_HOLD_SEC = 0.35;
+const TRAIL_SHRINK_PERCENT_PER_SEC = 40;
+
+export interface DamageTrail {
+  value: number;
+  holdSec: number;
+}
+
+// The pause only re-arms once the trail catches up, so rapid hits cannot freeze it.
+export function stepDamageTrail(trail: DamageTrail, currentPercent: number, elapsedSec: number): DamageTrail {
+  if (currentPercent >= trail.value) return { value: currentPercent, holdSec: TRAIL_HOLD_SEC };
+  if (trail.holdSec > 0) return { value: trail.value, holdSec: Math.max(0, trail.holdSec - elapsedSec) };
+  const value = trail.value - TRAIL_SHRINK_PERCENT_PER_SEC * elapsedSec;
+  return value <= currentPercent ? { value: currentPercent, holdSec: TRAIL_HOLD_SEC } : { value, holdSec: 0 };
+}
+
 export class BossBattleModal {
   private options: BossBattleModalOptions;
   private worldStageEl: HTMLElement | null = null;
   private worldCanvasEl: HTMLCanvasElement | null = null;
   private worldCtx: CanvasRenderingContext2D | null = null;
+  private worldCanvasScale = 1;
 
   private bossHpPlateEl: HTMLElement | null = null;
   private bossWorldHpLabelEl: HTMLElement | null = null;
   private bossHpFillEl: HTMLElement | null = null;
+  private bossHpTrailEl: HTMLElement | null = null;
+  private altarTrailEl: HTMLElement | null = null;
+  private bossTrail: DamageTrail = { value: 100, holdSec: 0 };
+  private altarTrail: DamageTrail = { value: 100, holdSec: 0 };
   private bossHpValEl: HTMLElement | null = null;
 
   private sphereHpPlateEl: HTMLElement | null = null;
@@ -639,10 +706,7 @@ export class BossBattleModal {
         this.worldStageEl.style.width = `${this.stageWidth}px`;
         this.worldStageEl.style.height = `${this.stageHeight}px`;
       }
-      if (this.worldCanvasEl) {
-        this.worldCanvasEl.width = this.stageWidth;
-        this.worldCanvasEl.height = this.stageHeight;
-      }
+      if (this.isBattleActive) this.allocateWorldCanvas();
     }
 
     const sphereLocalX = BOSS_SPHERE_CENTER.x - this.stageOriginX;
@@ -650,7 +714,7 @@ export class BossBattleModal {
 
     if (this.sphereHpPlateEl) {
       this.sphereHpPlateEl.style.left = `${sphereLocalX}px`;
-      this.sphereHpPlateEl.style.top = `${sphereLocalY + 186}px`;
+      this.sphereHpPlateEl.style.top = `${sphereLocalY + 206}px`;
     }
     if (this.fulgorBtnEl) {
       this.fulgorBtnEl.style.left = `${sphereLocalX}px`;
@@ -685,7 +749,7 @@ export class BossBattleModal {
     const sphereLocalY = BOSS_SPHERE_CENTER.y - this.stageOriginY;
 
     stage.innerHTML = `
-      <canvas id="boss-world-canvas" class="boss-world-canvas" width="${this.stageWidth}" height="${this.stageHeight}" aria-hidden="true"></canvas>
+      <canvas id="boss-world-canvas" class="boss-world-canvas" width="1" height="1" aria-hidden="true"></canvas>
       <div class="boss-arena-stage boss-world-interactive" id="boss-arena-stage">
         <button id="boss-arena-attack-btn" class="boss-attack-target boss-world-hitbox" type="button" aria-label="Atacar o guardião" aria-describedby="boss-attack-damage">
           <img id="boss-arena-portrait" class="boss-portrait" alt="" draggable="false" hidden>
@@ -700,18 +764,20 @@ export class BossBattleModal {
             <span class="boss-bar-val" id="boss-hp-val">100%</span>
           </div>
           <div class="boss-bar-track boss-hp-track" role="progressbar" aria-label="Essência do guardião" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+            <div class="boss-bar-trail" id="boss-hp-trail" style="width: 100%;"></div>
             <div class="boss-bar-fill boss-hp-fill" id="boss-hp-fill" style="width: 100%;"></div>
           </div>
           <div class="boss-world-subline" id="boss-combat-feedback" role="status" aria-atomic="true"></div>
         </div>
 
         <!-- BARRA 2: VIDA / INTEGRIDADE DA ESFERA + BOTÃO RECUAR (EMBAIXO DA ESFERA CENTRAL) -->
-        <div class="boss-bar-section altar-integrity-section sphere-world-hp-plate" id="sphere-world-hp-plate" style="left: ${sphereLocalX}px; top: ${sphereLocalY + 186}px;">
+        <div class="boss-bar-section altar-integrity-section sphere-world-hp-plate" id="sphere-world-hp-plate" style="left: ${sphereLocalX}px; top: ${sphereLocalY + 206}px;">
           <div class="boss-bar-header">
             <span class="boss-bar-label">${icon('shield')} INTEGRIDADE DA ESFERA</span>
             <span class="boss-bar-val" id="boss-altar-val">100%</span>
           </div>
           <div class="boss-bar-track altar-integrity-track" role="progressbar" aria-label="Integridade do altar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+            <div class="boss-bar-trail" id="boss-altar-trail" style="width: 100%;"></div>
             <div class="boss-bar-fill altar-integrity-fill" id="boss-altar-fill" style="width: 100%;"></div>
           </div>
           <div class="sphere-world-actions">
@@ -763,6 +829,8 @@ export class BossBattleModal {
     this.bossHpPlateEl = stage.querySelector('#boss-world-hp-plate');
     this.bossWorldHpLabelEl = stage.querySelector('#boss-world-hp-label');
     this.bossHpFillEl = stage.querySelector('#boss-hp-fill');
+    this.bossHpTrailEl = stage.querySelector('#boss-hp-trail');
+    this.altarTrailEl = stage.querySelector('#boss-altar-trail');
     this.bossHpValEl = stage.querySelector('#boss-hp-val');
 
     this.sphereHpPlateEl = stage.querySelector('#sphere-world-hp-plate');
@@ -818,15 +886,13 @@ export class BossBattleModal {
       }
       this.bossHitFlashSec = 0.18;
       const breakdown = this.options.gameState.getBossCombatBreakdown(battle.bossId);
-      this.showHitFeedback(
-        'Pulso da Esfera!',
-        `\u2212${(breakdown.clickHpFraction * 100).toFixed(2)}% de essência`
-      );
+      this.showHitFeedback(`−${(breakdown.clickHpFraction * 100).toFixed(2)}%`);
       if (e.clientX && e.clientY) {
         this.options.spawnFloatingText(
           e.clientX,
           e.clientY - 28,
-          `\u2726 -${formatNumber(breakdown.clickDamage)} HP`
+          `−${(breakdown.clickHpFraction * 100).toFixed(2)}%`,
+          true
         );
       }
       this.updateUI();
@@ -859,15 +925,12 @@ export class BossBattleModal {
     this.fulgorBeamAlpha = 1.0;
     this.bossHitFlashSec = 0.35;
     this.options.audio.playTone(960, 'triangle', 0.24);
-    const pct = ((res.damage / Math.max(1, maxHp)) * 100).toFixed(1);
-    this.showHitFeedback(
-      'Fulgor Divino disparado!',
-      `\u2212${pct}% de essência do Guardião`
-    );
+    const pct = ((res.damage / Math.max(1, maxHp)) * 100).toFixed(0);
+    this.showHitFeedback(`Fulgor Divino! −${pct}%`);
     this.options.spawnFloatingText(
       x,
       y,
-      `\u2726 FULGOR DIVINO! -${formatNumber(res.damage)} HP (-${pct}%)`
+      `✦ FULGOR DIVINO! −${pct}%`
     );
     this.updateUI();
     this.drawWorldScene();
@@ -887,20 +950,19 @@ export class BossBattleModal {
     if (bossClickDamage > 0) {
       this.bossHitFlashSec = 0.18;
       this.options.audio.playTone(640 + Math.random() * 140, 'sine', 0.08);
-      this.showHitFeedback(
-        isCrit ? 'Golpe crítico!' : 'Golpe desferido.',
-        `\u2212${((bossClickDamage / battle.bossMaxHp) * 100).toFixed(2)}% de essência`
-      );
+      const pct = ((bossClickDamage / battle.bossMaxHp) * 100).toFixed(2);
+      this.showHitFeedback(`${isCrit ? 'Crítico! ' : ''}−${pct}%`);
       this.options.spawnFloatingText(
         x,
         y,
-        `\u2726 ${isCrit ? 'CRÍTICO! ' : ''}-${formatNumber(bossClickDamage)} HP (-${((bossClickDamage / battle.bossMaxHp) * 100).toFixed(2)}%)`
+        isCrit ? `✦ CRÍTICO! −${pct}%` : `−${pct}%`,
+        true
       );
     } else {
       if (!this.options.gameState.getBossCombatBreakdown(battle.bossId).canDamageBoss) {
-        this.showHitFeedback('Recursos insuficientes.', `Prontidão mínima para causar dano: ${BOSS_DAMAGE_READINESS_THRESHOLD * 100}%.`);
+        this.showHitFeedback(`Sem dano: Prontidão abaixo de ${BOSS_DAMAGE_READINESS_THRESHOLD * 100}%.`);
       }
-      this.options.spawnFloatingText(x, y, `+${formatNumber(fpc)} FÉ`);
+      this.options.spawnFloatingText(x, y, `+${formatNumber(fpc)} FÉ`, true);
     }
     this.updateUI();
     events.emit(GameEvents.STATE_CHANGED);
@@ -914,8 +976,8 @@ export class BossBattleModal {
     if (el && el.textContent !== value) el.textContent = value;
   }
 
-  private showHitFeedback(label: string, detail: string): void {
-    this.setText(this.combatFeedbackEl, `${label} ${detail}`);
+  private showHitFeedback(text: string): void {
+    this.setText(this.combatFeedbackEl, text);
     if (typeof window === 'undefined' || !window.matchMedia) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     this.attackBtnEl?.getAnimations?.().forEach((animation) => animation.cancel());
@@ -949,6 +1011,8 @@ export class BossBattleModal {
     this.activeBossIdForScene = bossId;
     this.lastRiftsMissed = 0;
     this.lastPhase = 1;
+    this.bossTrail = { value: 100, holdSec: 0 };
+    this.altarTrail = { value: 100, holdSec: 0 };
     this.isBattleActive = true;
     this.climaxState = null;
     this.fulgorBeamAlpha = 0;
@@ -960,9 +1024,11 @@ export class BossBattleModal {
     }
 
     // Preload lateral boss, incarnation walk, and follower sprites
-    loadBossLateralSprites();
+    loadBossSprites(bossId);
     loadIncarnationProcessionSprites();
     loadFollowerSprites();
+
+    this.allocateWorldCanvas();
 
     // Mark active battle on body first so Altar & Pátio hide their internal sprites without duplicating
     document.body.classList.add('is-boss-battle-active');
@@ -979,7 +1045,7 @@ export class BossBattleModal {
 
     this.setText(
       this.combatFeedbackEl,
-      'A Encarnação reúne a roda dos Fiéis antes da descida do Guardião...'
+      'A roda dos Fiéis está se formando...'
     );
 
     if (this.riftsLayerEl) {
@@ -1021,7 +1087,12 @@ export class BossBattleModal {
       this.phaseBannerEl.style.display = 'none';
     }
     this.miracleBtnEl = null;
-    document.body.classList.remove('is-boss-battle-active');
+    // Give the canvas memory back: it is by far the largest allocation in the game.
+    if (this.worldCanvasEl) {
+      this.worldCanvasEl.width = 1;
+      this.worldCanvasEl.height = 1;
+    }
+    document.body.classList.remove('is-boss-battle-active', 'is-courtyard-visible');
     this.options.audio.stopBossBattleMusic?.();
     if (wasOpen) {
       document.getElementById('btn-zoom-reset')?.click();
@@ -1190,6 +1261,7 @@ export class BossBattleModal {
     this.incY = incBox.y + incBox.h - 12;
     this.incFacing = fBox.x >= this.incX ? 1 : -1;
     this.incState = 'walking_to_patio';
+    document.body.classList.add('is-courtyard-visible');
     this.incTimerSec = 0;
     this.incWalkCycle = 0;
     this.incCallRingProgress = 0;
@@ -1326,6 +1398,7 @@ export class BossBattleModal {
       if (frameSec !== null && document.visibilityState !== 'hidden') {
         const elapsedSec = Math.min(0.1, frameSec);
         this.updateWorldScene(elapsedSec);
+        this.updateDamageTrails(elapsedSec);
         if (this.isBattleActive) {
           this.drawWorldScene();
         }
@@ -1335,6 +1408,24 @@ export class BossBattleModal {
       }
     };
     this.animFrameId = requestAnimationFrame(step);
+  }
+
+  private updateDamageTrails(elapsedSec: number): void {
+    const battle = this.options.gameState.activeBossBattle;
+    if (!battle) return;
+    this.bossTrail = stepDamageTrail(this.bossTrail, (battle.bossHp / battle.bossMaxHp) * 100, elapsedSec);
+    this.altarTrail = stepDamageTrail(this.altarTrail, (battle.altarIntegrity / battle.maxAltarIntegrity) * 100, elapsedSec);
+    if (this.bossHpTrailEl) this.bossHpTrailEl.style.width = `${this.bossTrail.value.toFixed(2)}%`;
+    if (this.altarTrailEl) this.altarTrailEl.style.width = `${this.altarTrail.value.toFixed(2)}%`;
+  }
+
+  private allocateWorldCanvas(): void {
+    if (!this.worldCanvasEl) return;
+    this.worldCanvasScale = battleCanvasScale(window.innerWidth);
+    this.worldCanvasEl.width = Math.ceil(this.stageWidth * this.worldCanvasScale);
+    this.worldCanvasEl.height = Math.ceil(this.stageHeight * this.worldCanvasScale);
+    // A reduced canvas is scaled up on screen, where smoothing reads better than hard pixels.
+    this.worldCanvasEl.style.imageRendering = this.worldCanvasScale < 1 ? 'auto' : '';
   }
 
   private triggerBossAttackSwing(rift?: BossRift): void {
@@ -1386,7 +1477,7 @@ export class BossBattleModal {
     const drawLeft = lx + drawOffsetX;
     const drawTop = ly + drawOffsetY;
 
-    const bossSprites = loadBossLateralSprites()[bossId];
+    const bossSprites = loadBossSprites(bossId);
     let candidateSheet: HTMLImageElement | null = null;
     let frame = 0;
 
@@ -1497,6 +1588,7 @@ export class BossBattleModal {
 
   private beginVictoryReturn(): void {
     this.incState = 'leading_return';
+    document.body.classList.add('is-courtyard-visible');
     this.incCallRingProgress = 0;
     this.bossHitFlashSec = 0;
     // The guard station is also the circle entrance. Retrace its approach to the patio.
@@ -1639,6 +1731,7 @@ export class BossBattleModal {
       this.incFacing = BOSS_SPHERE_CENTER.x >= this.incX ? 1 : -1;
       if (this.incTimerSec >= 0.6) {
         this.incState = 'leading_procession';
+        document.body.classList.remove('is-courtyard-visible');
         this.incTimerSec = 0;
       }
     } else if (this.incState === 'leading_procession') {
@@ -1757,7 +1850,7 @@ export class BossBattleModal {
         if (boss) {
           this.setText(
             this.combatFeedbackEl,
-            `${boss.name} se aproxima da Esfera! Prepare-se para aparar os golpes.`
+            `${boss.name} se aproxima. Prepare-se para aparar!`
           );
         }
         this.options.audio.playTone(240, 'sawtooth', 0.22);
@@ -1794,7 +1887,7 @@ export class BossBattleModal {
     } else if (this.bossState === 'attacking') {
       this.bossAttackFrameTimeSec += dt;
       const bossId = battle?.bossId ?? this.activeBossIdForScene;
-      const sheet = loadBossLateralSprites()[bossId]?.attacks[this.bossAttackIndex];
+      const sheet = loadBossSprites(bossId)?.attacks[this.bossAttackIndex];
       const attackDuration = bossSheetFrameCount(sheet) * (BOSS_SPRITE_FOLDERS[bossId]?.attackFrameSec ?? 0.115);
       // Trigger impact wave on the Sphere mid-swing
       if (
@@ -1884,6 +1977,7 @@ export class BossBattleModal {
     const ctx = this.worldCtx;
     if (!ctx) return;
 
+    ctx.setTransform(this.worldCanvasScale, 0, 0, this.worldCanvasScale, 0, 0);
     ctx.clearRect(0, 0, this.stageWidth, this.stageHeight);
     ctx.imageSmoothingEnabled = false;
 
@@ -2292,7 +2386,7 @@ export class BossBattleModal {
         const bestSec = this.options.gameState.getBossBestTimeSec(boss.id) ?? durationSec;
         this.options.notifications.showCustomPopup(
           `${boss.name.toUpperCase()} SUBJUGADO!`,
-          `Duelo relembrado em ${durationSec.toFixed(1)}s (Melhor tempo: ${bestSec.toFixed(1)}s). ${boss.rewardName}: ${boss.rewardDesc}`,
+          `Duelo relembrado em ${durationSec.toFixed(1)}s (melhor tempo: ${bestSec.toFixed(1)}s).`,
           boss.symbol,
           'MEMÓRIA DE DUELO'
         );
@@ -2307,10 +2401,10 @@ export class BossBattleModal {
     } else {
       this.options.audio.playTone(150, 'sawtooth', 0.35);
       const [p1, p2] = lowestTwoPillars;
-      const diagnosis = `Diagnóstico (Prontidão ${(cultReadiness * 100).toFixed(0)}%): fortaleça ${p1.label} (${Math.round(p1.readiness * 100)}% — ${p1.recommendation}) e ${p2.label} (${Math.round(p2.readiness * 100)}% — ${p2.recommendation}).`;
+      const diagnosis = `Prontidão ${(cultReadiness * 100).toFixed(0)}%: fortaleça ${p1.label} e ${p2.label}.`;
       const cursePrefix = isRematch
-        ? 'Revanche encerrada sem Maldição Divina.'
-        : 'Maldição Divina Leve: -25% de Fé/s e Fervor/s por 20 segundos.';
+        ? 'Revanche sem Maldição.'
+        : 'Maldição: -25% de Fé/s e Fervor/s por 20s.';
       this.options.notifications.showCustomPopup(
         `ALTAR ROMPIDO POR ${boss.name.toUpperCase()}`,
         `${cursePrefix} ${diagnosis}`,
@@ -2361,14 +2455,14 @@ export class BossBattleModal {
       this.options.audio.playChime();
       this.setText(
         this.combatFeedbackEl,
-        `\u2726 CLÍMAX DIVINO: A Roda dos Fiéis dissolve ${boss.name}! \u2726`
+        `A Roda dos Fiéis dissolve ${boss.name}!`
       );
       if (this.bossHpFillEl) this.bossHpFillEl.style.width = '0%';
     } else {
       this.options.audio.playTone(150, 'sawtooth', 0.35);
       this.setText(
         this.combatFeedbackEl,
-        `\u2726 ESCUDO ROMPIDO: A Esfera Divina trinca diante de ${boss.name}! \u2726`
+        `A Esfera trinca diante de ${boss.name}!`
       );
       if (this.altarIntegrityFillEl) this.altarIntegrityFillEl.style.width = '0%';
     }
@@ -2394,7 +2488,7 @@ export class BossBattleModal {
       if (this.bossParryRecoverySec <= 0) this.spherePulseAlpha = 0.9;
       this.setText(
         this.combatFeedbackEl,
-        `Golpe não aparado! \u2212${breakdown.altarDamageOnMiss.toFixed(0)}% da Esfera (Combo reiniciado).`
+        `Golpe não aparado! −${breakdown.altarDamageOnMiss.toFixed(0)}% da Esfera.`
       );
     } else if (phase > this.lastPhase) {
       this.lastPhase = phase;
@@ -2403,14 +2497,14 @@ export class BossBattleModal {
       this.options.audio.playTone(phase === 3 ? 165 : 195, 'sawtooth', 0.32);
       const bannerText =
         phase === 3
-          ? 'FASE III — FÚRIA PRIMORDIAL (\u221230% INTEGRIDADE DA ESFERA)'
-          : 'FASE II — O GUARDIÃO DESPERTA (\u221215% INTEGRIDADE DA ESFERA)';
+          ? 'FASE III — FÚRIA PRIMORDIAL'
+          : 'FASE II — O GUARDIÃO DESPERTA';
       this.showPhaseBanner(bannerText);
       const phaseLabel =
         phase === 3
-          ? 'Fase III: Fúria Primordial! (\u221230% Esfera)'
-          : 'Fase II: O Guardião Desperta! (\u221215% Esfera)';
-      this.setText(this.combatFeedbackEl, `${phaseLabel} Fendas mais rápidas.`);
+          ? 'Fase III: −30% da Esfera.'
+          : 'Fase II: −15% da Esfera.';
+      this.setText(this.combatFeedbackEl, `${phaseLabel} Golpes mais rápidos.`);
     }
 
     const hpPercent = Math.max(0, Math.min(100, (battle.bossHp / battle.bossMaxHp) * 100));
@@ -2421,15 +2515,7 @@ export class BossBattleModal {
     }
     const remainingPassiveSec =
       breakdown.passiveDps > 0 ? Math.ceil(battle.bossHp / breakdown.passiveDps) : Infinity;
-    const etaStr = Number.isFinite(remainingPassiveSec) ? `~${remainingPassiveSec}s` : '\u221e';
-    if (this.bossHpValEl) {
-      const dpsPctStr = (breakdown.passiveHpFractionPerSec * 100).toFixed(2);
-      const phaseTag = phase === 3 ? 'Fase III' : phase === 2 ? 'Fase II' : 'Fase I';
-      this.setText(
-        this.bossHpValEl,
-        `${phaseTag} \u00b7 ${hpPercent.toFixed(1)}% (-${dpsPctStr}%/s \u2022 ${etaStr})`
-      );
-    }
+    this.setText(this.bossHpValEl, bossHpLabel(phase, hpPercent, remainingPassiveSec));
 
     const comboStreak = battle.comboStreak ?? 0;
 
@@ -2455,7 +2541,7 @@ export class BossBattleModal {
         this.setText(
           this.fulgorBtnEl,
           !breakdown.canDamageBoss
-            ? 'FULGOR BLOQUEADO: RECURSOS INSUFICIENTES'
+            ? 'FULGOR BLOQUEADO'
             : ready
             ? `\u2726 FULGOR DIVINO! (\u2212${(breakdown.fulgorHpFraction * 100).toFixed(0)}%)`
             : `FULGOR ${charge}%`
@@ -2482,15 +2568,12 @@ export class BossBattleModal {
         this.setText(this.combatStatsEl, this.formatRitualStatsLabel());
       } else {
         const warning = !breakdown.canDamageBoss
-          ? `Sem dano: prontidão mínima ${BOSS_DAMAGE_READINESS_THRESHOLD * 100}%. `
-          : '';
-        const defenseWarning = !breakdown.canWithstandBoss
-          ? `Esfera em colapso: proteção exige ${BOSS_DEFENSE_READINESS_THRESHOLD * 100}%. `
-          : '';
-        this.setText(
-          this.combatStatsEl,
-          `${warning}${defenseWarning}Fendas: ${battle.riftsShattered} \u00b7 Combo: ${comboStreak} \u00b7 Fulgor: ${Math.floor(battle.sphereCharge ?? 0)}%`
-        );
+          ? `Sem dano: Prontidão abaixo de ${BOSS_DAMAGE_READINESS_THRESHOLD * 100}%.`
+          : !breakdown.canWithstandBoss
+            ? 'Um golpe não aparado destrói a Esfera.'
+            : '';
+        const combo = comboStreak > 0 ? `Combo ×${comboStreak}` : '';
+        this.setText(this.combatStatsEl, [warning, combo].filter(Boolean).join(' '));
       }
     }
 
@@ -2534,10 +2617,7 @@ export class BossBattleModal {
         if (res.triggered) {
           this.miracleBeam = { fromX: lx, fromY: ly + 18, alpha: 1.0 };
           this.options.audio.playChime();
-          this.showHitFeedback(
-            'Milagre dos Fiéis canalizado!',
-            `+${res.healed.toFixed(0)}% Integridade da Esfera.`
-          );
+          this.showHitFeedback(`Milagre! +${res.healed.toFixed(0)}% da Esfera.`);
           const x = e.clientX || window.innerWidth / 2;
           const y = e.clientY || window.innerHeight / 2;
           this.options.spawnFloatingText(x, y, '\u2726 MILAGRE! +10% ESFERA');
@@ -2558,53 +2638,6 @@ export class BossBattleModal {
     );
   }
 
-  private computeRiftStagePosition(
-    rift: BossRift,
-    strikeZoneCenterX: number,
-    strikeZoneCenterY: number,
-    spanX: number,
-    spanY: number
-  ): { x: number; y: number } {
-    const sphereLocalX = BOSS_SPHERE_CENTER.x - this.stageOriginX;
-    const sphereLocalY = BOSS_SPHERE_CENTER.y - this.stageOriginY;
-    const kind = rift.kind ?? 'standard';
-    const slot = rift.slotIndex ?? 0;
-
-    if (kind === 'anubis_scales') {
-      return {
-        x: Math.round(sphereLocalX + (slot === 0 ? -185 : 185)),
-        y: Math.round(sphereLocalY - 10),
-      };
-    }
-    if (kind === 'hades_chains') {
-      return {
-        x: Math.round(sphereLocalX + (slot === 0 ? -125 : 125)),
-        y: Math.round(sphereLocalY + (slot === 0 ? -78 : 78)),
-      };
-    }
-    if (kind === 'odin_raven') {
-      return {
-        x: Math.round(strikeZoneCenterX + 35),
-        y: Math.round(strikeZoneCenterY - 70),
-      };
-    }
-    if (kind === 'chaos_orbit') {
-      const elapsed = this.options.gameState.activeBossBattle?.elapsedCombatSec ?? 0;
-      const angle = -Math.PI / 2 + slot * ((Math.PI * 2) / 3) + elapsed * 0.55;
-      return {
-        x: Math.round(sphereLocalX + Math.cos(angle) * 175),
-        y: Math.round(sphereLocalY + Math.sin(angle) * 175),
-      };
-    }
-
-    const offsetX = ((rift.xPercent - 50) / 72) * spanX;
-    const offsetY = ((rift.yPercent - 50) / 64) * spanY;
-    return {
-      x: Math.round(strikeZoneCenterX + offsetX),
-      y: Math.round(strikeZoneCenterY + offsetY),
-    };
-  }
-
   private syncRiftsDOM(activeRifts: BossRift[]): void {
     if (!this.riftsLayerEl) return;
 
@@ -2622,41 +2655,33 @@ export class BossBattleModal {
       }
     });
 
-    // Position "APARAR" prompts in the strike zone between the Boss (1415) and the Sphere (1740)
-    const strikeZoneCenterX = (this.bossX + BOSS_SPHERE_CENTER.x) * 0.5 - this.stageOriginX + 20;
-    const strikeZoneCenterY = BOSS_SPHERE_CENTER.y - this.stageOriginY - 25;
-    const spanX = 320;
-    const spanY = 250;
+    const promptScale = Number(document.getElementById('dodeca-board-world')?.style.getPropertyValue('--boss-prompt-scale')) || 1;
+    const sphereLocal = { x: BOSS_SPHERE_CENTER.x - this.stageOriginX, y: BOSS_SPHERE_CENTER.y - this.stageOriginY };
+    const elapsedCombatSec = this.options.gameState.activeBossBattle?.elapsedCombatSec ?? 0;
 
     activeRifts.forEach((rift) => {
       const kind = rift.kind ?? 'standard';
-      const pos = this.computeRiftStagePosition(
-        rift,
-        strikeZoneCenterX,
-        strikeZoneCenterY,
-        spanX,
-        spanY
-      );
+      const pos = parryCardPosition(rift, sphereLocal, elapsedCombatSec, promptScale);
       const labelText =
         kind === 'anubis_scales'
-          ? 'APARAR'
+          ? 'PESAR'
           : kind === 'hades_chains'
             ? 'GRILHÃO'
             : kind === 'odin_raven'
-              ? 'CORVO CRÍTICO'
+              ? 'CORVO'
               : kind === 'chaos_orbit'
                 ? 'COLAPSO'
                 : 'APARAR';
       const detailText =
         kind === 'anubis_scales'
-          ? 'Escolha apenas o maior'
+          ? 'Clique no maior peso'
           : kind === 'hades_chains'
-            ? 'Cliques -50% • Quebrar'
+            ? 'Quebre para recuperar os cliques'
             : kind === 'odin_raven'
-              ? 'Aparar • Atrasa ataque'
+              ? 'Apare para atrasar o ataque'
               : kind === 'chaos_orbit'
-                ? 'Aparar os três selos'
-                : '+25% de carga da Esfera';
+                ? 'Apare os três selos'
+                : '+25% de Fulgor';
 
       let riftEl = this.riftsLayerEl!.querySelector<HTMLButtonElement>(
         `[data-rift-id="${rift.id}"]`
@@ -2669,13 +2694,14 @@ export class BossBattleModal {
         riftEl.setAttribute('data-rift-id', rift.id);
         riftEl.setAttribute('data-rift-kind', kind);
         riftEl.setAttribute('aria-label', kind === 'anubis_scales'
-          ? `Aparar balança: ${rift.scaleValue}. Escolha apenas o maior número.`
+          ? `Pesar: peso ${rift.scaleValue}. Escolha apenas o maior peso.`
           : `${labelText}: aparar golpe do Guardião e carregar a Esfera`);
         riftEl.style.left = `${pos.x}px`;
         riftEl.style.top = `${pos.y}px`;
         riftEl.innerHTML = `
-          ${kind === 'anubis_scales' ? `<span class="boss-rift-number">${rift.scaleValue}</span>` : ''}
-          <span class="boss-rift-core" aria-hidden="true">${icon('shield')}</span>
+          ${kind === 'anubis_scales'
+            ? `<span class="boss-rift-number"><small>PESO</small>${rift.scaleValue}</span>`
+            : `<span class="boss-rift-core" aria-hidden="true">${icon('shield')}</span>`}
           <span class="boss-rift-label">${labelText}</span>
           <span class="boss-rift-damage">${detailText}</span>
           <span class="boss-rift-timer"></span>
@@ -2687,10 +2713,7 @@ export class BossBattleModal {
           if (res.altarDamageTaken !== undefined) {
             this.lastRiftsMissed = this.options.gameState.activeBossBattle?.riftsMissed ?? this.lastRiftsMissed;
             this.spherePulseAlpha = 0.9;
-            this.showHitFeedback(
-              `Balança: dano ×${res.scaleDamageMultiplier}!`,
-              `Número menor escolhido: −${res.altarDamageTaken.toFixed(1)}% da Esfera.`
-            );
+            this.showHitFeedback(`Peso menor! −${res.altarDamageTaken.toFixed(0)}% da Esfera (×${res.scaleDamageMultiplier}).`);
             this.options.spawnFloatingText(
               e.clientX || window.innerWidth / 2, e.clientY || window.innerHeight / 2,
               `−${res.altarDamageTaken.toFixed(1)}% ESFERA (×${res.scaleDamageMultiplier})`
@@ -2709,20 +2732,20 @@ export class BossBattleModal {
             this.lastRiftsMissed = this.options.gameState.activeBossBattle?.riftsMissed ?? this.lastRiftsMissed;
             // A stale target from another pending rift cannot immediately replay the cancelled swing.
             this.options.gameState.activeBossBattle?.activeRifts.forEach(r => this.attackedRiftIds.add(r.id));
-            const comboTag = (res.comboStreak ?? 1) > 1 ? ` (Combo \u00d7${res.comboStreak})` : '';
+            const comboTag = (res.comboStreak ?? 1) > 1 ? ` Combo ×${res.comboStreak} ·` : '';
             let specialMsg = res.kind === 'anubis_scales'
-              ? 'Ataque bloqueado! Não clique no número menor.'
-              : '+25% de carga da Esfera.';
+              ? 'Não clique no peso menor.'
+              : '+25% de Fulgor';
             if (res.specialBonusTriggered) {
               if (res.kind === 'hades_chains') {
-                specialMsg = 'Grilhões quebrados (Cliques 100%)!';
+                specialMsg = 'Grilhões quebrados! Cliques normais de novo.';
               } else if (res.kind === 'odin_raven') {
                 specialMsg = 'Corvo interceptado! Próximo ataque atrasado.';
               } else if (res.kind === 'chaos_orbit') {
-                specialMsg = 'Colapso Orbital revertido!';
+                specialMsg = 'Colapso revertido!';
               }
             }
-            this.showHitFeedback(`Ataque aparado!${comboTag}`, specialMsg);
+            this.showHitFeedback(`Aparado!${comboTag} ${specialMsg}`);
             this.options.audio.playTone(880, 'triangle', 0.16);
             const x = e.clientX || window.innerWidth / 2;
             const y = e.clientY || window.innerHeight / 2;

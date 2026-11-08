@@ -1,13 +1,11 @@
 import { GameStateManager } from '../core/GameState.js';
-import { NotificationManager } from '../systems/notifications.js';
 import { AudioManager } from '../systems/audio.js';
 import { formatNumber } from '../systems/calculations.js';
 import { icon } from './icons.js';
-import { CARD_TUTORIALS, type CardTutorial } from '../config/cardTutorials.js';
+import { CARD_TUTORIALS, cardTutorialKey, type CardTutorial } from '../config/cardTutorials.js';
 
 export interface OnboardingGuideOptions {
   gameState: GameStateManager;
-  notifications: NotificationManager;
   audio?: AudioManager;
   onFocusCard?: (cardId: string, immediate?: boolean) => void;
 }
@@ -16,7 +14,6 @@ export type SpotlightStep = 'sphere' | 'buy_follower' | 'complete';
 
 export class OnboardingGuide {
   private gameState: GameStateManager;
-  private notifications: NotificationManager;
   private audio?: AudioManager;
   private onFocusCard?: (cardId: string, immediate?: boolean) => void;
 
@@ -43,14 +40,12 @@ export class OnboardingGuide {
 
   private currentStep: SpotlightStep = 'sphere';
   private isDismissed: boolean = false;
-  private hasCelebrated: boolean = false;
   private isPositioning: boolean = false;
   private cardTutorial: CardTutorial | null = null;
   private canPresent: boolean = false;
 
   constructor(options: OnboardingGuideOptions) {
     this.gameState = options.gameState;
-    this.notifications = options.notifications;
     this.audio = options.audio;
     this.onFocusCard = options.onFocusCard;
 
@@ -129,7 +124,7 @@ export class OnboardingGuide {
 
   public dismiss(): void {
     if (this.cardTutorial) {
-      this.gameState.seenCardTutorials.add(this.cardTutorial.cardId);
+      this.gameState.seenCardTutorials.add(cardTutorialKey(this.cardTutorial));
       this.cardTutorial = null;
       this.hideOverlay();
       return;
@@ -156,6 +151,12 @@ export class OnboardingGuide {
     this.isDismissed = this.gameState.hasSeenIntro;
     if (!this.isDismissed) this.cardTutorial = null;
 
+    // This runs on every game tick: with nothing to present, skip searching the page.
+    if (this.isDismissed && !this.cardTutorial && !CARD_TUTORIALS.some(tutorial => this.isTutorialAvailable(tutorial))) {
+      this.hideOverlay();
+      return;
+    }
+
     // Do not show spotlight overlay while start screen is active
     const startScreen = document.getElementById('start-screen');
     if (startScreen && startScreen.classList.contains('active')) {
@@ -181,15 +182,6 @@ export class OnboardingGuide {
 
     // Condition 1: Tour complete (already has 1 or more followers)
     if (followerCount >= 1) {
-      if (!this.hasCelebrated && this.gameState.totalClicks > 0) {
-        this.hasCelebrated = true;
-        this.notifications.showCustomPopup(
-          'O PRIMEIRO CONVERSO',
-          'Seu primeiro fiel começou a orar no pátio (+1 Fé/s). Quando um fiel exibir um balão com estrela, clique nele para conceder um Milagre de Fé!',
-          'followers',
-          'FIÉIS'
-        );
-      }
       this.dismiss();
       return;
     }
@@ -266,16 +258,18 @@ export class OnboardingGuide {
     }
   }
 
+  private isTutorialAvailable(tutorial: CardTutorial): boolean {
+    if (this.gameState.seenCardTutorials.has(cardTutorialKey(tutorial))) return false;
+    if ('requiresAscension' in tutorial && this.gameState.gnoseResets === 0) return false;
+    if ('unlockId' in tutorial) {
+      return this.gameState.unlocks.some(u => u.id === tutorial.unlockId && u.unlocked);
+    }
+    return this.gameState.unlocks.some(u => !u.unlocked);
+  }
+
   private updateCardTutorial(): void {
-    const isAvailable = (tutorial: CardTutorial) => {
-      if (this.gameState.seenCardTutorials.has(tutorial.cardId)) return false;
-      if ('unlockId' in tutorial) {
-        return this.gameState.unlocks.some(u => u.id === tutorial.unlockId && u.unlocked);
-      }
-      return this.gameState.unlocks.some(u => !u.unlocked);
-    };
-    if (this.cardTutorial && !isAvailable(this.cardTutorial)) this.cardTutorial = null;
-    const tutorial = this.cardTutorial ?? CARD_TUTORIALS.find(isAvailable);
+    if (this.cardTutorial && !this.isTutorialAvailable(this.cardTutorial)) this.cardTutorial = null;
+    const tutorial = this.cardTutorial ?? CARD_TUTORIALS.find(candidate => this.isTutorialAvailable(candidate));
     if (!tutorial) {
       this.hideOverlay();
       return;
@@ -290,7 +284,7 @@ export class OnboardingGuide {
     this.cardTutorial = tutorial;
     if (entering) this.onFocusCard?.(tutorial.cardId, true);
     if (this.iconEl) this.iconEl.innerHTML = icon(tutorial.icon);
-    if (this.badgeEl) this.badgeEl.textContent = 'CONHEÇA ESTE CARD';
+    if (this.badgeEl) this.badgeEl.textContent = 'CONHEÇA A MECÂNICA';
     if (this.titleEl) this.titleEl.textContent = tutorial.title;
     if (this.descEl) this.descEl.textContent = tutorial.lore;
     if (this.actionTipEl) this.actionTipEl.textContent = tutorial.basics;

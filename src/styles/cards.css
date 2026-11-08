@@ -302,25 +302,6 @@
   display: block;
 }
 
-.followers-arena-overlay {
-  position: absolute;
-  top: 8px;
-  right: 10px;
-  pointer-events: none;
-}
-
-.followers-arena-hint {
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  background: rgba(0, 0, 0, 0.6);
-  padding: 2px 8px;
-  border-radius: 4px;
-  border: 1px solid var(--border-dark);
-}
-
 .followers-controls {
   display: flex;
   flex-direction: column;

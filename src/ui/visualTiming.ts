@@ -2,6 +2,22 @@ export const VISUAL_FPS = 30;
 const FRAME_MS = 1000 / VISUAL_FPS;
 
 /** Gates visual work to 30 Hz while preserving elapsed time on any refresh rate. */
+const OFF_SCREEN_TICK_MS = 100;
+
+/**
+ * Queues the next frame of a decorative loop and returns how to cancel it.
+ * Off screen there is nothing to draw, so a slow timer keeps gameplay timers moving
+ * without keeping the display pipeline awake at 60 Hz.
+ */
+export function scheduleVisualFrame(onScreen: boolean, frame: (nowMs: number) => void): () => void {
+  if (onScreen) {
+    const id = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(id);
+  }
+  const id = setTimeout(() => frame(performance.now()), OFF_SCREEN_TICK_MS);
+  return () => clearTimeout(id);
+}
+
 export class VisualFrameClock {
   private nextFrameMs: number | undefined;
   private previousFrameMs = 0;

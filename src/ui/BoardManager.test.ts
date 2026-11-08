@@ -3,6 +3,84 @@ import { BoardManager } from './BoardManager.js';
 
 afterEach(() => vi.unstubAllGlobals());
 
+describe('board camera during a fight', () => {
+  function followingBoard() {
+    const reads = { count: 0 };
+    const viewport = {
+      get clientWidth() { reads.count++; return 1280; },
+      get clientHeight() { reads.count++; return 800; },
+      get scrollLeft() { reads.count++; return 0; },
+      get scrollTop() { reads.count++; return 0; },
+    };
+    const setProperty = vi.fn();
+    const label = { writes: 0, current: '', get textContent() { return this.current; }, set textContent(v: string) { this.writes++; this.current = v; } };
+    vi.stubGlobal('document', { querySelector: () => { reads.count++; return null; } });
+    const board: BoardManager = Object.create(BoardManager.prototype);
+    for (const [key, value] of Object.entries({
+      viewportEl: viewport,
+      zoomLevelEl: label,
+      worldEl: {
+        get offsetWidth() { reads.count++; return 6880; },
+        get offsetHeight() { reads.count++; return 4240; },
+        style: { setProperty },
+      },
+      panX: 0, panY: 0, zoom: 0.55, minZoom: 0.35, maxZoom: 1.6,
+    })) Reflect.set(board, key, value);
+    return { board, reads, setProperty, label };
+  }
+  const target = { x: 1740, y: 854, width: 1210, height: 1210 };
+
+  it('measures the layout once on entry, not on every frame', () => {
+    const { board, reads } = followingBoard();
+    board.followWorldTarget(target, 0);
+    expect(reads.count).toBeGreaterThan(0);
+    reads.count = 0;
+    for (let i = 0; i < 30; i++) board.followWorldTarget(target, 1 / 30);
+    expect(reads.count).toBe(0);
+  });
+
+  it('measures again after the window is resized', () => {
+    const { board, reads } = followingBoard();
+    board.followWorldTarget(target, 0);
+    Reflect.get(board, 'invalidateFollowMeasure').call(board);
+    reads.count = 0;
+    board.followWorldTarget(target, 1 / 30);
+    expect(reads.count).toBeGreaterThan(0);
+  });
+
+  it('rewrites the prompt scale only when it visibly changes', () => {
+    const { board, setProperty } = followingBoard();
+    board.followWorldTarget(target, 0);
+    setProperty.mockClear();
+    for (let i = 0; i < 30; i++) board.followWorldTarget(target, 1 / 30);
+    const scaleWrites = setProperty.mock.calls.filter(([name]) => name === '--boss-prompt-scale');
+    expect(scaleWrites.length).toBe(0);
+    expect(setProperty.mock.calls.filter(([name]) => name === 'transform').length).toBe(30);
+  });
+
+  it('rewrites the zoom label only when its text changes', () => {
+    const { board, label } = followingBoard();
+    board.followWorldTarget(target, 0);
+    label.writes = 0;
+    for (let i = 0; i < 30; i++) board.followWorldTarget(target, 1 / 30);
+    expect(label.writes).toBe(0);
+  });
+});
+
+describe('board camera limits', () => {
+  it('reaches cards placed above the world origin, but no further', () => {
+    const board: BoardManager = Object.create(BoardManager.prototype);
+    for (const [key, value] of Object.entries({
+      viewportEl: { clientWidth: 1280, clientHeight: 800 },
+      worldEl: { offsetWidth: 6880, offsetHeight: 4240 },
+      panX: 0, panY: 5000, zoom: 1,
+    })) Reflect.set(board, key, value);
+    Reflect.get(board, 'clampPan').call(board);
+    // Viewport centre (400) shows world y = -800
+    expect(Reflect.get(board, 'panY')).toBe(1200);
+  });
+});
+
 describe('board camera after native focus scrolling', () => {
   it('frames a world actor on entry and follows its movement smoothly without native scrolling', () => {
     vi.stubGlobal('document', { querySelector: () => null });

@@ -26,6 +26,7 @@ export class SettingsModal {
   private volumeSliderEl: HTMLInputElement | null = null;
   private musicToggleEl: HTMLInputElement | null = null;
   private sfxToggleEl: HTMLInputElement | null = null;
+  private sfxVolumeSliderEl: HTMLInputElement | null = null;
   private musicQuickBtnEl: HTMLButtonElement | null = null;
   private musicIconOnEl: HTMLElement | null = null;
   private musicIconOffEl: HTMLElement | null = null;
@@ -60,6 +61,7 @@ export class SettingsModal {
     this.volumeSliderEl = document.getElementById('volume-slider') as HTMLInputElement | null;
     this.musicToggleEl = document.getElementById('music-toggle') as HTMLInputElement | null;
     this.sfxToggleEl = document.getElementById('sfx-toggle') as HTMLInputElement | null;
+    this.sfxVolumeSliderEl = document.getElementById('sfx-volume-slider') as HTMLInputElement | null;
     this.musicQuickBtnEl = document.getElementById('music-quick-btn') as HTMLButtonElement | null;
     this.musicIconOnEl = document.getElementById('music-icon-on');
     this.musicIconOffEl = document.getElementById('music-icon-off');
@@ -123,6 +125,15 @@ export class SettingsModal {
       this.sfxToggleEl.addEventListener('change', () => {
         this.options.audio.setSfxEnabled(this.sfxToggleEl!.checked);
       });
+    }
+
+    if (this.sfxVolumeSliderEl) {
+      this.sfxVolumeSliderEl.value = String(Math.round(this.options.audio.getSfxVolume() * 100));
+      this.sfxVolumeSliderEl.addEventListener('input', () => {
+        this.options.audio.setSfxVolume(parseFloat(this.sfxVolumeSliderEl!.value) / 100);
+      });
+      // Preview on release, so the player hears the level just chosen
+      this.sfxVolumeSliderEl.addEventListener('change', () => this.options.audio.playChime());
     }
 
     if (this.musicQuickBtnEl) {
@@ -206,6 +217,9 @@ export class SettingsModal {
     if (this.sfxToggleEl) {
       this.sfxToggleEl.checked = this.options.audio.isSfxEnabled();
     }
+    if (this.sfxVolumeSliderEl) {
+      this.sfxVolumeSliderEl.value = String(Math.round(this.options.audio.getSfxVolume() * 100));
+    }
     if (this.hapticsToggleEl && this.options.isHapticsEnabled) {
       this.hapticsToggleEl.checked = this.options.isHapticsEnabled();
     }
@@ -228,6 +242,9 @@ export class SettingsModal {
     }
     if (this.musicQuickBtnEl) {
       this.musicQuickBtnEl.classList.toggle('muted', !isEnabled);
+      const label = isEnabled ? 'Desligar música' : 'Ligar música';
+      this.musicQuickBtnEl.setAttribute('aria-label', label);
+      this.musicQuickBtnEl.title = label;
     }
   }
 
