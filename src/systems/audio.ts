@@ -86,13 +86,14 @@ export class AudioManager {
     if (!this.bgMusic && bgSrc) {
       this.bgMusic = new Audio(bgSrc);
       this.bgMusic.loop = true;
-      this.bgMusic.preload = 'auto';
+      // Streams on play: these tracks are the largest files in the game.
+      this.bgMusic.preload = 'none';
       this.bgMusic.volume = this.musicEnabled ? this.volume : 0;
     }
     if (!this.bossMusic && bossSrc) {
       this.bossMusic = new Audio(bossSrc);
       this.bossMusic.loop = true;
-      this.bossMusic.preload = 'auto';
+      this.bossMusic.preload = 'none';
       this.bossMusic.volume = this.musicEnabled ? this.volume : 0;
     }
   }

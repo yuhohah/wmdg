@@ -198,7 +198,7 @@ Ao abrir o jogo, a versão atual é comparada à última versão vista neste nav
 
 ## Validação e manutenção
 
-`npm test` verifica regras, progressão, persistência, interface e simulação; `npm run build` verifica tipos e produz o build. O painel de testes (T/F2), disponível em modo de desenvolvimento, oferece velocidade, recursos de teste e benchmark em Web Worker.
+`npm test` verifica regras, progressão, persistência, interface e simulação; `npm run build` verifica tipos e produz o build. A pasta `public/` também guarda fontes de arte (conceitos, quadros soltos, prévias e scripts); o build publica apenas os arquivos que o jogo carrega, conforme `src/config/shippedAssets.ts`. O painel de testes (T/F2), disponível em modo de desenvolvimento, oferece velocidade, recursos de teste e benchmark em Web Worker.
 
 A [metodologia do benchmark](docs/progression/README.md) separa regras do jogo de hipóteses de comportamento. Resultados de versões anteriores e propostas substituídas foram retirados da documentação vigente. Novas medições devem registrar versão do código, seed, perfil, horizonte e conclusão real.
 

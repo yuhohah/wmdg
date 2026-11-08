@@ -121,6 +121,11 @@ describe('AudioManager background and boss battle soundtrack switching', () => {
     vi.unstubAllGlobals();
   });
 
+  it('downloads no music until a track is actually played', () => {
+    new AudioManager();
+    expect(MockAudio.instances.map(track => track.preload)).toEqual(['none', 'none']);
+  });
+
   it('initializes background_music.mp3 as default track and boss_battle.mp3 for boss encounters', () => {
     const audio = new AudioManager();
     expect(MockAudio.instances).toHaveLength(2);

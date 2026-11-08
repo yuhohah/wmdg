@@ -151,6 +151,12 @@ export class OnboardingGuide {
     this.isDismissed = this.gameState.hasSeenIntro;
     if (!this.isDismissed) this.cardTutorial = null;
 
+    // This runs on every game tick: with nothing to present, skip searching the page.
+    if (this.isDismissed && !this.cardTutorial && !CARD_TUTORIALS.some(tutorial => this.isTutorialAvailable(tutorial))) {
+      this.hideOverlay();
+      return;
+    }
+
     // Do not show spotlight overlay while start screen is active
     const startScreen = document.getElementById('start-screen');
     if (startScreen && startScreen.classList.contains('active')) {
@@ -252,17 +258,18 @@ export class OnboardingGuide {
     }
   }
 
+  private isTutorialAvailable(tutorial: CardTutorial): boolean {
+    if (this.gameState.seenCardTutorials.has(cardTutorialKey(tutorial))) return false;
+    if ('requiresAscension' in tutorial && this.gameState.gnoseResets === 0) return false;
+    if ('unlockId' in tutorial) {
+      return this.gameState.unlocks.some(u => u.id === tutorial.unlockId && u.unlocked);
+    }
+    return this.gameState.unlocks.some(u => !u.unlocked);
+  }
+
   private updateCardTutorial(): void {
-    const isAvailable = (tutorial: CardTutorial) => {
-      if (this.gameState.seenCardTutorials.has(cardTutorialKey(tutorial))) return false;
-      if ('requiresAscension' in tutorial && this.gameState.gnoseResets === 0) return false;
-      if ('unlockId' in tutorial) {
-        return this.gameState.unlocks.some(u => u.id === tutorial.unlockId && u.unlocked);
-      }
-      return this.gameState.unlocks.some(u => !u.unlocked);
-    };
-    if (this.cardTutorial && !isAvailable(this.cardTutorial)) this.cardTutorial = null;
-    const tutorial = this.cardTutorial ?? CARD_TUTORIALS.find(isAvailable);
+    if (this.cardTutorial && !this.isTutorialAvailable(this.cardTutorial)) this.cardTutorial = null;
+    const tutorial = this.cardTutorial ?? CARD_TUTORIALS.find(candidate => this.isTutorialAvailable(candidate));
     if (!tutorial) {
       this.hideOverlay();
       return;

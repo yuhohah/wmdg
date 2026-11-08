@@ -170,7 +170,7 @@ const BOSS_DEFAULT_BOUNDS: Record<string, SpriteFrameBounds> = {
 
 const INCARNATION_FILES = ['01-neofito', '02-consagrado', '03-ancestral', '04-eclipse', '05-solar'] as const;
 
-let cachedBossSprites: Record<string, BossLateralSprites> | null = null;
+const cachedBossSprites = new Map<string, BossLateralSprites>();
 let cachedIncarnationWalkSprites: IncarnationWalkSprite[] | null = null;
 const spriteFrameBoundsCache = new WeakMap<HTMLImageElement, Map<number, SpriteFrameBounds>>();
 let boundsProbeCanvas: HTMLCanvasElement | null = null;
@@ -315,28 +315,35 @@ function getBossFrameBounds(
   }
 }
 
-function loadBossLateralSprites(): Record<string, BossLateralSprites> {
-  if (cachedBossSprites) return cachedBossSprites;
+export function loadBossSprites(bossId: string): BossLateralSprites | undefined {
+  const cached = cachedBossSprites.get(bossId);
+  if (cached) return cached;
+  const cfg = BOSS_SPRITE_FOLDERS[bossId];
+  if (!cfg) return undefined;
   const base = `${import.meta.env.BASE_URL}assets/sprites/bosses/`;
-  const map: Record<string, BossLateralSprites> = {};
-  for (const [bossId, cfg] of Object.entries(BOSS_SPRITE_FOLDERS)) {
-    const load = (rel: string) => {
-      const img = new Image();
-      img.addEventListener('load', notifyBossSpriteLoaded, { once: true });
-      img.src = `${base}${cfg.folder}/${rel}`;
-      return img;
-    };
-    map[bossId] = {
-      idle: load('idle.png'),
-      walk: load('andar/spritesheet.png'),
-      attacks: [
-        load(`${cfg.attacks[0]}/spritesheet.png`),
-        load(`${cfg.attacks[1]}/spritesheet.png`),
-      ],
-    };
-  }
-  cachedBossSprites = map;
-  return map;
+  const load = (rel: string) => {
+    const img = new Image();
+    img.addEventListener('load', notifyBossSpriteLoaded, { once: true });
+    img.src = `${base}${cfg.folder}/${rel}`;
+    return img;
+  };
+  const sprites: BossLateralSprites = {
+    idle: load('idle.png'),
+    walk: load('andar/spritesheet.png'),
+    attacks: [
+      load(`${cfg.attacks[0]}/spritesheet.png`),
+      load(`${cfg.attacks[1]}/spritesheet.png`),
+    ],
+  };
+  cachedBossSprites.set(bossId, sprites);
+  return sprites;
+}
+
+const PHONE_MAX_WIDTH = 860;
+
+/** The stage spans thousands of world pixels; phones show it zoomed out, so they draw fewer. */
+export function battleCanvasScale(viewportWidth: number): number {
+  return viewportWidth <= PHONE_MAX_WIDTH ? 0.6 : 1;
 }
 
 function bossSheetFrameCount(sheet: HTMLImageElement | undefined): number {
@@ -418,6 +425,7 @@ export class BossBattleModal {
   private worldStageEl: HTMLElement | null = null;
   private worldCanvasEl: HTMLCanvasElement | null = null;
   private worldCtx: CanvasRenderingContext2D | null = null;
+  private worldCanvasScale = 1;
 
   private bossHpPlateEl: HTMLElement | null = null;
   private bossWorldHpLabelEl: HTMLElement | null = null;
@@ -698,10 +706,7 @@ export class BossBattleModal {
         this.worldStageEl.style.width = `${this.stageWidth}px`;
         this.worldStageEl.style.height = `${this.stageHeight}px`;
       }
-      if (this.worldCanvasEl) {
-        this.worldCanvasEl.width = this.stageWidth;
-        this.worldCanvasEl.height = this.stageHeight;
-      }
+      if (this.isBattleActive) this.allocateWorldCanvas();
     }
 
     const sphereLocalX = BOSS_SPHERE_CENTER.x - this.stageOriginX;
@@ -744,7 +749,7 @@ export class BossBattleModal {
     const sphereLocalY = BOSS_SPHERE_CENTER.y - this.stageOriginY;
 
     stage.innerHTML = `
-      <canvas id="boss-world-canvas" class="boss-world-canvas" width="${this.stageWidth}" height="${this.stageHeight}" aria-hidden="true"></canvas>
+      <canvas id="boss-world-canvas" class="boss-world-canvas" width="1" height="1" aria-hidden="true"></canvas>
       <div class="boss-arena-stage boss-world-interactive" id="boss-arena-stage">
         <button id="boss-arena-attack-btn" class="boss-attack-target boss-world-hitbox" type="button" aria-label="Atacar o guardião" aria-describedby="boss-attack-damage">
           <img id="boss-arena-portrait" class="boss-portrait" alt="" draggable="false" hidden>
@@ -1019,9 +1024,11 @@ export class BossBattleModal {
     }
 
     // Preload lateral boss, incarnation walk, and follower sprites
-    loadBossLateralSprites();
+    loadBossSprites(bossId);
     loadIncarnationProcessionSprites();
     loadFollowerSprites();
+
+    this.allocateWorldCanvas();
 
     // Mark active battle on body first so Altar & Pátio hide their internal sprites without duplicating
     document.body.classList.add('is-boss-battle-active');
@@ -1080,6 +1087,11 @@ export class BossBattleModal {
       this.phaseBannerEl.style.display = 'none';
     }
     this.miracleBtnEl = null;
+    // Give the canvas memory back: it is by far the largest allocation in the game.
+    if (this.worldCanvasEl) {
+      this.worldCanvasEl.width = 1;
+      this.worldCanvasEl.height = 1;
+    }
     document.body.classList.remove('is-boss-battle-active', 'is-courtyard-visible');
     this.options.audio.stopBossBattleMusic?.();
     if (wasOpen) {
@@ -1407,6 +1419,15 @@ export class BossBattleModal {
     if (this.altarTrailEl) this.altarTrailEl.style.width = `${this.altarTrail.value.toFixed(2)}%`;
   }
 
+  private allocateWorldCanvas(): void {
+    if (!this.worldCanvasEl) return;
+    this.worldCanvasScale = battleCanvasScale(window.innerWidth);
+    this.worldCanvasEl.width = Math.ceil(this.stageWidth * this.worldCanvasScale);
+    this.worldCanvasEl.height = Math.ceil(this.stageHeight * this.worldCanvasScale);
+    // A reduced canvas is scaled up on screen, where smoothing reads better than hard pixels.
+    this.worldCanvasEl.style.imageRendering = this.worldCanvasScale < 1 ? 'auto' : '';
+  }
+
   private triggerBossAttackSwing(rift?: BossRift): void {
     if (this.bossParryRecoverySec > 0) return;
     this.bossState = 'attacking';
@@ -1456,7 +1477,7 @@ export class BossBattleModal {
     const drawLeft = lx + drawOffsetX;
     const drawTop = ly + drawOffsetY;
 
-    const bossSprites = loadBossLateralSprites()[bossId];
+    const bossSprites = loadBossSprites(bossId);
     let candidateSheet: HTMLImageElement | null = null;
     let frame = 0;
 
@@ -1866,7 +1887,7 @@ export class BossBattleModal {
     } else if (this.bossState === 'attacking') {
       this.bossAttackFrameTimeSec += dt;
       const bossId = battle?.bossId ?? this.activeBossIdForScene;
-      const sheet = loadBossLateralSprites()[bossId]?.attacks[this.bossAttackIndex];
+      const sheet = loadBossSprites(bossId)?.attacks[this.bossAttackIndex];
       const attackDuration = bossSheetFrameCount(sheet) * (BOSS_SPRITE_FOLDERS[bossId]?.attackFrameSec ?? 0.115);
       // Trigger impact wave on the Sphere mid-swing
       if (
@@ -1956,6 +1977,7 @@ export class BossBattleModal {
     const ctx = this.worldCtx;
     if (!ctx) return;
 
+    ctx.setTransform(this.worldCanvasScale, 0, 0, this.worldCanvasScale, 0, 0);
     ctx.clearRect(0, 0, this.stageWidth, this.stageHeight);
     ctx.imageSmoothingEnabled = false;
 

@@ -83,6 +83,7 @@ function setupBossModalHarness(
     fillText: vi.fn(),
     translate: vi.fn(),
     scale: vi.fn(),
+    setTransform: vi.fn(),
     drawImage: vi.fn(
       (
         img: unknown,
@@ -783,6 +784,21 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     for (let i = 0; i < 800 && modal.isOpen(); i++) modal.stepSceneForTest(0.1);
     expect(modal.isOpen()).toBe(false);
     expect(courtyardVisible()).toBe(false);
+  });
+
+  it('holds the large battle canvas only while a fight is open', () => {
+    const { modal, gameState, worldEl } = setupBossModalHarness(100);
+    expect(modal.openForBoss('boss_cronos')).toBe(true);
+    const canvas = worldEl.children[0].querySelector('#boss-world-canvas') as unknown as { width: number; height: number };
+    expect(canvas.width).toBeGreaterThan(1000);
+    expect(canvas.height).toBeGreaterThan(1000);
+    gameState.retreatBossBattle();
+    modal.close();
+    expect(canvas.width).toBe(1);
+    expect(canvas.height).toBe(1);
+    expect(modal.openForBoss('boss_cronos')).toBe(true);
+    expect(canvas.width).toBeGreaterThan(1000);
+    modal.close();
   });
 
   it('clears the courtyard state when retreating during the gathering', () => {

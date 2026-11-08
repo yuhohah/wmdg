@@ -1,5 +1,35 @@
-import { describe, expect, it } from 'vitest';
-import { bossHpLabel, parryCardPosition, stepDamageTrail } from './BossBattleModal.js';
+import { describe, expect, it, vi } from 'vitest';
+import { battleCanvasScale, bossHpLabel, loadBossSprites, parryCardPosition, stepDamageTrail } from './BossBattleModal.js';
+
+describe('Guardian sprite downloads', () => {
+  it('loads only the Guardian being fought, once', () => {
+    const sources: string[] = [];
+    vi.stubGlobal('Image', class {
+      addEventListener() {}
+      set src(value: string) { sources.push(value); }
+    });
+    const sprites = loadBossSprites('boss_odin');
+    expect(sources.length).toBeGreaterThan(0);
+    expect(sources.every(src => src.includes('lateral/03-odin'))).toBe(true);
+    const count = sources.length;
+    expect(loadBossSprites('boss_odin')).toBe(sprites);
+    expect(sources.length).toBe(count);
+    expect(loadBossSprites('unknown')).toBeUndefined();
+    vi.unstubAllGlobals();
+  });
+});
+
+describe('battle canvas resolution', () => {
+  it('keeps full resolution on large screens', () => {
+    expect(battleCanvasScale(1600)).toBe(1);
+    expect(battleCanvasScale(861)).toBe(1);
+  });
+
+  it('draws fewer pixels on phones', () => {
+    expect(battleCanvasScale(860)).toBe(0.6);
+    expect(battleCanvasScale(390)).toBe(0.6);
+  });
+});
 
 describe('Guardian health label', () => {
   it('shows the phase, the rounded health and the passive victory time', () => {

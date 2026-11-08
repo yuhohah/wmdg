@@ -15,6 +15,7 @@ function element() {
 describe('progressive card tutorial', () => {
   const nodes = new Map<string, ReturnType<typeof element>>();
   let modalOpen = false;
+  let modalQueries = 0;
   let game: GameStateManager;
 
   beforeEach(() => {
@@ -27,7 +28,7 @@ describe('progressive card tutorial', () => {
         if (!nodes.has(id)) nodes.set(id, element());
         return nodes.get(id);
       },
-      querySelectorAll: () => modalOpen ? [element()] : [],
+      querySelectorAll: () => { modalQueries++; return modalOpen ? [element()] : []; },
       querySelector: () => null,
     });
     game = new GameStateManager();
@@ -96,6 +97,27 @@ describe('progressive card tutorial', () => {
     tour.update();
     expect(nodes.get('spotlight-tour-overlay')?.style.display).toBe('none');
     expect(focus).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not search the page on every tick when no tutorial is pending', () => {
+    game.unlocks.forEach(u => { u.unlocked = true; });
+    game.gnoseResets = 1;
+    CARD_TUTORIALS.forEach(t => game.seenCardTutorials.add(cardTutorialKey(t)));
+    const { tour, focus } = guide();
+    modalQueries = 0;
+    for (let i = 0; i < 20; i++) tour.update();
+    expect(modalQueries).toBe(0);
+    expect(focus).not.toHaveBeenCalled();
+    expect(nodes.get('spotlight-tour-overlay')?.style.display).toBe('none');
+  });
+
+  it('still waits for modals while a tutorial is pending', () => {
+    game.seenCardTutorials.add('card-unlocks');
+    game.unlocks.find(u => u.id === 'unlock_incarnation')!.unlocked = true;
+    const { tour } = guide();
+    modalQueries = 0;
+    tour.update();
+    expect(modalQueries).toBe(1);
   });
 
   it('waits for modal closure and for the unlocked card to be visible', () => {

@@ -9,6 +9,7 @@ Para as próximas versões, usamos `MAJOR.MINOR.PATCH`: novidades e mudanças re
 ## 0.9.1 — 2026-11-06
 
 - O Pátio dos Fiéis agora continua visível enquanto a Encarnação reúne os Fiéis para o duelo e vai ficando transparente quando a procissão parte. Depois da vitória, ele reaparece a tempo de receber todos de volta.
+- O jogo ficou mais leve, principalmente no celular. As músicas só são baixadas quando começam a tocar, os fundos do Pátio e do Altar ficaram cerca de 17 vezes menores, e cada luta carrega apenas os sprites do Guardião enfrentado. As animações fora da tela deixam de rodar a cada quadro, e a câmera das lutas deixou de recalcular a página a cada quadro.
 
 ## 0.9.0 — 2026-11-06
 
