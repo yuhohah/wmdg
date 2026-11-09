@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { BossBattleModal, type BattleCameraTarget } from './BossBattleModal.js';
+import { BossBattleModal, loadBossSprites, type BattleCameraTarget } from './BossBattleModal.js';
 import { GameStateManager } from '../../core/GameState.js';
 import type { AudioManager } from '../../systems/audio.js';
 import type { NotificationManager } from '../../systems/notifications.js';
@@ -467,7 +467,7 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     expect(stage.querySelector('#boss-combat-feedback')!.textContent)
       .toContain(`Peso menor! `);
     expect(stage.querySelector('#boss-combat-feedback')!.textContent)
-      .toContain(`(×${higherFirst ? 3 : 2})`);
+      .toContain(`(×${higherFirst ? 3 : 2}e0)`);
     modal.close();
   });
 
@@ -483,7 +483,7 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     stage.querySelector('#boss-rifts-layer')!.children[0].dispatchClick();
     expect(stage.querySelector('#boss-combat-feedback')!.textContent).toBe('Aparado! +25% de Fulgor');
     modal.updateUI();
-    expect(stats.textContent).toBe('Combo ×1');
+    expect(stats.textContent).toBe('Combo ×1e0');
     modal.close();
   });
 
@@ -862,6 +862,66 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     expect({ x: end.incX, y: end.incY }).toEqual(before.incarnationHome);
     expect(document.body.classList.contains('is-boss-battle-active')).toBe(false);
     expect(notifications.showCustomPopup).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['boss_anubis', '/lateral/01-anubis/'],
+    ['boss_cronos', '/lateral/02-hades/'],
+    ['boss_odin', '/lateral/03-odin/'],
+    ['boss_tiamat', '/caos-referencia-v2/'],
+  ])('plays %s defeat once before the victory return', (bossId, folder) => {
+    const { modal, gameState, drawImageCalls, notifications } = setupBossModalHarness(100);
+    GNOSE_UPGRADES.forEach(upgrade => gameState.unlockedGnoseUpgrades.add(upgrade.id));
+    gameState.defeatedBosses.delete(bossId);
+    gameState.faithPoints = gameState.totalFaithAccumulated = 1e45;
+    gameState.fervorPoints = 1e30;
+    gameState.incarnationStage = 5;
+    expect(modal.openForBoss(bossId)).toBe(true);
+    for (let i = 0; i < 250 && modal.getChoreographySnapshot().bossState !== 'idle'; i++) modal.stepSceneForTest(0.2);
+    expect(modal.getChoreographySnapshot().bossState).toBe('idle');
+    const battle = gameState.activeBossBattle!;
+    battle.bossHp = 1;
+    battle.sphereCooldownSec = 0;
+    drawImageCalls.length = 0;
+    gameState.addClick(() => 0.5);
+    const lastBossDraw = () => [...drawImageCalls].reverse().find(c => c.sw === 256 && c.sh === 192)!;
+    expect(lastBossDraw().img).toBe(loadBossSprites(bossId)!.defeat);
+    expect(loadBossSprites(bossId)!.defeat.src).toContain(folder + 'derrota/spritesheet.png');
+    expect(lastBossDraw().sx).toBe(0);
+    modal.stepSceneForTest(0.75);
+    expect(lastBossDraw().sx).toBe(8 * 256);
+    modal.stepSceneForTest(0.70);
+    expect(lastBossDraw().sx).toBe(16 * 256);
+    expect(notifications.showCustomPopup).not.toHaveBeenCalled();
+    drawImageCalls.length = 0;
+    modal.stepSceneForTest(0.06);
+    expect(modal.getChoreographySnapshot().incState).toBe('leading_return');
+    expect(drawImageCalls.some(c => c.sw === 256 && c.sh === 192)).toBe(false);
+    expect(gameState.isBossDefeated(bossId)).toBe(true);
+    modal.close();
+    expect(notifications.showCustomPopup).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the victory fallback and return if the defeat sheet fails to load', () => {
+    const { modal, gameState, drawImageCalls } = setupBossModalHarness(100);
+    modal.openForBoss('boss_cronos');
+    for (let i = 0; i < 250 && modal.getChoreographySnapshot().bossState !== 'idle'; i++) modal.stepSceneForTest(0.2);
+    const sheet = loadBossSprites('boss_cronos')!.defeat;
+    const complete = sheet.complete;
+    Object.defineProperty(sheet, 'complete', { value: false, configurable: true });
+    try {
+      gameState.activeBossBattle!.bossHp = 1;
+      gameState.activeBossBattle!.sphereCooldownSec = 0;
+      drawImageCalls.length = 0;
+      gameState.addClick(() => 0.5);
+      const bossDraw = [...drawImageCalls].reverse().find(c => c.sw === 256 && c.sh === 192)!;
+      expect(bossDraw.img).not.toBe(sheet);
+      modal.stepSceneForTest(1.5);
+      expect(modal.getChoreographySnapshot().incState).toBe('leading_return');
+    } finally {
+      Object.defineProperty(sheet, 'complete', { value: complete, configurable: true });
+      modal.close();
+    }
   });
 
   it('keeps defeat on its existing short climax without starting a victory return', () => {

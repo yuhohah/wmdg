@@ -80,7 +80,7 @@ describe('Reference progression simulation', () => {
     expect(result.manualActions).toBeLessThanOrEqual(Math.ceil(result.presentTimeSec * 5) + 1);
   });
 
-  it('AFK clicks and blesses during warmup, then only purchases after the global 10-minute cutoff', () => {
+  it('AFK stops routine clicks and blessing after the global 10-minute cutoff while purchases continue', () => {
     const game = new GameStateManager();
     game.followers[0].count = 10;
     game.unlocks[0].unlocked = true;
@@ -98,6 +98,77 @@ describe('Reference progression simulation', () => {
     expect(result.lastSphereClickSec).toBeLessThan(600);
     expect(result.lastManualBlessingSec).toBeLessThan(600);
     expect(result.miraclesCaught).toBe(0);
+  });
+
+  it.each((['reference', 'active', 'casual', 'afk'] as const).flatMap(profile => ([
+    ['boss_anubis', 0, 1], ['boss_anubis', 1, 1],
+    ['boss_cronos', 0, 2], ['boss_odin', 0, 1], ['boss_tiamat', 0, 3],
+  ] as const).map(([bossId, waveOffset, expectedParries]) => ({ profile, bossId, waveOffset, expectedParries }))))(
+    '$profile parries $bossId correctly (wave offset $waveOffset)', ({ profile, bossId, waveOffset, expectedParries }) => {
+    // Casual must wait until its second visit; no combat actions during scheduled absence.
+    const combatStart = profile === 'casual' ? 1201 : 601;
+    const interactionCps = PLAYER_BEHAVIORS[profile].maxInteractionCps;
+    const events: BenchmarkEvent[] = [];
+    let elapsed = 0;
+    let started = false;
+    let initialIds: string[] = [];
+    let highestWeight = 0;
+    const selected: string[] = [];
+    const originalTick = GameStateManager.prototype.tick;
+    const originalParry = GameStateManager.prototype.clickBossRift;
+    vi.spyOn(GameStateManager.prototype, 'tick').mockImplementation(function (this: GameStateManager, dt) {
+      const gains = originalTick.call(this, dt);
+      elapsed += dt;
+      if (elapsed >= combatStart && !started) {
+        this.unlocks.forEach(u => { u.unlocked = true; });
+        this.faithPoints = this.totalFaithAccumulated = 1e100;
+        this.fervorPoints = 1e50;
+        this.relicPoints = 1e30;
+        this.totalGnoseEarned = 1e20;
+        this.incarnationStage = 5;
+        this.followers[0].count = 1000;
+        GNOSE_UPGRADES.forEach(u => this.unlockedGnoseUpgrades.add(u.id));
+        started = this.startBossBattle(bossId);
+        expect(started).toBe(true);
+        const battle = this.activeBossBattle!;
+        battle.attackWaveCounter = waveOffset;
+        this.spawnBossRift({ forceSpecial: true });
+        initialIds = battle.activeRifts.map(r => r.id);
+        highestWeight = Math.max(...battle.activeRifts.map(r => r.scaleValue ?? 0));
+      }
+      return gains;
+    });
+    vi.spyOn(GameStateManager.prototype, 'clickBossRift').mockImplementation(function (this: GameStateManager, id) {
+      const rift = this.activeBossBattle!.activeRifts.find(r => r.id === id)!;
+      if (initialIds.includes(id)) {
+        selected.push(id);
+        if (bossId === 'boss_anubis') {
+          expect(rift.scaleValue).toBe(highestWeight);
+          expect(rift.scaleHigherSelected).not.toBe(true);
+        }
+      }
+      const result = originalParry.call(this, id);
+      expect(result.shattered).toBe(true);
+      expect(result.altarDamageTaken ?? 0).toBe(0);
+      return result;
+    });
+    const result = ProgressionSimulator.runArchetype(profile, {
+      maxDurationSec: combatStart + 9, onEvent: event => events.push(event),
+    });
+    expect(started).toBe(true);
+    expect(selected).toHaveLength(expectedParries);
+    const actions = events.filter(e => e.kind === 'action');
+    expect(actions.some(e => e.action === 'rift' && e.timeSec >= combatStart)).toBe(true);
+    expect(actions.every(e => e.present)).toBe(true);
+    if (profile === 'afk') {
+      expect(actions.some(e => e.timeSec >= 600 && (e.action === 'sphere' || e.action === 'blessing'))).toBe(false);
+    }
+    expect(result.actionsByType.rift).toBe(vi.mocked(GameStateManager.prototype.clickBossRift).mock.calls.length);
+    const combatActions = actions.filter(e => e.timeSec >= combatStart);
+    // Sub-tick scheduling preserves fractional slots, allowing up to one tick of jitter.
+    for (let i = 1; i < combatActions.length; i++) expect(combatActions[i].timeSec - combatActions[i - 1].timeSec).toBeGreaterThanOrEqual(1 / interactionCps - 0.1 - 1e-6);
+    const span = combatActions.at(-1)!.timeSec - combatActions[0].timeSec;
+    expect(combatActions.length).toBeLessThanOrEqual(Math.ceil((span + 0.1) * interactionCps) + 1);
   });
 
   it('recovers after Gnose without restarting AFK routine clicks, combat clicks or blessing', () => {

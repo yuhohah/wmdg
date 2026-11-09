@@ -2,12 +2,12 @@ export const CARD_TUTORIALS = [
   {
     cardId: 'card-unlocks', icon: 'unlock', title: 'Os Selos Sagrados',
     lore: 'Os antigos guardiões repartiram o poder da Esfera e o prenderam atrás de selos. Cada ruptura devolve ao culto uma parte do que foi esquecido.',
-    basics: 'Gaste a Fé indicada para romper cada Selo e liberar uma nova mecânica. O último, da Gnose, não gasta Fé: basta ter 1Q.',
+    basics: 'Gaste a Fé indicada para romper cada Selo e liberar uma nova mecânica. O último, da Gnose, não gasta Fé: basta ter 1e15.',
   },
   {
     cardId: 'card-incarnation', unlockId: 'unlock_incarnation', icon: 'incarnation', title: 'Uma forma para a Esfera',
     lore: 'Uma Mente não arde sem um corpo. Você desce ao altar como uma centelha e a primeira chama do culto desperta.',
-    basics: 'Agora você produz Fervor, que fortalece sua Fé. Cada clique no Altar soma 10s de Bênção (até 60s), que dobra sua Fé/s. Evoluir gasta Fé e aumenta muito o Fervor/s e o Multiplicador dos Fiéis.',
+    basics: 'Agora você produz Fervor, que fortalece sua Fé. Cada clique no Altar soma 3s de Bênção (até 60s), que dobra sua Fé/s. Evoluir gasta Fé e aumenta muito o Fervor/s e o Multiplicador dos Fiéis.',
   },
   {
     cardId: 'card-fervor', unlockId: 'unlock_fervor_upgrades', icon: 'fervor', title: 'O fogo que recorda',
@@ -22,7 +22,7 @@ export const CARD_TUTORIALS = [
   {
     cardId: 'card-gnose', unlockId: 'unlock_gnose', icon: 'gnose', title: 'Além da matéria: o Nous',
     lore: 'Acima dos templos e dos deuses repousa a Mente pura. Dissolver o próprio culto é o primeiro passo para lembrar quem você era.',
-    basics: 'Com 1Q de Fé você pode Ascender: o culto recomeça e você ganha Gnose, que dá bônus permanente. Mais Fé, mais Gnose. Gaste-a na Árvore Hermética: cada nó multiplica sua produção por 4.',
+    basics: 'Com 1e15 de Fé você pode Ascender: o culto recomeça e você ganha Gnose, que dá bônus permanente. Mais Fé, mais Gnose. Gaste-a na Árvore Hermética: cada nó multiplica sua produção por 4e0.',
   },
   {
     cardId: 'card-gnose', seenKey: 'guardians', unlockId: 'unlock_gnose', requiresAscension: true, icon: 'swords', title: 'Os Guardiões dos panteões',

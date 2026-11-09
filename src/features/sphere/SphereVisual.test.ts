@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SphereVisual, sphereFormForProgress } from './SphereVisual.js';
+import { SphereMotion } from './SphereMotion.js';
 import { SphereController } from './SphereController.js';
 import { GameStateManager } from '../../core/GameState.js';
 import { events, GameEvents } from '../../core/EventBus.js';
@@ -23,6 +24,7 @@ class ArtImage extends Element {
   decoding = '';
   draggable = true;
   onerror: (() => void) | null = null;
+  onload: (() => void) | null = null;
   writes: string[] = [];
   set src(value: string) { this.writes.push(value); }
   get src() { return this.writes.at(-1) ?? ''; }
@@ -34,17 +36,20 @@ describe('Esfera progression visuals', () => {
   let doc: EventTarget & { visibilityState: string };
   let host: Element;
   let button: Element;
+  let clearCanvas: ReturnType<typeof vi.fn>;
   let intersect: (visible: boolean) => void;
   const cleanup: Array<() => void> = [];
 
   beforeEach(() => {
     images = [];
+    clearCanvas = vi.fn();
     media = Object.assign(new EventTarget(), { matches: false });
     host = new Element();
     button = Object.assign(new Element(), { querySelector: () => host });
     doc = Object.assign(new EventTarget(), {
       visibilityState: 'visible',
       createElement: (tag: string) => {
+        if (tag === 'canvas') return Object.assign(new Element(), { getContext: () => new Proxy({}, { get: (_, key) => key === 'clearRect' ? clearCanvas : vi.fn(), set: () => true }) });
         if (tag !== 'img') return new Element();
         const image = new ArtImage();
         images.push(image);
@@ -52,6 +57,8 @@ describe('Esfera progression visuals', () => {
       },
       getElementById: (id: string) => id === 'divine-sphere-btn' ? button : null,
     });
+    vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
     vi.stubGlobal('window', { matchMedia: () => media, innerWidth: 1280, innerHeight: 800 });
     vi.stubGlobal('document', doc);
     vi.stubGlobal('IntersectionObserver', class {
@@ -70,7 +77,7 @@ describe('Esfera progression visuals', () => {
   });
 
   const visual = () => {
-    // Only these DOM operations are needed by the native-image player.
+    // Keep lifecycle tests independent of a browser engine.
     const element: HTMLElement = Object.assign(Object.create(null), host);
     const view = new SphereVisual(element);
     cleanup.push(() => view.destroy());
@@ -86,66 +93,80 @@ describe('Esfera progression visuals', () => {
     expect(sphereFormForProgress(true, 99).id).toBe('plenitude');
   });
 
-  it('plays the selected assets without restarting a form when unrelated state changes', () => {
+  it('loads approved cores and does not reload them on clicks or unrelated state changes', () => {
     const view = visual();
-    const image = images[0];
-    expect(image.src).toMatch(/nucleo\.png$/);
-    expect(image.classList.contains('sphere-art-spinning')).toBe(true);
+    expect(images.at(-1)?.src).toMatch(/nucleo\.png$/);
     view.setProgress(true, 1);
-    expect(image.src).toMatch(/meridiano\.svg$/);
-    expect(image.classList.contains('sphere-art-spinning')).toBe(false);
+    expect(images.at(-1)?.src).toMatch(/engraved-globe\.png$/);
+    const count = images.length;
     view.setProgress(true, 2);
-    expect(image.src).toMatch(/equador\.svg$/);
+    view.reactToClick();
+    expect(images).toHaveLength(count);
     view.setProgress(true, 3);
-    expect(image.src).toMatch(/orbitas-v2\.apng$/);
+    expect(images.at(-1)?.src).toMatch(/meridian-globe\.png$/);
     view.setProgress(true, 4);
-    expect(image.src).toMatch(/plenitude\.apng$/);
-    const writes = image.writes.length;
-    view.setProgress(true, 4);
+    expect(images.at(-1)?.src).toMatch(/hollow-globe\.png$/);
     view.setProgress(true, 5);
-    expect(image.writes).toHaveLength(writes);
-    view.setProgress(false, 1);
-    expect(image.src).toMatch(/nucleo\.png$/);
-    expect(image.classList.contains('sphere-art-spinning')).toBe(true);
+    expect(host.dataset.sphereForm).toBe('plenitude');
   });
 
-  it('uses matching stills for reduced motion, hidden pages and an off-screen altar', () => {
-    const view = visual();
-    view.setProgress(true, 3);
-    const image = images[0];
+  it('suspends frames for reduced motion, hidden pages and an off-screen altar', () => {
+    visual();
+    const raf = vi.mocked(requestAnimationFrame);
+    raf.mockClear();
     media.matches = true;
     media.dispatchEvent(new Event('change'));
-    expect(image.src).toMatch(/orbitas-v2\.png$/);
+    expect(cancelAnimationFrame).toHaveBeenCalled();
+    expect(raf).not.toHaveBeenCalled();
     media.matches = false;
     media.dispatchEvent(new Event('change'));
-    expect(image.src).toMatch(/orbitas-v2\.apng$/);
+    expect(raf).toHaveBeenCalledTimes(1);
+    raf.mockClear();
     intersect(false);
-    expect(image.src).toMatch(/orbitas-v2\.png$/);
+    expect(raf).not.toHaveBeenCalled();
     intersect(true);
+    expect(raf).toHaveBeenCalledTimes(1);
+    raf.mockClear();
     doc.visibilityState = 'hidden';
     doc.dispatchEvent(new Event('visibilitychange'));
-    view.setProgress(true, 4);
-    expect(image.src).toMatch(/plenitude\.png$/);
-    doc.visibilityState = 'visible';
-    doc.dispatchEvent(new Event('visibilitychange'));
-    expect(image.src).toMatch(/plenitude\.apng$/);
-    view.setProgress(false, 1);
-    media.matches = true;
-    media.dispatchEvent(new Event('change'));
-    expect(image.classList.contains('sphere-art-spinning')).toBe(false);
+    expect(raf).not.toHaveBeenCalled();
   });
 
-  it('falls back to the matching still if animation loading fails, without repeated retries', () => {
-    const view = visual();
-    view.setProgress(true, 2);
-    const image = images[0];
-    image.onerror?.();
-    expect(image.src).toMatch(/equador\.png$/);
-    const writes = image.writes.length;
-    image.onerror?.();
+  it.each([60, 120])('renders at 30 FPS on a %i Hz display without slowing rotation', hz => {
+    const advance = vi.spyOn(SphereMotion.prototype, 'advance');
+    visual();
+    clearCanvas.mockClear();
+    const raf = vi.mocked(requestAnimationFrame);
+    for (let i = 0; i <= hz; i++) raf.mock.lastCall![0](i * 1000 / hz);
+    expect(clearCanvas).toHaveBeenCalledTimes(31);
+    expect(advance.mock.calls.reduce((seconds, [dt]) => seconds + dt, 0)).toBeCloseTo(1);
+  });
+
+  it('resets the frame clock on resume so hidden time does not move the sphere', () => {
+    const advance = vi.spyOn(SphereMotion.prototype, 'advance');
+    visual();
+    const raf = vi.mocked(requestAnimationFrame);
+    raf.mock.lastCall![0](0);
+    raf.mock.lastCall![0](1000 / 30);
     intersect(false);
     intersect(true);
-    expect(image.writes).toHaveLength(writes);
+    advance.mockClear();
+    raf.mock.lastCall![0](10000);
+    expect(advance).toHaveBeenLastCalledWith(0);
+    raf.mock.lastCall![0](10000 + 1000 / 30);
+    expect(advance.mock.lastCall![0]).toBeCloseTo(1 / 30);
+  });
+
+  it('falls back to the initial core after a load error without retrying failed sources', () => {
+    const view = visual();
+    view.setProgress(true, 3);
+    images.at(-1)?.onerror?.();
+    expect(images.at(-1)?.src).toMatch(/nucleo\.png$/);
+    images.at(-1)?.onerror?.();
+    const count = images.length;
+    intersect(false);
+    intersect(true);
+    expect(images).toHaveLength(count);
   });
 
   it('follows real seal purchases, evolutions, save restoration and Ascensão without changing rewards', () => {
@@ -157,10 +178,12 @@ describe('Esfera progression visuals', () => {
     vi.spyOn(sphere, 'spawnFloatingText').mockImplementation(() => {});
     const image = images[0];
     expect(host.dataset.sphereForm).toBe('nucleo');
+    const react = vi.spyOn(SphereVisual.prototype, 'reactToClick');
     const clicks = gameState.totalClicks;
     const faith = gameState.faithPoints;
     button.dispatchEvent(new Event('click'));
     expect(gameState.totalClicks).toBe(clicks + 1);
+    expect(react).toHaveBeenCalledTimes(1);
     expect(gameState.faithPoints).toBeGreaterThan(faith);
     expect(image.writes).toHaveLength(1);
     gameState.faithPoints = 1e40;
@@ -189,6 +212,7 @@ describe('Esfera progression visuals', () => {
     gameState.runGnoseAutomation();
     events.emit(GameEvents.GAME_TICK, 0.1);
     expect(host.dataset.sphereForm).toBe('meridiano');
+    expect(react).toHaveBeenCalledTimes(1);
     sphere.destroy();
     const writes = image.writes.length;
     gameState.incarnationStage = 1;

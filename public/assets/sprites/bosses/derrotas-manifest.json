@@ -1,0 +1,59 @@
+{
+  "generator": "PixelLab PixMiniMax",
+  "created": "2026-11-09",
+  "playback": "once, only when the boss is defeated; fade over final 10%; then return procession",
+  "animations": [
+    {
+      "bossId": "boss_anubis",
+      "name": "Anúbis",
+      "sheet": "lateral/01-anubis/derrota/spritesheet.png",
+      "jobId": "a02e4c22-a202-4f8c-ba45-992b18bdada1",
+      "assetId": "62f393c2-0d4b-5574-ba8d-53e27983d4e6",
+      "prompt": "Anubis staggers from a final hit. His knees buckle, the scales tilt and fall, and the long staff tips down. He sinks to both knees, bows his jackal head, then slumps sideways to the ground in a defeated heap. A few pale engraved ash flecks drift upward. One-shot defeat animation, not a loop. Preserve the exact character identity, engraving pixel art, original scale, fixed ground baseline and 256x192 transparent canvas. Static orthographic side camera, keep facing RIGHT, do not turn toward viewer. No blood, no new character, no camera movement. End collapsed and motionless, do not stand up again.",
+      "frameWidth": 256,
+      "frameHeight": 192,
+      "frameCount": 17,
+      "durationMs": 1500,
+      "loop": false
+    },
+    {
+      "bossId": "boss_cronos",
+      "name": "Hades",
+      "sheet": "lateral/02-hades/derrota/spritesheet.png",
+      "jobId": "04d9fadd-e048-427b-80f2-9c1d430032e3",
+      "assetId": "9c4674f3-d704-59c1-823c-80d3a2ffea10",
+      "prompt": "Hades reels from a final blow. His knees buckle under the heavy armor, he drops the bident, staggers down to one knee, then collapses forward onto the ground. The dark armored body remains in a low defeated heap; a few charcoal ash wisps rise and disperse. One-shot defeat animation, not a loop. Preserve the exact character identity, engraving pixel art, original scale, fixed ground baseline and 256x192 transparent canvas. Static orthographic side camera, keep facing RIGHT, do not turn toward viewer. No blood, no new character, no camera movement. End collapsed and motionless, do not stand up again.",
+      "frameWidth": 256,
+      "frameHeight": 192,
+      "frameCount": 17,
+      "durationMs": 1500,
+      "loop": false
+    },
+    {
+      "bossId": "boss_odin",
+      "name": "Odin",
+      "sheet": "lateral/03-odin/derrota/spritesheet.png",
+      "jobId": "afd30a00-b093-45d8-a254-90520ef0a866",
+      "assetId": "6b8a106c-a730-5d71-b027-c7cc8de03c2a",
+      "prompt": "Odin recoils from the final blow, his spear slides from his hand and falls diagonally onto the ground. His knees buckle, his cloak folds as he kneels and slumps forward defeated. The raven lifts off and flies upward to the left. End with the king collapsed on the ground. One-shot defeat animation, not a loop. Preserve the exact character identity, engraving pixel art, original scale, fixed ground baseline and 256x192 transparent canvas. Static orthographic side camera, keep facing RIGHT, do not turn toward viewer. No blood, no new character, no camera movement. End collapsed and motionless, do not stand up again.",
+      "frameWidth": 256,
+      "frameHeight": 192,
+      "frameCount": 17,
+      "durationMs": 1500,
+      "loop": false
+    },
+    {
+      "bossId": "boss_tiamat",
+      "name": "Caos Primordial",
+      "sheet": "caos-referencia-v2/derrota/spritesheet.png",
+      "jobId": "6cb77d76-01f0-4e0d-97fb-430d338c18eb",
+      "assetId": "90587ef7-1096-52ee-b12c-da25dc8263eb",
+      "prompt": "The primordial entity suffers its final defeat and IMPLODES. The curled tentacles writhe, fold inward and disintegrate into tiny charcoal flecks. Its horizontal gold orbit cracks into several small arcs that contract inward. The round black core shrinks rapidly to a tiny point and extinguishes, leaving only sparse fading ash motes. One-way death sequence ending empty, never recover or reform. Preserve reference ring orientation and original engraved charcoal bone-white palette with faint antique gold only. No explosion filling the canvas, no human anatomy, no camera movement, no zoom. Transparent background, fixed 256x192 framing.",
+      "frameWidth": 256,
+      "frameHeight": 192,
+      "frameCount": 17,
+      "durationMs": 1500,
+      "loop": false
+    }
+  ]
+}

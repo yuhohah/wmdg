@@ -1,0 +1,18 @@
+{
+  "bossId": "boss_tiamat",
+  "name": "Caos Primordial",
+  "generator": "PixelLab PixMiniMax",
+  "jobId": "6cb77d76-01f0-4e0d-97fb-430d338c18eb",
+  "assetId": "90587ef7-1096-52ee-b12c-da25dc8263eb",
+  "description": "Tentáculos e aro convergem para o núcleo, que colapsa e desaparece.",
+  "frame_width": 256,
+  "frame_height": 192,
+  "sheet_frame_count": 17,
+  "sourceFrameIncluded": true,
+  "duration_ms": 1500,
+  "loop": false,
+  "transparent": true,
+  "direction": "east",
+  "layout": "horizontal",
+  "source_sha256": "1127fb3af17e572f1602ad6db8394712e475a65be7137581f48e159aba58fca7"
+}

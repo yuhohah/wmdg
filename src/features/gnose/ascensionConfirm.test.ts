@@ -51,7 +51,7 @@ describe('Ascension confirmation', () => {
 
   it('summarizes the gain, the losses and what is kept', () => {
     const text = ascensionSummary(game);
-    expect(text).toContain(`+${game.getGnoseToGet()} Gnose`);
+    expect(text).toContain(`+5e0 Gnose`);
     expect(text).toContain('Você perde: Fé, Fiéis, Fervor, Ritos, Avatar, Fragmentos, Relíquias e Selos.');
     expect(text).toContain('Você mantém: Gnose, nós da Árvore, Guardiões derrotados e conquistas.');
   });

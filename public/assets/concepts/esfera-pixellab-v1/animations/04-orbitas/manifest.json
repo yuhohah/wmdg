@@ -1,0 +1,66 @@
+{
+  "stage": 4,
+  "name": "Órbitas",
+  "size": [
+    512,
+    512
+  ],
+  "cycle_seconds": 48,
+  "renderer": "WebGL, rigid annular meshes, per-fragment depth buffer",
+  "base": "../../../esferas-sem-aros-v1/02-esfera-meridianos.png",
+  "globe_radius": 130,
+  "globe_image_display_size": 300,
+  "globe_rotation": {
+    "direction": "clockwise",
+    "period_seconds": 24,
+    "axis": "image plane"
+  },
+  "rings": [
+    {
+      "name": "Meridiano",
+      "radius": 174,
+      "width": 7,
+      "thickness": 2,
+      "period_seconds": 12,
+      "direction": 1
+    },
+    {
+      "name": "Equador",
+      "radius": 150,
+      "width": 7,
+      "thickness": 2,
+      "period_seconds": 16,
+      "direction": -1
+    },
+    {
+      "name": "Órbita oblíqua",
+      "radius": 199,
+      "width": 7,
+      "thickness": 2,
+      "period_seconds": 24,
+      "direction": 1
+    },
+    {
+      "name": "Aro externo",
+      "radius": 222,
+      "width": 7,
+      "thickness": 2,
+      "period_seconds": 24,
+      "direction": 1,
+      "axis": "horizontal (vertical pitch)"
+    }
+  ],
+  "ring_style": {
+    "canvas_size": 512,
+    "color": "#dedccd",
+    "surface": "smooth, without hatching, central lines or tick marks",
+    "widths": {
+      "meridiano": 7,
+      "equador": 7,
+      "obliquo": 7,
+      "externo": 7,
+      "aureola": 7
+    }
+  },
+  "integrated_in_game": false
+}

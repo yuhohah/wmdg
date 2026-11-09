@@ -53,9 +53,9 @@ export const PLAYER_BEHAVIORS: Record<PlayerArchetype, Readonly<PlayerBehavior>>
     initialVisitDurationSec: 480, visitDurationSec: 480, absenceMinSec: 720, absenceMaxSec: 720,
   },
   afk: {
-    name: 'AFK (10 min ativos e recuperação após Gnose)', initialClickCps: 2, routineClickCps: 1,
+    name: 'AFK (10 min ativos, recuperação e aparadas)', initialClickCps: 2, routineClickCps: 1,
     combatClickCps: 1, maxInteractionCps: 2, decisionDelaySec: 2,
-    miracleCatchChance: 0, miracleResponseSec: 0, riftResponseSec: Infinity,
+    miracleCatchChance: 0, miracleResponseSec: 0, riftResponseSec: 0.3,
     blessingTargetSec: 60, blessingMode: 'maintain', sphereManualUntilSec: 600, postGnoseRecoveryClicks: true, blessingManualUntilSec: 600,
     routineBurstEverySec: Infinity, routineBurstDurationSec: Infinity,
     initialVisitDurationSec: Infinity, visitDurationSec: Infinity, absenceMinSec: 0, absenceMaxSec: 0,
@@ -76,10 +76,10 @@ export function routineClicksAvailable(behavior: Readonly<PlayerBehavior>, nowSe
 }
 
 export function describeBehavior(profile: PlayerArchetype): string {
-  if (profile === 'reference') return 'Referência: 2 cliques/s em rajadas de 10 s por minuto, 70% dos milagres e orçamento compartilhado de compras, Bênção e combate.';
-  if (profile === 'active') return 'Ativo: presença contínua, cliques rotineiros e manutenção manual do 2×.';
-  if (profile === 'casual') return 'Casual: sessões de 8 min a cada 20 min (12 min ausente); cliques contínuos a 1/s durante a presença, compras/prestígios e manutenção manual do 2× até 6 s de carga.';
-  return 'AFK: compras e prestígios contínuos; cliques na Esfera e ativação manual do 2× antes dos 10 min de tempo total; após Gnose, permite apenas cliques de recuperação até haver Fé para o primeiro fiel, sem reativar o 2× manual.';
+  if (profile === 'reference') return 'Referência: 2 cliques/s em rajadas de 10 s por minuto, 70% dos milagres e orçamento compartilhado de compras, Bênção e APARAR nos combates.';
+  if (profile === 'active') return 'Ativo: presença contínua, cliques rotineiros, manutenção manual do 2× e APARAR nos combates.';
+  if (profile === 'casual') return 'Casual: sessões de 8 min a cada 20 min (12 min ausente); cliques contínuos a 1/s durante a presença, compras/prestígios e manutenção manual do 2× até 6 s de carga e APARAR nos combates durante as visitas.';
+  return 'AFK: compras e prestígios contínuos; cliques na Esfera e ativação manual do 2× antes dos 10 min de tempo total; após Gnose, permite apenas cliques de recuperação até haver Fé para o primeiro fiel, sem reativar o 2× manual. Nos combates, usa APARAR com reação de 0,3 s e orçamento compartilhado de 2 interações/s, inclusive após os 10 min.';
 }
 
 /** Separate random streams keep scheduling independent from critical-click draws. */

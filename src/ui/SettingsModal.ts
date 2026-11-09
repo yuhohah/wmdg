@@ -23,9 +23,11 @@ export class SettingsModal {
   private settingsBtn: HTMLButtonElement | null = null;
 
   // Audio Controls
+  private audioToggleEl: HTMLButtonElement | null = null;
+  private musicVolumeSliderEl: HTMLInputElement | null = null;
   private volumeSliderEl: HTMLInputElement | null = null;
-  private musicToggleEl: HTMLInputElement | null = null;
-  private sfxToggleEl: HTMLInputElement | null = null;
+  private musicToggleEl: HTMLButtonElement | null = null;
+  private sfxToggleEl: HTMLButtonElement | null = null;
   private sfxVolumeSliderEl: HTMLInputElement | null = null;
   private musicQuickBtnEl: HTMLButtonElement | null = null;
   private musicIconOnEl: HTMLElement | null = null;
@@ -58,9 +60,11 @@ export class SettingsModal {
     this.closeFooterBtn = document.getElementById('close-settings-footer-btn') as HTMLButtonElement | null;
     this.settingsBtn = document.getElementById('settings-btn') as HTMLButtonElement | null;
 
+    this.audioToggleEl = document.querySelector<HTMLButtonElement>('#audio-toggle');
+    this.musicVolumeSliderEl = document.querySelector<HTMLInputElement>('#music-volume-slider');
     this.volumeSliderEl = document.getElementById('volume-slider') as HTMLInputElement | null;
-    this.musicToggleEl = document.getElementById('music-toggle') as HTMLInputElement | null;
-    this.sfxToggleEl = document.getElementById('sfx-toggle') as HTMLInputElement | null;
+    this.musicToggleEl = document.getElementById('music-toggle') as HTMLButtonElement | null;
+    this.sfxToggleEl = document.getElementById('sfx-toggle') as HTMLButtonElement | null;
     this.sfxVolumeSliderEl = document.getElementById('sfx-volume-slider') as HTMLInputElement | null;
     this.musicQuickBtnEl = document.getElementById('music-quick-btn') as HTMLButtonElement | null;
     this.musicIconOnEl = document.getElementById('music-icon-on');
@@ -112,20 +116,21 @@ export class SettingsModal {
       });
     }
 
-    if (this.musicToggleEl) {
-      this.musicToggleEl.checked = this.options.audio.isMusicEnabled();
-      this.musicToggleEl.addEventListener('change', () => {
-        this.options.audio.setMusicEnabled(this.musicToggleEl!.checked);
-        this.updateMusicUI();
-      });
-    }
-
-    if (this.sfxToggleEl) {
-      this.sfxToggleEl.checked = this.options.audio.isSfxEnabled();
-      this.sfxToggleEl.addEventListener('change', () => {
-        this.options.audio.setSfxEnabled(this.sfxToggleEl!.checked);
-      });
-    }
+    this.audioToggleEl?.addEventListener('click', () => {
+      this.options.audio.setAudioEnabled(!this.options.audio.isAudioEnabled());
+      this.updateMusicUI();
+    });
+    this.musicToggleEl?.addEventListener('click', () => {
+      this.options.audio.toggleMusic();
+      this.updateMusicUI();
+    });
+    this.sfxToggleEl?.addEventListener('click', () => {
+      this.options.audio.setSfxEnabled(!this.options.audio.isSfxEnabled());
+      this.updateMusicUI();
+    });
+    this.musicVolumeSliderEl?.addEventListener('input', () => {
+      this.options.audio.setMusicVolume(Number(this.musicVolumeSliderEl!.value) / 100);
+    });
 
     if (this.sfxVolumeSliderEl) {
       this.sfxVolumeSliderEl.value = String(Math.round(this.options.audio.getSfxVolume() * 100));
@@ -177,10 +182,10 @@ export class SettingsModal {
   private initAudioGestureListener(): void {
     const triggerAudioOnGesture = () => {
       this.options.audio.init();
-      if (this.options.audio.isMusicEnabled()) {
+      if (this.options.audio.isAudioEnabled() && this.options.audio.isMusicEnabled()) {
         this.options.audio.playMusic();
       }
-      if (!this.options.audio.isMusicEnabled() || !this.options.audio.isMusicPaused()) {
+      if (!this.options.audio.isAudioEnabled() || !this.options.audio.isMusicEnabled() || !this.options.audio.isMusicPaused()) {
         window.removeEventListener('click', triggerAudioOnGesture);
         window.removeEventListener('pointerdown', triggerAudioOnGesture);
         window.removeEventListener('keydown', triggerAudioOnGesture);
@@ -211,12 +216,10 @@ export class SettingsModal {
     if (this.volumeSliderEl) {
       this.volumeSliderEl.value = String(Math.round(this.options.audio.getVolume() * 100));
     }
-    if (this.musicToggleEl) {
-      this.musicToggleEl.checked = this.options.audio.isMusicEnabled();
+    if (this.musicVolumeSliderEl) {
+      this.musicVolumeSliderEl.value = String(Math.round(this.options.audio.getMusicVolume() * 100));
     }
-    if (this.sfxToggleEl) {
-      this.sfxToggleEl.checked = this.options.audio.isSfxEnabled();
-    }
+    this.updateMusicUI();
     if (this.sfxVolumeSliderEl) {
       this.sfxVolumeSliderEl.value = String(Math.round(this.options.audio.getSfxVolume() * 100));
     }
@@ -237,8 +240,17 @@ export class SettingsModal {
     if (this.musicIconOffEl) {
       this.musicIconOffEl.style.display = isEnabled ? 'none' : 'block';
     }
-    if (this.musicToggleEl) {
-      this.musicToggleEl.checked = isEnabled;
+    const toggles: [HTMLButtonElement | null, boolean, string][] = [
+      [this.audioToggleEl, this.options.audio.isAudioEnabled(), 'áudio geral'],
+      [this.musicToggleEl, isEnabled, 'música'],
+      [this.sfxToggleEl, this.options.audio.isSfxEnabled(), 'efeitos sonoros'],
+    ];
+    for (const [button, enabled, name] of toggles) {
+      if (!button) continue;
+      button.classList.toggle('muted', !enabled);
+      button.setAttribute('aria-pressed', String(enabled));
+      button.setAttribute('aria-label', `${enabled ? 'Silenciar' : 'Ativar'} ${name}`);
+      button.title = `${enabled ? 'Silenciar' : 'Ativar'} ${name}`;
     }
     if (this.musicQuickBtnEl) {
       this.musicQuickBtnEl.classList.toggle('muted', !isEnabled);

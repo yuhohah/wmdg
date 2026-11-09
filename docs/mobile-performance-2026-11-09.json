@@ -1,0 +1,674 @@
+{
+  "results": [
+    {
+      "label": "núcleo, parado",
+      "form": "nucleo",
+      "visible": true,
+      "frame": {
+        "n": 113,
+        "mean": 34.95398230088495,
+        "p95": 50,
+        "max": 50.099999999998545
+      },
+      "fps": 28.609043495873212,
+      "over33ms": 18,
+      "over50ms": 2,
+      "draw": {
+        "n": 114,
+        "mean": 0.06403508717030809,
+        "p95": 0.19999998807907104,
+        "max": 0.20000000298023224
+      },
+      "click": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "longTasks": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "heap": 10000000,
+      "dom": 844,
+      "animations": 2
+    },
+    {
+      "label": "Meridiano, 8 cliques/s",
+      "form": "meridiano",
+      "visible": true,
+      "frame": {
+        "n": 95,
+        "mean": 41.752631578947366,
+        "p95": 50.099999999998545,
+        "max": 50.10000000000582
+      },
+      "fps": 23.950586159082317,
+      "over33ms": 49,
+      "over50ms": 6,
+      "draw": {
+        "n": 96,
+        "mean": 0.42083333324020106,
+        "p95": 0.5999999940395355,
+        "max": 1.699999988079071
+      },
+      "click": {
+        "n": 32,
+        "mean": 1.0750000015832484,
+        "p95": 1.300000011920929,
+        "max": 4.199999988079071
+      },
+      "longTasks": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "heap": 10000000,
+      "dom": 866,
+      "animations": 24
+    },
+    {
+      "label": "Equador, 8 cliques/s",
+      "form": "equador",
+      "visible": true,
+      "frame": {
+        "n": 102,
+        "mean": 38.88725490196079,
+        "p95": 50.099999999998545,
+        "max": 83.40000000000146
+      },
+      "fps": 25.7153661918568,
+      "over33ms": 45,
+      "over50ms": 6,
+      "draw": {
+        "n": 103,
+        "mean": 0.6349514562238767,
+        "p95": 0.800000011920929,
+        "max": 1.3999999910593033
+      },
+      "click": {
+        "n": 32,
+        "mean": 1.081249998882413,
+        "p95": 1.5,
+        "max": 2.1000000089406967
+      },
+      "longTasks": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "heap": 10000000,
+      "dom": 874,
+      "animations": 27
+    },
+    {
+      "label": "Órbitas, parado",
+      "form": "orbitas",
+      "visible": true,
+      "frame": {
+        "n": 111,
+        "mean": 35.58378378378381,
+        "p95": 50,
+        "max": 50.10000000000582
+      },
+      "fps": 28.10268874373384,
+      "over33ms": 32,
+      "over50ms": 5,
+      "draw": {
+        "n": 112,
+        "mean": 1.0571428574621677,
+        "p95": 1.4000000059604645,
+        "max": 2.5999999940395355
+      },
+      "click": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "longTasks": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "heap": 10000000,
+      "dom": 852,
+      "animations": 7
+    },
+    {
+      "label": "Órbitas, 8 cliques/s",
+      "form": "orbitas",
+      "visible": true,
+      "frame": {
+        "n": 101,
+        "mean": 39.272277227722775,
+        "p95": 50.099999999998545,
+        "max": 83.40000000000146
+      },
+      "fps": 25.463254758603302,
+      "over33ms": 42,
+      "over50ms": 9,
+      "draw": {
+        "n": 102,
+        "mean": 1.0872549024574898,
+        "p95": 1.5,
+        "max": 2.5999999940395355
+      },
+      "click": {
+        "n": 32,
+        "mean": 0.9906249986961484,
+        "p95": 1.8999999910593033,
+        "max": 1.9000000059604645
+      },
+      "longTasks": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "heap": 10000000,
+      "dom": 866,
+      "animations": 25
+    },
+    {
+      "label": "Plenitude, 8 cliques/s",
+      "form": "plenitude",
+      "visible": true,
+      "frame": {
+        "n": 155,
+        "mean": 38.49290322580651,
+        "p95": 50.10000000000582,
+        "max": 83.40000000000873
+      },
+      "fps": 25.978814695628817,
+      "over33ms": 46,
+      "over50ms": 11,
+      "draw": {
+        "n": 156,
+        "mean": 0.9782051281669201,
+        "p95": 1.2000000029802322,
+        "max": 1.5
+      },
+      "click": {
+        "n": 48,
+        "mean": 0.9604166662320495,
+        "p95": 1.2000000029802322,
+        "max": 1.4000000059604645
+      },
+      "longTasks": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "heap": 10000000,
+      "dom": 859,
+      "animations": 26
+    },
+    {
+      "label": "Pátio com limite de Fiéis",
+      "form": "plenitude",
+      "visible": true,
+      "frame": {
+        "n": 157,
+        "mean": 38.0025477707006,
+        "p95": 50,
+        "max": 83.39999999999418
+      },
+      "fps": 26.314025207830543,
+      "over33ms": 40,
+      "over50ms": 6,
+      "draw": {
+        "n": 158,
+        "mean": 0.9924050632722771,
+        "p95": 1.2999999970197678,
+        "max": 1.7000000029802322
+      },
+      "click": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "longTasks": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "heap": 10000000,
+      "dom": 844,
+      "animations": 5
+    },
+    {
+      "label": "Pátio visível, 60 sprites",
+      "form": "plenitude",
+      "visible": true,
+      "frame": {
+        "n": 161,
+        "mean": 30.951552795031127,
+        "p95": 49.89999999999418,
+        "max": 50.10000000000582
+      },
+      "fps": 32.30855675068222,
+      "over33ms": 10,
+      "over50ms": 1,
+      "draw": {
+        "n": 162,
+        "mean": 1.0086419752534526,
+        "p95": 1.2000000029802322,
+        "max": 2.6000000089406967
+      },
+      "click": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "longTasks": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "heap": 10000000,
+      "dom": 844,
+      "animations": 5
+    },
+    {
+      "label": "Controle: esfera sem redesenho",
+      "form": "plenitude",
+      "visible": true,
+      "frame": {
+        "n": 115,
+        "mean": 34.635652173913094,
+        "p95": 50,
+        "max": 83.39999999999418
+      },
+      "fps": 28.87198413296172,
+      "over33ms": 11,
+      "over50ms": 3,
+      "draw": {
+        "n": 116,
+        "mean": 0.004310344827586207,
+        "p95": 0,
+        "max": 0.10000000894069672
+      },
+      "click": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "longTasks": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "heap": 10000000,
+      "dom": 844,
+      "animations": 4
+    },
+    {
+      "label": "Anúbis e procissão",
+      "form": "plenitude",
+      "visible": true,
+      "frame": {
+        "n": 245,
+        "mean": 32.58408163265309,
+        "p95": 50,
+        "max": 83.39999999999418
+      },
+      "fps": 30.68983227067177,
+      "over33ms": 23,
+      "over50ms": 4,
+      "draw": {
+        "n": 122,
+        "mean": 0.9459016386602745,
+        "p95": 1.2000000029802322,
+        "max": 2.4000000059604645
+      },
+      "click": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "longTasks": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "heap": 10000000,
+      "dom": 844,
+      "animations": 2
+    },
+    {
+      "label": "Repetição Plenitude parada",
+      "form": "plenitude",
+      "visible": true,
+      "frame": {
+        "n": 240,
+        "mean": 16.665833333333406,
+        "p95": 16.79999999998836,
+        "max": 16.800000000017462
+      },
+      "fps": 60.00300015000724,
+      "over33ms": 0,
+      "over50ms": 0,
+      "draw": {
+        "n": 241,
+        "mean": 0.9020746890687349,
+        "p95": 1.1000000089406967,
+        "max": 1.7000000029802322
+      },
+      "click": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "longTasks": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "heap": 10000000,
+      "dom": 844,
+      "animations": 5
+    },
+    {
+      "label": "Controle: canvas oculto, código continua",
+      "form": "plenitude",
+      "visible": true,
+      "frame": {
+        "n": 239,
+        "mean": 16.666108786610927,
+        "p95": 16.79999999998836,
+        "max": 16.800000000017462
+      },
+      "fps": 60.00200843542863,
+      "over33ms": 0,
+      "over50ms": 0,
+      "draw": {
+        "n": 240,
+        "mean": 0.8833333335195979,
+        "p95": 1.199999988079071,
+        "max": 1.2000000029802322
+      },
+      "click": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "longTasks": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "heap": 10000000,
+      "dom": 844,
+      "animations": 5
+    },
+    {
+      "label": "Controle: página sem pintura",
+      "form": "plenitude",
+      "visible": true,
+      "frame": {
+        "n": 239,
+        "mean": 16.666108786610806,
+        "p95": 16.70000000001164,
+        "max": 16.800000000017462
+      },
+      "fps": 60.00200843542906,
+      "over33ms": 0,
+      "over50ms": 0,
+      "draw": {
+        "n": 240,
+        "mean": 0.8095833331346511,
+        "p95": 1,
+        "max": 1.2999999970197678
+      },
+      "click": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "longTasks": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "heap": 10000000,
+      "dom": 845,
+      "animations": 5
+    },
+    {
+      "label": "Plenitude sem transmissão da prévia, 8 cliques/s",
+      "form": "plenitude",
+      "visible": true,
+      "frame": {
+        "n": 359,
+        "mean": 16.666016713091857,
+        "p95": 16.70000000001164,
+        "max": 16.800000000046566
+      },
+      "fps": 60.00233992411984,
+      "over33ms": 0,
+      "over50ms": 0,
+      "draw": {
+        "n": 360,
+        "mean": 0.9430555553899871,
+        "p95": 1.2999999970197678,
+        "max": 2.2999999970197678
+      },
+      "click": {
+        "n": 48,
+        "mean": 0.8083333385487398,
+        "p95": 1.1000000089406967,
+        "max": 1.1000000089406967
+      },
+      "longTasks": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "heap": 10000000,
+      "dom": 851,
+      "animations": 23
+    },
+    {
+      "label": "Combate repetido sem transmissão da prévia",
+      "form": "plenitude",
+      "visible": true,
+      "frame": {
+        "n": 311,
+        "mean": 19.291639871382674,
+        "p95": 33.300000000046566,
+        "max": 116.59999999997672
+      },
+      "fps": 51.83592512958971,
+      "over33ms": 2,
+      "over50ms": 1,
+      "draw": {
+        "n": 222,
+        "mean": 0.8905405415608002,
+        "p95": 1.2000000029802322,
+        "max": 1.6000000089406967
+      },
+      "click": {
+        "n": 0,
+        "mean": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "longTasks": {
+        "n": 1,
+        "mean": 88,
+        "p95": 88,
+        "max": 88
+      },
+      "heap": 10000000,
+      "dom": 844,
+      "animations": 2
+    }
+  ],
+  "resources": [
+    {
+      "name": "/assets/hud/vt323.ttf",
+      "bytes": 147320,
+      "duration": 6.199999988079071
+    },
+    {
+      "name": "/assets/sphere/progression/nucleo.png",
+      "bytes": 106816,
+      "duration": 8.300000011920929
+    },
+    {
+      "name": "/assets/index-oVqIw2O7.js",
+      "bytes": 93710,
+      "duration": 25.299999997019768
+    },
+    {
+      "name": "/assets/sprites/esfera/layers/still.png",
+      "bytes": 80043,
+      "duration": 7.5
+    },
+    {
+      "name": "/assets/index-BqRJ0mXy.css",
+      "bytes": 38076,
+      "duration": 15.599999994039536
+    },
+    {
+      "name": "/assets/sprites/fieis/pontifice/rezar/spritesheet.png",
+      "bytes": 28454,
+      "duration": 18.400000005960464
+    },
+    {
+      "name": "/assets/sprites/fieis/hierofante/rezar/spritesheet.png",
+      "bytes": 24900,
+      "duration": 12.599999994039536
+    },
+    {
+      "name": "/assets/sprites/fieis/iniciado/rezar/spritesheet.png",
+      "bytes": 19366,
+      "duration": 11.600000008940697
+    },
+    {
+      "name": "/assets/sprites/fieis/pontifice/andar/spritesheet.png",
+      "bytes": 18567,
+      "duration": 16.900000005960464
+    },
+    {
+      "name": "/assets/sprites/fieis/hierofante/andar/spritesheet.png",
+      "bytes": 16134,
+      "duration": 12
+    },
+    {
+      "name": "/assets/concepts/encarnacao/05-solar.png",
+      "bytes": 13445,
+      "duration": 20.599999994039536
+    },
+    {
+      "name": "/assets/concepts/encarnacao/04-eclipse.png",
+      "bytes": 13095,
+      "duration": 20.299999997019768
+    },
+    {
+      "name": "/assets/sprites/fieis/iniciado/andar/spritesheet.png",
+      "bytes": 11638,
+      "duration": 11.200000002980232
+    },
+    {
+      "name": "/assets/sprites/fieis/hierofante/iluminacao/spritesheet.png",
+      "bytes": 11143,
+      "duration": 13.900000005960464
+    },
+    {
+      "name": "/assets/sprites/fieis/pontifice/iluminacao/spritesheet.png",
+      "bytes": 10509,
+      "duration": 19.099999994039536
+    },
+    {
+      "name": "/assets/sprites/fieis/iniciado/iluminacao/spritesheet.png",
+      "bytes": 9839,
+      "duration": 11.799999997019768
+    },
+    {
+      "name": "/assets/concepts/encarnacao/03-ancestral.png",
+      "bytes": 7431,
+      "duration": 19.600000008940697
+    },
+    {
+      "name": "/assets/concepts/encarnacao/01-neofito.png",
+      "bytes": 5515,
+      "duration": 19.299999997019768
+    },
+    {
+      "name": "/assets/concepts/encarnacao/02-consagrado.png",
+      "bytes": 3950,
+      "duration": 19.400000005960464
+    },
+    {
+      "name": "/assets/board/void-stars-a.svg",
+      "bytes": 2421,
+      "duration": 7.700000002980232
+    },
+    {
+      "name": "/assets/board/void-stars-b.svg",
+      "bytes": 1577,
+      "duration": 6.299999997019768
+    },
+    {
+      "name": "/css2",
+      "bytes": 1016,
+      "duration": 2.7000000029802322
+    },
+    {
+      "name": "/assets/ui/astral-frame.svg",
+      "bytes": 532,
+      "duration": 6.5
+    }
+  ],
+  "environment": {
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+    "viewport": [
+      390,
+      844
+    ],
+    "dpr": 2,
+    "hardwareConcurrency": 12
+  },
+  "notes": [
+    "No CPU/GPU throttling available",
+    "Heap is rounded to 10000000 bytes and not usable for leak assessment",
+    "Courtyard scenario was off screen: excluded from conclusions"
+  ],
+  "baseline": {
+    "label": "Controle sem jogo: documento de texto",
+    "fps": 60.00300015000748,
+    "p95": 16.799999999999272,
+    "n": 240,
+    "visibility": "visible"
+  },
+  "date": "2026-11-09",
+  "separateFollowerDraw": {
+    "sprites": 60,
+    "iterations": 120,
+    "meanMs": 0.18,
+    "p95Ms": 0.3
+  }
+}

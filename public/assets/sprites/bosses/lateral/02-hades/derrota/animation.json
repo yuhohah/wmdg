@@ -1,0 +1,18 @@
+{
+  "bossId": "boss_cronos",
+  "name": "Hades",
+  "generator": "PixelLab PixMiniMax",
+  "jobId": "04d9fadd-e048-427b-80f2-9c1d430032e3",
+  "assetId": "9c4674f3-d704-59c1-823c-80d3a2ffea10",
+  "description": "A armadura cede, o bidente cai e Hades desaba.",
+  "frame_width": 256,
+  "frame_height": 192,
+  "sheet_frame_count": 17,
+  "sourceFrameIncluded": true,
+  "duration_ms": 1500,
+  "loop": false,
+  "transparent": true,
+  "direction": "east",
+  "layout": "horizontal",
+  "source_sha256": "9d98993466ebd6811b8863bb10abc55dcfc7cd36e659c304e0544deebaf27d65"
+}

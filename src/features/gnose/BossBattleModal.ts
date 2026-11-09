@@ -38,6 +38,7 @@ interface BossLateralSprites {
   idle: HTMLImageElement;
   walk: HTMLImageElement;
   attacks: HTMLImageElement[];
+  defeat: HTMLImageElement;
 }
 
 interface IncarnationWalkSprite {
@@ -330,6 +331,7 @@ export function loadBossSprites(bossId: string): BossLateralSprites | undefined 
   const sprites: BossLateralSprites = {
     idle: load('idle.png'),
     walk: load('andar/spritesheet.png'),
+    defeat: load('derrota/spritesheet.png'),
     attacks: [
       load(`${cfg.attacks[0]}/spritesheet.png`),
       load(`${cfg.attacks[1]}/spritesheet.png`),
@@ -1482,7 +1484,14 @@ export class BossBattleModal {
     let frame = 0;
 
     if (bossSprites) {
-      if (this.bossState === 'walking' || (this.bossState === 'idle' && config?.animateIdle)) {
+      const climax = this.climaxState;
+      if (climax?.victory && bossSprites.defeat.complete && bossSprites.defeat.naturalWidth > 0) {
+        candidateSheet = bossSprites.defeat;
+        const progress = 1 - climax.remainingSec / climax.totalSec;
+        const totalFrames = bossSheetFrameCount(candidateSheet);
+        // Play once across the existing victory interval, never wrap to the standing pose.
+        frame = Math.min(totalFrames - 1, Math.max(0, Math.floor(progress * totalFrames)));
+      } else if (this.bossState === 'walking' || (this.bossState === 'idle' && config?.animateIdle)) {
         candidateSheet = bossSprites.walk;
         const totalFrames = bossSheetFrameCount(candidateSheet);
         frame = Math.floor(this.bossWalkTimeSec / (config?.walkFrameSec ?? 0.16)) % totalFrames;
@@ -1509,7 +1518,8 @@ export class BossBattleModal {
       candidateSheet && candidateSheet.complete && candidateSheet.naturalWidth > 0
         ? candidateSheet
         : null;
-    const bounds = bossId === 'boss_tiamat' && this.bossState === 'attacking'
+    // Hitboxes are inactive during the climax; avoid scanning every collapsing frame.
+    const bounds = this.climaxState?.victory || (bossId === 'boss_tiamat' && this.bossState === 'attacking')
       ? getBossFrameBounds(bossSprites?.idle ?? null, 0, bossId)
       : getBossFrameBounds(activeSheet, frame, bossId);
 
@@ -2298,8 +2308,15 @@ export class BossBattleModal {
           if (bossFrame.sheet) {
             ctx.save();
             if (climax?.victory) {
-              ctx.filter = 'brightness(2.35) contrast(1.25)';
-              ctx.globalAlpha = Math.max(0, climax.remainingSec / climax.totalSec);
+              const isDefeatAnimation = bossFrame.sheet === loadBossSprites(bossId)?.defeat;
+              if (isDefeatAnimation) {
+                // Preserve the generated artwork, dissolving only the last tenth of the sequence.
+                ctx.globalAlpha = Math.min(1, Math.max(0, climax.remainingSec / (climax.totalSec * 0.1)));
+              } else {
+                // A failed or not-yet-loaded sheet keeps the existing victory fade as fallback.
+                ctx.filter = 'brightness(2.35) contrast(1.25)';
+                ctx.globalAlpha = Math.max(0, climax.remainingSec / climax.totalSec);
+              }
             } else if (this.bossHitFlashSec > 0) {
               ctx.filter = 'brightness(1.75) contrast(1.15)';
             }
@@ -2334,6 +2351,7 @@ export class BossBattleModal {
         ctx.font = '700 32px VT323, monospace';
         ctx.textAlign = 'center';
         ctx.fillText('VITÓRIA', sphereLocalX, sphereLocalY - 240 - progress * 20);
+        ctx.globalAlpha = Math.max(0, 1 - progress * 3);
         ctx.strokeStyle = 'rgba(255, 240, 187, 0.72)';
         ctx.lineWidth = 2.5;
         for (const f of this.followerActors) {
@@ -2572,7 +2590,7 @@ export class BossBattleModal {
           : !breakdown.canWithstandBoss
             ? 'Um golpe não aparado destrói a Esfera.'
             : '';
-        const combo = comboStreak > 0 ? `Combo ×${comboStreak}` : '';
+        const combo = comboStreak > 0 ? `Combo ×${formatNumber(comboStreak)}` : '';
         this.setText(this.combatStatsEl, [warning, combo].filter(Boolean).join(' '));
       }
     }
@@ -2713,10 +2731,10 @@ export class BossBattleModal {
           if (res.altarDamageTaken !== undefined) {
             this.lastRiftsMissed = this.options.gameState.activeBossBattle?.riftsMissed ?? this.lastRiftsMissed;
             this.spherePulseAlpha = 0.9;
-            this.showHitFeedback(`Peso menor! −${res.altarDamageTaken.toFixed(0)}% da Esfera (×${res.scaleDamageMultiplier}).`);
+            this.showHitFeedback(`Peso menor! −${res.altarDamageTaken.toFixed(0)}% da Esfera (×${formatNumber(res.scaleDamageMultiplier ?? 1)}).`);
             this.options.spawnFloatingText(
               e.clientX || window.innerWidth / 2, e.clientY || window.innerHeight / 2,
-              `−${res.altarDamageTaken.toFixed(1)}% ESFERA (×${res.scaleDamageMultiplier})`
+              `−${res.altarDamageTaken.toFixed(1)}% ESFERA (×${formatNumber(res.scaleDamageMultiplier ?? 1)})`
             );
             this.updateUI();
             this.drawWorldScene();
@@ -2732,7 +2750,7 @@ export class BossBattleModal {
             this.lastRiftsMissed = this.options.gameState.activeBossBattle?.riftsMissed ?? this.lastRiftsMissed;
             // A stale target from another pending rift cannot immediately replay the cancelled swing.
             this.options.gameState.activeBossBattle?.activeRifts.forEach(r => this.attackedRiftIds.add(r.id));
-            const comboTag = (res.comboStreak ?? 1) > 1 ? ` Combo ×${res.comboStreak} ·` : '';
+            const comboTag = (res.comboStreak ?? 1) > 1 ? ` Combo ×${formatNumber(res.comboStreak ?? 1)} ·` : '';
             let specialMsg = res.kind === 'anubis_scales'
               ? 'Não clique no peso menor.'
               : '+25% de Fulgor';

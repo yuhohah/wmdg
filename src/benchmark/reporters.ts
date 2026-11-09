@@ -15,18 +15,7 @@ export function formatDuration(seconds: number): string {
   return `${Math.floor(hours / 24)}d ${hours % 24}h`;
 }
 
-export function formatCompactNumber(num: number): string {
-  if (!Number.isFinite(num) || num === 0) return '0';
-  if (num < 1000) return num.toFixed(0);
-  const units = ['k', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'];
-  const exp = Math.floor(Math.log10(Math.abs(num)) / 3);
-  if (exp >= 1 && exp <= units.length) {
-    const val = num / Math.pow(10, exp * 3);
-    return `${val.toFixed(val < 10 ? 2 : 1)}${units[exp - 1]}`;
-  }
-  return num.toExponential(2);
-}
-
+export { formatNumber as formatCompactNumber } from '../systems/numberFormat.js';
 
 const MILESTONES = [
   ['first_follower', '1º Fiel Devoto'], ['unlock_incarnation', 'Selo da Encarnação'],

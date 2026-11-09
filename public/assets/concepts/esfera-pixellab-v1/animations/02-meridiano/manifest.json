@@ -1,0 +1,24 @@
+{
+  "stage": 2,
+  "name": "Meridiano",
+  "ring_style": {
+    "canvas_size": 512,
+    "color": "#dedccd",
+    "surface": "smooth, without hatching, central lines or tick marks",
+    "widths": {
+      "meridiano": 7,
+      "equador": 7,
+      "obliquo": 7,
+      "externo": 7,
+      "aureola": 7
+    }
+  },
+  "globe_rotation": {
+    "direction": "clockwise",
+    "period_seconds": 24,
+    "axis": "image plane"
+  },
+  "ring_cycle_seconds": 8,
+  "combined_cycle_seconds": 24,
+  "technique": "SVG/SMIL"
+}

@@ -222,7 +222,7 @@ export class GnoseTab {
             const bestTimeTag = typeof bestTime === 'number' ? ` • Recorde: ${bestTime.toFixed(1)}s` : '';
             guardianBadgeHtml = `
               <span class="gnose-guardian-badge defeated">
-                ${iconOrText(guardian.symbol)} ${guardian.name}: SUBJUGADO (×${guardian.faithFervorMult} Fé/Fervor${bestTimeTag})
+                ${iconOrText(guardian.symbol)} ${guardian.name}: SUBJUGADO (×${formatNumber(guardian.faithFervorMult)} Fé/Fervor${bestTimeTag})
               </span>
               <button type="button" class="btn-rematch-guardian" data-boss-id="${guardian.id}" title="Relembrar duelo contra ${guardian.name} sem risco de maldição">
                 ⚔ Relembrar Duelo
@@ -350,7 +350,7 @@ export class GnoseTab {
       endgameBar.id = 'gnose-endgame-boss-bar';
 
       const actionHtml = isTiamatDefeated
-        ? `<span class="gnose-guardian-badge defeated">${icon('crown')} CREPÚSCULO DOS DEUSES CONCLUÍDO (×10 Fé & Fervor${bestTiamatTag})</span>
+        ? `<span class="gnose-guardian-badge defeated">${icon('crown')} CREPÚSCULO DOS DEUSES CONCLUÍDO (×1e1 Fé & Fervor${bestTiamatTag})</span>
            <button type="button" id="btn-rematch-tiamat" class="btn-rematch-guardian" data-boss-id="${tiamat.id}">⚔ Relembrar Duelo</button>`
         : canChallengeTiamat
           ? `<button type="button" id="btn-challenge-tiamat" class="btn-challenge-guardian endgame-ready" data-boss-id="${tiamat.id}">${iconOrText(tiamat.symbol)} <span class="gnose-guardian-label">Desafiar ${tiamat.name}</span></button>`
@@ -359,7 +359,7 @@ export class GnoseTab {
       endgameBar.innerHTML = `
         <div class="gnose-endgame-info">
           <span class="gnose-endgame-title">${iconOrText(tiamat.symbol)} APOTEOSE FINAL: ${tiamat.name.toUpperCase()}</span>
-          ${isTiamatDefeated ? '' : `<span class="gnose-endgame-desc">Vença para multiplicar toda a Fé e o Fervor por ${tiamat.faithFervorMult}×.</span>`}
+          ${isTiamatDefeated ? '' : `<span class="gnose-endgame-desc">Vença para multiplicar toda a Fé e o Fervor por ${formatNumber(tiamat.faithFervorMult)}×.</span>`}
           <span class="gnose-guardian-readiness" id="gnose-endgame-readiness">${readiness}</span>
         </div>
         <div class="gnose-endgame-action">

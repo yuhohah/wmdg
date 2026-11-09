@@ -75,7 +75,7 @@ export class StatsTab {
       this.statClickFaithEl.textContent = `+${formatNumber(fpc)}`;
     }
     if (this.statPassiveFaithEl) {
-      this.statPassiveFaithEl.textContent = `+${formatNumber(fps)} Fé/s${isBoosted ? ' (2x Bênção)' : ''}`;
+      this.statPassiveFaithEl.textContent = `+${formatNumber(fps)} Fé/s${isBoosted ? ' (2e0x Bênção)' : ''}`;
     }
     if (this.statTotalFollowersEl) {
       this.statTotalFollowersEl.textContent = formatNumber(followers);

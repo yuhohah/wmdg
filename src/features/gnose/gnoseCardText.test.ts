@@ -19,11 +19,11 @@ describe('Faith needed for the next Gnose', () => {
 
 describe('Ascension hint', () => {
   it('points to the first Ascension below the threshold', () => {
-    expect(ascensionHint(5e14, 0.25)).toBe('Ascensão com 1Q de Fé (você tem 500T)');
+    expect(ascensionHint(5e14, 0.25)).toBe('Ascensão com 1e15 de Fé (você tem 5e14)');
   });
 
   it('points to the next Gnose once Ascension is available', () => {
-    expect(ascensionHint(317.2 * Q, 0.25)).toBe('Próxima Gnose com 625Q de Fé (você tem 317.2Q)');
+    expect(ascensionHint(317.2 * Q, 0.25)).toBe('Próxima Gnose com 6.25e17 de Fé (você tem 3.17e17)');
   });
 });
 

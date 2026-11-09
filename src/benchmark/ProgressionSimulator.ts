@@ -215,12 +215,20 @@ class Simulation {
 
     let action: ManualAction | null = null;
     // All manual events share the same finite interaction budget.
-    const rift = !this.awaitingConfirmation && g.activeBossBattle?.activeRifts.find(r => r.maxSec - r.remainingSec + EPSILON >= this.behavior.riftResponseSec);
     const battleBeforeRift = g.activeBossBattle;
+    const rift = !this.awaitingConfirmation && battleBeforeRift?.activeRifts.find(r => {
+      if (r.maxSec - r.remainingSec + EPSILON < this.behavior.riftResponseSec) return false;
+      if (r.kind !== 'anubis_scales') return true;
+      // Pick only the higher weight; its remaining sibling must expire untouched.
+      return !r.scaleHigherSelected && !battleBeforeRift.activeRifts.some(other =>
+        other.kind === 'anubis_scales' && other.groupId === r.groupId
+        && (other.scaleValue ?? 0) > (r.scaleValue ?? 0));
+    });
     const hpBeforeRift = battleBeforeRift?.bossHp ?? 0;
     const riftHit = rift ? g.clickBossRift(rift.id) : undefined;
-    if (riftHit?.shattered) {
-      if (battleBeforeRift) this.metrics.damageCombat('rift', Math.min(hpBeforeRift, riftHit.damage), battleBeforeRift.bossMaxHp);
+    if (riftHit) {
+      // A real attempt consumes its slot even if the domain rejects the parry.
+      if (riftHit.shattered && battleBeforeRift) this.metrics.damageCombat('rift', Math.min(hpBeforeRift, riftHit.damage), battleBeforeRift.bossMaxHp);
       action = 'rift';
     } else if (!this.awaitingConfirmation && this.miracle?.willing && this.time + EPSILON >= this.miracle.born + this.behavior.miracleResponseSec) {
       const reward = calculateMiracleReward(g.faithPoints, g.getFaithPerClick(), g.getFaithPerSecond());

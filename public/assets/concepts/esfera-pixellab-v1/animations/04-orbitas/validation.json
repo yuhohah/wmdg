@@ -1,0 +1,42 @@
+{
+  "method": "Render identical times with all object draw calls reversed; compare framebuffer RGB values.",
+  "depth_buffer_bits": 24,
+  "webgl_error": 0,
+  "samples_seconds": [
+    0,
+    3,
+    7,
+    13,
+    24,
+    41,
+    48
+  ],
+  "order_dependent_pixels_per_sample": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "rgb_difference_threshold": 6,
+  "radial_clearance_lower_bound_pixels": 16,
+  "full_cycle_framebuffer_identical": true,
+  "outer_ring_vertical_rotation_period_seconds": 24,
+  "outer_ring_projected_height_pixels_at_seconds": {
+    "0": 450,
+    "6": 2,
+    "12": 450,
+    "18": 2,
+    "24": 450
+  },
+  "notes": "Verified in Chromium WebGL after enabling vertical pitch of the outer ring. Concentric rigid annuli occupy disjoint spherical radial shells, including their thickness. Angular periods all divide 48 seconds, whose endpoint is pixel-identical to the start. The outer hoop becomes edge-on horizontally at 6 and 18 seconds. Geometry is prescribed kinematically; forces are not simulated.",
+  "ring_surface": "Smooth uniform #dedccd; no engraved marks or central strokes",
+  "globe_rotation": {
+    "direction": "clockwise",
+    "period_seconds": 24,
+    "axis": "image plane"
+  },
+  "clockwise_quarter_turn_mean_rgb_error": 0.7290658531453819
+}

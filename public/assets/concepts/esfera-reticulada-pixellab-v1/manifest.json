@@ -1,0 +1,43 @@
+{
+  "tool": "PixelLab MCP create_image_pro",
+  "job_id": "e44aab89-2980-4900-9031-5317ee29d2d1",
+  "asset_id": "91b944b8-4601-5432-b9c3-e9472bdd2751",
+  "source": "../../sprites/esfera/layers/globe.png",
+  "style_reference": "../esferas-sem-aros-v1/02-esfera-meridianos.png",
+  "output": "globe.png",
+  "request": {
+    "width": 512,
+    "height": 512,
+    "no_background": false,
+    "seed": 861206,
+    "max_colors": 8,
+    "palette": [
+      "#000000",
+      "#17191c",
+      "#35383e",
+      "#5f6268",
+      "#91928f",
+      "#c5c6c7",
+      "#dedccd",
+      "#f2efdf"
+    ],
+    "reference_images": [
+      {
+        "url": "upload:cb72d19c-b74a-4da6-9691-efed2a1a642c",
+        "usage": "STRUCTURE AND SUBJECT: redraw this same hollow celestial globe with its open longitude/latitude lattice, visible rear grid and small bright central core. Preserve the circular silhouette, centered composition and openness. These surface meridians are not external armillary hoops."
+      },
+      {
+        "url": "upload:0945a3aa-0512-4c85-88e7-e68cb29767b6",
+        "usage": "STYLE ONLY: match its finely engraved pixel hatching, ivory/bone and charcoal palette, crisp linework and antique copperplate atmosphere. Do not copy its solid filled spherical body; the subject must remain hollow as in the first reference."
+      }
+    ],
+    "description": "A single HOLLOW celestial globe lattice enclosing a small luminous ivory spherical nucleus at its exact center, closely matching the STRUCTURE reference. An open spherical network of fine curved longitude meridians and latitude lines, front and rear lines visible, with dark empty spaces between them. The central nucleus is about 12 percent of the globe diameter, subtly outlined and shaded with tiny engraved hatch marks. Redraw in the same antique 16th-century hermetic copperplate engraving / pixel-art aesthetic as the STYLE reference: precise bone-white ivory and aged silver linework, fine hatching on the narrow lattice ribs and outer silhouette, stippled edges, denser charcoal etching on the lower-right ribs, brighter upper-left ribs. A restrained mystical object from a Renaissance astronomical treatise. Clean, readable symmetrical spherical volume; predominantly OPEN BLACK INTERIOR, not a solid opaque ball. Centered within 512x512 square with comfortable margin; globe outer diameter about 390 pixels. Isolated on pure black #000000. NO external armillary rings or hoops, no orbit trails, no halos, no pedestal, no central shafts, no planets, no continents, no text, no symbols outside the globe. No neon glow, no lens flare, no plastic CGI or smooth airbrush gradients."
+  },
+  "status": "completed",
+  "cost_generations": 25,
+  "receipt": "id: e44aab89-2980-4900-9031-5317ee29d2d1\njob_id: e44aab89-2980-4900-9031-5317ee29d2d1\nmodel: pro\ndescription: A single HOLLOW celestial globe lattice enclosing a small luminous ivory spherical nucleus at its exact center, closely matching the STRUCTURE reference. An open spherical network of fine curved longitude meridians and latitude lines, front and rear lines visible, with dark empty spaces between them. The central nucleus is about 12 percent of the globe diameter, subtly outlined and shaded with tiny engraved hatch marks. Redraw in the same antique 16th-century hermetic copperplate engraving / pixel-art aesthetic as the STYLE reference: precise bone-white ivory and aged silver linework, fine hatching on the narrow lattice ribs and outer silhouette, stippled edges, denser charcoal etching on the lower-right ribs, brighter upper-left ribs. A restrained mystical object from a Renaissance astronomical treatise. Clean, readable symmetrical spherical volume; predominantly OPEN BLACK INTERIOR, not a solid opaque ball. Centered within 512x512 square with comfortable margin; globe outer diameter about 390 pixels. Isolated on pure black #000000. NO external armillary rings or hoops, no orbit trails, no halos, no pedestal, no central shafts, no planets, no continents, no text, no symbols outside the globe. No neon glow, no lens flare, no plastic CGI or smooth airbrush gradients.\nsize: 512x512px\ntransparent: False\ncandidates: 1\nreferences: 2\npalette: 8 colours\nmax colours: 8 per image\nseed: 861206\nasset_id: 91b944b8-4601-5432-b9c3-e9472bdd2751\nasset_status: pending (saved when generation completes)\ncost: 25 generations\nstatus: processing (~1-10 min)\n\nhint: get_image(job_id=\"e44aab89-2980-4900-9031-5317ee29d2d1\")\nwithout get_image: GET https://api.pixellab.ai/mcp/images/e44aab89-2980-4900-9031-5317ee29d2d1/download (423 + Retry-After until ready; ?index=N for the Nth of several images)",
+  "source_sha256": "b6ad09505a8f4504b96b8508d33a182fe4ec48acc5b0128b4c7a34f685e11549",
+  "style_reference_sha256": "cb50af4c771a4b6448f1c8a23be7835799ebbcb5f377ef7bcd7d0a1b3fd16d44",
+  "sha256": "c88b7e154bbef80a2cc2b1b7170f028f42c04683f382e4b0f7f6317d042322b8",
+  "visual_review": "Preserves open celestial lattice and small central nucleus; ivory/charcoal palette, engraved spherical contour, no separate external armillary hoops."
+}

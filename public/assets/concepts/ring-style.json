@@ -1,0 +1,12 @@
+{
+  "canvas_size": 512,
+  "color": "#dedccd",
+  "surface": "smooth, without hatching, central lines or tick marks",
+  "widths": {
+    "meridiano": 7,
+    "equador": 7,
+    "obliquo": 7,
+    "externo": 7,
+    "aureola": 7
+  }
+}

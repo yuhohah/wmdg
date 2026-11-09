@@ -1,6 +1,8 @@
 export interface AudioPreferences {
   volume: number;
   sfxVolume: number;
+  musicVolume: number;
+  audioEnabled: boolean;
   musicEnabled: boolean;
   sfxEnabled: boolean;
 }
@@ -17,6 +19,8 @@ export class AudioManager {
   private activeTrack: MusicTrackMode = 'background';
   private volume: number = 0.7; // default 70% volume
   private sfxVolume: number = 1; // relative to the general volume
+  private musicVolume = 1;
+  private audioEnabled = true;
   private musicEnabled: boolean = true;
   private sfxEnabled: boolean = true;
   private static readonly PREF_KEY = 'cult_audio_preferences';
@@ -37,6 +41,10 @@ export class AudioManager {
         if (typeof parsed.sfxVolume === 'number' && !isNaN(parsed.sfxVolume)) {
           this.sfxVolume = Math.max(0, Math.min(1, parsed.sfxVolume));
         }
+        if (typeof parsed.musicVolume === 'number' && Number.isFinite(parsed.musicVolume)) {
+          this.musicVolume = Math.max(0, Math.min(1, parsed.musicVolume));
+        }
+        if (typeof parsed.audioEnabled === 'boolean') this.audioEnabled = parsed.audioEnabled;
         if (typeof parsed.musicEnabled === 'boolean') {
           this.musicEnabled = parsed.musicEnabled;
         }
@@ -54,6 +62,8 @@ export class AudioManager {
       const prefs: AudioPreferences = {
         volume: this.volume,
         sfxVolume: this.sfxVolume,
+        musicVolume: this.musicVolume,
+        audioEnabled: this.audioEnabled,
         musicEnabled: this.musicEnabled,
         sfxEnabled: this.sfxEnabled,
       };
@@ -88,13 +98,13 @@ export class AudioManager {
       this.bgMusic.loop = true;
       // Streams on play: these tracks are the largest files in the game.
       this.bgMusic.preload = 'none';
-      this.bgMusic.volume = this.musicEnabled ? this.volume : 0;
+      this.bgMusic.volume = this.musicLoudness();
     }
     if (!this.bossMusic && bossSrc) {
       this.bossMusic = new Audio(bossSrc);
       this.bossMusic.loop = true;
       this.bossMusic.preload = 'none';
-      this.bossMusic.volume = this.musicEnabled ? this.volume : 0;
+      this.bossMusic.volume = this.musicLoudness();
     }
   }
 
@@ -117,12 +127,12 @@ export class AudioManager {
 
     if (!current) return;
 
-    if (!this.musicEnabled) {
+    if (!this.audioEnabled || !this.musicEnabled) {
       current.pause();
       return;
     }
 
-    current.volume = this.volume;
+    current.volume = this.musicLoudness();
     if (current.paused) {
       const playPromise = current.play();
       if (playPromise !== undefined) {
@@ -201,7 +211,7 @@ export class AudioManager {
   public setVolume(vol: number): void {
     this.volume = Math.max(0, Math.min(1, vol));
     this.savePreferences();
-    const targetVolume = this.musicEnabled ? this.volume : 0;
+    const targetVolume = this.musicLoudness();
     if (this.bgMusic) {
       this.bgMusic.volume = targetVolume;
     }
@@ -209,6 +219,26 @@ export class AudioManager {
       this.bossMusic.volume = targetVolume;
     }
   }
+
+  private musicLoudness(): number {
+    return this.audioEnabled && this.musicEnabled ? this.volume * this.musicVolume : 0;
+  }
+
+  public setMusicVolume(vol: number): void {
+    this.musicVolume = Math.max(0, Math.min(1, vol));
+    this.setVolume(this.volume);
+  }
+
+  public getMusicVolume(): number { return this.musicVolume; }
+
+  public setAudioEnabled(enabled: boolean): void {
+    this.audioEnabled = enabled;
+    this.setVolume(this.volume);
+    if (enabled && this.musicEnabled) this.playMusic();
+    else this.pauseMusic();
+  }
+
+  public isAudioEnabled(): boolean { return this.audioEnabled; }
 
   public getVolume(): number {
     return this.volume;
@@ -224,8 +254,8 @@ export class AudioManager {
   }
 
   public playTone(freq: number, type: OscillatorType = 'sine', duration: number = 0.1): void {
-    const loudness = this.volume * this.sfxVolume * 0.18;
-    if (!this.sfxEnabled || loudness <= 0) return;
+    const loudness = this.volume * this.sfxVolume * 0.36;
+    if (!this.audioEnabled || !this.sfxEnabled || loudness <= 0) return;
     this.init();
     if (!this.audioCtx) return;
 

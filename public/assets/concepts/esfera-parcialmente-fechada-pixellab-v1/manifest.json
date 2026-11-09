@@ -1,0 +1,22 @@
+{
+  "tool": "PixelLab MCP edit_image",
+  "job_id": "424f1910-5de9-42ad-835b-4b07241ac7ae",
+  "asset_id": "e3788b66-a78d-57dd-8bed-6b61268b3757",
+  "source": "../esfera-reticulada-pixellab-v1/globe.png",
+  "request": {
+    "image_urls": [
+      "upload:9e4d5f6a-696a-4ec5-a44e-ea7548c8a602"
+    ],
+    "width": 512,
+    "height": 512,
+    "no_background": false,
+    "seed": 861207,
+    "description": "Make this same celestial sphere PARTIALLY SOLID: close ONLY THE LOWER HEMISPHERE, from its horizontal equator at image y=256 down to the bottom pole. Replace the black gaps of the entire lower half with a continuous OPAQUE IVORY spherical shell, clearly light bone-colored material rather than black emptiness. Shade that solid curved lower shell with fine curved copperplate hatching, dense charcoal cross-hatching toward the bottom-right, and brighter ivory at its upper-left. Continue the existing longitude/latitude lines as thin incised lines ON the solid lower surface. The UPPER HEMISPHERE MUST REMAIN OPEN AND HOLLOW: preserve its existing fine ivory meridian/latitude cage, black empty gaps and visible rear grid. Keep the small luminous central nucleus visible at the equator. The transition between closed lower shell and open upper lattice lies at the equator and belongs to one continuous spherical object: no separate bowl, no floating cap. Preserve original exact circular silhouette, size, centered camera, ivory/charcoal palette, black background and Renaissance engraved pixel-art style. No external armillary hoops, no extra rings, no pedestal, no text, no modern CGI gloss."
+  },
+  "receipt": "id: 424f1910-5de9-42ad-835b-4b07241ac7ae\njob_id: 424f1910-5de9-42ad-835b-4b07241ac7ae\nmode: text\nframes: 1\nsize: 512x512px\ntransparent: False\nedit: Make this same celestial sphere PARTIALLY SOLID: close ONLY THE LOWER HEMISPHERE, from its horizontal equator at image y=256 down to the bottom pole. Replace the black gaps of the entire lower half with a continuous OPAQUE IVORY spherical shell, clearly light bone-colored material rather than black emptiness. Shade that solid curved lower shell with fine curved copperplate hatching, dense charcoal cross-hatching toward the bottom-right, and brighter ivory at its upper-left. Continue the existing longitude/latitude lines as thin incised lines ON the solid lower surface. The UPPER HEMISPHERE MUST REMAIN OPEN AND HOLLOW: preserve its existing fine ivory meridian/latitude cage, black empty gaps and visible rear grid. Keep the small luminous central nucleus visible at the equator. The transition between closed lower shell and open upper lattice lies at the equator and belongs to one continuous spherical object: no separate bowl, no floating cap. Preserve original exact circular silhouette, size, centered camera, ivory/charcoal palette, black background and Renaissance engraved pixel-art style. No external armillary hoops, no extra rings, no pedestal, no text, no modern CGI gloss.\nseed: 861207\nasset_id: e3788b66-a78d-57dd-8bed-6b61268b3757\nasset_status: pending (saved when generation completes)\ncost: ~25 generations\nstatus: processing (~30-90s)\n\nhint: get_image(job_id=\"424f1910-5de9-42ad-835b-4b07241ac7ae\")\nwithout get_image: GET https://api.pixellab.ai/mcp/images/424f1910-5de9-42ad-835b-4b07241ac7ae/download (423 + Retry-After until ready; ?index=N for the Nth of several images)",
+  "status": "completed",
+  "output": "globe.png",
+  "sha256": "c9fe181da168253d595ea7d95b125f779704c87c98f5d591282213e87706c3bf",
+  "cost_generations": 25,
+  "visual_review": "Lower hemisphere filled with ivory engraved shell; upper hemisphere retains open grid and black gaps; central nucleus and source silhouette preserved."
+}

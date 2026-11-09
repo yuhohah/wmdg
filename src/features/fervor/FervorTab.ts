@@ -79,7 +79,7 @@ export class FervorTab {
             ${symbolHtml}
             <span class="card-name">${upg.name}</span>
           </div>
-          <span class="fervor-mult-tag">x${mult.toFixed(2)}</span>
+          <span class="fervor-mult-tag">x${formatNumber(mult)}</span>
         </div>
         <div class="card-footer-row">
           <div class="cost-tag" style="font-weight: 800;">
@@ -129,7 +129,7 @@ export class FervorTab {
         }
         const multTagEl = card.querySelector('.fervor-mult-tag');
         if (multTagEl) {
-          setText(multTagEl, `x${mult.toFixed(2)}`);
+          setText(multTagEl, `x${formatNumber(mult)}`);
         }
         const costSpanEls = card.querySelectorAll('.cost-tag span');
         if (costSpanEls.length >= 2) {

@@ -8,6 +8,16 @@ Para as próximas versões, usamos `MAJOR.MINOR.PATCH`: novidades e mudanças re
 
 ## 0.9.1 — 2026-11-06
 
+- Recursos, custos e multiplicadores agora usam notação científica em toda a interface (por exemplo, `1e6` e `2.5e0`), substituindo K, M, B, T e Q. Tempos, níveis e percentuais mantêm o formato comum.
+
+- Os custos dos nós da Gnose foram reduzidos para encurtar a campanha, com cortes proporcionalmente maiores nos upgrades mais caros e automações acessíveis mais cedo.
+
+- Anúbis, Hades, Odin e Caos Primordial ganharam animações próprias de derrota criadas no PixelLab. Cada sequência toca uma vez após a vitória, antes do retorno dos Fiéis e da Encarnação.
+- A animação da Esfera agora é limitada a 30 quadros por segundo para reduzir o trabalho de desenho, mantendo a velocidade dos giros e as mudanças a cada clique.
+- O áudio nas configurações foi reunido em três controles: volume geral, música e efeitos. Cada um tem um ícone para ativar ou silenciar sem perder o volume escolhido, e as preferências ficam salvas.
+- O volume base dos efeitos sonoros foi dobrado para deixar os sons de rituais e cliques mais audíveis.
+- Cada clique no Altar da Encarnação agora acrescenta 3 segundos de Bênção, em vez de 10, mantendo o limite acumulado de 60 segundos.
+- As evoluções da Esfera usam os desenhos revisados, com aros lisos de espessura uniforme, núcleo sólido em Órbitas e vazado na forma final, sem as duas auréolas pequenas. Cada clique sorteia uma velocidade própria para cada aro e permite à esfera manter ou inverter o sentido de rotação, com transições suaves e sem reiniciar a animação.
 - O Pátio dos Fiéis agora continua visível enquanto a Encarnação reúne os Fiéis para o duelo e vai ficando transparente quando a procissão parte. Depois da vitória, ele reaparece a tempo de receber todos de volta.
 - O jogo ficou mais leve, principalmente no celular. As músicas só são baixadas quando começam a tocar, os fundos do Pátio e do Altar ficaram cerca de 17 vezes menores, e cada luta carrega apenas os sprites do Guardião enfrentado. As animações fora da tela deixam de rodar a cada quadro, e a câmera das lutas deixou de recalcular a página a cada quadro.
 

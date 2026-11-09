@@ -1,0 +1,24 @@
+{
+  "job_id": "6415d316-15d7-44be-a314-050adebeacc6",
+  "tool": "PixelLab MCP animate_image_pixminimax",
+  "source": "../04-orbitas-pixellab-v2/input.png",
+  "request": {
+    "first_frame_url": "upload:0a8c21b0-8be6-4473-b58f-f1b41c3fe1e1",
+    "last_frame_url": "upload:0a8c21b0-8be6-4473-b58f-f1b41c3fe1e1",
+    "frame_count": 24,
+    "no_background": false,
+    "enhance_prompt": false,
+    "seed": 674220,
+    "description": "The OUTERMOST circular hoop alone turns END OVER END, pitching forward around the horizontal diameter from left to right. Its TOP moves DOWNWARD through the foreground, then under the globe, then up behind it. Over the cycle the hoop changes from a tall face-on circle to a FLAT HORIZONTAL ellipse, to a tall circle again, to a flat horizontal ellipse, then returns to the first circle. Continuous one-direction vertical tumbling, one complete revolution. Rigid hoop, fixed radius; rear arc hidden by the opaque globe, front arc drawn over globe. The central globe is absolutely FROZEN, unchanged etched lines every frame, NO maps, NO geography. Keep the three smaller existing rings and their original orientations, with only their engraved marks circulating independently. Do not turn the whole object sideways. Fixed camera, fixed scale, black background, original fine ivory engraving. Seamless loop, no pause or reversal.",
+    "subject_description": "A FROZEN blank ivory globe with three small engraved rings and one large outer hoop pitching vertically end over end",
+    "initial_pose": "Large outer hoop face-on. The central globe and three inner hoops stay in the original source pose.",
+    "view": "side",
+    "direction": "south"
+  },
+  "receipt": "id: 6415d316-15d7-44be-a314-050adebeacc6\njob_id: 6415d316-15d7-44be-a314-050adebeacc6\ndescription: The OUTERMOST circular hoop alone turns END OVER END, pitching forward around the horizontal diameter from left to right. Its TOP moves DOWNWARD through the foreground, then under the globe, then up behind it. Over the cycle the hoop changes from a tall face-on circle to a FLAT HORIZONTAL ellipse, to a tall circle again, to a flat horizontal ellipse, then returns to the first circle. Continuous one-direction vertical tumbling, one complete revolution. Rigid hoop, fixed radius; rear arc hidden by the opaque globe, front arc drawn over globe. The central globe is absolutely FROZEN, unchanged etched lines every frame, NO maps, NO geography. Keep the three smaller existing rings and their original orientations, with only their engraved marks circulating independently. Do not turn the whole object sideways. Fixed camera, fixed scale, black background, original fine ivory engraving. Seamless loop, no pause or reversal.\nframes: 24\nsize: 256x256px\ntransparent: False\nlast_frame: yes (animating toward it)\nseed: 674220\ncost: 3 generations\nstatus: processing (~1-5 min)\n\nhint: get_image(job_id=\"6415d316-15d7-44be-a314-050adebeacc6\")\nwithout get_image: GET https://api.pixellab.ai/mcp/images/6415d316-15d7-44be-a314-050adebeacc6/download (423 + Retry-After until ready; ?index=N for the Nth of several images)\nasset_id: 699bdb1d-919c-54dd-be5b-78d9f15606b6\nasset_status: pending (saved to your gallery when generation completes)",
+  "status": "processing",
+  "previous_attempt": "../04-orbitas-pixellab-v3-attempt1",
+  "previous_findings": "Rejected: whole assembly yawed sideways, globe developed geography; outer hoop did not pitch vertically.",
+  "review_status": "superseded",
+  "review": "User requested vector hoops instead; see public/assets/sphere/orbitas-vector. This AI attempt is not integrated."
+}

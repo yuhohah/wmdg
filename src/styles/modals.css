@@ -1328,3 +1328,37 @@
 }
 
 
+
+/* Audio: one volume slider and one mute button per channel. */
+.audio-setting-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.audio-setting-controls input[type="range"] {
+  width: 108px;
+  min-width: 0;
+  accent-color: var(--gold-accent);
+}
+.audio-toggle {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  color: var(--gold-accent);
+  background: transparent;
+  border: 1px solid currentColor;
+  cursor: pointer;
+}
+.audio-toggle:hover { background: #c79a4520; }
+.audio-toggle:focus-visible { outline: 2px solid var(--gold-accent); outline-offset: 3px; }
+.audio-toggle .audio-muted-slash { display: none; }
+.audio-toggle.muted { color: var(--text-muted, #a69c86); }
+.audio-toggle.muted .audio-muted-slash { display: block; }
+@media (max-width: 480px) {
+  .audio-setting { flex-wrap: wrap; }
+  .audio-setting-controls { width: 100%; }
+  .audio-setting-controls input[type="range"] { flex: 1; }
+}

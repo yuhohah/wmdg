@@ -116,18 +116,6 @@
   pointer-events: none;
 }
 
-#card-altar-sphere .sphere-art-spinning {
-  animation: sphere-initial-spin 24s linear infinite;
-}
-
-@keyframes sphere-initial-spin {
-  to { transform: rotate(360deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  #card-altar-sphere .sphere-art-spinning { animation: none; }
-}
-
 /* Expanding gold wave on each click (pooled, animated via Web Animations) */
 #card-altar-sphere .sphere-shock {
   position: absolute;

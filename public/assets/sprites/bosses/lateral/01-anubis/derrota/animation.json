@@ -1,0 +1,18 @@
+{
+  "bossId": "boss_anubis",
+  "name": "Anúbis",
+  "generator": "PixelLab PixMiniMax",
+  "jobId": "a02e4c22-a202-4f8c-ba45-992b18bdada1",
+  "assetId": "62f393c2-0d4b-5574-ba8d-53e27983d4e6",
+  "description": "Perde o equilíbrio, larga a balança e cai ao chão.",
+  "frame_width": 256,
+  "frame_height": 192,
+  "sheet_frame_count": 17,
+  "sourceFrameIncluded": true,
+  "duration_ms": 1500,
+  "loop": false,
+  "transparent": true,
+  "direction": "east",
+  "layout": "horizontal",
+  "source_sha256": "649ab74338e0969f025e3296dfc0eb02798f8f638cdaa8886f7fd874a0c020b4"
+}

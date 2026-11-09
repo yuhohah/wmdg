@@ -1,0 +1,50 @@
+{
+  "tool": "PixelLab MCP create_image_pro",
+  "reference": "User attachment c2c57586-3770-4e9c-8e12-99327d2d8772.png",
+  "size": [
+    512,
+    512
+  ],
+  "background": "#000000",
+  "total_cost_generations": 75,
+  "variants": [
+    {
+      "id": "01-esfera-vazada",
+      "title": "Esfera com topo vazado",
+      "description": "Draw ONLY ONE CENTRAL SPHERE inspired by the central globe in the reference engraving. Ignore the phone screenshot UI, all rings, armillary apparatus, supports, shafts and surrounding frame. NO EXTERNAL RINGS, NO ORBITAL ARCS, NO HALOS, NO PEDESTAL. Antique Renaissance copperplate engraving, precise curved parallel hatching and stippling, crisp pixel-art linework matching Cult of the Sphere. Bone-white / ivory and charcoal on solid pure black #000000, bright upper-left illumination and dense lower-right engraved shadow. Centered game sprite on a 512x512 square, object occupies about 75% of canvas width, generous black margin, fixed three-quarter slightly elevated view. No text, no symbols floating around the object, no modern CGI gloss, no blurry gradients. A HOLLOW SPHERICAL SHELL with its upper cap removed: a wide clearly OPEN circular mouth at the top, visible elliptical cut edge and dark concave inner cavity. Most of the rounded spherical body remains intact below the opening. Thin ivory shell wall visible at the opening, engraved exterior, cross-hatched interior. The opening is a cut into the body itself, NOT a separate ring or attached collar; no floating lid. Preserve the reference globe's fine vertical engraved meridians on the exterior.",
+      "job_id": "bbd9d04a-4ec5-4082-8428-3296f0a37d59",
+      "file": "01-esfera-vazada.png",
+      "seed": 861100,
+      "status": "completed",
+      "cost_generations": 25,
+      "sha256": "71eea7257ef1a1e5e768446c8dd3b2e60ed3baa5ff9da902b3a3eb1505fd0557",
+      "visual_review": "No external rings, supports or phone UI. Opening clearly visible for variant 1; variants 2 and 3 are closed spheres."
+    },
+    {
+      "id": "02-esfera-meridianos",
+      "title": "Esfera fechada com meridianos",
+      "description": "Draw ONLY ONE CENTRAL SPHERE inspired by the central globe in the reference engraving. Ignore the phone screenshot UI, all rings, armillary apparatus, supports, shafts and surrounding frame. NO EXTERNAL RINGS, NO ORBITAL ARCS, NO HALOS, NO PEDESTAL. Antique Renaissance copperplate engraving, precise curved parallel hatching and stippling, crisp pixel-art linework matching Cult of the Sphere. Bone-white / ivory and charcoal on solid pure black #000000, bright upper-left illumination and dense lower-right engraved shadow. Centered game sprite on a 512x512 square, object occupies about 75% of canvas width, generous black margin, fixed three-quarter slightly elevated view. No text, no symbols floating around the object, no modern CGI gloss, no blurry gradients. A complete perfectly round CLOSED ivory celestial globe, closest to the reference's central sphere after all armillary hardware is removed. Fine evenly spaced curved meridian lines etched directly INTO the spherical surface, with only two very delicate latitude lines. The coordinates are flat ink incisions, never raised metal bands. Continuous unbroken circular silhouette. Dense fine cross-hatching on the lower hemisphere, luminous upper-left ivory patch, no opening.",
+      "job_id": "d148b5fc-df41-4628-a5f4-0548700b989a",
+      "file": "02-esfera-meridianos.png",
+      "seed": 861101,
+      "status": "completed",
+      "cost_generations": 25,
+      "sha256": "cb50af4c771a4b6448f1c8a23be7835799ebbcb5f377ef7bcd7d0a1b3fd16d44",
+      "visual_review": "No external rings, supports or phone UI. Opening clearly visible for variant 1; variants 2 and 3 are closed spheres."
+    },
+    {
+      "id": "03-esfera-gravura",
+      "title": "Esfera fechada com hachuras",
+      "description": "Draw ONLY ONE CENTRAL SPHERE inspired by the central globe in the reference engraving. Ignore the phone screenshot UI, all rings, armillary apparatus, supports, shafts and surrounding frame. NO EXTERNAL RINGS, NO ORBITAL ARCS, NO HALOS, NO PEDESTAL. Antique Renaissance copperplate engraving, precise curved parallel hatching and stippling, crisp pixel-art linework matching Cult of the Sphere. Bone-white / ivory and charcoal on solid pure black #000000, bright upper-left illumination and dense lower-right engraved shadow. Centered game sprite on a 512x512 square, object occupies about 75% of canvas width, generous black margin, fixed three-quarter slightly elevated view. No text, no symbols floating around the object, no modern CGI gloss, no blurry gradients. A complete CLOSED plain celestial sphere, a restrained variation of the reference's central globe. Pure rounded spherical volume without longitude or latitude grid: shading built entirely from fine curved copperplate hatch strokes, stippled transition and denser cross-hatching toward the lower-right edge. Slightly weathered ivory surface with subtle irregular antique engraving marks. Elegant bright upper-left patch, darker bottom-right edge, no cracks, no opening, no continents, no decoration.",
+      "job_id": "4834001e-b689-41f3-a5ca-6696c497b5b8",
+      "file": "03-esfera-gravura.png",
+      "seed": 861102,
+      "status": "completed",
+      "cost_generations": 25,
+      "sha256": "5ee20f41d0cda7c7953dc569afc9266035d3b453087c7d1e54ef2e71d1c3a026",
+      "visual_review": "No external rings, supports or phone UI. Opening clearly visible for variant 1; variants 2 and 3 are closed spheres."
+    }
+  ],
+  "reference_file": "reference.png",
+  "status": "completed"
+}

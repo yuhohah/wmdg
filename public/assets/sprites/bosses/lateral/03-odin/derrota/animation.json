@@ -1,0 +1,18 @@
+{
+  "bossId": "boss_odin",
+  "name": "Odin",
+  "generator": "PixelLab PixMiniMax",
+  "jobId": "afd30a00-b093-45d8-a254-90520ef0a866",
+  "assetId": "6b8a106c-a730-5d71-b027-c7cc8de03c2a",
+  "description": "Odin larga a lança e cai enquanto o corvo se afasta.",
+  "frame_width": 256,
+  "frame_height": 192,
+  "sheet_frame_count": 17,
+  "sourceFrameIncluded": true,
+  "duration_ms": 1500,
+  "loop": false,
+  "transparent": true,
+  "direction": "east",
+  "layout": "horizontal",
+  "source_sha256": "fa08cb163cb9c657d3b9f306b5d7de94f3590ea554e9c2ba9c94262c772a134f"
+}

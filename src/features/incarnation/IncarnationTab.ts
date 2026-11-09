@@ -84,7 +84,7 @@ export class IncarnationTab {
     }
 
     if (this.options.spawnFloatingText) {
-      this.options.spawnFloatingText(clientX, clientY, `+${BLESSING_SECONDS_PER_PRESS}s BÊNÇÃO 2X!`);
+      this.options.spawnFloatingText(clientX, clientY, `+${BLESSING_SECONDS_PER_PRESS}s BÊNÇÃO 2e0X!`);
     }
 
     this.updateBlessingBar();
@@ -102,7 +102,7 @@ export class IncarnationTab {
     this.blessingFillEl.style.width = `${percent.toFixed(1)}%`;
 
     if (boostSec > 0) {
-      this.blessingStatusEl.textContent = `✦ 2× FÉ ATIVO · ${Math.ceil(boostSec)}s / ${maxCap}s`;
+      this.blessingStatusEl.textContent = `✦ 2e0× FÉ ATIVO · ${Math.ceil(boostSec)}s / ${maxCap}s`;
       this.blessingPanelEl?.classList.add('active');
     } else {
       this.blessingStatusEl.textContent = `INATIVA (Clique no Altar para +${BLESSING_SECONDS_PER_PRESS}s)`;
@@ -144,7 +144,7 @@ export class IncarnationTab {
     }
     if (this.rateBadgeEl) {
       const incFollowerMult = this.options.gameState.getEffectiveIncarnationFollowerMultiplier();
-      this.rateBadgeEl.textContent = `x${incFollowerMult.toFixed(2)}`;
+      this.rateBadgeEl.textContent = `x${formatNumber(incFollowerMult)}`;
     }
 
     if (this.btnUpgradeEl && this.upgradeTitleEl && this.upgradeCostValEl) {
@@ -183,7 +183,7 @@ export class IncarnationTab {
   public updateRealtime(): void {
     if (this.rateBadgeEl) {
       const incFollowerMult = this.options.gameState.getEffectiveIncarnationFollowerMultiplier();
-      this.rateBadgeEl.textContent = `x${incFollowerMult.toFixed(2)}`;
+      this.rateBadgeEl.textContent = `x${formatNumber(incFollowerMult)}`;
     }
     this.updateUpgradeButtonState();
     this.updateBlessingBar();

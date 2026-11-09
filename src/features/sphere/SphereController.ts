@@ -99,6 +99,7 @@ export class SphereController {
 
     events.emit(GameEvents.FAITH_CHANGED, fpc);
     events.emit(GameEvents.STATE_CHANGED);
+    this.sphereAnimation?.reactToClick();
 
     if (isCrit) {
       this.audio.playTone(920, 'triangle', 0.18);

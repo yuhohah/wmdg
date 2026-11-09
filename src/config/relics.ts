@@ -1,3 +1,4 @@
+import { formatNumber } from '../systems/numberFormat.js';
 import type { RelicUpgrade } from '../types.js';
 
 export const initialRelicUpgrades: RelicUpgrade[] = [
@@ -26,13 +27,13 @@ export const initialRelicUpgrades: RelicUpgrade[] = [
   {
     id: 'relic_phoenix',
     name: 'Pena Solar de Fênix',
-    desc: 'Multiplica o Fervor/s por 1,5 e revela o upgrade de Fervor que aumenta o ganho de Fragmentos.',
+    desc: 'Multiplica o Fervor/s por 1.5e0 e revela o upgrade de Fervor que aumenta o ganho de Fragmentos.',
     lore: 'A cada renascimento solar, a ave mitológica deixa para trás relíquias purificadas em chamas eternas.',
     icon: '',
     cost: 750,
     level: 0,
     maxLevel: 1,
-    effectText: (level) => level >= 1 ? 'Fervor/s x1,5 • Upgrade de Fragmentos revelado no Fervor' : 'Fervor/s x1,5 e revela um upgrade de Fervor (0/1)'
+    effectText: (level) => level >= 1 ? 'Fervor/s x1.5e0 • Upgrade de Fragmentos revelado no Fervor' : 'Fervor/s x1.5e0 e revela um upgrade de Fervor (0/1)'
   },
   {
     id: 'relic_caduceus',
@@ -67,7 +68,7 @@ export const initialRelicUpgrades: RelicUpgrade[] = [
     maxLevel: 4,
     effectText: (level, relicPoints = 0) => {
       const mult = level > 0 ? Math.pow(Math.log10(Math.max(0, relicPoints) + 1) + 1, level * 1.2) : 1.0;
-      return `Fragmentos multiplicam Fé/s (Nível ${level}/4) • Atualmente x${mult.toFixed(2)}`;
+      return `Fragmentos multiplicam Fé/s (Nível ${level}/4) • Atualmente x${formatNumber(mult)}`;
     }
   }
 ];

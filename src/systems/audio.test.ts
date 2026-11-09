@@ -60,11 +60,11 @@ describe('AudioManager sound effects volume', () => {
     vi.unstubAllGlobals();
   });
 
-  it('keeps the current loudness by default', () => {
+  it('uses the louder default effects level', () => {
     const audio = new AudioManager();
     audio.setVolume(0.5);
     audio.playTone(440);
-    expect(gains[0]).toBeCloseTo(0.09);
+    expect(gains[0]).toBeCloseTo(0.18);
   });
 
   it('scales effects by both the effects and the general volume', () => {
@@ -72,7 +72,7 @@ describe('AudioManager sound effects volume', () => {
     audio.setVolume(0.5);
     audio.setSfxVolume(0.5);
     audio.playTone(440);
-    expect(gains[0]).toBeCloseTo(0.045);
+    expect(gains[0]).toBeCloseTo(0.09);
   });
 
   it('leaves the music volume alone', () => {
@@ -96,6 +96,51 @@ describe('AudioManager sound effects volume', () => {
     const audio = new AudioManager();
     audio.setSfxVolume(5);
     expect(audio.getSfxVolume()).toBe(1);
+    expect(audio.getMusicVolume()).toBe(1);
+    expect(audio.isAudioEnabled()).toBe(true);
+  });
+
+  it('combines general and music volume on both tracks without changing effects', () => {
+    const audio = new AudioManager();
+    audio.setVolume(0.5);
+    audio.setMusicVolume(0.4);
+    expect(MockAudio.instances.map(track => track.volume)).toEqual([0.2, 0.2]);
+    audio.playBossBattleMusic();
+    expect(MockAudio.instances[1].volume).toBeCloseTo(0.2);
+    audio.playTone(440);
+    expect(gains[0]).toBeCloseTo(0.18);
+  });
+
+  it('mutes everything without losing channel settings, including across reloads', () => {
+    const audio = new AudioManager();
+    audio.setVolume(0.5);
+    audio.setMusicVolume(0.4);
+    audio.setSfxVolume(0.3);
+    audio.setSfxEnabled(false);
+    audio.setAudioEnabled(false);
+    audio.playMusic();
+    audio.playTone(440);
+    expect(MockAudio.instances.every(track => track.paused && track.volume === 0)).toBe(true);
+    expect(gains).toEqual([]);
+    const restored = new AudioManager();
+    expect(restored.isAudioEnabled()).toBe(false);
+    expect(restored.getMusicVolume()).toBe(0.4);
+    expect(restored.getSfxVolume()).toBe(0.3);
+    restored.setAudioEnabled(true);
+    expect(restored.getVolume()).toBe(0.5);
+    expect(restored.isSfxEnabled()).toBe(false);
+    expect(MockAudio.instances.at(-2)?.volume).toBeCloseTo(0.2);
+  });
+
+  it('mutes music independently and restores its previous level', () => {
+    const audio = new AudioManager();
+    audio.setMusicVolume(0.25);
+    audio.setMusicEnabled(false);
+    audio.playTone(440);
+    expect(gains.length).toBe(1);
+    expect(MockAudio.instances[0].paused).toBe(true);
+    audio.setMusicEnabled(true);
+    expect(MockAudio.instances[0].volume).toBeCloseTo(0.175);
   });
 
   it('accepts preferences saved before this setting existed', () => {
@@ -103,6 +148,8 @@ describe('AudioManager sound effects volume', () => {
     const audio = new AudioManager();
     expect(audio.getVolume()).toBe(0.4);
     expect(audio.getSfxVolume()).toBe(1);
+    expect(audio.getMusicVolume()).toBe(1);
+    expect(audio.isAudioEnabled()).toBe(true);
   });
 });
 

@@ -1,0 +1,47 @@
+{
+  "tool": "PixelLab MCP create_image_pro",
+  "job_id": "b7d7c23e-3d19-4011-93f8-26cfa5ef47ef",
+  "asset_id": "9ed831fe-a609-5552-8fb7-3ecf4248f773",
+  "references": {
+    "lower_hemisphere": "references/solida.png",
+    "upper_hemisphere": "references/vazada.png"
+  },
+  "request": {
+    "width": 512,
+    "height": 512,
+    "no_background": false,
+    "max_colors": 8,
+    "palette": [
+      "#000000",
+      "#17191c",
+      "#35383e",
+      "#5f6268",
+      "#91928f",
+      "#c5c6c7",
+      "#dedccd",
+      "#f2efdf"
+    ],
+    "seed": 861208,
+    "reference_images": [
+      {
+        "url": "upload:35237e97-916b-4de2-aa52-0e50c7792b0b",
+        "usage": "LOWER HALF ONLY, and overall engraving quality: use the actual solid lower hemisphere of this sphere, with its dense curved copperplate hatch lines, bone-white material, engraved meridians, bright left side and dark bottom/right shadow. Preserve this rounded solid shell rather than replacing it with flat gray panels."
+      },
+      {
+        "url": "upload:001e9be2-a050-4494-b51e-e41eeda4816b",
+        "usage": "UPPER HALF ONLY: use this hollow spherical meridian/latitude cage, with open black spaces and visible front and rear grid. Preserve its small luminous core at the equatorial center. Do not use its open lower hemisphere."
+      }
+    ],
+    "description": "Combine these TWO EXACT sphere references into ONE continuous celestial globe. BOTTOM HALF = the SOLID LOWER HEMISPHERE FROM REFERENCE 1, with its beautiful fine curved copperplate hatching, dense cross-hatched shadow at bottom-right, bone ivory material, and coordinate lines incised into an opaque rounded shell. TOP HALF = the OPEN LATTICE UPPER HEMISPHERE FROM REFERENCE 2: fine ivory curved longitude/latitude cage ribs, front and rear grid visible through black empty openings, NOT an opaque filled upper surface. The dividing line is the horizontal equator halfway down the globe, at y=256; lower shell joins the upper lattice seamlessly along that equator. Match the two halves in radius, center, camera and meridian alignment so the outline remains a perfect single circle. Keep the small luminous circular core of reference 2 visible in the center at the join. Crucially retain the elegant continuous engraving hatch strokes of reference 1 across the lower half, NOT flat gray checkerboard panels or a plain flat white bowl. The lower half must have spherical shaded volume; the upper half stays hollow. One centered sphere, diameter about 440px on a 512x512 pure black square. Same antique Renaissance woodcut/copperplate pixel-art look, bone-white and charcoal palette. No external armillary hoops, no separate rings, no halo, no extra frame, no pedestal, no detached parts, no lettering, no CGI plastic, no airbrush blur."
+  },
+  "receipt": "id: b7d7c23e-3d19-4011-93f8-26cfa5ef47ef\njob_id: b7d7c23e-3d19-4011-93f8-26cfa5ef47ef\nmodel: pro\ndescription: Combine these TWO EXACT sphere references into ONE continuous celestial globe. BOTTOM HALF = the SOLID LOWER HEMISPHERE FROM REFERENCE 1, with its beautiful fine curved copperplate hatching, dense cross-hatched shadow at bottom-right, bone ivory material, and coordinate lines incised into an opaque rounded shell. TOP HALF = the OPEN LATTICE UPPER HEMISPHERE FROM REFERENCE 2: fine ivory curved longitude/latitude cage ribs, front and rear grid visible through black empty openings, NOT an opaque filled upper surface. The dividing line is the horizontal equator halfway down the globe, at y=256; lower shell joins the upper lattice seamlessly along that equator. Match the two halves in radius, center, camera and meridian alignment so the outline remains a perfect single circle. Keep the small luminous circular core of reference 2 visible in the center at the join. Crucially retain the elegant continuous engraving hatch strokes of reference 1 across the lower half, NOT flat gray checkerboard panels or a plain flat white bowl. The lower half must have spherical shaded volume; the upper half stays hollow. One centered sphere, diameter about 440px on a 512x512 pure black square. Same antique Renaissance woodcut/copperplate pixel-art look, bone-white and charcoal palette. No external armillary hoops, no separate rings, no halo, no extra frame, no pedestal, no detached parts, no lettering, no CGI plastic, no airbrush blur.\nsize: 512x512px\ntransparent: False\ncandidates: 1\nreferences: 2\npalette: 8 colours\nmax colours: 8 per image\nseed: 861208\nasset_id: 9ed831fe-a609-5552-8fb7-3ecf4248f773\nasset_status: pending (saved when generation completes)\ncost: 25 generations\nstatus: processing (~1-10 min)\n\nhint: get_image(job_id=\"b7d7c23e-3d19-4011-93f8-26cfa5ef47ef\")\nwithout get_image: GET https://api.pixellab.ai/mcp/images/b7d7c23e-3d19-4011-93f8-26cfa5ef47ef/download (423 + Retry-After until ready; ?index=N for the Nth of several images)",
+  "output": "globe.png",
+  "status": "completed",
+  "cost_generations": 25,
+  "sha256": "b2b98dec2f2eebdc211dd1f4e58cda0b460473739fcc1757122076f790d5ce25",
+  "visual_review": "Solid lower hemisphere retains dense curved hatching and spherical shadows from the first reference; upper hemisphere remains open with lattice from the second reference. Central nucleus visible at equator.",
+  "reference_hashes": {
+    "solida.png": "f2f86d36f7484ceb673e7c2e28f4f1167755ca24081acbdd5ca58e6a2fc3e256",
+    "vazada.png": "d688acb61e48054072cb133d89bc439b8b7b96999e112414e767f00fad741a96"
+  }
+}

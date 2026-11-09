@@ -1,3 +1,4 @@
+import { formatNumber } from '../systems/numberFormat.js';
 import { INCARNATION_STAGES } from '../config/incarnation.js';
 import type { BenchmarkWorkerMessage } from '../benchmark/types.js';
 import { formatHtmlReport } from '../benchmark/reporters.js';
@@ -77,7 +78,7 @@ export class TestMenu {
     });
 
     if (this.speedLabelEl) {
-      this.speedLabelEl.textContent = `${speed}x`;
+      this.speedLabelEl.textContent = `${formatNumber(speed)}x`;
       if (speed === 0) {
         this.speedLabelEl.style.color = '#ef4444';
       } else if (speed > 1) {
@@ -91,7 +92,7 @@ export class TestMenu {
     if (this.launcherBtn) {
       const badge = this.launcherBtn.querySelector('.test-launcher-badge');
       if (badge) {
-        badge.textContent = `${speed}x`;
+        badge.textContent = `${formatNumber(speed)}x`;
       }
     }
   }
@@ -123,7 +124,7 @@ export class TestMenu {
     const launcher = document.createElement('button');
     launcher.id = 'test-menu-launcher';
     launcher.className = 'test-menu-launcher';
-    launcher.innerHTML = `<span class="test-launcher-icon">${icon('gear')}</span> <span class="test-launcher-badge">1x</span>`;
+    launcher.innerHTML = `<span class="test-launcher-icon">${icon('gear')}</span> <span class="test-launcher-badge">1e0x</span>`;
     launcher.addEventListener('click', (e) => {
       e.stopPropagation();
       this.toggle();
@@ -150,15 +151,15 @@ export class TestMenu {
           <div class="test-section">
             <div class="test-section-header">
               <span class="test-section-title">⏱️ MODIFICADORES DE VELOCIDADE</span>
-              <span id="test-current-speed-label" class="test-current-speed-tag">1x</span>
+              <span id="test-current-speed-label" class="test-current-speed-tag">1e0x</span>
             </div>
             <div class="test-speed-grid">
-              <button class="test-btn test-speed-btn" data-speed="0">Pausar (0x)</button>
-              <button class="test-btn test-speed-btn active" data-speed="1">1x Normal</button>
-              <button class="test-btn test-speed-btn" data-speed="2">2x</button>
-              <button class="test-btn test-speed-btn" data-speed="5">5x</button>
-              <button class="test-btn test-speed-btn" data-speed="10">10x</button>
-              <button class="test-btn test-speed-btn test-speed-max" data-speed="100">100x</button>
+              <button class="test-btn test-speed-btn" data-speed="0">Pausar (0e0x)</button>
+              <button class="test-btn test-speed-btn active" data-speed="1">1e0x Normal</button>
+              <button class="test-btn test-speed-btn" data-speed="2">2e0x</button>
+              <button class="test-btn test-speed-btn" data-speed="5">5e0x</button>
+              <button class="test-btn test-speed-btn" data-speed="10">1e1x</button>
+              <button class="test-btn test-speed-btn test-speed-max" data-speed="100">1e2x</button>
             </div>
           </div>
 
@@ -166,36 +167,36 @@ export class TestMenu {
           <div class="test-section">
             <div class="test-section-header">
               <span class="test-section-title">${icon('gem')} CONCESSÃO DE RECURSOS</span>
-              <span class="test-section-subtitle">Aceita números, K/M/B/T/Q ou 1e15</span>
+              <span class="test-section-subtitle">Notação científica: 1e5, 2.5e6, 1e15</span>
             </div>
             <div class="test-resource-list">
               <div class="test-resource-row">
                 <label class="test-resource-label" for="test-input-faith">${icon('star')} <span>Fé</span></label>
-                <input id="test-input-faith" type="text" inputmode="decimal" class="test-resource-input" data-resource-input="faith" value="100000" placeholder="Valor de Fé..." />
+                <input id="test-input-faith" type="text" inputmode="text" class="test-resource-input" data-resource-input="faith" value="1e5" placeholder="Valor de Fé..." />
                 <button type="button" class="test-btn test-resource-btn" data-resource-add="faith">+ Adicionar</button>
                 <button type="button" class="test-btn test-resource-set-btn" data-resource-set="faith">Definir</button>
               </div>
               <div class="test-resource-row">
                 <label class="test-resource-label" for="test-input-fervor">${icon('fervor')} <span>Fervor</span></label>
-                <input id="test-input-fervor" type="text" inputmode="decimal" class="test-resource-input" data-resource-input="fervor" value="10000" placeholder="Valor de Fervor..." />
+                <input id="test-input-fervor" type="text" inputmode="text" class="test-resource-input" data-resource-input="fervor" value="1e4" placeholder="Valor de Fervor..." />
                 <button type="button" class="test-btn test-resource-btn" data-resource-add="fervor">+ Adicionar</button>
                 <button type="button" class="test-btn test-resource-set-btn" data-resource-set="fervor">Definir</button>
               </div>
               <div class="test-resource-row">
                 <label class="test-resource-label" for="test-input-relics">${icon('gem')} <span>Relíquias</span></label>
-                <input id="test-input-relics" type="text" inputmode="decimal" class="test-resource-input" data-resource-input="relics" value="100" placeholder="Valor de Relíquias..." />
+                <input id="test-input-relics" type="text" inputmode="text" class="test-resource-input" data-resource-input="relics" value="1e2" placeholder="Valor de Relíquias..." />
                 <button type="button" class="test-btn test-resource-btn" data-resource-add="relics">+ Adicionar</button>
                 <button type="button" class="test-btn test-resource-set-btn" data-resource-set="relics">Definir</button>
               </div>
               <div class="test-resource-row">
                 <label class="test-resource-label" for="test-input-gnose">${icon('gnose')} <span>Gnose</span></label>
-                <input id="test-input-gnose" type="text" inputmode="decimal" class="test-resource-input" data-resource-input="gnose" value="10" placeholder="Valor de Gnose..." />
+                <input id="test-input-gnose" type="text" inputmode="text" class="test-resource-input" data-resource-input="gnose" value="1e1" placeholder="Valor de Gnose..." />
                 <button type="button" class="test-btn test-resource-btn" data-resource-add="gnose">+ Adicionar</button>
                 <button type="button" class="test-btn test-resource-set-btn" data-resource-set="gnose">Definir</button>
               </div>
               <div class="test-resource-row">
                 <label class="test-resource-label" for="test-input-followers">${icon('followers')} <span>Fiéis</span></label>
-                <input id="test-input-followers" type="text" inputmode="numeric" class="test-resource-input" data-resource-input="followers" value="10" placeholder="Qtd. de Fiéis..." />
+                <input id="test-input-followers" type="text" inputmode="text" class="test-resource-input" data-resource-input="followers" value="1e1" placeholder="Qtd. de Fiéis..." />
                 <button type="button" class="test-btn test-resource-btn" data-resource-add="followers">+ Adicionar</button>
                 <button type="button" class="test-btn test-resource-set-btn" data-resource-set="followers">Definir</button>
               </div>

@@ -42,7 +42,7 @@ export const initialUnlocks: MechanicUnlock[] = [
   {
     id: 'unlock_gnose',
     name: 'Selo da Gnose',
-    desc: 'Libera a Ascensão Gnóstica (sem gastar sua Fé): dissolva o culto terreno a partir de 1Q Fé para colher Gnose e abrir a Árvore Hermética permanente.',
+    desc: 'Libera a Ascensão Gnóstica (sem gastar sua Fé): dissolva o culto terreno a partir de 1e15 Fé para colher Gnose e abrir a Árvore Hermética permanente.',
     lore: 'Acima da matéria e das relíquias dos deuses caídos repousa o Nous puro. Quem dissolve o próprio templo renasce na geometria eterna da Esfera.',
     symbol: '',
     cost: 1e15,
