@@ -4,6 +4,7 @@ import { NotificationManager } from '../../systems/notifications.js';
 import { GNOSE_UPGRADES, GNOSE_TIER_LABELS, GNOSE_MIN_FAITH_REQ } from '../../config/gnose.js';
 import { GNOSE_BOSSES } from '../../config/bosses.js';
 import { calculateFaithForNextGnose, formatNumber } from '../../systems/calculations.js';
+import { formatFixed } from '../../systems/numberFormat.js';
 import { cultDialog } from '../../ui/CultDialog.js';
 import { BossBattleModal, type BattleCameraTarget } from './BossBattleModal.js';
 import type { BossCombatBreakdown, GnoseUpgrade } from '../../types.js';
@@ -219,7 +220,7 @@ export class GnoseTab {
           const canChallenge = gs.canChallengeBoss(guardian.id);
           if (isTierOpen) {
             const bestTime = gs.getBossBestTimeSec(guardian.id);
-            const bestTimeTag = typeof bestTime === 'number' ? ` • Recorde: ${bestTime.toFixed(1)}s` : '';
+            const bestTimeTag = typeof bestTime === 'number' ? ` • Recorde: ${formatFixed(bestTime, 1)}s` : '';
             guardianBadgeHtml = `
               <span class="gnose-guardian-badge defeated">
                 ${iconOrText(guardian.symbol)} ${guardian.name}: SUBJUGADO (×${formatNumber(guardian.faithFervorMult)} Fé/Fervor${bestTimeTag})
@@ -342,7 +343,7 @@ export class GnoseTab {
       const isTiamatDefeated = gs.isBossDefeated(tiamat.id);
       const canChallengeTiamat = gs.canChallengeBoss(tiamat.id);
       const bestTiamatSec = gs.getBossBestTimeSec(tiamat.id);
-      const bestTiamatTag = typeof bestTiamatSec === 'number' ? ` • Recorde: ${bestTiamatSec.toFixed(1)}s` : '';
+      const bestTiamatTag = typeof bestTiamatSec === 'number' ? ` • Recorde: ${formatFixed(bestTiamatSec, 1)}s` : '';
       const readiness = canChallengeTiamat ? readinessLine(gs.getBossCombatBreakdown(tiamat.id)) : '';
 
       const endgameBar = document.createElement('div');

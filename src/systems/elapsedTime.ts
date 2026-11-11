@@ -1,5 +1,6 @@
 import type { GameStateManager } from '../core/GameState.js';
 import { formatNumber } from './calculations.js';
+import { formatFixed } from './numberFormat.js';
 
 const MIN_OFFLINE_NOTICE_SEC = 60;
 
@@ -13,7 +14,7 @@ export function buildOfflineNotice(
   if (fervorGained > 0) parts.push(`+${formatNumber(fervorGained)} Fervor`);
   if (relicGained > 0) parts.push(`+${formatNumber(relicGained)} Fragmentos`);
   if (parts.length === 0) return undefined;
-  const timeStr = elapsedSec >= 3600 ? `${(elapsedSec / 3600).toFixed(1)}h` : `${Math.floor(elapsedSec / 60)}m`;
+  const timeStr = elapsedSec >= 3600 ? `${formatFixed(elapsedSec / 3600, 1)}h` : `${Math.floor(elapsedSec / 60)}m`;
   return {
     title: `VIGÍLIA SAGRADA (${timeStr})`,
     desc: `Durante sua ausência, o culto continuou ardendo: ${parts.join(', ')}.`

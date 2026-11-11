@@ -20,6 +20,6 @@ describe('offline notice', () => {
   });
 
   it('switches to hours from one hour on', () => {
-    expect(buildOfflineNotice(5400, gains)?.title).toBe('VIGÍLIA SAGRADA (1.5h)');
+    expect(buildOfflineNotice(5400, gains)?.title).toBe('VIGÍLIA SAGRADA (1,5h)');
   });
 });

@@ -41,7 +41,7 @@ describe('battle result popup', () => {
 
   it('does not promise the reward again on a won rematch', () => {
     const { desc } = present({ victory: true, isRematch: true });
-    expect(desc).toContain('42.1s');
+    expect(desc).toContain('42,1s');
     expect(desc).toContain('40.0s');
     expect(desc).not.toContain(boss.rewardName);
   });

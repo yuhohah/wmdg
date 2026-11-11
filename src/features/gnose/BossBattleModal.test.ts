@@ -969,7 +969,7 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     modal.updateUI();
     const miracleBtn = riftsLayer.querySelector('#boss-miracle-btn')!;
     expect(miracleBtn).not.toBeNull();
-    expect(miracleBtn.textContent).toContain('1.5s');
+    expect(miracleBtn.textContent).toContain('1,5s');
     miracleBtn.dispatchClick();
     expect(battle.altarIntegrity).toBe(75);
     expect(battle.activeMiracle).toBeNull();
