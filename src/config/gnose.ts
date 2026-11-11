@@ -46,7 +46,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 1,
     cost: 1,
     prerequisites: [],
-    effectText: 'Fiéis mais baratos · mais Fé por Fiel · começa com 1e3 Fé',
+    effectText: 'Fiéis mais baratos · mais Fé por Fiel · começa com 1K Fé',
   },
   {
     id: 'gn_memoria_selos',

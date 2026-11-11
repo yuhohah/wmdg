@@ -158,7 +158,7 @@ export class FollowersTab {
         this.btnConvertMaxEl.classList.add('locked');
         this.btnConvertMaxEl.disabled = true;
         setText(this.convertMaxTitleEl, 'CONVERTER MÁXIMO');
-        setText(this.convertMaxSubEl, `Desbloqueia com 2.5e1 Fiéis (${formatNumber(totalCount)}/2.5e1)`);
+        setText(this.convertMaxSubEl, `Desbloqueia com 25 Fiéis (${formatNumber(totalCount)}/25)`);
         setText(this.convertMaxCostLabelEl, 'BLOQUEADO');
         setText(this.convertMaxCostValEl, '');
       } else {
@@ -182,7 +182,7 @@ export class FollowersTab {
         } else {
           this.btnConvertMaxEl.disabled = true;
           setText(this.convertMaxTitleEl, 'CONVERTER MÁXIMO');
-          setText(this.convertMaxSubEl, '+0e0 Fé/s');
+          setText(this.convertMaxSubEl, '+0 Fé/s');
           setText(this.convertMaxCostLabelEl, 'CUSTO:');
           setText(this.convertMaxCostValEl, `${formatNumber(costOne)} Fé`);
         }

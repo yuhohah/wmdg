@@ -133,7 +133,7 @@ export class HUDController {
             'Devoção arrancada das mentes mortais. Usada para converter Fiéis, romper Selos e ser transmutada em Fragmentos.',
           stats: [
             `Saldo: ${formatNumber(faith)} Fé`,
-            `Produção: +${formatNumber(fps)}/s${isBoosted ? ' (2e0×)' : ''} · +${formatNumber(fpc)}/clique`,
+            `Produção: +${formatNumber(fps)}/s${isBoosted ? ' (2×)' : ''} · +${formatNumber(fpc)}/clique`,
           ],
         };
       }
@@ -256,7 +256,7 @@ export class HUDController {
     const fps = this.gameState.getFaithPerSecond();
     const isBoosted = this.gameState.incarnationBoostTimer > 0;
     if (this.faithPerSecCounterEl) {
-      setText(this.faithPerSecCounterEl, `${formatNumber(fps)}/s${isBoosted ? ' (2e0x)' : ''}`);
+      setText(this.faithPerSecCounterEl, `${formatNumber(fps)}/s${isBoosted ? ' (2×)' : ''}`);
       this.faithPerSecCounterEl.classList.toggle('boosted', isBoosted);
     }
 

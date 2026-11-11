@@ -22,7 +22,7 @@ export const CARD_TUTORIALS = [
   {
     cardId: 'card-gnose', unlockId: 'unlock_gnose', icon: 'gnose', title: 'Além da matéria: o Nous',
     lore: 'Acima dos templos e dos deuses repousa a Mente pura. Dissolver o próprio culto é o primeiro passo para lembrar quem você era.',
-    basics: 'Com 1e15 de Fé você pode Ascender: o culto recomeça e você ganha Gnose, que dá bônus permanente. Mais Fé, mais Gnose. Gaste-a na Árvore Hermética: cada nó multiplica sua produção por 4e0.',
+    basics: 'Com 1e15 de Fé você pode Ascender: o culto recomeça e você ganha Gnose, que dá bônus permanente. Mais Fé, mais Gnose. Gaste-a na Árvore Hermética: cada nó multiplica sua produção por 4.',
   },
   {
     cardId: 'card-gnose', seenKey: 'guardians', unlockId: 'unlock_gnose', requiresAscension: true, icon: 'swords', title: 'Os Guardiões dos panteões',

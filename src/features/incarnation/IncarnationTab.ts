@@ -84,7 +84,7 @@ export class IncarnationTab {
     }
 
     if (this.options.spawnFloatingText) {
-      this.options.spawnFloatingText(clientX, clientY, `+${BLESSING_SECONDS_PER_PRESS}s BÊNÇÃO 2e0X!`);
+      this.options.spawnFloatingText(clientX, clientY, `+${BLESSING_SECONDS_PER_PRESS}s BÊNÇÃO 2×!`);
     }
 
     this.updateBlessingBar();
@@ -102,7 +102,7 @@ export class IncarnationTab {
     this.blessingFillEl.style.width = `${percent.toFixed(1)}%`;
 
     if (boostSec > 0) {
-      this.blessingStatusEl.textContent = `✦ 2e0× FÉ ATIVO · ${Math.ceil(boostSec)}s / ${maxCap}s`;
+      this.blessingStatusEl.textContent = `✦ 2× FÉ ATIVO · ${Math.ceil(boostSec)}s / ${maxCap}s`;
       this.blessingPanelEl?.classList.add('active');
     } else {
       this.blessingStatusEl.textContent = `INATIVA (Clique no Altar para +${BLESSING_SECONDS_PER_PRESS}s)`;

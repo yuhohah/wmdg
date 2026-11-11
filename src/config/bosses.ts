@@ -47,7 +47,7 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
       gnoseNodes: 1
     },
     rewardName: 'Balança de Maat',
-    rewardDesc: 'Rompe o Selo do Tier II da Gnose e concede +50% (1.5e0×) de Fé/s e Fervor/s permanentes.',
+    rewardDesc: 'Rompe o Selo do Tier II da Gnose e concede +50% (1,5×) de Fé/s e Fervor/s permanentes.',
     lore: 'No Salão das Duas Verdades, o chacal ancestral ergue a balança dourada para pesar o coração do seu culto contra a Pluma do Cosmos.',
     faithFervorMult: 1.5
   },
@@ -77,7 +77,7 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
       gnoseNodes: 5
     },
     rewardName: 'Bidente do Submundo',
-    rewardDesc: 'Rompe o Selo do Tier III da Gnose e concede +50% (1.5e0×) de Fé/s e Fervor/s permanentes.',
+    rewardDesc: 'Rompe o Selo do Tier III da Gnose e concede +50% (1,5×) de Fé/s e Fervor/s permanentes.',
     lore: 'Do trono nas profundezas do Submundo, Hades ergue seu bidente para aprisionar as almas do culto e impedir que a luz da Esfera atravesse os portões dos mortos.',
     faithFervorMult: 1.5
   },
@@ -106,7 +106,7 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
       gnoseNodes: 10
     },
     rewardName: 'Runas de Yggdrasil',
-    rewardDesc: 'Rompe o Selo do Tier IV da Gnose e concede +50% (1.5e0×) de Fé/s e Fervor/s permanentes.',
+    rewardDesc: 'Rompe o Selo do Tier IV da Gnose e concede +50% (1,5×) de Fé/s e Fervor/s permanentes.',
     lore: 'Pendurado nos ramos do Freixo do Mundo, o deus caolho brande Gungnir para impedir que a Esfera tome para si os segredos da automação divina.',
     faithFervorMult: 1.5
   },
@@ -136,7 +136,7 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
       gnoseNodes: 17
     },
     rewardName: 'Selo da Criação (Apoteose)',
-    rewardDesc: 'Domina o Caos Primordial, concede o título Crepúsculo dos Deuses e multiplica toda a Fé e Fervor por 1e1×.',
+    rewardDesc: 'Domina o Caos Primordial, concede o título Crepúsculo dos Deuses e multiplica toda a Fé e Fervor por 10×.',
     lore: 'Antes dos deuses, das órbitas e da própria matéria, havia apenas o Caos. O vazio primordial desperta para dissolver a criação. Toda a força reunida pelo culto será posta à prova para que a Esfera imponha ordem ao infinito.',
     faithFervorMult: 10.0
   }

@@ -22,7 +22,7 @@ export const initialRelicUpgrades: RelicUpgrade[] = [
     cost: 750,
     level: 0,
     maxLevel: 1,
-    effectText: (level) => level >= 1 ? 'Fervor/s x1.5e0 • Rito que multiplica os Fragmentos revelado no Fervor' : 'Fervor/s x1.5e0 e revela o Rito que multiplica os Fragmentos (0/1)'
+    effectText: (level) => level >= 1 ? 'Fervor/s x1,5 • Rito que multiplica os Fragmentos revelado no Fervor' : 'Fervor/s x1,5 e revela o Rito que multiplica os Fragmentos (0/1)'
   },
   {
     id: 'relic_torch',

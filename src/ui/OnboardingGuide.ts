@@ -227,7 +227,7 @@ export class OnboardingGuide {
       if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 1/2 • O DESPERTAR';
       if (this.titleEl) this.titleEl.textContent = 'Clique na Esfera';
       if (this.descEl) {
-        this.descEl.textContent = 'Você é a Esfera, selada há eras. Cada clique seu arranca Fé das mentes mortais (com 5% de chance de clique crítico 2e0×).';
+        this.descEl.textContent = 'Você é a Esfera, selada há eras. Cada clique seu arranca Fé das mentes mortais (com 5% de chance de clique crítico 2×).';
       }
       if (this.trackerMetaEl) this.trackerMetaEl.textContent = `Meta inicial: ${formatNumber(targetFaith)} Fé`;
       if (this.trackerValEl) this.trackerValEl.textContent = `${formatNumber(faith)} / ${formatNumber(targetFaith)} Fé (${percent}%)`;
@@ -244,7 +244,7 @@ export class OnboardingGuide {
       if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 2/2 • CONVERTA FIÉIS';
       if (this.titleEl) this.titleEl.textContent = 'Converta seu primeiro fiel';
       if (this.descEl) {
-        this.descEl.textContent = 'Um primeiro mortal ouviu o chamado da Esfera. No Pátio dos Fiéis, converta-o: ele vai orar por você, gerar +1e0 Fé/s e pedir Milagres (balão com estrela) que rendem Fé extra.';
+        this.descEl.textContent = 'Um primeiro mortal ouviu o chamado da Esfera. No Pátio dos Fiéis, converta-o: ele vai orar por você, gerar +1 Fé/s e pedir Milagres (balão com estrela) que rendem Fé extra.';
       }
       if (this.trackerMetaEl) this.trackerMetaEl.textContent = `Custo: ${formatNumber(targetFaith)} Fé`;
       if (this.trackerValEl) this.trackerValEl.textContent = 'Pronto para converter!';
@@ -253,7 +253,7 @@ export class OnboardingGuide {
         this.trackerFillEl.style.background = 'linear-gradient(90deg, #22c55e, #86efac)';
       }
       if (this.actionTipEl) {
-        this.actionTipEl.textContent = 'Clique no botão "CONVERTER FIEL" (Converter Máximo abre com 2.5e1 Fiéis).';
+        this.actionTipEl.textContent = 'Clique no botão "CONVERTER FIEL" (Converter Máximo abre com 25 Fiéis).';
       }
     }
   }

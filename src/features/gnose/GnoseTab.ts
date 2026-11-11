@@ -350,7 +350,7 @@ export class GnoseTab {
       endgameBar.id = 'gnose-endgame-boss-bar';
 
       const actionHtml = isTiamatDefeated
-        ? `<span class="gnose-guardian-badge defeated">${icon('crown')} CREPÚSCULO DOS DEUSES CONCLUÍDO (×1e1 Fé & Fervor${bestTiamatTag})</span>
+        ? `<span class="gnose-guardian-badge defeated">${icon('crown')} CREPÚSCULO DOS DEUSES CONCLUÍDO (×10 Fé & Fervor${bestTiamatTag})</span>
            <button type="button" id="btn-rematch-tiamat" class="btn-rematch-guardian" data-boss-id="${tiamat.id}">⚔ Relembrar Duelo</button>`
         : canChallengeTiamat
           ? `<button type="button" id="btn-challenge-tiamat" class="btn-challenge-guardian endgame-ready" data-boss-id="${tiamat.id}">${iconOrText(tiamat.symbol)} <span class="gnose-guardian-label">Desafiar ${tiamat.name}</span></button>`
