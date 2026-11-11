@@ -108,7 +108,12 @@ export class FervorTab {
 
   public updateButtonStates(): void {
     const resonance = document.getElementById('fervor-resonance');
-    if (resonance) setText(resonance, `Ressonância do pico: ×${formatNumber(this.options.gameState.getFervorResonanceMultiplier())} Fé`);
+    if (resonance) {
+      // Only Gnose nodes make this bonus exceed ×1; before that the line would just be noise.
+      const mult = this.options.gameState.getFervorResonanceMultiplier();
+      resonance.hidden = mult <= 1;
+      setText(resonance, `Ressonância da Gnose: seu pico de Fervor rende ×${formatNumber(mult)} Fé`);
+    }
     this.automation.update();
     // The relic autobuyer can restore Phoenix while this card is already visible.
     if (this.options.gameState.isPhoenixRelicUnlocked() && !document.getElementById('card-fu_relics')) {

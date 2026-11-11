@@ -225,9 +225,9 @@ export class OnboardingGuide {
 
       if (this.iconEl) this.iconEl.innerHTML = icon('orb');
       if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 1/2 • O DESPERTAR';
-      if (this.titleEl) this.titleEl.textContent = 'Toque a Esfera';
+      if (this.titleEl) this.titleEl.textContent = 'Clique na Esfera';
       if (this.descEl) {
-        this.descEl.textContent = 'Você é a Esfera, selada há eras. Cada toque seu arranca Fé das mentes mortais (com 5% de chance de pulso crítico 2e0×).';
+        this.descEl.textContent = 'Você é a Esfera, selada há eras. Cada clique seu arranca Fé das mentes mortais (com 5% de chance de clique crítico 2e0×).';
       }
       if (this.trackerMetaEl) this.trackerMetaEl.textContent = `Meta inicial: ${formatNumber(targetFaith)} Fé`;
       if (this.trackerValEl) this.trackerValEl.textContent = `${formatNumber(faith)} / ${formatNumber(targetFaith)} Fé (${percent}%)`;
@@ -236,7 +236,7 @@ export class OnboardingGuide {
         this.trackerFillEl.style.background = 'linear-gradient(90deg, #f59e0b, #fef08a)';
       }
       if (this.actionTipEl) {
-        this.actionTipEl.textContent = `Toque a Esfera até juntar Fé suficiente (+${fpc} Fé por toque).`;
+        this.actionTipEl.textContent = `Clique na Esfera até juntar Fé suficiente (+${fpc} Fé por clique).`;
       }
     } else {
       // Step 2: Buy follower

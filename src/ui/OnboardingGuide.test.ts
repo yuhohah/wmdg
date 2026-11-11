@@ -51,7 +51,7 @@ describe('progressive card tutorial', () => {
     game.hasSeenIntro = false;
     const { tour, focus } = guide();
     tour.update();
-    expect(nodes.get('spotlight-balloon-title')?.textContent).toBe('Toque a Esfera');
+    expect(nodes.get('spotlight-balloon-title')?.textContent).toBe('Clique na Esfera');
     expect(focus).not.toHaveBeenCalled();
     tour.dismiss();
     tour.update();

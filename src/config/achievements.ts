@@ -6,7 +6,7 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_click_1',
     name: 'Primeiro Contato',
-    desc: 'Toque na Esfera Divina pela primeira vez.',
+    desc: 'Clique na Esfera pela primeira vez.',
     lore: 'Depois de eras selada, você vibra. Em algum lugar, alguém sente.',
     icon: '',
     unlocked: false,
@@ -24,7 +24,7 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_click_50',
     name: 'Canalizador Incansável',
-    desc: 'Canalize a Esfera 50 vezes manualmente.',
+    desc: 'Clique na Esfera 50 vezes.',
     lore: 'Seus pulsos começam a encontrar a frequência das mentes mortais.',
     icon: '',
     unlocked: false,
@@ -42,7 +42,7 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_click_250',
     name: 'Cadência Devota',
-    desc: 'Canalize a Esfera 250 vezes manualmente.',
+    desc: 'Clique na Esfera 250 vezes.',
     lore: 'Tudo vibra. Seus pulsos encontraram o ritmo das preces.',
     icon: '',
     unlocked: false,
@@ -60,7 +60,7 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_click_1000',
     name: 'Coração do Mundo',
-    desc: 'Canalize a Esfera 1.000 vezes manualmente.',
+    desc: 'Clique na Esfera 1.000 vezes.',
     lore: 'Mil pulsos. Os fiéis juram que o chão bate junto com você, como um coração.',
     icon: '',
     unlocked: false,
@@ -190,7 +190,7 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_faith_500',
     name: 'Centelha Mística',
-    desc: 'Acumule um total de 5e2 pontos de fé.',
+    desc: 'Acumule um total de 5e2 de Fé.',
     lore: 'A primeira reserva real de energia divina se consolida no plano físico.',
     icon: '',
     unlocked: false,
@@ -208,8 +208,8 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_faith_5000',
     name: 'Correnteza da Fé',
-    desc: 'Acumule 5e3 pontos de fé no total.',
-    lore: 'A fé deixa de ser uma faísca e se torna um rio ininterrupto.',
+    desc: 'Acumule 5e3 de Fé no total.',
+    lore: 'A Fé deixa de ser uma faísca e se torna um rio ininterrupto.',
     icon: '',
     unlocked: false,
     buffText: '+10% em toda a Fé',
@@ -226,7 +226,7 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_faith_50k',
     name: 'Mar de Preces',
-    desc: 'Acumule 5e4 pontos de fé no total.',
+    desc: 'Acumule 5e4 de Fé no total.',
     lore: 'Ninguém mais consegue contar as orações feitas em seu nome.',
     icon: '',
     unlocked: false,
@@ -244,7 +244,7 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_faith_500k',
     name: 'Singularidade da Esfera',
-    desc: 'Acumule 5e5 pontos de fé no total.',
+    desc: 'Acumule 5e5 de Fé no total.',
     lore: 'O poder gerado começa a romper as barreiras entre as dimensões.',
     icon: '',
     unlocked: false,
@@ -262,7 +262,7 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_faith_5m',
     name: 'Apoteose Universal',
-    desc: 'Acumule 5e6 pontos de fé no total.',
+    desc: 'Acumule 5e6 de Fé no total.',
     lore: 'A Esfera Divina assume seu trono definitivo no cosmos.',
     icon: '',
     unlocked: false,

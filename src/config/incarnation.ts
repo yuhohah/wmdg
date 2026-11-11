@@ -26,7 +26,7 @@ export const INCARNATION_STAGES: IncarnationStage[] = [
     name: 'Avatar Neófito',
     title: 'A Centelha Primordial',
     desc: 'Manifestação primordial da divindade. Canaliza a chama inicial de Fervor no altar sagrado (2e0x Fervor/s).',
-    lore: 'Nascido da devoção dos primeiros fiéis reunidos, este avatar etéreo ancora a essência direta dos céus no altar sagrado.',
+    lore: 'Seus primeiros fiéis pensaram em você com tanta força que você ganhou um corpo. Ainda é frágil, mas já arde.',
     cost: 0,
     multiplier: 2
   },
@@ -35,7 +35,7 @@ export const INCARNATION_STAGES: IncarnationStage[] = [
     name: 'Avatar Consagrado',
     title: 'O Portador do Fogo Sagrado',
     desc: 'O avatar atinge a maturidade espiritual plena. Multiplica a geração de Fervor por 1e2x.',
-    lore: 'Suas vestes ganham filigranas douradas e seus olhos ardem com o fogo sagrado que multiplica o fervor dos fiéis.',
+    lore: 'Os fiéis já reconhecem seu rosto. Quanto mais nítida a imagem que fazem de você, mais alto o fogo sobe.',
     cost: 2500000,
     multiplier: 100
   },
@@ -44,7 +44,7 @@ export const INCARNATION_STAGES: IncarnationStage[] = [
     name: 'Avatar Ancestral',
     title: 'O Ancião da Esfera',
     desc: 'Sabedoria imemorial dos primórdios cósmicos. Multiplica a geração de Fervor por 1e4x.',
-    lore: 'Repousando no epicentro do santuário, sua respiração cósmica incendeia o cosmos e dobra o tempo divino.',
+    lore: 'Seu corpo lembra eras que nenhum fiel viveu. Os deuses mais novos chamam isso de mito; você chama de memória.',
     cost: 250000000000,
     multiplier: 10000
   },
@@ -53,7 +53,7 @@ export const INCARNATION_STAGES: IncarnationStage[] = [
     name: 'Avatar do Eclipse',
     title: 'O Senhor das Sombras Cósmicas',
     desc: 'Fusão com o abismo estelar insondável. Multiplica a geração de Fervor por 1e8x.',
-    lore: 'Uma silhueta de trevas radiantes que consome a luz estelar para forjar tempestades avassaladoras de Fervor.',
+    lore: 'Você se põe entre os panteões e a luz que os sustentava. No escuro, ninguém consegue pensar em outro deus.',
     cost: 1e25,
     multiplier: 1e8
   },
@@ -62,7 +62,7 @@ export const INCARNATION_STAGES: IncarnationStage[] = [
     name: 'Avatar Solar',
     title: 'A Entidade da Luz Eterna',
     desc: 'Ascensão solar absoluta. Multiplica a geração de Fervor por 1e15x.',
-    lore: 'A personificação viva da Esfera Cósmica em seu esplendor máximo, brilhando como um trilhão de supernovas.',
+    lore: 'Não resta mente que não pense em você. Corpo e Esfera voltam a ser uma coisa só, e ela brilha por inteiro.',
     cost: 1e30,
     multiplier: 1e15
   }

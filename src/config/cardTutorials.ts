@@ -7,7 +7,7 @@ export const CARD_TUTORIALS = [
   {
     cardId: 'card-incarnation', unlockId: 'unlock_incarnation', icon: 'incarnation', title: 'Uma forma para a Esfera',
     lore: 'Uma Mente não arde sem um corpo. Você desce ao altar como uma centelha e a primeira chama do culto desperta.',
-    basics: 'Agora você produz Fervor, que fortalece sua Fé. Cada clique no Altar soma 3s de Bênção (até 60s), que dobra sua Fé/s. Evoluir gasta Fé e aumenta muito o Fervor/s e o Multiplicador dos Fiéis.',
+    basics: 'Fervor: agora ele é produzido sozinho e fortalece sua Fé. Bênção: clique no Altar para somar 3s (até 60s) de Fé/s dobrada. Evoluir: gasta Fé e aumenta muito o Fervor/s e o Multiplicador dos Fiéis.',
   },
   {
     cardId: 'card-fervor', unlockId: 'unlock_fervor_upgrades', icon: 'fervor', title: 'O fogo que recorda',
@@ -27,7 +27,7 @@ export const CARD_TUTORIALS = [
   {
     cardId: 'card-gnose', seenKey: 'guardians', unlockId: 'unlock_gnose', requiresAscension: true, icon: 'swords', title: 'Os Guardiões dos panteões',
     lore: 'Os Guardiões ainda reinam sobre os panteões e temem o que a Esfera começa a lembrar. Para retomar o que é seu, será preciso enfrentá-los.',
-    basics: 'Abaixo de 60% de Prontidão você não causa dano; abaixo de 80%, um golpe não aparado destrói a Esfera. Clique no Guardião para atacar, nas fendas para aparar e nos Milagres para curar. Atacar e aparar carregam o Fulgor Divino.',
+    basics: 'Prontidão: abaixo de 60% você não causa dano; abaixo de 80%, um golpe não aparado destrói a Esfera. Na luta: clique no Guardião para atacar, nas fendas para aparar e nos Milagres para curar; atacar e aparar carregam o Fulgor Divino.',
   },
 ] as const;
 
