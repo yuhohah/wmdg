@@ -2,9 +2,19 @@
 
 Histórico de mudanças de *Cult of the Sphere*, em ordem da versão mais recente para a mais antiga.
 
-A versão atual é **0.9.1**. A numeração anterior foi atribuída retrospectivamente aos últimos dez commits: o mais antigo corresponde à 0.7.0, os oito seguintes vão de 0.7.1 a 0.7.8 e o mais recente inicia a 0.8.0. As datas anteriores são as dos commits de referência, não datas de publicação. A 0.8.0 também reúne as mudanças locais mais recentes.
+A versão atual é **0.10.0**. A numeração anterior foi atribuída retrospectivamente aos últimos dez commits: o mais antigo corresponde à 0.7.0, os oito seguintes vão de 0.7.1 a 0.7.8 e o mais recente inicia a 0.8.0. As datas anteriores são as dos commits de referência, não datas de publicação. A 0.8.0 também reúne as mudanças locais mais recentes.
 
 Para as próximas versões, usamos `MAJOR.MINOR.PATCH`: novidades e mudanças relevantes de jogabilidade avançam o número do meio; correções e ajustes menores avançam o último. Enquanto o jogo estiver em desenvolvimento, o primeiro número permanece em zero. Cada nova versão deve atualizar este arquivo, `package.json` e a versão do projeto em `package-lock.json`.
+
+## 0.10.0 — 2026-11-11
+
+- Os números agora seguem o padrão brasileiro: abaixo de mil aparecem por extenso e depois viram K, M, B e T (por exemplo, `1,5K` e `2,02B`). A notação científica fica só a partir de `1e15`. Decimais, tempos e percentuais usam vírgula.
+- A Pena Solar de Fênix aparece logo depois da Cornucópia e agora diz que revela o Rito que multiplica os Fragmentos de cada Transmutação.
+- O Avatar Neófito produz o dobro de Fervor, deixando o começo da Encarnação menos arrastado.
+- Os Ritos de Fervor mostram o efeito atual e o do próximo nível.
+- A tela inicial mostra a forma final da Esfera.
+- Textos revisados: explicações corrigidas no Altar da Encarnação, nas dicas de Fé e Fragmentos e na Gnosis Suprema; nova lore dos Avatares; tutoriais da Encarnação e dos Guardiões divididos por tema; a Esfera é sempre "clicada".
+- A Ressonância da Gnose só aparece na aba de Fervor quando já rende bônus.
 
 ## 0.9.1 — 2026-11-06
 
