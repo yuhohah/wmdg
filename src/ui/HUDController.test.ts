@@ -152,13 +152,13 @@ describe('HUDController & Icons', () => {
 
     expect(createdTooltip!.hidden).toBe(false);
     expect(createdTooltip!.querySelector('.currency-tooltip-title')?.textContent).toBe('Fé');
-    expect(createdTooltip!.querySelector('.currency-tooltip-desc')?.textContent).toContain('Relíquias Divinas');
-    expect(createdTooltip!.querySelector('.currency-tooltip-stats')?.textContent).toContain('Saldo: 1e0 Fé');
+    expect(createdTooltip!.querySelector('.currency-tooltip-desc')?.textContent).toContain('transmutada em Fragmentos');
+    expect(createdTooltip!.querySelector('.currency-tooltip-stats')?.textContent).toContain('Saldo: 1 Fé');
 
     // Live update while hovered
     gameState.faithPoints = 250;
     hud.update();
-    expect(createdTooltip!.querySelector('.currency-tooltip-stats')?.textContent).toContain('Saldo: 2.5e2 Fé');
+    expect(createdTooltip!.querySelector('.currency-tooltip-stats')?.textContent).toContain('Saldo: 250 Fé');
 
     faithItem.trigger('mouseleave');
     expect(createdTooltip!.hidden).toBe(true);

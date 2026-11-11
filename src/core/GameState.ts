@@ -1156,7 +1156,7 @@ export class GameStateManager {
     }
 
     let prodMult = this.getFervorUpgradeEffect(this.fervorUpgrades[0]);
-    const torchMult = 1 + (this.relicUpgrades[1].level * 0.20);
+    const torchMult = 1 + ((this.relicUpgrades.find((r) => r.id === 'relic_torch')?.level ?? 0) * 0.20);
     prodMult *= torchMult;
     prodMult *= this.getIncarnationStageMultiplier();
     prodMult *= this.getGnoseReconstructionMultiplier();
@@ -1165,7 +1165,7 @@ export class GameStateManager {
     prodMult *= this.getBossCurseMultiplier();
 
     let synergyMult = this.getFervorUpgradeEffect(this.fervorUpgrades[4]);
-    if (this.relicUpgrades[2].level >= 1) {
+    if (this.isPhoenixRelicUnlocked()) {
       synergyMult *= 1.5;
     }
 

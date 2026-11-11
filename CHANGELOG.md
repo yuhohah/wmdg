@@ -2,9 +2,19 @@
 
 Histórico de mudanças de *Cult of the Sphere*, em ordem da versão mais recente para a mais antiga.
 
-A versão atual é **0.9.1**. A numeração anterior foi atribuída retrospectivamente aos últimos dez commits: o mais antigo corresponde à 0.7.0, os oito seguintes vão de 0.7.1 a 0.7.8 e o mais recente inicia a 0.8.0. As datas anteriores são as dos commits de referência, não datas de publicação. A 0.8.0 também reúne as mudanças locais mais recentes.
+A versão atual é **0.10.0**. A numeração anterior foi atribuída retrospectivamente aos últimos dez commits: o mais antigo corresponde à 0.7.0, os oito seguintes vão de 0.7.1 a 0.7.8 e o mais recente inicia a 0.8.0. As datas anteriores são as dos commits de referência, não datas de publicação. A 0.8.0 também reúne as mudanças locais mais recentes.
 
 Para as próximas versões, usamos `MAJOR.MINOR.PATCH`: novidades e mudanças relevantes de jogabilidade avançam o número do meio; correções e ajustes menores avançam o último. Enquanto o jogo estiver em desenvolvimento, o primeiro número permanece em zero. Cada nova versão deve atualizar este arquivo, `package.json` e a versão do projeto em `package-lock.json`.
+
+## 0.10.0 — 2026-11-11
+
+- Os números agora seguem o padrão brasileiro: abaixo de mil aparecem por extenso e depois viram K, M, B e T (por exemplo, `1,5K` e `2,02B`). A notação científica fica só a partir de `1e15`. Decimais, tempos e percentuais usam vírgula.
+- A Pena Solar de Fênix aparece logo depois da Cornucópia e agora diz que revela o Rito que multiplica os Fragmentos de cada Transmutação.
+- O Avatar Neófito produz o dobro de Fervor, deixando o começo da Encarnação menos arrastado.
+- Os Ritos de Fervor mostram o efeito atual e o do próximo nível.
+- A tela inicial mostra a forma final da Esfera.
+- Textos revisados: explicações corrigidas no Altar da Encarnação, nas dicas de Fé e Fragmentos e na Gnosis Suprema; nova lore dos Avatares; tutoriais da Encarnação e dos Guardiões divididos por tema; a Esfera é sempre "clicada".
+- A Ressonância da Gnose só aparece na aba de Fervor quando já rende bônus.
 
 ## 0.9.1 — 2026-11-06
 
@@ -12,14 +22,14 @@ Para as próximas versões, usamos `MAJOR.MINOR.PATCH`: novidades e mudanças re
 
 - Os custos dos nós da Gnose foram reduzidos para encurtar a campanha, com cortes proporcionalmente maiores nos upgrades mais caros e automações acessíveis mais cedo.
 
-- Anúbis, Hades, Odin e Caos Primordial ganharam animações próprias de derrota criadas no PixelLab. Cada sequência toca uma vez após a vitória, antes do retorno dos Fiéis e da Encarnação.
-- A animação da Esfera agora é limitada a 30 quadros por segundo para reduzir o trabalho de desenho, mantendo a velocidade dos giros e as mudanças a cada clique.
+- Anúbis, Hades, Odin e Caos Primordial ganharam animações próprias de derrota, que tocam após a vitória, antes do retorno dos Fiéis e da Encarnação.
+- A animação da Esfera ficou mais leve, sem perder a velocidade dos giros nem as mudanças a cada clique.
 - O áudio nas configurações foi reunido em três controles: volume geral, música e efeitos. Cada um tem um ícone para ativar ou silenciar sem perder o volume escolhido, e as preferências ficam salvas.
 - O volume base dos efeitos sonoros foi dobrado para deixar os sons de rituais e cliques mais audíveis.
 - Cada clique no Altar da Encarnação agora acrescenta 3 segundos de Bênção, em vez de 10, mantendo o limite acumulado de 60 segundos.
-- As evoluções da Esfera usam os desenhos revisados, com aros lisos de espessura uniforme, núcleo sólido em Órbitas e vazado na forma final, sem as duas auréolas pequenas. Cada clique sorteia uma velocidade própria para cada aro e permite à esfera manter ou inverter o sentido de rotação, com transições suaves e sem reiniciar a animação.
+- As evoluções da Esfera ganharam desenhos revisados. Cada clique muda a velocidade dos aros e pode inverter o sentido do giro, com transições suaves.
 - O Pátio dos Fiéis agora continua visível enquanto a Encarnação reúne os Fiéis para o duelo e vai ficando transparente quando a procissão parte. Depois da vitória, ele reaparece a tempo de receber todos de volta.
-- O jogo ficou mais leve, principalmente no celular. As músicas só são baixadas quando começam a tocar, os fundos do Pátio e do Altar ficaram cerca de 17 vezes menores, e cada luta carrega apenas os sprites do Guardião enfrentado. As animações fora da tela deixam de rodar a cada quadro, e a câmera das lutas deixou de recalcular a página a cada quadro.
+- O jogo ficou mais leve, principalmente no celular: carrega mais rápido, baixa menos dados e as lutas rodam com mais fluidez.
 
 ## 0.9.0 — 2026-11-06
 

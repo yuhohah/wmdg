@@ -130,10 +130,10 @@ export class HUDController {
         return {
           title: 'Fé',
           description:
-            'Devoção arrancada das mentes mortais. Usada para converter Fiéis, romper Selos e transmutar Relíquias Divinas.',
+            'Devoção arrancada das mentes mortais. Usada para converter Fiéis, romper Selos e ser transmutada em Fragmentos.',
           stats: [
             `Saldo: ${formatNumber(faith)} Fé`,
-            `Produção: +${formatNumber(fps)}/s${isBoosted ? ' (2e0×)' : ''} · +${formatNumber(fpc)}/toque`,
+            `Produção: +${formatNumber(fps)}/s${isBoosted ? ' (2×)' : ''} · +${formatNumber(fpc)}/clique`,
           ],
         };
       }
@@ -145,7 +145,7 @@ export class HUDController {
         return {
           title: 'Fiéis',
           description:
-            'Almas devotadas que entoam cânticos no Pátio Hermético para gerar Fé continuamente.',
+            'Almas devotadas que entoam cânticos no Pátio dos Fiéis para gerar Fé continuamente.',
           stats: [
             `Congregação: ${formatNumber(count)} Fiéis`,
             `Próximo Fiel: ${formatNumber(nextCost)} Fé (+${formatNumber(nextGain)} Fé/s)`,
@@ -173,7 +173,7 @@ export class HUDController {
         return {
           title: 'Fragmentos',
           description:
-            'Essência alquímica destilada em Relíquias Divinas. Aprimora relíquias sagradas do ciclo atual.',
+            'Restos de deuses caídos, obtidos ao transmutar Fé. Restauram as Relíquias Divinas do ciclo atual.',
           stats: [
             `Saldo: ${formatNumber(relics)} Fragmentos (+${formatNumber(relicRate)}/s)`,
             `Ao transmutar agora: +${formatNumber(pending)} Fragmentos`,
@@ -256,7 +256,7 @@ export class HUDController {
     const fps = this.gameState.getFaithPerSecond();
     const isBoosted = this.gameState.incarnationBoostTimer > 0;
     if (this.faithPerSecCounterEl) {
-      setText(this.faithPerSecCounterEl, `${formatNumber(fps)}/s${isBoosted ? ' (2e0x)' : ''}`);
+      setText(this.faithPerSecCounterEl, `${formatNumber(fps)}/s${isBoosted ? ' (2×)' : ''}`);
       this.faithPerSecCounterEl.classList.toggle('boosted', isBoosted);
     }
 

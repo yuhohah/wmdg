@@ -37,7 +37,7 @@ const gnoseBonuses: Record<string, string> = {
   gn_ritual_automation: 'Auto_Ritos = 1; Fervor′ = Fervor − Σ Custo_Rito; Δnível ≤ 50/rito/s',
   gn_relic_automation: 'Auto_Relíquias = 1; Fragmentos′ = Fragmentos − Σ Custo_Relíquia',
   gn_followers_syn: `M_sinergia = 1 + Fiéis^${PROGRESSION_BALANCE.congregationExponent}`,
-  gn_bencao_eterna: 'M_Bênção = 2e0',
+  gn_bencao_eterna: 'M_Bênção = 2',
   gn_keep_relics: 'nível_Relíquias(após ascender) = nível_Relíquias(antes)',
   gn_followers_economy: `escala_Fiéis′ = escala_Fiéis − ${GNOSE_FORMULAS.followerEconomyStep}`,
   gn_followers_cubic: 'M_sinergia = 1 + Fiéis^1.1',
@@ -78,7 +78,7 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
     const base = coefficient(game.getFervorUpgradeEffect({ ...ritual, level: 1 }));
     const effects: Record<string, string> = {
       fu_prod: `M_Fervor/s(nível) = (${base})^(nível^0.6)`,
-      fu_effect: 'M_efeito_Fervor(nível) = (1.25e0)^(nível^0.8)',
+      fu_effect: 'M_efeito_Fervor(nível) = (1,25)^(nível^0.8)',
       fu_click: 'M_Fé/clique(nível) = 4 × nível^2.6 + 1',
       fu_followers: 'M_Fé/s(nível) = nível^1.5 × Fiéis / 50 + 1',
       fu_synergy: 'M_Fervor/s(nível) = nível^1.5 × log10(max(0, Fé) + 1) / 5 + 1',
@@ -105,12 +105,12 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
   const seal = game.unlocks.find(upg => upg.id === id);
   if (seal) {
     const effects: Record<string, string> = {
-      unlock_incarnation: 'Encarnação = 1; Fervor_base/s = 1e0',
+      unlock_incarnation: 'Encarnação = 1; Fervor_base/s = 1',
       unlock_fervor_upgrades: 'Ritos_Fervor = 1',
       unlock_relics: `Fragmentos_Transmutação = ⌊log2(Fé + 1) × M_Transmutação⌋`,
       unlock_gnose: `Gnose = ⌊(Fé / 1e15)^${game.getGnoseGainExponent()}⌋; Fé ≥ 1e15`,
     };
-    return { cost: seal.id === 'unlock_gnose' ? 'C = 0e0 Fé; Fé ≥ 1e15'
+    return { cost: seal.id === 'unlock_gnose' ? 'C = 0 Fé; Fé ≥ 1e15'
       : `C = ${formatNumber(seal.cost)} ${seal.costCurrency === 'faith' ? 'Fé' : 'Fervor'}`, bonus: effects[id] };
   }
 

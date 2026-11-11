@@ -3,6 +3,7 @@ import { AudioManager } from '../../systems/audio.js';
 import { NotificationManager } from '../../systems/notifications.js';
 import { GNOSE_BOSSES, BOSS_DAMAGE_READINESS_THRESHOLD } from '../../config/bosses.js';
 import { formatNumber } from '../../systems/calculations.js';
+import { formatFixed } from '../../systems/numberFormat.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 import type { ActiveBossMiracle, BossRift, CultPillarStatus, GnoseBoss } from '../../types.js';
 import { icon } from '../../ui/icons.js';
@@ -888,12 +889,12 @@ export class BossBattleModal {
       }
       this.bossHitFlashSec = 0.18;
       const breakdown = this.options.gameState.getBossCombatBreakdown(battle.bossId);
-      this.showHitFeedback(`−${(breakdown.clickHpFraction * 100).toFixed(2)}%`);
+      this.showHitFeedback(`−${formatFixed(breakdown.clickHpFraction * 100, 2)}%`);
       if (e.clientX && e.clientY) {
         this.options.spawnFloatingText(
           e.clientX,
           e.clientY - 28,
-          `−${(breakdown.clickHpFraction * 100).toFixed(2)}%`,
+          `−${formatFixed(breakdown.clickHpFraction * 100, 2)}%`,
           true
         );
       }
@@ -952,7 +953,7 @@ export class BossBattleModal {
     if (bossClickDamage > 0) {
       this.bossHitFlashSec = 0.18;
       this.options.audio.playTone(640 + Math.random() * 140, 'sine', 0.08);
-      const pct = ((bossClickDamage / battle.bossMaxHp) * 100).toFixed(2);
+      const pct = formatFixed((bossClickDamage / battle.bossMaxHp) * 100, 2);
       this.showHitFeedback(`${isCrit ? 'Crítico! ' : ''}−${pct}%`);
       this.options.spawnFloatingText(
         x,
@@ -2404,7 +2405,7 @@ export class BossBattleModal {
         const bestSec = this.options.gameState.getBossBestTimeSec(boss.id) ?? durationSec;
         this.options.notifications.showCustomPopup(
           `${boss.name.toUpperCase()} SUBJUGADO!`,
-          `Duelo relembrado em ${durationSec.toFixed(1)}s (melhor tempo: ${bestSec.toFixed(1)}s).`,
+          `Duelo relembrado em ${formatFixed(durationSec, 1)}s (melhor tempo: ${formatFixed(bestSec, 1)}s).`,
           boss.symbol,
           'MEMÓRIA DE DUELO'
         );
@@ -2538,7 +2539,7 @@ export class BossBattleModal {
     const comboStreak = battle.comboStreak ?? 0;
 
     if (this.attackDamageEl) {
-      this.setText(this.attackDamageEl, `\u2212${(breakdown.clickHpFraction * 100).toFixed(2)}%`);
+      this.setText(this.attackDamageEl, `\u2212${formatFixed(breakdown.clickHpFraction * 100, 2)}%`);
     }
 
     if (this.attackBtnEl) {
@@ -2652,7 +2653,7 @@ export class BossBattleModal {
     this.miracleBtnEl.style.top = `${ly}px`;
     this.setText(
       this.miracleBtnEl,
-      `\u2726 MILAGRE +10% (${Math.max(0, miracle.remainingSec).toFixed(1)}s)`
+      `\u2726 MILAGRE +10% (${formatFixed(Math.max(0, miracle.remainingSec), 1)}s)`
     );
   }
 
@@ -2734,7 +2735,7 @@ export class BossBattleModal {
             this.showHitFeedback(`Peso menor! −${res.altarDamageTaken.toFixed(0)}% da Esfera (×${formatNumber(res.scaleDamageMultiplier ?? 1)}).`);
             this.options.spawnFloatingText(
               e.clientX || window.innerWidth / 2, e.clientY || window.innerHeight / 2,
-              `−${res.altarDamageTaken.toFixed(1)}% ESFERA (×${formatNumber(res.scaleDamageMultiplier ?? 1)})`
+              `−${formatFixed(res.altarDamageTaken, 1)}% ESFERA (×${formatNumber(res.scaleDamageMultiplier ?? 1)})`
             );
             this.updateUI();
             this.drawWorldScene();
@@ -2786,7 +2787,7 @@ export class BossBattleModal {
       this.setText(labelEl, labelText);
       this.setText(riftEl.querySelector<HTMLElement>('.boss-rift-damage'), detailText);
       const timerEl = riftEl.querySelector<HTMLElement>('.boss-rift-timer');
-      this.setText(timerEl, `${Math.max(0, rift.remainingSec).toFixed(1)}s`);
+      this.setText(timerEl, `${formatFixed(Math.max(0, rift.remainingSec), 1)}s`);
       const fillEl = riftEl.querySelector<HTMLElement>('.boss-rift-window-fill');
       if (fillEl && rift.maxSec > 0) {
         const pct = Math.max(0, Math.min(100, (rift.remainingSec / rift.maxSec) * 100));

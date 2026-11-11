@@ -6,7 +6,7 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_click_1',
     name: 'Primeiro Contato',
-    desc: 'Toque na Esfera Divina pela primeira vez.',
+    desc: 'Clique na Esfera pela primeira vez.',
     lore: 'Depois de eras selada, você vibra. Em algum lugar, alguém sente.',
     icon: '',
     unlocked: false,
@@ -24,7 +24,7 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_click_50',
     name: 'Canalizador Incansável',
-    desc: 'Canalize a Esfera 50 vezes manualmente.',
+    desc: 'Clique na Esfera 50 vezes.',
     lore: 'Seus pulsos começam a encontrar a frequência das mentes mortais.',
     icon: '',
     unlocked: false,
@@ -42,7 +42,7 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_click_250',
     name: 'Cadência Devota',
-    desc: 'Canalize a Esfera 250 vezes manualmente.',
+    desc: 'Clique na Esfera 250 vezes.',
     lore: 'Tudo vibra. Seus pulsos encontraram o ritmo das preces.',
     icon: '',
     unlocked: false,
@@ -60,7 +60,7 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_click_1000',
     name: 'Coração do Mundo',
-    desc: 'Canalize a Esfera 1.000 vezes manualmente.',
+    desc: 'Clique na Esfera 1.000 vezes.',
     lore: 'Mil pulsos. Os fiéis juram que o chão bate junto com você, como um coração.',
     icon: '',
     unlocked: false,
@@ -92,13 +92,13 @@ export const initialAchievements: Achievement[] = [
       current: Math.min(s.followers, 1),
       target: 1,
       percent: Math.min(100, s.followers * 100),
-      label: `${formatNumber(s.followers)} / 1e0 fiel`
+      label: `${formatNumber(s.followers)} / 1 fiel`
     })
   },
   {
     id: 'ach_f_10',
     name: 'Pequena Congregação',
-    desc: 'Reúna pelo menos 1e1 fiéis no culto.',
+    desc: 'Reúna pelo menos 10 fiéis no culto.',
     lore: 'As vozes unidas em cântico formam uma harmonia mística inquebrável.',
     icon: '',
     unlocked: false,
@@ -110,13 +110,13 @@ export const initialAchievements: Achievement[] = [
       current: Math.min(s.followers, 10),
       target: 10,
       percent: Math.min(100, (s.followers / 10) * 100),
-      label: `${formatNumber(s.followers)} / 1e1 fiéis`
+      label: `${formatNumber(s.followers)} / 10 fiéis`
     })
   },
   {
     id: 'ach_f_25',
     name: 'Irmandade Oculta',
-    desc: 'Reúna 2.5e1 fiéis dedicados.',
+    desc: 'Reúna 25 fiéis dedicados.',
     lore: 'Vinte e cinco iniciados guardam o seu segredo. Segredos atraem curiosos: converter fica mais barato.',
     icon: '',
     unlocked: false,
@@ -128,13 +128,13 @@ export const initialAchievements: Achievement[] = [
       current: Math.min(s.followers, 25),
       target: 25,
       percent: Math.min(100, (s.followers / 25) * 100),
-      label: `${formatNumber(s.followers)} / 2.5e1 fiéis`
+      label: `${formatNumber(s.followers)} / 25 fiéis`
     })
   },
   {
     id: 'ach_f_50',
     name: 'Círculo de Devoção',
-    desc: 'Reúna 5e1 fiéis canalizando preces contínuas.',
+    desc: 'Reúna 50 fiéis canalizando preces contínuas.',
     lore: 'O círculo sagrado agora ocupa todo o santuário com velas acesas.',
     icon: '',
     unlocked: false,
@@ -146,13 +146,13 @@ export const initialAchievements: Achievement[] = [
       current: Math.min(s.followers, 50),
       target: 50,
       percent: Math.min(100, (s.followers / 50) * 100),
-      label: `${formatNumber(s.followers)} / 5e1 fiéis`
+      label: `${formatNumber(s.followers)} / 50 fiéis`
     })
   },
   {
     id: 'ach_f_100',
     name: 'Legião Fanática',
-    desc: 'Comande 1e2 fiéis fervorosos.',
+    desc: 'Comande 100 fiéis fervorosos.',
     lore: 'Centenas de almas em uníssono fazem a terra tremer ao redor da Esfera.',
     icon: '',
     unlocked: false,
@@ -164,13 +164,13 @@ export const initialAchievements: Achievement[] = [
       current: Math.min(s.followers, 100),
       target: 100,
       percent: Math.min(100, (s.followers / 100) * 100),
-      label: `${formatNumber(s.followers)} / 1e2 fiéis`
+      label: `${formatNumber(s.followers)} / 100 fiéis`
     })
   },
   {
     id: 'ach_f_250',
     name: 'O Centro em Toda Parte',
-    desc: 'Atinja a marca de 2.5e2 fiéis devotos.',
+    desc: 'Atinja a marca de 250 fiéis devotos.',
     lore: 'Duzentos e cinquenta fiéis, duzentos e cinquenta centros. Você já não está só no altar.',
     icon: '',
     unlocked: false,
@@ -182,7 +182,7 @@ export const initialAchievements: Achievement[] = [
       current: Math.min(s.followers, 250),
       target: 250,
       percent: Math.min(100, (s.followers / 250) * 100),
-      label: `${formatNumber(s.followers)} / 2.5e2 fiéis`
+      label: `${formatNumber(s.followers)} / 250 fiéis`
     })
   },
 
@@ -190,7 +190,7 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_faith_500',
     name: 'Centelha Mística',
-    desc: 'Acumule um total de 5e2 pontos de fé.',
+    desc: 'Acumule um total de 500 de Fé.',
     lore: 'A primeira reserva real de energia divina se consolida no plano físico.',
     icon: '',
     unlocked: false,
@@ -202,14 +202,14 @@ export const initialAchievements: Achievement[] = [
       current: Math.min(s.totalFaith, 500),
       target: 500,
       percent: Math.min(100, (s.totalFaith / 500) * 100),
-      label: `${formatNumber(s.totalFaith)} / 5e2 Fé`
+      label: `${formatNumber(s.totalFaith)} / 500 Fé`
     })
   },
   {
     id: 'ach_faith_5000',
     name: 'Correnteza da Fé',
-    desc: 'Acumule 5e3 pontos de fé no total.',
-    lore: 'A fé deixa de ser uma faísca e se torna um rio ininterrupto.',
+    desc: 'Acumule 5K de Fé no total.',
+    lore: 'A Fé deixa de ser uma faísca e se torna um rio ininterrupto.',
     icon: '',
     unlocked: false,
     buffText: '+10% em toda a Fé',
@@ -220,13 +220,13 @@ export const initialAchievements: Achievement[] = [
       current: Math.min(s.totalFaith, 5000),
       target: 5000,
       percent: Math.min(100, (s.totalFaith / 5000) * 100),
-      label: `${formatNumber(s.totalFaith)} / 5e3 Fé`
+      label: `${formatNumber(s.totalFaith)} / 5K Fé`
     })
   },
   {
     id: 'ach_faith_50k',
     name: 'Mar de Preces',
-    desc: 'Acumule 5e4 pontos de fé no total.',
+    desc: 'Acumule 50K de Fé no total.',
     lore: 'Ninguém mais consegue contar as orações feitas em seu nome.',
     icon: '',
     unlocked: false,
@@ -238,13 +238,13 @@ export const initialAchievements: Achievement[] = [
       current: Math.min(s.totalFaith, 50000),
       target: 50000,
       percent: Math.min(100, (s.totalFaith / 50000) * 100),
-      label: `${formatNumber(s.totalFaith)} / 5e4 Fé`
+      label: `${formatNumber(s.totalFaith)} / 50K Fé`
     })
   },
   {
     id: 'ach_faith_500k',
     name: 'Singularidade da Esfera',
-    desc: 'Acumule 5e5 pontos de fé no total.',
+    desc: 'Acumule 500K de Fé no total.',
     lore: 'O poder gerado começa a romper as barreiras entre as dimensões.',
     icon: '',
     unlocked: false,
@@ -256,13 +256,13 @@ export const initialAchievements: Achievement[] = [
       current: Math.min(s.totalFaith, 500000),
       target: 500000,
       percent: Math.min(100, (s.totalFaith / 500000) * 100),
-      label: `${formatNumber(s.totalFaith)} / 5e5 Fé`
+      label: `${formatNumber(s.totalFaith)} / 500K Fé`
     })
   },
   {
     id: 'ach_faith_5m',
     name: 'Apoteose Universal',
-    desc: 'Acumule 5e6 pontos de fé no total.',
+    desc: 'Acumule 5M de Fé no total.',
     lore: 'A Esfera Divina assume seu trono definitivo no cosmos.',
     icon: '',
     unlocked: false,
@@ -274,7 +274,7 @@ export const initialAchievements: Achievement[] = [
       current: Math.min(s.totalFaith, 5000000),
       target: 5000000,
       percent: Math.min(100, (s.totalFaith / 5000000) * 100),
-      label: `${formatNumber(s.totalFaith)} / 5e6 Fé`
+      label: `${formatNumber(s.totalFaith)} / 5M Fé`
     })
   },
 
@@ -282,7 +282,7 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_fps_100',
     name: 'Torrente Perpétua',
-    desc: 'Alcance uma produção de 1e2 Fé/s.',
+    desc: 'Alcance uma produção de 100 Fé/s.',
     lore: 'A Fé flui sem que você precise de um único toque.',
     icon: '',
     unlocked: false,
@@ -294,7 +294,7 @@ export const initialAchievements: Achievement[] = [
       current: Math.min(s.fps, 100),
       target: 100,
       percent: Math.min(100, (s.fps / 100) * 100),
-      label: `${formatNumber(s.fps)} / 1e2 Fé/s`
+      label: `${formatNumber(s.fps)} / 100 Fé/s`
     })
   },
 
@@ -320,7 +320,7 @@ export const initialAchievements: Achievement[] = [
   {
     id: 'ach_gnose_25',
     name: 'Adeptus Hermeticus',
-    desc: 'Acumule um total de 2.5e1 Gnose ao longo dos seus ciclos.',
+    desc: 'Acumule um total de 25 Gnose ao longo dos seus ciclos.',
     lore: 'Os mistérios menores se abrem; as tábuas de esmeralda brilham sem segredos diante do seu olhar.',
     icon: '',
     unlocked: false,
@@ -332,13 +332,13 @@ export const initialAchievements: Achievement[] = [
       current: Math.min(s.totalGnoseEarned ?? 0, 25),
       target: 25,
       percent: Math.min(100, ((s.totalGnoseEarned ?? 0) / 25) * 100),
-      label: `${formatNumber(s.totalGnoseEarned ?? 0)} / 2.5e1 Gnose Total`
+      label: `${formatNumber(s.totalGnoseEarned ?? 0)} / 25 Gnose Total`
     })
   },
   {
     id: 'ach_gnose_500',
     name: 'Mente Incircunscrita',
-    desc: 'Acumule um total de 5e2 Gnose ao longo dos seus ciclos.',
+    desc: 'Acumule um total de 500 Gnose ao longo dos seus ciclos.',
     lore: 'Seu centro está em toda parte; sua circunferência, em lugar nenhum.',
     icon: '',
     unlocked: false,
@@ -350,7 +350,7 @@ export const initialAchievements: Achievement[] = [
       current: Math.min(s.totalGnoseEarned ?? 0, 500),
       target: 500,
       percent: Math.min(100, ((s.totalGnoseEarned ?? 0) / 500) * 100),
-      label: `${formatNumber(s.totalGnoseEarned ?? 0)} / 5e2 Gnose Total`
+      label: `${formatNumber(s.totalGnoseEarned ?? 0)} / 500 Gnose Total`
     })
   },
   {

@@ -36,15 +36,15 @@
             <div class="resource-item resource-item-faith" data-currency="faith" tabindex="0" aria-label="Fé">
               <span class="res-name" data-icon="star" aria-hidden="true"></span>
               <span class="res-label">Fé</span>
-              <span id="faith-counter" class="res-num">1e0</span>
+              <span id="faith-counter" class="res-num">1</span>
               <span class="res-dash">-</span>
-              <span id="faith-per-sec-counter" class="res-rate">0e0/s</span>
+              <span id="faith-per-sec-counter" class="res-rate">0/s</span>
             </div>
             <div class="resource-divider"></div>
             <div class="resource-item resource-item-followers" data-currency="followers" tabindex="0" aria-label="Fiéis">
               <span class="res-name" data-icon="followers" aria-hidden="true"></span>
               <span class="res-label">Fiéis</span>
-              <span id="followers-counter" class="res-num">0e0</span>
+              <span id="followers-counter" class="res-num">0</span>
               <span class="res-dash">-</span>
               <span class="res-rate"></span>
             </div>
@@ -52,25 +52,25 @@
             <div class="resource-item resource-item-fervor" id="hud-fervor-item" data-currency="fervor" tabindex="0" aria-label="Fervor">
               <span class="res-name" data-icon="fervor" aria-hidden="true"></span>
               <span class="res-label">Fervor</span>
-              <span id="fervor-counter-hud" class="res-num">0e0</span>
+              <span id="fervor-counter-hud" class="res-num">0</span>
               <span class="res-dash">-</span>
-              <span id="fervor-rate-counter-hud" class="res-rate">0e0/s</span>
+              <span id="fervor-rate-counter-hud" class="res-rate">0/s</span>
             </div>
             <div class="resource-divider" id="hud-relic-divider"></div>
             <div class="resource-item resource-item-relic" id="hud-relic-item" data-currency="relics" tabindex="0" aria-label="Fragmentos">
               <span class="res-name" data-icon="gem" aria-hidden="true"></span>
               <span class="res-label">Fragmentos</span>
-              <span id="relic-counter-hud" class="res-num">0e0</span>
+              <span id="relic-counter-hud" class="res-num">0</span>
               <span class="res-dash">-</span>
-              <span id="relic-rate-counter-hud" class="res-rate">0e0/s</span>
+              <span id="relic-rate-counter-hud" class="res-rate">0/s</span>
             </div>
             <div class="resource-divider" id="hud-gnose-divider" style="display: none;"></div>
             <div class="resource-item resource-item-gnose" id="hud-gnose-item" data-currency="gnose" tabindex="0" aria-label="Gnose" style="display: none;">
               <span class="res-name" data-icon="gnose" aria-hidden="true"></span>
               <span class="res-label">Gnose</span>
-              <span id="gnose-counter-hud" class="res-num">0e0</span>
+              <span id="gnose-counter-hud" class="res-num">0</span>
               <span class="res-dash">-</span>
-              <span id="gnose-mult-counter-hud" class="res-rate">×1e0</span>
+              <span id="gnose-mult-counter-hud" class="res-rate">×1</span>
             </div>
           </div>
         </div>
@@ -150,7 +150,7 @@
               </div>
               <div class="dodeca-card-body">
                 <section id="panel-center" class="center-frame" style="width: 100%; border: none; background: transparent; padding: 0;">
-                  <div class="sacred-window-heading"><span class="world-eyebrow">RELICÁRIO DO PROFETA</span><h2>A Esfera</h2><p>Que o chamado seja ouvido.</p></div>
+                  <div class="sacred-window-heading"><span class="world-eyebrow">RELICÁRIO DA ESFERA</span><h2>A Esfera</h2><p>Que o chamado seja ouvido.</p></div>
                   <div class="center-frame-content">
                     <div class="sphere-presentation-area">
                       <!-- CLICKABLE DIVINE SPHERE IN THE MIDDLE OF THE SCREEN -->
@@ -159,11 +159,11 @@
                         <div class="sphere-orbit-ring ring-2"></div>
                         <div class="sphere-aura"></div>
 
-                        <div id="divine-sphere-btn" class="divine-sphere-btn" role="button" aria-label="Tocar a Esfera"></div>
+                        <div id="divine-sphere-btn" class="divine-sphere-btn" role="button" aria-label="Clicar na Esfera"></div>
                       </div>
                     </div>
                   </div>
-                  <div class="sacred-window-footer"><span>CANALIZAR FÉ</span><p>Clique na Esfera (<span id="sphere-click-val" class="sphere-click-val">+1e0 Fé</span>)</p></div>
+                  <div class="sacred-window-footer"><span>CANALIZAR FÉ</span><p>Clique na Esfera (<span id="sphere-click-val" class="sphere-click-val">+1 Fé</span>)</p></div>
                 </section>
               </div>
             </div>
@@ -182,11 +182,11 @@
                     <div class="followers-stat-group">
                       <span class="followers-stat-label">ALMAS DEVOTADAS</span>
                       <div class="followers-stat-row">
-                        <span id="followers-total-count" class="followers-total-val">0e0</span>
+                        <span id="followers-total-count" class="followers-total-val">0</span>
                         <span class="followers-stat-unit">Fiéis</span>
                       </div>
                     </div>
-                    <div class="followers-rate-badge" id="followers-rate-badge">+0e0 Fé/s</div>
+                    <div class="followers-rate-badge" id="followers-rate-badge">+0 Fé/s</div>
                   </div>
 
                   <!-- Pátio dos Fiéis Hermético (Walking & Praying Cultists Arena) -->
@@ -203,11 +203,11 @@
                     <button id="btn-convert-one" class="btn-follower-action btn-convert-primary">
                       <div class="btn-action-main">
                         <span class="btn-action-title">CONVERTER FIEL</span>
-                        <span class="btn-action-benefit" id="convert-one-benefit">+1e0 Fé/s</span>
+                        <span class="btn-action-benefit" id="convert-one-benefit">+1 Fé/s</span>
                       </div>
                       <div class="btn-action-cost">
                         <span>CUSTO:</span>
-                        <span class="cost-val" id="convert-one-cost-val">2e1 Fé</span>
+                        <span class="cost-val" id="convert-one-cost-val">20 Fé</span>
                       </div>
                     </button>
 
@@ -250,7 +250,7 @@
               </div>
               <div class="dodeca-card-body">
                 <div id="tab-fervor" class="tab-pane active" style="display: block;">
-                  <p id="fervor-resonance" class="fervor-resonance">Ressonância do pico: ×1e0 Fé</p>
+                  <p id="fervor-resonance" class="fervor-resonance" hidden></p>
                   <label class="card-automation-toggle" id="auto-fervor-wrap" hidden>
                     <input type="checkbox" id="auto-fervor-toggle" checked />
                     <span>Auto-Ritos</span>
@@ -262,7 +262,7 @@
                 <div class="card-lock-seal">
                   <svg class="card-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                   <span class="card-lock-title">SELO DO FERVOR</span>
-                  <span class="card-lock-desc">Rompa o Selo do Fervor para ascender a chama.</span>
+                  <span class="card-lock-desc">Rompa o Selo do Fervor para acender a chama.</span>
                 </div>
               </div>
             </div>
@@ -285,7 +285,7 @@
                     </div>
                     <div class="incarnation-mult-wrapper" style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
                       <span class="incarnation-mult-sublabel" style="font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #a1a1aa; text-transform: uppercase;">MULTIPLICADOR DOS FIÉIS</span>
-                      <div class="incarnation-rate-badge" id="incarnation-rate-badge">x1.00</div>
+                      <div class="incarnation-rate-badge" id="incarnation-rate-badge">x1</div>
                     </div>
                   </div>
 
@@ -300,14 +300,14 @@
                       <div class="incarnation-altar-info">
                         <span class="incarnation-altar-subhint" id="incarnation-altar-title">A Centelha Primordial</span>
                       </div>
-                      <span class="incarnation-altar-lore" id="incarnation-altar-lore">Toque para canalizar o fervor celestial</span>
+                      <span class="incarnation-altar-lore" id="incarnation-altar-lore">Clique no Altar para acumular Bênção</span>
                     </div>
                   </div>
 
                   <!-- Bênção 2x Fé da Encarnação (Preenche ao Clicar no Altar) -->
                   <div class="incarnation-blessing-panel" id="incarnation-blessing-panel">
                     <div class="incarnation-blessing-header">
-                      <span class="incarnation-blessing-title">✦ BÊNÇÃO 2e0× FÉ</span>
+                      <span class="incarnation-blessing-title">✦ BÊNÇÃO 2× FÉ</span>
                       <span class="incarnation-blessing-status" id="incarnation-blessing-status">INATIVA (Clique no Altar para +3s)</span>
                     </div>
                     <div class="incarnation-blessing-track">
@@ -319,11 +319,11 @@
                     <button id="btn-upgrade-incarnation" class="btn-follower-action btn-incarnation-upgrade">
                       <div class="btn-action-main">
                         <span class="btn-action-title" id="incarnation-upgrade-title">EVOLUIR</span>
-                        <span class="btn-action-benefit" id="incarnation-upgrade-benefit">1e2x Fervor/s</span>
+                        <span class="btn-action-benefit" id="incarnation-upgrade-benefit">100x Fervor/s</span>
                       </div>
                       <div class="btn-action-cost" id="incarnation-upgrade-cost-group">
                         <span id="incarnation-cost-label">CUSTO:</span>
-                        <span class="cost-val" id="incarnation-cost-val">2.5e6 Fé</span>
+                        <span class="cost-val" id="incarnation-cost-val">2,5M Fé</span>
                       </div>
                     </button>
                   </div>
@@ -355,10 +355,10 @@
                   <!-- Conversion Section -->
                   <div class="relics-convert-section">
                     <button id="btn-convert-relics" class="btn-convert-relics" disabled>
-                      Transmutar toda a Fé → +<span id="relics-to-get">0e0</span> Fragmentos
+                      Transmutar toda a Fé → +<span id="relics-to-get">0</span> Fragmentos
                     </button>
                     <div class="relics-extra-rate-text" id="relics-cooldown-line" style="display: none;">
-                      O vaso esfria: <span id="relics-convert-cooldown">0</span>s
+                      Transmutação disponível em <span id="relics-convert-cooldown">0</span>s
                     </div>
                   </div>
 
@@ -374,7 +374,7 @@
                 <div class="card-lock-seal">
                   <svg class="card-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                   <span class="card-lock-title">SELO DAS RELÍQUIAS</span>
-                  <span class="card-lock-desc">Rompa o Selo das Relíquias para transmutar Fé em Fragmentos Alquímicos.</span>
+                  <span class="card-lock-desc">Rompa o Selo das Relíquias para transmutar Fé em Fragmentos de deuses caídos.</span>
                 </div>
               </div>
             </div>
@@ -392,16 +392,16 @@
                   <div class="gnose-reset-section">
                     <div class="gnose-top-bar">
                       <button id="btn-gnose-reset" class="btn-gnose-reset" disabled>
-                        Ascender → +<span id="gnose-to-get">0e0</span> Gnose
+                        Ascender → +<span id="gnose-to-get">0</span> Gnose
                       </button>
                       <div class="gnose-stats-grid">
                         <div class="gnose-stat-box">
                           <span class="gnose-stat-label">GNOSE</span>
-                          <span id="gnose-balance-val" class="gnose-stat-val">0e0</span>
+                          <span id="gnose-balance-val" class="gnose-stat-val">0</span>
                         </div>
                         <div class="gnose-stat-box">
                           <span class="gnose-stat-label">BÔNUS PERMANENTE</span>
-                          <span id="gnose-passive-mult-val" class="gnose-stat-val">×1e0</span>
+                          <span id="gnose-passive-mult-val" class="gnose-stat-val">×1</span>
                         </div>
                       </div>
                     </div>
@@ -494,15 +494,15 @@
         </div>
 
         <div class="spotlight-balloon-body">
-          <h3 class="spotlight-balloon-title" id="spotlight-balloon-title">Toque a Esfera</h3>
+          <h3 class="spotlight-balloon-title" id="spotlight-balloon-title">Clique na Esfera</h3>
           <p class="spotlight-balloon-desc" id="spotlight-balloon-desc">
-            Você é a Esfera, selada há eras. Cada toque seu arranca Fé das mentes mortais.
+            Você é a Esfera, selada há eras. Cada clique seu arranca Fé das mentes mortais.
           </p>
 
           <div class="spotlight-balloon-tracker" id="spotlight-balloon-tracker">
             <div class="spotlight-tracker-header">
-              <span class="spotlight-tracker-meta" id="spotlight-tracker-meta">Meta inicial: 2e1 Fé</span>
-              <span class="spotlight-tracker-val" id="spotlight-tracker-val">0e0 / 2e1 Fé</span>
+              <span class="spotlight-tracker-meta" id="spotlight-tracker-meta">Meta inicial: 20 Fé</span>
+              <span class="spotlight-tracker-val" id="spotlight-tracker-val">0 / 20 Fé</span>
             </div>
             <div class="spotlight-tracker-bar-bg">
               <div class="spotlight-tracker-bar-fill" id="spotlight-tracker-bar-fill" style="width: 0%;"></div>
@@ -510,7 +510,7 @@
           </div>
 
           <div class="spotlight-balloon-action-tip" id="spotlight-balloon-action-tip">
-            Toque a Esfera até juntar Fé suficiente (+1e0 Fé por toque).
+            Clique na Esfera até juntar Fé suficiente (+1 Fé por clique).
           </div>
         </div>
       </div>
@@ -553,27 +553,27 @@
         <div class="stats-panel-content cult-status-stats">
           <div class="stat-box">
             <span class="stat-label">FÉ TOTAL ACUMULADA</span>
-            <span id="stat-total-faith" class="stat-val">1e0</span>
+            <span id="stat-total-faith" class="stat-val">1</span>
           </div>
           <div class="stat-box">
             <span class="stat-label">FÉ POR CLIQUE</span>
-            <span id="stat-click-faith" class="stat-val">+1e0</span>
+            <span id="stat-click-faith" class="stat-val">+1</span>
           </div>
           <div class="stat-box">
             <span class="stat-label">FÉ POR SEGUNDO</span>
-            <span id="stat-passive-faith" class="stat-val">+0e0 Fé/s</span>
+            <span id="stat-passive-faith" class="stat-val">+0 Fé/s</span>
           </div>
           <div class="stat-box">
             <span class="stat-label">FERVOR ACUMULADO</span>
-            <span id="stat-fervor-accum" class="stat-val">0e0</span>
+            <span id="stat-fervor-accum" class="stat-val">0</span>
           </div>
           <div class="stat-box">
             <span class="stat-label">PRODUÇÃO DE FERVOR</span>
-            <span id="stat-fervor-rate" class="stat-val">+0e0 Fervor/s</span>
+            <span id="stat-fervor-rate" class="stat-val">+0 Fervor/s</span>
           </div>
           <div class="stat-box">
             <span class="stat-label">TOTAL DE FIÉIS</span>
-            <span id="stat-total-followers" class="stat-val">0e0</span>
+            <span id="stat-total-followers" class="stat-val">0</span>
           </div>
           <div class="stat-box">
             <span class="stat-label">CLIQUES NA ESFERA</span>

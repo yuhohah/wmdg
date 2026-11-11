@@ -15,11 +15,11 @@ describe('offline notice', () => {
   it('summarizes only the resources gained during the absence', () => {
     const notice = buildOfflineNotice(60, gains);
     expect(notice?.title).toBe('VIGÍLIA SAGRADA (1m)');
-    expect(notice?.desc).toContain('+4.98e3 Fé, +3.7e0 Fervor.');
+    expect(notice?.desc).toContain('+4,98K Fé, +3,7 Fervor.');
     expect(notice?.desc).not.toContain('Fragmentos');
   });
 
   it('switches to hours from one hour on', () => {
-    expect(buildOfflineNotice(5400, gains)?.title).toBe('VIGÍLIA SAGRADA (1.5h)');
+    expect(buildOfflineNotice(5400, gains)?.title).toBe('VIGÍLIA SAGRADA (1,5h)');
   });
 });

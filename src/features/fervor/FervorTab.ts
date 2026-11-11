@@ -62,7 +62,6 @@ export class FervorTab {
       }
 
       const cost = this.options.gameState.getFervorUpgradeCost(upg);
-      const mult = this.options.gameState.getFervorUpgradeEffect(upg);
       const canAfford = fervor >= cost;
 
       const card = document.createElement('div');
@@ -79,7 +78,7 @@ export class FervorTab {
             ${symbolHtml}
             <span class="card-name">${upg.name}</span>
           </div>
-          <span class="fervor-mult-tag">x${formatNumber(mult)}</span>
+          <span class="fervor-mult-tag">${this.multText(upg)}</span>
         </div>
         <div class="card-footer-row">
           <div class="cost-tag" style="font-weight: 800;">
@@ -109,7 +108,12 @@ export class FervorTab {
 
   public updateButtonStates(): void {
     const resonance = document.getElementById('fervor-resonance');
-    if (resonance) setText(resonance, `Ressonância do pico: ×${formatNumber(this.options.gameState.getFervorResonanceMultiplier())} Fé`);
+    if (resonance) {
+      // Only Gnose nodes make this bonus exceed ×1; before that the line would just be noise.
+      const mult = this.options.gameState.getFervorResonanceMultiplier();
+      resonance.hidden = mult <= 1;
+      setText(resonance, `Ressonância da Gnose: seu pico de Fervor rende ×${formatNumber(mult)} Fé`);
+    }
     this.automation.update();
     // The relic autobuyer can restore Phoenix while this card is already visible.
     if (this.options.gameState.isPhoenixRelicUnlocked() && !document.getElementById('card-fu_relics')) {
@@ -119,7 +123,6 @@ export class FervorTab {
 
     this.options.gameState.fervorUpgrades.forEach((upg) => {
       const cost = this.options.gameState.getFervorUpgradeCost(upg);
-      const mult = this.options.gameState.getFervorUpgradeEffect(upg);
       const card = document.getElementById(`card-${upg.id}`);
       if (card) {
         if (fervor >= cost) {
@@ -129,7 +132,7 @@ export class FervorTab {
         }
         const multTagEl = card.querySelector('.fervor-mult-tag');
         if (multTagEl) {
-          setText(multTagEl, `x${formatNumber(mult)}`);
+          setText(multTagEl, this.multText(upg));
         }
         const costSpanEls = card.querySelectorAll('.cost-tag span');
         if (costSpanEls.length >= 2) {
@@ -137,6 +140,13 @@ export class FervorTab {
         }
       }
     });
+  }
+
+  /** Current effect and what the next level would give, so the player can judge each Rite. */
+  private multText(upg: FervorUpgrade): string {
+    const game = this.options.gameState;
+    const next = game.getFervorUpgradeEffect({ ...upg, level: upg.level + 1 });
+    return `x${formatNumber(game.getFervorUpgradeEffect(upg))} → x${formatNumber(next)}`;
   }
 
   public setHudVisibility(unlocked: boolean): void {
