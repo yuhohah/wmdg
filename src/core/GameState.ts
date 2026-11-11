@@ -1,3 +1,5 @@
+import { ANUBIS_MIN_GNOSE_UPGRADES } from '../config/bosses.js';
+import { getRelicUpgradeCost, getRelicUpgradeBulkCost, getMaxAffordableRelicLevels } from '../systems/relicCosts.js';
 import type {
   BuyableItem,
   FervorUpgrade,
@@ -15,11 +17,11 @@ import type {
 } from '../types.js';
 import { initialFollowers } from '../config/followers.js';
 import { initialFervorUpgrades, BASE_FERVOR_RATE, getFervorUpgradeMultiplier } from '../config/fervor.js';
-import { initialAchievements } from '../config/achievements.js';
+import { initialAchievements, SPHERE_CRITICAL } from '../config/achievements.js';
 import { initialUnlocks } from '../config/unlocks.js';
-import { initialRelicUpgrades } from '../config/relics.js';
+import { initialRelicUpgrades, ETERNAL_RELIC_IDS } from '../config/relics.js';
 import { INCARNATION_STAGES, BLESSING_MAX_SECONDS, type IncarnationStage } from '../config/incarnation.js';
-import { PROGRESSION_BALANCE, PROGRESSION_OLD_PRICES, GNOSE_UPGRADES, GNOSE_AUTOMATION, GNOSE_SEAL_UPGRADES, LEGACY_GNOSE_SEAL_AUTOMATIONS, GNOSE_FORMULAS, GNOSE_APOTHEOSIS_COSTS, RETIRED_GNOSE_UPGRADES, LEGACY_GNOSE_AUTOMATIONS } from '../config/gnose.js';
+import { PROGRESSION_BALANCE, PROGRESSION_OLD_PRICES, PROGRESSION_REVISION, PROGRESSION_REVISION_1_PRICES, GNOSE_UPGRADES, GNOSE_AUTOMATION, GNOSE_SEAL_UPGRADES, LEGACY_GNOSE_SEAL_AUTOMATIONS, GNOSE_FORMULAS, GNOSE_APOTHEOSIS_COSTS, RETIRED_GNOSE_UPGRADES, LEGACY_GNOSE_AUTOMATIONS } from '../config/gnose.js';
 import {
   GNOSE_BOSSES,
   BOSS_CURSE_DURATION_SEC,
@@ -52,13 +54,14 @@ import {
   calculateTotalGnoseMultiplier,
   calculateGnoseFollowersSynergyMultiplier
 } from '../systems/calculations.js';
-import { SaveSystem, type SaveData } from '../systems/saveSystem.js';
+import { SaveSystem, isValidSaveData, type SaveData } from '../systems/saveSystem.js';
 
 export class GameStateManager {
   // Numeric Resources & Stats
   public faithPoints: number = 1;
   public totalFaithAccumulated: number = 1;
   public totalClicks: number = 0;
+  public gameStartedAtMs: number = 0;
   public fervorPoints: number = 0;
   public fervorPeakThisRun = 0;
   public relicPeakThisRun = 0;
@@ -73,6 +76,7 @@ export class GameStateManager {
   public relicUpgrades: RelicUpgrade[] = initialRelicUpgrades.map((r) => ({ ...r }));
 
   // Incarnation State
+  public campaignEnding: 'pending' | 'completed' | 'freeplay' = 'pending';
   public incarnationStage: number = 1;
   public incarnationBoostTimer: number = 0;
 
@@ -118,9 +122,11 @@ export class GameStateManager {
   }
 
   public resetToDefaults(): void {
+    this.campaignEnding = 'pending';
     this.faithPoints = 1;
     this.totalFaithAccumulated = 1;
     this.totalClicks = 0;
+    this.gameStartedAtMs = 0;
     this.fervorPoints = 0;
     this.fervorPeakThisRun = 0;
     this.relicPeakThisRun = 0;
@@ -243,7 +249,8 @@ export class GameStateManager {
     if (this.defeatedBosses.has(boss.id)) return false;
 
     if (boss.unlocksTier === 2) {
-      return this.isGnoseUnlocked();
+      const owned = GNOSE_UPGRADES.filter(upgrade => this.hasGnoseUpgrade(upgrade.id)).length;
+      return this.isGnoseUnlocked() && owned >= ANUBIS_MIN_GNOSE_UPGRADES;
     }
     if (boss.unlocksTier === 3) {
       const tier2Owned = GNOSE_UPGRADES.filter(
@@ -1369,7 +1376,7 @@ export class GameStateManager {
   }
 
   public canAccessIncarnationStage(stage: number): boolean {
-    return stage < 5 || this.hasGnoseUpgrade('gn_apotheosis');
+    return INCARNATION_STAGES.some(incarnation => incarnation.stage === stage);
   }
 
   private ritualInvestmentScore(upg: FervorUpgrade): number {
@@ -1388,7 +1395,7 @@ export class GameStateManager {
     const after = [this.getFaithPerSecond(), this.getFervorRatePerSecond(), this.getRelicsRatePerSecond()];
     const costGain = Math.max(0, scale - this.getDevoteeBaseMultiplier()) * this.getTotalFollowersCount();
     relic.level--;
-    return (after.reduce((sum, rate, i) => sum + Math.max(0, rate - before[i]) / Math.max(1, before[i]), 0) + costGain) / relic.cost;
+    return (after.reduce((sum, rate, i) => sum + Math.max(0, rate - before[i]) / Math.max(1, before[i]), 0) + costGain) / this.getRelicUpgradeCost(relic);
   }
 
   public runGnoseAutomation(): void {
@@ -1438,23 +1445,35 @@ export class GameStateManager {
         if (this.relicPoints >= phoenix.cost) this.buyRelicUpgrade(phoenix);
         else return;
       }
-      // Relic maxima bound this loop, independently of balance size.
-      const cap = this.relicUpgrades.reduce((sum, relic) => sum + Math.max(0, relic.maxLevel - relic.level), 0);
+      // Eternal relics require a work budget independent of balance size.
+      const limit = GNOSE_AUTOMATION.maxRelicLevelsPerCycle;
+      const bought = new Map<string, number>();
+      const cap = this.relicUpgrades.length * limit;
       for (let step = 0; step < cap; step++) {
-        const relic = this.relicUpgrades.filter(r => r.level < r.maxLevel && r.cost <= this.relicPoints)
+        const relic = this.relicUpgrades.filter(r => r.level < this.getRelicMaxLevel(r) && r.level < Number.MAX_SAFE_INTEGER
+          && (bought.get(r.id) ?? 0) < limit && this.getRelicUpgradeCost(r) <= this.relicPoints)
           .sort((a, b) => this.relicInvestmentScore(b) - this.relicInvestmentScore(a))[0];
-        if (!relic || !this.buyRelicUpgrade(relic)) break;
+        if (!relic) break;
+        const count = Math.min(limit - (bought.get(relic.id) ?? 0), this.getAffordableRelicUpgradeCount(relic));
+        if (count <= 0) break;
+        this.restoreRelicLevels(relic, count);
+        bought.set(relic.id, (bought.get(relic.id) ?? 0) + count);
       }
     }
   }
 
   // --- Click & Actions ---
+  public getSphereCriticalChance(): number {
+    if (this.totalClicks >= SPHERE_CRITICAL.improvedClicks) return SPHERE_CRITICAL.improvedChance;
+    return this.totalClicks >= SPHERE_CRITICAL.unlockClicks ? SPHERE_CRITICAL.baseChance : 0;
+  }
+
   public addClick(random: () => number = Math.random): { fpc: number; bossClickDamage: number; isCrit: boolean } {
     let fpc = this.getFaithPerClick();
-    // 5% de chance de Pulso Crítico Cósmico (concede 2x Fé e 2x dano no Altar de Guardiões)
-    const isCrit = random() < 0.05;
+    // The completed lifetime click milestones apply starting with the next click.
+    const isCrit = random() < this.getSphereCriticalChance();
     if (isCrit) {
-      fpc *= 2;
+      fpc *= SPHERE_CRITICAL.multiplier;
     }
 
     this.faithPoints += fpc;
@@ -1472,7 +1491,7 @@ export class GameStateManager {
       // Charge the Divine Sphere (+8% per Boss click)
       battle.sphereCharge = Math.min(100, (battle.sphereCharge ?? 0) + 8);
       const breakdown = this.getBossCombatBreakdown(battle.bossId);
-      bossClickDamage = breakdown.clickDamage * (isCrit ? 2 : 1);
+      bossClickDamage = breakdown.clickDamage * (isCrit ? SPHERE_CRITICAL.multiplier : 1);
       battle.bossHp = Math.max(0, battle.bossHp - bossClickDamage);
       battle.phase = this.getBossPhase();
       if (battle.bossHp <= 0) {
@@ -1546,10 +1565,25 @@ export class GameStateManager {
     return false;
   }
 
+  public getMaxFervorUpgradeCount(upg: FervorUpgrade): number {
+    if (!this.hasGnoseUpgrade('gn_memoria_selos') || (upg.id === 'fu_relics' && !this.isPhoenixRelicUnlocked())) return 0;
+    const preview = { ...upg };
+    let remaining = this.fervorPoints;
+    let count = 0;
+    while (count < 100) {
+      const cost = this.getFervorUpgradeCost(preview);
+      if (!Number.isFinite(cost) || remaining < cost) break;
+      remaining -= cost;
+      preview.level++;
+      count++;
+    }
+    return count;
+  }
+
   public buyMaxFervorUpgrade(upg: FervorUpgrade): number {
-    if (!this.hasGnoseUpgrade('gn_memoria_selos')) return 0;
+    const count = this.getMaxFervorUpgradeCount(upg);
     let levels = 0;
-    while (levels < 100 && this.buyFervorUpgrade(upg)) levels++;
+    while (levels < count && this.buyFervorUpgrade(upg)) levels++;
     return levels;
   }
 
@@ -1583,21 +1617,43 @@ export class GameStateManager {
     return { gained: toGet, success: true };
   }
 
+  public getRelicUpgradeCost(relic: RelicUpgrade): number {
+    return getRelicUpgradeCost(relic);
+  }
+
+  public getRelicMaxLevel(relic: RelicUpgrade): number {
+    return this.hasGnoseUpgrade('gn_keep_relics') && ETERNAL_RELIC_IDS.includes(relic.id)
+      ? Infinity : relic.maxLevel;
+  }
+
   public buyRelicUpgrade(relic: RelicUpgrade): boolean {
-    if (relic.level >= relic.maxLevel || this.relicPoints < relic.cost) {
+    if (relic.level >= Number.MAX_SAFE_INTEGER || relic.level >= this.getRelicMaxLevel(relic) || this.relicPoints < this.getRelicUpgradeCost(relic)) {
       return false;
     }
-    this.relicPeakThisRun = Math.max(this.relicPeakThisRun, this.relicPoints);
-    this.relicPoints -= relic.cost;
-    relic.level += 1;
+    this.restoreRelicLevels(relic, 1);
     return true;
   }
 
-  public buyMaxRelicUpgrade(relic: RelicUpgrade): number {
+  public getMaxRelicUpgradeCount(relic: RelicUpgrade): number {
     if (!this.hasGnoseUpgrade('gn_memoria_selos')) return 0;
-    let levels = 0;
-    while (levels < relic.maxLevel && this.buyRelicUpgrade(relic)) levels++;
-    return levels;
+    return this.getAffordableRelicUpgradeCount(relic);
+  }
+
+  private getAffordableRelicUpgradeCount(relic: RelicUpgrade): number {
+    return getMaxAffordableRelicLevels(relic, this.relicPoints, this.getRelicMaxLevel(relic));
+  }
+
+  public buyMaxRelicUpgrade(relic: RelicUpgrade): number {
+    const count = this.getMaxRelicUpgradeCount(relic);
+    if (count === 0) return 0;
+    this.restoreRelicLevels(relic, count);
+    return count;
+  }
+
+  private restoreRelicLevels(relic: RelicUpgrade, count: number): void {
+    this.relicPeakThisRun = Math.max(this.relicPeakThisRun, this.relicPoints);
+    this.relicPoints = Math.max(0, this.relicPoints - getRelicUpgradeBulkCost(relic, count));
+    relic.level += count;
   }
 
   // --- Gnose (True Prestige) Actions ---
@@ -1701,15 +1757,32 @@ export class GameStateManager {
   }
 
   // --- Serialization & Persistence ---
+  public startGameClock(nowMs = Date.now()): void {
+    if (this.gameStartedAtMs === 0 && Number.isFinite(nowMs) && nowMs > 0) this.gameStartedAtMs = nowMs;
+  }
+
+  public getTotalPlayTimeSeconds(nowMs = Date.now()): number {
+    if (this.gameStartedAtMs === 0 || !Number.isFinite(nowMs)) return 0;
+    return Math.max(0, Math.floor((nowMs - this.gameStartedAtMs) / 1000));
+  }
+
+  public isCampaignComplete(): boolean {
+    const finalStage = INCARNATION_STAGES.at(-1)!;
+    const finalBoss = GNOSE_BOSSES.find(boss => boss.unlocksTier === 'endgame');
+    return this.incarnationStage >= finalStage.stage && !!finalBoss && this.isBossDefeated(finalBoss.id);
+  }
+
   public buildSaveData(): SaveData {
     return {
       version: SaveSystem.CURRENT_VERSION,
-      progressionRevision: 1,
+      progressionRevision: PROGRESSION_REVISION,
       timestamp: Date.now(),
       stats: {
+        campaignEnding: this.campaignEnding,
         faithPoints: this.faithPoints,
         totalFaithAccumulated: this.totalFaithAccumulated,
         totalClicks: this.totalClicks,
+        gameStartedAtMs: this.gameStartedAtMs,
         fervorPoints: this.fervorPoints,
         fervorPeakThisRun: this.fervorPeakThisRun,
         relicPeakThisRun: this.relicPeakThisRun,
@@ -1747,7 +1820,11 @@ export class GameStateManager {
   }
 
   public applySaveData(save: SaveData): void {
-    if (!save || !save.stats) return;
+    if (!isValidSaveData(save)) throw new TypeError('Dados de progresso inválidos.');
+    this.retreatBossBattle();
+    this.resetToDefaults();
+    this.campaignEnding = save.stats.campaignEnding === 'completed' || save.stats.campaignEnding === 'freeplay'
+      ? save.stats.campaignEnding : 'pending';
     this.retreatBossBattle();
     this.riftIdCounter = 0;
     this.miracleIdCounter = 0;
@@ -1756,6 +1833,7 @@ export class GameStateManager {
     this.faithPoints = typeof save.stats.faithPoints === 'number' ? Math.max(0, save.stats.faithPoints) : 1;
     this.totalFaithAccumulated = typeof save.stats.totalFaithAccumulated === 'number' ? Math.max(1, save.stats.totalFaithAccumulated) : 1;
     this.totalClicks = typeof save.stats.totalClicks === 'number' ? Math.max(0, save.stats.totalClicks) : 0;
+    this.gameStartedAtMs = save.stats.gameStartedAtMs ?? 0;
     this.fervorPoints = typeof save.stats.fervorPoints === 'number' ? Math.max(0, save.stats.fervorPoints) : 0;
     this.totalFervorGenerated = Math.max(this.fervorPoints,
       Number.isFinite(save.stats.totalFervorGenerated) ? save.stats.totalFervorGenerated! : 0);
@@ -1792,14 +1870,6 @@ export class GameStateManager {
       });
     }
 
-    if (Array.isArray(save.relicUpgrades)) {
-      save.relicUpgrades.forEach((savedItem) => {
-        const rel = this.relicUpgrades.find((r) => r.id === savedItem.id);
-        if (rel && typeof savedItem.level === 'number') {
-          rel.level = Math.max(0, Math.min(rel.maxLevel, savedItem.level));
-        }
-      });
-    }
 
     if (Array.isArray(save.unlocks)) {
       this.unlocks.forEach((u) => {
@@ -1843,8 +1913,11 @@ export class GameStateManager {
           }
         }
       }
-      if ((save.progressionRevision ?? 0) < 1) {
-        for (const [id, paid] of Object.entries(PROGRESSION_OLD_PRICES)) {
+      if ((save.progressionRevision ?? 0) < PROGRESSION_REVISION) {
+        // Unversioned saves only have known historical prices for a few nodes.
+        // Never assume they paid the later, much higher revision 1 prices.
+        const paidPrices = (save.progressionRevision ?? 0) < 1 ? PROGRESSION_OLD_PRICES : PROGRESSION_REVISION_1_PRICES;
+        for (const [id, paid] of Object.entries(paidPrices)) {
           if (this.hasGnoseUpgrade(id)) this.gnosePoints += Math.max(0, paid - GNOSE_UPGRADES.find(u => u.id === id)!.cost);
         }
       }
@@ -1869,6 +1942,15 @@ export class GameStateManager {
       this.defeatedBosses.clear();
       this.bestBossTimesSec = {};
       this.bossCurseTimerSec = 0;
+    }
+
+    if (Array.isArray(save.relicUpgrades)) {
+      save.relicUpgrades.forEach((savedItem) => {
+        const rel = this.relicUpgrades.find((r) => r.id === savedItem.id);
+        if (rel && typeof savedItem.level === 'number') {
+          rel.level = Math.max(0, Math.min(this.getRelicMaxLevel(rel), Number.MAX_SAFE_INTEGER, savedItem.level));
+        }
+      });
     }
 
     if (this.hasGnoseUpgrade('gn_bencao_eterna') && this.isIncarnationUnlocked()) {

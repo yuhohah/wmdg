@@ -1,3 +1,4 @@
+import { ETERNAL_RELIC_IDS, ETERNAL_RELIC_COST_GROWTH, ETERNAL_RELIC_FIXED_LEVELS } from '../config/relics.js';
 import type { GameStateManager } from '../core/GameState.js';
 import { GNOSE_UPGRADES, GNOSE_FORMULAS, PROGRESSION_BALANCE } from '../config/gnose.js';
 import { INCARNATION_STAGES } from '../config/incarnation.js';
@@ -28,7 +29,7 @@ function followerBonusFormula(game: GameStateManager, bulk: boolean): string {
 }
 
 const gnoseBonuses: Record<string, string> = {
-  gn_init_faith: 'escala_Fiéis′ = escala_Fiéis − 0.01; Fé_inicial = 1e3; M_sinergia = 1 + Fiéis^0.5',
+  gn_init_faith: 'escala_Fiéis′ = escala_Fiéis − 0.01; Fé_inicial = 1000; M_sinergia = 1 + Fiéis^0.5',
   gn_memoria_selos: 'Selo_Encarnação(após ascender) = 1; compras_máximas = 1',
   gn_init_fervor: `base_Fervor = ${GNOSE_FORMULAS.fervorProductionBase}; escala_Rito_Fervor′ = escala_Rito_Fervor − ${GNOSE_FORMULAS.ritualCostStep}`,
   gn_relic_gain: `base_Fragmentos = ${GNOSE_FORMULAS.relicProductionBase}; escala_Rito_Fragmentos′ = escala_Rito_Fragmentos − ${GNOSE_FORMULAS.relicCostStep}`,
@@ -38,7 +39,7 @@ const gnoseBonuses: Record<string, string> = {
   gn_relic_automation: 'Auto_Relíquias = 1; Fragmentos′ = Fragmentos − Σ Custo_Relíquia',
   gn_followers_syn: `M_sinergia = 1 + Fiéis^${PROGRESSION_BALANCE.congregationExponent}`,
   gn_bencao_eterna: 'M_Bênção = 2',
-  gn_keep_relics: 'nível_Relíquias(após ascender) = nível_Relíquias(antes)',
+  gn_keep_relics: 'nível_Relíquias(após ascender) = nível_Relíquias(antes); nível_máximo_Cornucópia/Tocha = ∞',
   gn_followers_economy: `escala_Fiéis′ = escala_Fiéis − ${GNOSE_FORMULAS.followerEconomyStep}`,
   gn_followers_cubic: 'M_sinergia = 1 + Fiéis^1.1',
   gn_gnose_mult: `Gnose = ⌊(Fé / 1e15)^${PROGRESSION_BALANCE.enlightenedExponent}⌋; Fé ≥ 1e15`,
@@ -53,7 +54,7 @@ const gnoseBonuses: Record<string, string> = {
 const relicBonuses: Record<string, string> = {
   relic_cornucopia: 'M_Fé/s(nível) = 1 + 0.20 × nível',
   relic_torch: 'M_Fervor/s(nível) = 1 + 0.20 × nível',
-  relic_phoenix: 'M_Fervor/s = 1.5e0; Rito_Fragmentos = 1',
+  relic_phoenix: 'M_Fervor/s = 1.5; Rito_Fragmentos = 1',
   relic_caduceus: 'escala_Fiéis = max(1.05, 1.10 − 0.005 × nível − descontos_Gnose)',
   relic_draupnir: 'ΔFragmentos/s = 0.05 × Transmutação(Fé) × 4^nós',
   relic_ark: 'M_Fé/s(nível) = (log10(max(Fragmentos, pico_Fragmentos) + 1) + 1)^(1.2 × nível)',
@@ -90,11 +91,18 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
   }
 
   const relic = game.relicUpgrades.find(upg => upg.id === id);
-  if (relic) return {
-    cost: bulk ? `C(n) = n × ${formatNumber(relic.cost)} Fragmentos; n ≤ ${relic.maxLevel} − nível`
-      : `C(nível) = ${formatNumber(relic.cost)} Fragmentos; nível < ${relic.maxLevel}`,
-    bonus: relicBonuses[id],
-  };
+  if (relic) {
+    const maxLevel = game.getRelicMaxLevel(relic);
+    const cap = Number.isFinite(maxLevel) ? String(maxLevel) : '∞';
+    const single = ETERNAL_RELIC_IDS.includes(relic.id)
+      ? `${formatNumber(relic.cost)} × ${coefficient(ETERNAL_RELIC_COST_GROWTH)}^max(0, nível − ${ETERNAL_RELIC_FIXED_LEVELS - 1})`
+      : formatNumber(relic.cost);
+    return {
+      cost: bulk ? `C(n) = Σ[i=0…n−1] C(nível+i); C(nível) = ${single} Fragmentos; n ≤ ${cap} − nível`
+        : `C(nível) = ${single} Fragmentos; nível < ${cap}`,
+      bonus: relicBonuses[id],
+    };
+  }
 
   const gnose = GNOSE_UPGRADES.find(upg => upg.id === id);
   if (gnose) return {

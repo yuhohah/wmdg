@@ -1,3 +1,4 @@
+import { canUseGameplayShortcut } from '../../ui/GameplayShortcuts.js';
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { calculateMiracleReward, formatNumber } from '../../systems/calculations.js';
@@ -75,9 +76,18 @@ export class SphereController {
 
   private bindEvents(): void {
     this.divineSphereBtn?.addEventListener('click', this.handleClick);
+    document.addEventListener('keydown', this.handleKeyDown);
     this.unsubscribeState = events.on(GameEvents.STATE_CHANGED, this.syncProgress);
     this.unsubscribeTick = events.on(GameEvents.GAME_TICK, this.syncProgress);
   }
+
+  private handleKeyDown = (event: KeyboardEvent): void => {
+    if ((event.code !== 'Space' && event.key !== ' ') || !this.divineSphereBtn
+      || !canUseGameplayShortcut(event, { allowedControl: this.divineSphereBtn })) return;
+    // One click per press, with the same feedback and combat listeners as the mouse.
+    event.preventDefault();
+    if (!event.repeat) this.divineSphereBtn.click();
+  };
 
   private handleClick = (e: MouseEvent): void => this.onSphereClicked(e);
 
@@ -89,6 +99,7 @@ export class SphereController {
     this.unsubscribeState?.();
     this.unsubscribeTick?.();
     this.divineSphereBtn?.removeEventListener('click', this.handleClick);
+    document.removeEventListener('keydown', this.handleKeyDown);
     this.sphereAnimation?.destroy();
   }
 

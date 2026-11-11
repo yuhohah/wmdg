@@ -6,9 +6,11 @@ export interface SaveData {
   version: number;
   timestamp: number;
   stats: {
+    campaignEnding?: 'pending' | 'completed' | 'freeplay';
     faithPoints: number;
     totalFaithAccumulated: number;
     totalClicks: number;
+    gameStartedAtMs?: number;
     fervorPoints: number;
     fervorPeakThisRun?: number;
     relicPeakThisRun?: number;
@@ -31,6 +33,42 @@ export interface SaveData {
   progressionRevision?: number;
 }
 
+const record = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === 'object' && !Array.isArray(value);
+const nonnegative = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value) && value >= 0;
+const integer = (value: unknown) => nonnegative(value) && Number.isInteger(value);
+const strings = (value: unknown) => Array.isArray(value) && value.every(item => typeof item === 'string');
+const optional = (object: Record<string, unknown>, key: string, check: (value: unknown) => boolean) =>
+  object[key] === undefined || check(object[key]);
+
+/** Check the actual persistence boundary, including legacy optional fields, before any mutation. */
+export function isValidSaveData(value: unknown): value is SaveData {
+  if (!record(value) || value.version !== SaveSystem.CURRENT_VERSION || !nonnegative(value.timestamp) || !record(value.stats)) return false;
+  const stats = value.stats;
+  if (!['faithPoints', 'totalFaithAccumulated', 'fervorPoints', 'relicPoints', 'bestRelicsToGet'].every(key => nonnegative(stats[key]))) return false;
+  if (!integer(stats.totalClicks) || !integer(stats.incarnationStage) || stats.incarnationStage === 0) return false;
+  if (!['fervorPeakThisRun', 'relicPeakThisRun', 'totalFervorGenerated', 'totalRelicsGenerated', 'incarnationBoostTimer', 'gameStartedAtMs']
+    .every(key => optional(stats, key, nonnegative))) return false;
+  if (!['hasSeenIntro', 'nerdsEnabled'].every(key => optional(stats, key, v => typeof v === 'boolean'))) return false;
+  if (!optional(stats, 'seenCardTutorials', strings) || !optional(stats, 'campaignEnding', v => typeof v === 'string' && ['pending', 'completed', 'freeplay'].includes(v))) return false;
+  for (const [key, field] of [['followers', 'count'], ['fervorUpgrades', 'level'], ['relicUpgrades', 'level']]) {
+    const items = value[key];
+    if (!Array.isArray(items) || !items.every(item => record(item) && typeof item.id === 'string' && integer(item[field]))) return false;
+  }
+  if (!strings(value.unlocks) || !strings(value.achievements) || !optional(value, 'progressionRevision', integer)) return false;
+  if (value.gnose !== undefined) {
+    if (!record(value.gnose)) return false;
+    const gnose = value.gnose;
+    if (!['gnosePoints', 'totalGnoseEarned', 'bossCurseTimerSec', 'automationAccumulatorSec', 'autoFollowersBudget', 'autoFervorBudget']
+      .every(key => optional(gnose, key, nonnegative)) || !optional(gnose, 'gnoseResets', integer)) return false;
+    if (!['unlockedUpgrades', 'defeatedBosses'].every(key => optional(gnose, key, strings))) return false;
+    if (!['confirmReset', 'autoFollowersEnabled', 'autoFervorEnabled', 'autoRelicsEnabled', 'autoRelicUpgradesEnabled']
+      .every(key => optional(gnose, key, v => typeof v === 'boolean'))) return false;
+    if (!optional(gnose, 'bestBossTimesSec', times => record(times) && Object.values(times).every(time => nonnegative(time) && time > 0))) return false;
+  }
+  return true;
+}
+
 export class SaveSystem {
   public static readonly CURRENT_VERSION = 1;
   private static readonly STORAGE_KEY = 'cult_of_the_sphere_save_v1';
@@ -40,6 +78,7 @@ export class SaveSystem {
    * Serializes the save data to a JSON string.
    */
   public static serialize(data: SaveData): string {
+    if (!isValidSaveData(data)) throw new TypeError('Dados de progresso inválidos.');
     return JSON.stringify(data);
   }
 
@@ -49,10 +88,10 @@ export class SaveSystem {
   public static deserialize(jsonStr: string): SaveData | null {
     try {
       const parsed = JSON.parse(jsonStr);
-      if (!parsed || typeof parsed !== 'object' || typeof parsed.version !== 'number') {
+      if (!isValidSaveData(parsed)) {
         return null;
       }
-      return parsed as SaveData;
+      return parsed;
     } catch (err) {
       console.error('Falha ao decodificar JSON do save:', err);
       return null;
@@ -67,7 +106,7 @@ export class SaveSystem {
       const json = this.serialize(data);
       // Backup current valid save before overwriting
       const existing = localStorage.getItem(this.STORAGE_KEY);
-      if (existing) {
+      if (existing && this.deserialize(existing)) {
         localStorage.setItem(this.BACKUP_KEY, existing);
       }
       localStorage.setItem(this.STORAGE_KEY, json);

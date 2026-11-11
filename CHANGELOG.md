@@ -8,6 +8,27 @@ Para as próximas versões, usamos `MAJOR.MINOR.PATCH`: novidades e mudanças re
 
 ## 0.10.0 — 2026-11-11
 
+- A conclusão da campanha ganhou um ritual com a Esfera final, o Avatar Solar, os Fiéis e os quatro Guardiões. Após os agradecimentos ao jogador e à equipe, todos desaparecem e surge o card **JOGO LIVRE? (LEADERBOARD)**, com recordes locais e opção de continuar ou rever o ritual. A conclusão exige Avatar Solar e vitória sobre Caos Primordial.
+- O botão de pular o ritual e a tecla Esc funcionam mesmo durante o carregamento das imagens; a espera pelas imagens também tem limite de tempo.
+- O Status do Culto mostra o tempo total desde o primeiro início do jogo, em horas, minutos e segundos, incluindo ausências e preservando a contagem nas Ascensões. Saves antigos começam a contagem a partir da atualização.
+- Os botões de compra máxima de Fiéis, Ritos e Relíquias mostram entre parênteses a quantidade que será comprada, atualizada conforme o saldo e os limites disponíveis.
+- A recuperação de produção durante ausências passou a executar em lotes, cedendo tempo ao navegador para reduzir travamentos ao abrir ou retomar o jogo. A importação mostra imediatamente o resumo dos ganhos de ausência quando aplicável.
+- Saves e importações recebem validação de estrutura e valores numéricos. Um backup válido pode recuperar um save principal inválido, e a importação só substitui o estado atual após validar e salvar os dados.
+- O canvas das batalhas passou a limitar sua resolução e ajustar a escala ao espaço ocupado pelos personagens, reduzindo o consumo de memória ao mover os cartões pelo quadro.
+- Esc respeita confirmações abertas de importação e reinício durante batalhas, sem recuar do duelo ao tentar fechar a confirmação.
+- O servidor de desenvolvimento passou a aceitar localhost por padrão e validar os hosts. As artes vetoriais arquivadas em `sphere/orbitas-vector/` deixaram de entrar na publicação, e o renderizador antigo sem uso foi removido.
+- O primeiro desafio contra Anúbis agora exige pelo menos três nós de Gnose assimilados; a Câmara mostra o progresso desse requisito.
+- Caps Lock agora transmuta Fé em Fragmentos, respeitando o desbloqueio das Relíquias e o cooldown. O atalho aparece no grupo Relíquias da ajuda de teclado.
+- O Fervor aparece no topo assim que a Encarnação é liberada. A ajuda de teclado agora agrupa Esfera, Fiéis, Encarnação, Ritos e Relíquias, com os atalhos de upgrades recolhidos em listas expansíveis.
+- Os atalhos agora ficam em um botão no canto inferior esquerdo: passe o mouse ou clique para consultar. As letras saíram dos cartões de Ritos e Relíquias.
+- Novos atalhos: Z/X para Fiéis, QWERTY para Ritos, ASDFGH para Relíquias, M para milagres e I/U para Bênção e evolução da Encarnação. O mapa pode ser consultado pelo botão Atalhos. O menu de desenvolvimento usa somente F2 para liberar T aos Ritos.
+- A tecla Espaço também toca a Esfera, com os mesmos ganhos, críticos e efeitos do clique. O atalho respeita menus e campos de texto.
+- O crítico 2× da Esfera desbloqueia aos 250 cliques com 5% de chance e melhora para 10% aos 1.000. Cadência Devota e Coração do Mundo mostram esses bônus junto da Fé por clique. Todos os cartões de conquistas agora exibem seus buffs.
+- Os níveis adicionais da Cornucópia e da Tocha agora custam 15% mais a cada compra após o nível 20. Compra máxima e automação somam os preços crescentes; níveis já adquiridos são preservados.
+- Avatar Solar agora exige apenas Avatar do Eclipse e 1e30 Fé, sem precisar de Gnosis Suprema.
+- Cripta Eterna preserva todas as Relíquias e libera níveis ilimitados para Cornucópia de Amalteia e Tocha de Prometeu, com suporte a compra máxima, automação e saves.
+- Os nós da Gnose agora aparecem por custo e pré-requisitos em cada tier. Os custos iniciais e intermediários foram reduzidos; saves da revisão anterior recebem a diferença das compras já feitas uma única vez.
+
 - Os números agora seguem o padrão brasileiro: abaixo de mil aparecem por extenso e depois viram K, M, B e T (por exemplo, `1,5K` e `2,02B`). A notação científica fica só a partir de `1e15`. Decimais, tempos e percentuais usam vírgula.
 - A Pena Solar de Fênix aparece logo depois da Cornucópia e agora diz que revela o Rito que multiplica os Fragmentos de cada Transmutação.
 - O Avatar Neófito produz o dobro de Fervor, deixando o começo da Encarnação menos arrastado.

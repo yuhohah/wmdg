@@ -85,6 +85,15 @@ export class FollowersArena {
     this.spawnPrayerParticles(w, 10);
   }
 
+  public collectAvailableMiracle(): boolean {
+    const walker = this.walkers.find(w => w.isMiraclePlea && (w.miracleTimer ?? 0) > 0);
+    if (!walker) return false;
+    const rect = this.canvas.getBoundingClientRect();
+    this.acceptMiracle(walker, rect.left + walker.x * rect.width / this.width,
+      rect.top + (walker.y - 78) * rect.height / this.height);
+    return true;
+  }
+
   private acceptMiracle(w: Walker, clientX: number, clientY: number): void {
     w.isMiraclePlea = false;
     w.miracleTimer = 0;

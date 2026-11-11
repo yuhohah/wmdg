@@ -152,10 +152,11 @@ export class IncarnationTab {
         const stageCost = this.options.gameState.getIncarnationStageCost(nextStage);
         this.upgradeTitleEl.textContent = 'EVOLUIR';
         if (this.upgradeBenefitEl) {
-          this.upgradeBenefitEl.textContent = `${formatNumber(nextStage.multiplier)}x Fervor/s`;
+          this.upgradeBenefitEl.textContent = `${formatNumber(nextStage.multiplier)}x Fervor/s`
+            + (nextStage.stage === 5 ? ' · Disponível antes do duelo com Caos Primordial' : '');
           this.upgradeBenefitEl.style.display = 'block';
         }
-        this.upgradeCostValEl.textContent = this.options.gameState.canAccessIncarnationStage(nextStage.stage) ? `${formatNumber(stageCost)} Fé` : 'Exige Gnosis Suprema';
+        this.upgradeCostValEl.textContent = `${formatNumber(stageCost)} Fé`;
         this.btnUpgradeEl.disabled = !this.options.gameState.canAccessIncarnationStage(nextStage.stage) || this.options.gameState.faithPoints < stageCost;
       } else {
         this.upgradeTitleEl.textContent = 'ENCARNAÇÃO MÁXIMA';

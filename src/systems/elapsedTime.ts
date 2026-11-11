@@ -45,3 +45,32 @@ export class ElapsedTimeCredit {
     return { seconds, ...gains };
   }
 }
+
+/** Yielding version for browser recovery; simulation rules remain in consume(). */
+export async function consumeElapsedTime(
+  credit: ElapsedTimeCredit,
+  game: GameStateManager,
+  fromMs: number,
+  throughMs: number,
+  yieldControl: () => Promise<void> = () => new Promise(resolve => setTimeout(resolve, 0)),
+): Promise<ReturnType<ElapsedTimeCredit['consume']>> {
+  const target = Math.min(throughMs, fromMs + 86400000);
+  const result = { seconds: 0, faithGained: 0, fervorGained: 0, relicGained: 0 };
+  if (!Number.isFinite(fromMs) || !Number.isFinite(throughMs) || target <= fromMs) return result;
+  await yieldControl();
+  let cursor = fromMs;
+  let budgetStarted = performance.now();
+  while (cursor < target) {
+    cursor = Math.min(target, cursor + 10000);
+    const step = credit.consume(game, cursor);
+    result.seconds += step.seconds;
+    result.faithGained += step.faithGained;
+    result.fervorGained += step.fervorGained;
+    result.relicGained += step.relicGained;
+    if (cursor < target && performance.now() - budgetStarted >= 8) {
+      await yieldControl();
+      budgetStarted = performance.now();
+    }
+  }
+  return result;
+}

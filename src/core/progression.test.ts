@@ -128,10 +128,21 @@ describe('progression invariants', () => {
     expect(g.faithPoints).toBe(1e15); expect(g.getGnoseToGet()).toBe(1);
   });
 
-  it('requires Gnosis Suprema explicitly for Solar', () => {
-    const g = economy(); g.incarnationStage = 4; g.faithPoints = 1e100;
+  it('buys Solar for 1e30 faith after Eclipse without Gnosis Suprema or guardian victories', () => {
+    const g = economy(); g.incarnationStage = 4; g.faithPoints = 9e29;
+    expect(g.hasGnoseUpgrade('gn_apotheosis')).toBe(false);
+    expect(g.defeatedBosses.size).toBe(0);
+    expect(g.canAccessIncarnationStage(5)).toBe(true);
     expect(g.upgradeIncarnation()).toBe(false);
-    g.unlockedGnoseUpgrades.add('gn_apotheosis'); expect(g.upgradeIncarnation()).toBe(true);
+    g.faithPoints = 1e30;
+    expect(g.upgradeIncarnation()).toBe(true);
+    expect(g.incarnationStage).toBe(5);
+    expect(g.faithPoints).toBe(0);
+    expect(g.isCampaignComplete()).toBe(false);
+    const restored = new GameStateManager();
+    restored.applySaveData(g.buildSaveData());
+    expect(restored.incarnationStage).toBe(5);
+    expect(restored.hasGnoseUpgrade('gn_apotheosis')).toBe(false);
   });
 
   it('rewards miracles with thirty seconds of production without stock interest', () => {

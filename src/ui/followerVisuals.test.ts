@@ -89,13 +89,26 @@ describe('follower animation sequencing', () => {
     expect(w.state).toBe('pray');
     expect(w.isMiraclePlea).toBe(true);
     expect(followerAnimationFrame(w.state, 0, 10, true).action).toBe('rezar');
-    Reflect.get(arena, 'acceptMiracle').call(arena, w, 100, 100);
+    Reflect.set(arena, 'canvas', { getBoundingClientRect: () => ({ left: 10, top: 20, width: 560, height: 240 }) });
+    expect(arena.collectAvailableMiracle()).toBe(true);
+    expect(arena.collectAvailableMiracle()).toBe(false);
     expect(w.isMiraclePlea).toBe(false);
     expect(w.prayCycle).toBe(PRAYER_DURATION);
     expect(followerAnimationFrame(w.state, 0, w.prayCycle)).toEqual({ action: 'iluminacao', frame: 0 });
     expect(grant).toHaveBeenCalledOnce();
     for (let i = 0; i < 45; i++) Reflect.get(arena, 'update').call(arena, 1 / 30);
     expect(w.state).not.toBe('pray');
+  });
+
+  it('never collects an expired miracle or grants one when none is available', () => {
+    const arena = createArena();
+    const grant = vi.fn();
+    arena.setOnMiracleClickCallback(grant);
+    expect(arena.collectAvailableMiracle()).toBe(false);
+    arena.triggerMiraclePlea(arena.walkers[0]);
+    arena.walkers[0].miracleTimer = 0;
+    expect(arena.collectAvailableMiracle()).toBe(false);
+    expect(grant).not.toHaveBeenCalled();
   });
 
   it('plays the walk loop and uses the standing reference for idle', () => {

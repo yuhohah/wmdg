@@ -367,7 +367,7 @@ class Simulation {
     const ascensionTarget = nextGnose && g.isGnoseUnlocked()
       ? 1e15 * Math.max(1, nextGnose.cost - g.gnosePoints) ** (1 / g.getGnoseGainExponent()) : Infinity;
     const savingForGnose = fps > 0 && (ascensionTarget - g.faithPoints) / fps < 180;
-    const relic = g.isRelicsUnlocked() && !(g.hasGnoseUpgrade('gn_relic_automation') && g.autoRelicUpgradesEnabled) ? g.relicUpgrades.find(r => r.level < r.maxLevel && g.relicPoints >= r.cost) : undefined;
+    const relic = g.isRelicsUnlocked() && !(g.hasGnoseUpgrade('gn_relic_automation') && g.autoRelicUpgradesEnabled) ? g.relicUpgrades.find(r => r.level < g.getRelicMaxLevel(r) && g.relicPoints >= g.getRelicUpgradeCost(r)) : undefined;
     if (relic) return decision(relic.id, 'relic', () => g.hasGnoseUpgrade('gn_memoria_selos') ? g.buyMaxRelicUpgrade(relic) > 0 : g.buyRelicUpgrade(relic));
     if (g.isFervorUpgradesUnlocked() && !(g.hasGnoseUpgrade('gn_ritual_automation') && g.autoFervorEnabled)) {
       const rito = g.fervorUpgrades.filter(u => (u.id !== 'fu_relics' || g.isPhoenixRelicUnlocked()) && g.fervorPoints >= g.getFervorUpgradeCost(u))

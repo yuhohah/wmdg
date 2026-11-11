@@ -18,7 +18,7 @@ export const BLESSING_MAX_SECONDS = 60;
  * - Estágio II: 2.500.000 Fé (2.5e6) -> Avatar Consagrado (Adult Dragon), 100x Fervor
  * - Estágio III: 1.000.000.000.000 Fé (1e12) -> Avatar Ancestral (Elder Dragon), 10.000x Fervor
  * - Estágio IV: 1.0e25 Fé (1e25) -> Avatar do Eclipse (Dark Dragon), 100.000.000x Fervor (1e8)
- * - Estágio V: 1.0e30 Fé (1e30), exige Gnosis Suprema -> Avatar Solar (Light Dragon), 1.0e15x Fervor (1e15)
+ * - Estágio V: 1.0e30 Fé (1e30) -> Avatar Solar (Light Dragon), 1.0e15x Fervor (1e15)
  */
 export const INCARNATION_STAGES: IncarnationStage[] = [
   {
@@ -61,7 +61,7 @@ export const INCARNATION_STAGES: IncarnationStage[] = [
     stage: 5,
     name: 'Avatar Solar',
     title: 'A Entidade da Luz Eterna',
-    desc: 'Ascensão solar absoluta. Multiplica a geração de Fervor por 1e15x.',
+    desc: 'Ascensão solar absoluta. Multiplica a geração de Fervor por 1e15x. Disponível por 1e30 Fé após o Avatar do Eclipse, antes do duelo com Caos Primordial.',
     lore: 'Não resta mente que não pense em você. Corpo e Esfera voltam a ser uma coisa só, e ela brilha por inteiro.',
     cost: 1e30,
     multiplier: 1e15

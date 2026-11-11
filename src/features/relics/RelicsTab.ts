@@ -1,3 +1,6 @@
+import { RELIC_SHORTCUTS } from '../../ui/GameplayShortcuts.js';
+import { ETERNAL_RELIC_COST_GROWTH, ETERNAL_RELIC_FIXED_LEVELS } from '../../config/relics.js';
+import { setText } from '../../ui/dom.js';
 import { AutomationToggle } from '../../ui/AutomationToggle.js';
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
@@ -88,19 +91,21 @@ export class RelicsTab {
 
   public renderList(): void {
     if (!this.relicUpgradesListEl) return;
-    this.renderedLevels = this.options.gameState.relicUpgrades.map(r => r.level).join(',');
+    this.renderedLevels = this.options.gameState.relicUpgrades.map(r => `${r.level}/${this.options.gameState.getRelicMaxLevel(r)}`).join(',');
     this.relicUpgradesListEl.innerHTML = '';
 
     const relicPoints = this.options.gameState.relicPoints;
 
-    this.options.gameState.relicUpgrades.forEach((relic) => {
-      const isMax = relic.level >= relic.maxLevel;
-      const canAfford = relicPoints >= relic.cost;
-      const effectDesc = relic.effectText(relic.level, Math.max(relicPoints, this.options.gameState.relicPeakThisRun));
+    this.options.gameState.relicUpgrades.forEach((relic, index) => {
+      const isMax = relic.level >= this.options.gameState.getRelicMaxLevel(relic);
+      const canAfford = relicPoints >= this.options.gameState.getRelicUpgradeCost(relic);
+      const maxLevel = this.options.gameState.getRelicMaxLevel(relic);
+      const effectDesc = relic.effectText(relic.level, Math.max(relicPoints, this.options.gameState.relicPeakThisRun), maxLevel);
 
       const card = document.createElement('div');
       card.className = `cult-action-card relic-action-card ${isMax ? 'maxed' : (canAfford ? '' : 'unaffordable')}`;
       card.id = `card-${relic.id}`;
+      if (RELIC_SHORTCUTS[index]) card.setAttribute('aria-keyshortcuts', RELIC_SHORTCUTS[index].toUpperCase());
 
       const symbolHtml = DISPLAY_CONFIG.showEmojisAndSymbols
         ? `<span class="card-symbol">${relic.icon}</span>`
@@ -120,23 +125,25 @@ export class RelicsTab {
             ${symbolHtml}
             <span class="card-name">${relic.name}</span>
           </div>
-          <span class="relic-level-badge ${isMax ? 'maxed' : ''}">(${relic.level}/${relic.maxLevel})</span>
+          <span class="relic-level-badge ${isMax ? 'maxed' : ''}">(${formatNumber(relic.level)}/${Number.isFinite(maxLevel) ? maxLevel : '∞'})</span>
         </div>
         <div class="card-desc">
           <div class="relic-benefit-text">${effectDesc}</div>
+          ${Number.isFinite(maxLevel) ? '' : `<div>Custo +${Math.round((ETERNAL_RELIC_COST_GROWTH - 1) * 100)}% por nível após o ${ETERNAL_RELIC_FIXED_LEVELS}º.</div>`}
         </div>
         <div class="card-footer-row">
           <div class="relic-cost-tag">
             <span>CUSTO:</span>
-            <span>${isMax ? 'CONCLUÍDO' : `${formatNumber(relic.cost)} Fragmentos`}</span>
+            <span>${isMax ? 'CONCLUÍDO' : `${Number.isFinite(this.options.gameState.getRelicUpgradeCost(relic)) ? formatNumber(this.options.gameState.getRelicUpgradeCost(relic)) : '∞'} Fragmentos`}</span>
           </div>
           ${promptHtml}
         </div>
       `;
 
-      if (this.options.gameState.hasGnoseUpgrade('gn_memoria_selos') && relic.level < relic.maxLevel) {
+      if (this.options.gameState.hasGnoseUpgrade('gn_memoria_selos') && relic.level < this.options.gameState.getRelicMaxLevel(relic)) {
         const bulk = document.createElement('button');
-        bulk.className = 'btn-ritual-max'; bulk.textContent = 'Restaurar máximo';
+        bulk.className = 'btn-ritual-max';
+        bulk.textContent = `Restaurar máximo (${formatNumber(this.options.gameState.getMaxRelicUpgradeCount(relic))})`;
         bulk.addEventListener('click', event => { event.stopPropagation(); this.buyRelicUpgrade(relic, true); });
         card.appendChild(bulk);
       }
@@ -152,7 +159,7 @@ export class RelicsTab {
   public updateUI(): void {
     this.relicAutomation.update();
     this.transmutationAutomation.update();
-    if (this.renderedLevels !== this.options.gameState.relicUpgrades.map(r => r.level).join(',')) {
+    if (this.renderedLevels !== this.options.gameState.relicUpgrades.map(r => `${r.level}/${this.options.gameState.getRelicMaxLevel(r)}`).join(',')) {
       this.renderList();
     }
     const toGet = this.options.gameState.getRelicsToGet();
@@ -178,10 +185,11 @@ export class RelicsTab {
   public updateButtonStates(): void {
     const relicPoints = this.options.gameState.relicPoints;
     this.options.gameState.relicUpgrades.forEach((relic) => {
-      const isMax = relic.level >= relic.maxLevel;
-      const canAfford = relicPoints >= relic.cost;
+      const isMax = relic.level >= this.options.gameState.getRelicMaxLevel(relic);
+      const canAfford = relicPoints >= this.options.gameState.getRelicUpgradeCost(relic);
       const card = document.getElementById(`card-${relic.id}`);
       if (card) {
+        setText(card.querySelector('.btn-ritual-max'), `Restaurar máximo (${formatNumber(this.options.gameState.getMaxRelicUpgradeCount(relic))})`);
         if (isMax) {
           card.classList.remove('unaffordable');
           card.classList.add('maxed');

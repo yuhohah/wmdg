@@ -23,12 +23,13 @@ describe('GameStateManager core logic', () => {
     expect(normal.fpc).toBe(baseFpc);
     expect(gs.totalClicks).toBe(1);
 
-    // Mock Math.random to test critical click (< 0.05)
+    // Unlock critical clicks before testing their multiplier.
+    gs.totalClicks = 250;
     vi.spyOn(Math, 'random').mockReturnValue(0.01);
     const crit = gs.addClick();
     expect(crit.isCrit).toBe(true);
     expect(crit.fpc).toBe(baseFpc * 2);
-    expect(gs.totalClicks).toBe(2);
+    expect(gs.totalClicks).toBe(251);
 
     vi.restoreAllMocks();
   });

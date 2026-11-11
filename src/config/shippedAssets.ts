@@ -1,6 +1,7 @@
 // public/ also holds art sources: concepts, loose frames, previews and generation scripts.
 // They stay in the repository, but the published build carries only what the game loads.
 const LEFT_OUT = [
+  /^assets\/sphere\/orbitas-vector\//,
   /\.(py|md|html|gif)$/,
   /\.prompt\.txt$/,
   /^assets\/backgrounds\/.*\.png$/,

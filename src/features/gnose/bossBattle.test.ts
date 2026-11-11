@@ -6,6 +6,7 @@ import { GNOSE_UPGRADES } from '../../config/gnose.js';
 function eligibleCult() {
   const g = new GameStateManager();
   g.totalGnoseEarned = 1;
+  GNOSE_UPGRADES.slice(0, 3).forEach(node => g.unlockedGnoseUpgrades.add(node.id));
   return g;
 }
 

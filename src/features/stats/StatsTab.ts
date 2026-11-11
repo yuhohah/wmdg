@@ -1,14 +1,23 @@
 import { GameStateManager } from '../../core/GameState.js';
+import { setText } from '../../ui/dom.js';
 import { formatNumber } from '../../systems/calculations.js';
 
 export interface StatsTabOptions {
   gameState: GameStateManager;
 }
 
+export function formatPlayTime(seconds: number): string {
+  const total = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor(total / 60) % 60;
+  return `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(total % 60).padStart(2, '0')}s`;
+}
+
 export class StatsTab {
   private gameState: GameStateManager;
   private dialogEl: HTMLDialogElement | null = null;
 
+  private statPlayTimeEl: HTMLElement | null = null;
   private statTotalFaithEl: HTMLElement | null = null;
   private statClickFaithEl: HTMLElement | null = null;
   private statPassiveFaithEl: HTMLElement | null = null;
@@ -27,6 +36,7 @@ export class StatsTab {
 
   private initElements(): void {
     this.dialogEl = document.getElementById('cult-status-modal') as HTMLDialogElement | null;
+    this.statPlayTimeEl = document.getElementById('stat-total-play-time');
     this.statTotalFaithEl = document.getElementById('stat-total-faith');
     this.statClickFaithEl = document.getElementById('stat-click-faith');
     this.statPassiveFaithEl = document.getElementById('stat-passive-faith');
@@ -59,6 +69,7 @@ export class StatsTab {
 
   public updateUI(): void {
     if (!this.dialogEl?.open) return;
+    setText(this.statPlayTimeEl, formatPlayTime(this.gameState.getTotalPlayTimeSeconds()));
     const totalFaith = this.gameState.totalFaithAccumulated;
     const fpc = this.gameState.getFaithPerClick();
     const fps = this.gameState.getFaithPerSecond();

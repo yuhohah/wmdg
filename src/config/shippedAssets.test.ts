@@ -48,6 +48,8 @@ describe('assets published with the game', () => {
     'assets/backgrounds/followers-courtyard-v1.png',
     'assets/backgrounds/followers-courtyard-v1.prompt.txt',
     'assets/sphere/progression/generate.py',
+    'assets/sphere/orbitas-vector/aros-animados.svg',
+    'assets/sphere/orbitas-vector/orbitas-animada.svg',
   ])('leaves out %s', path => {
     expect(isShippedAsset(path)).toBe(false);
   });

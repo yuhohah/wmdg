@@ -12,8 +12,8 @@ afterEach(() => vi.restoreAllMocks());
 describe('Reference progression simulation', () => {
   it('is reproducible without consuming or replacing global randomness', () => {
     const random = vi.spyOn(Math, 'random').mockImplementation(() => { throw new Error('Global RNG used'); });
-    const first = ProgressionSimulator.runArchetype('active', { seed: 42, maxDurationSec: 120 });
-    expect(ProgressionSimulator.runArchetype('active', { seed: 42, maxDurationSec: 120 })).toEqual(first);
+    const first = ProgressionSimulator.runArchetype('active', { seed: 42, maxDurationSec: 300 });
+    expect(ProgressionSimulator.runArchetype('active', { seed: 42, maxDurationSec: 300 })).toEqual(first);
     expect(first.criticalClicks).toBeGreaterThan(0);
     expect(random).not.toHaveBeenCalled();
   });
@@ -195,6 +195,8 @@ describe('Reference progression simulation', () => {
       elapsed += dt;
       if (elapsed >= 601 && !battleStarted) {
         this.totalGnoseEarned = 1;
+        // Grant entry nodes without the 1000-Faith restart perk: this test exercises first-Fiel recovery.
+        ['gn_memoria_selos', 'gn_init_fervor', 'gn_relic_gain'].forEach(id => this.unlockedGnoseUpgrades.add(id));
         battleStarted = this.startBossBattle('boss_anubis');
       }
       if (elapsed >= 605 && !reset) {

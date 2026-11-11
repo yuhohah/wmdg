@@ -1,5 +1,6 @@
 /* Center Gameplay Frame Layout */
 .start-sphere-img {
+  display: block;
   image-rendering: pixelated;
 }
 

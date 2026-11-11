@@ -1,0 +1,64 @@
+.shortcuts-help {
+  position: fixed;
+  left: max(12px, env(safe-area-inset-left));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 120;
+  display: none;
+}
+body.is-playing .shortcuts-help { display: block; }
+body.is-ending-active .shortcuts-help { display: none; }
+.shortcuts-help > button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border: 1px solid var(--border-mid, #8b702f);
+  background: #100e09;
+  color: var(--gold, #d8bc77);
+  font: 12px var(--font-game);
+  cursor: pointer;
+}
+.shortcuts-help > button svg { width: 15px; height: 15px; }
+.shortcuts-help > button:is(:hover, :focus-visible) { border-color: #e7cf8e; outline: 1px solid #8b702f; }
+.shortcuts-help.is-open::before { content: ''; position: absolute; bottom: 100%; left: 0; width: 100%; height: 10px; }
+.shortcuts-help-panel {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  width: min(360px, calc(100vw - 24px));
+  max-height: min(680px, calc(100dvh - 100px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 14px;
+  box-sizing: border-box;
+  border: 1px solid #a78b49;
+  background: #100e09;
+  color: #e5ddc7;
+  box-shadow: 0 8px 28px #000b;
+  text-align: left;
+  font: 12px/1.4 var(--font-game);
+}
+.shortcuts-help-panel[hidden] { display: none; }
+.shortcuts-help-panel h2 { font: inherit; font-size: 15px; color: #e7cf8e; margin: 0 0 10px; }
+.shortcuts-help-panel dl { margin: 0; }
+.shortcuts-help-panel dl > div { display: grid; grid-template-columns: 54px 1fr; gap: 8px; padding: 4px 0; }
+.shortcuts-help-panel dd { margin: 0; }
+.shortcuts-help-panel kbd { font: inherit; color: #e7cf8e; }
+.shortcuts-help-panel p { font: inherit; color: #b8ae95; border-top: 1px solid #534527; padding-top: 10px; margin: 10px 0 0; }
+@media (max-width: 760px) {
+  .shortcuts-help { left: 8px; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+  .shortcuts-help-panel { max-height: calc(100dvh - 145px); }
+}
+/* Keep the local developer launcher clear of the shortcut button. */
+body.is-playing #test-menu-launcher { left: auto; right: 18px; bottom: 70px; }
+@media (max-width: 760px) {
+  body.is-playing #test-menu-launcher { bottom: 112px; }
+}
+
+.shortcuts-help-group + .shortcuts-help-group { margin-top: 10px; padding-top: 10px; border-top: 1px solid #534527; }
+.shortcuts-help-group h3 { margin: 0 0 4px; color: #e7cf8e; font: inherit; font-weight: bold; }
+.shortcuts-help-sequence { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; }
+.shortcuts-help-sequence span { flex-basis: 100%; color: #b8ae95; }
+.shortcuts-help-group details { margin-top: 6px; }
+.shortcuts-help-group summary { cursor: pointer; color: #b8ae95; }
+.shortcuts-help-group details dl { margin-top: 6px; }

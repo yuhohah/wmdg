@@ -39,10 +39,11 @@ try {
     nodes: [...g.unlockedGnoseUpgrades], bosses: [...g.defeatedBosses] });
   const tick = GameStateManager.prototype.tick;
   GameStateManager.prototype.tick = function(dt) {
-    t += dt; game = this; tick.call(this, dt);
+    t += dt; game = this; const gains = tick.call(this, dt);
     if (t >= nextSample) {
       snapshots.push(snapshot(this)); nextSample += 3600;
     }
+    return gains;
   };
   const reset = GameStateManager.prototype.performGnoseReset;
   GameStateManager.prototype.performGnoseReset = function() {

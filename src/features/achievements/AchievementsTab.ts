@@ -116,6 +116,7 @@ export class AchievementsTab {
           </span>
         </div>
         <div class="card-desc">${ach.desc}</div>
+        <div class="ach-buff-chip">${ach.buffText}</div>
         ${!ach.unlocked ? `
           <div class="ach-progress-info" id="ach-prog-info-${ach.id}">
             <span class="ach-progress-label">${progress.label}</span>

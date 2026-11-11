@@ -150,6 +150,8 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
   });
 
   it('breaks an unprepared Sphere with a mild curse and rewards a prepared cult that wins by parrying and using Fulgor', () => {
+    GNOSE_UPGRADES.slice(0, 3).forEach(node => gameState.unlockedGnoseUpgrades.add(node.id));
+    gameState.autoFollowersEnabled = false; // Keep production stable while measuring the curse.
     gameState.totalGnoseEarned = 5;
     gameState.followers[0].count = 10;
 
@@ -234,6 +236,7 @@ describe('Gnose (True Prestige) System & Mythological Guardians', () => {
   });
 
   it('scales Boss Battle HP bar drain, Click damage and Altar protection across all 6 cult resources', () => {
+    GNOSE_UPGRADES.slice(0, 3).forEach(node => gameState.unlockedGnoseUpgrades.add(node.id));
     gameState.totalGnoseEarned = 1;
     const base = gameState.getBossCombatBreakdown('boss_anubis');
 

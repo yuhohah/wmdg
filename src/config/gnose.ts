@@ -11,7 +11,7 @@ export const GNOSE_TIER_LABELS: Record<1 | 2 | 3 | 4, string> = {
 };
 
 /** Bound work per simulation second even when resources are extremely large. */
-export const GNOSE_AUTOMATION = { maxRitualLevelsPerCycle: 50 } as const;
+export const GNOSE_AUTOMATION = { maxRitualLevelsPerCycle: 50, maxRelicLevelsPerCycle: 50 } as const;
 export const GNOSE_SEAL_UPGRADES: Readonly<Record<string, string>> = {
   gn_memoria_selos: 'unlock_incarnation',
 };
@@ -33,14 +33,14 @@ export const GNOSE_FORMULAS = {
 } as const;
 export const GNOSE_APOTHEOSIS_COSTS: Readonly<Record<number, number>> = { 4: 1e20, 5: 1e30 };
 
-/** Rebalanced campaign prices: larger reductions at the expensive end of the tree.
- * Prices above 1,000 retain two significant digits for readable progression targets. */
+/** Fixed campaign prices. Within each tier, cheaper nodes and prerequisites appear first.
+ * Early automation has smaller price steps; effects and tier gates remain independent. */
 export const GNOSE_UPGRADES: GnoseUpgrade[] = [
   {
     id: 'gn_init_faith',
     name: 'Emanação Primordial',
     title: 'Centelha do Nous',
-    desc: 'Reduz a escala de custo dos Fiéis em 0,01: de 1,10 para 1,09 antes do Cajado de Hermes. A fórmula continua custo base × escala^quantidade. Completa até 1e3 Fé na compra e em cada reinício. Concede sinergia de 1 + raiz quadrada dos Fiéis.',
+    desc: 'Reduz a escala de custo dos Fiéis em 0,01: de 1,10 para 1,09 antes do Cajado de Hermes. A fórmula continua custo base × escala^quantidade. Completa até 1000 Fé na compra e em cada reinício. Concede sinergia de 1 + raiz quadrada dos Fiéis.',
     lore: 'Mesmo quando o templo retorna ao pó, a primeira centelha do Nous permanece acesa na memória da Esfera.',
     icon: 'star',
     tier: 1,
@@ -56,33 +56,9 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'O que foi gravado na Tábua de Esmeralda não pode ser selado novamente pelos séculos mortais.',
     icon: 'scroll',
     tier: 1,
-    cost: 57,
+    cost: 24,
     prerequisites: ['gn_init_faith'],
     effectText: 'Selo da Encarnação permanente · compra em massa',
-  },
-  {
-    id: 'gn_init_fervor',
-    name: 'Chama Astral',
-    title: 'Fogo Inextinguível',
-    desc: 'No Rito de produção de Fervor, a base de ganho passa de 2 para 2,05 e a escala de custo de 1,80 para 1,75. O expoente nível^0,6 continua igual.',
-    lore: 'O fogo que arde acima das esferas planetárias não precisa de lenha terrena para consumir o firmamento.',
-    icon: 'fervor',
-    tier: 1,
-    cost: 290_000,
-    prerequisites: ['gn_init_faith'],
-    effectText: 'Rito de Fervor mais forte e mais barato',
-  },
-  {
-    id: 'gn_relic_gain',
-    name: 'Alquimia Astral',
-    title: 'Matéria Transfigurada',
-    desc: 'No Rito de Fragmentos, a base de ganho passa de 3 para 3,05 e a escala de custo de 5 para 4,90. Mantém nível^0,6 e a fórmula original da Transmutação. Exige a Fênix para usar esse Rito.',
-    lore: 'O cadinho revela a essência que já repousava na matéria.',
-    icon: 'gem',
-    tier: 1,
-    cost: 3.4e8,
-    prerequisites: ['gn_init_faith'],
-    effectText: 'Rito de Fragmentos mais forte e mais barato',
   },
   {
     id: 'gn_automation',
@@ -92,7 +68,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Você não precisa mais chamar: as mentes mortais caminham em sonhos até o pátio da catedral por pura gravidade espiritual.',
     icon: 'gear',
     tier: 1,
-    cost: 1_100,
+    cost: 300,
     prerequisites: ['gn_memoria_selos'],
     effectText: 'Compra Fiéis automaticamente',
   },
@@ -104,9 +80,33 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Cada grilhão se rompe quando a devoção alcança o seu preço.',
     icon: 'gear',
     tier: 1,
-    cost: 26_000,
+    cost: 4_000,
     prerequisites: ['gn_memoria_selos'],
     effectText: 'Rompe os Selos automaticamente',
+  },
+  {
+    id: 'gn_init_fervor',
+    name: 'Chama Astral',
+    title: 'Fogo Inextinguível',
+    desc: 'No Rito de produção de Fervor, a base de ganho passa de 2 para 2,05 e a escala de custo de 1,80 para 1,75. O expoente nível^0,6 continua igual.',
+    lore: 'O fogo que arde acima das esferas planetárias não precisa de lenha terrena para consumir o firmamento.',
+    icon: 'fervor',
+    tier: 1,
+    cost: 60_000,
+    prerequisites: ['gn_init_faith'],
+    effectText: 'Rito de Fervor mais forte e mais barato',
+  },
+  {
+    id: 'gn_relic_gain',
+    name: 'Alquimia Astral',
+    title: 'Matéria Transfigurada',
+    desc: 'No Rito de Fragmentos, a base de ganho passa de 3 para 3,05 e a escala de custo de 5 para 4,90. Mantém nível^0,6 e a fórmula original da Transmutação. Exige a Fênix para usar esse Rito.',
+    lore: 'O cadinho revela a essência que já repousava na matéria.',
+    icon: 'gem',
+    tier: 1,
+    cost: 1e8,
+    prerequisites: ['gn_init_faith'],
+    effectText: 'Rito de Fragmentos mais forte e mais barato',
   },
   {
     id: 'gn_ritual_automation',
@@ -116,7 +116,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Os cânticos mantêm a chama sem aguardar a mão da Esfera.',
     icon: 'gear',
     tier: 2,
-    cost: 3.5e6,
+    cost: 800_000,
     prerequisites: ['gn_seal_automation', 'gn_init_fervor'],
     effectText: 'Compra Ritos automaticamente',
   },
@@ -124,13 +124,25 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     id: 'gn_relic_automation',
     name: 'Oficina Autônoma',
     title: 'Artífices da Transmutação',
-    desc: 'Prioriza a primeira Fênix e depois compara o retorno por Fragmento das Relíquias acessíveis, usando até 100% do saldo de Fragmentos e respeitando o nível máximo de cada Relíquia. Possui ativar/desativar próprio.',
+    desc: 'Prioriza a primeira Fênix e depois compara o retorno por Fragmento das Relíquias acessíveis, usando até 100% do saldo de Fragmentos e respeitando o nível máximo de cada Relíquia e até 50 níveis por Relíquia por segundo. Possui ativar/desativar próprio.',
     lore: 'As cinzas transmutadas encontram seu lugar nas obras dos antigos deuses.',
     icon: 'gear',
     tier: 2,
-    cost: 3.5e7,
+    cost: 1e7,
     prerequisites: ['gn_seal_automation'],
     effectText: 'Compra Relíquias automaticamente',
+  },
+  {
+    id: 'gn_keep_relics',
+    name: 'Cripta Eterna',
+    title: 'Preservação do Opus Magnum',
+    desc: 'Torna permanentes todos os níveis das Relíquias restauradas nos reinícios de Gnose. Remove o limite de níveis da Cornucópia de Amalteia e da Tocha de Prometeu.',
+    lore: 'As relíquias dos deuses esquecidos foram fundidas ao próprio núcleo da Esfera, tornando-se imunes à dissolução dos ciclos.',
+    icon: 'urn',
+    tier: 2,
+    cost: 1e9,
+    prerequisites: ['gn_memoria_selos', 'gn_init_fervor'],
+    effectText: 'Relíquias permanentes · Cornucópia e Tocha sem limite de níveis',
   },
   {
     id: 'gn_followers_syn',
@@ -140,7 +152,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Cada mente devota passa a refletir todas as outras como espelhos dispostos no interior de uma esfera perfeita.',
     icon: 'followers',
     tier: 2,
-    cost: 1.9e10,
+    cost: 1e10,
     prerequisites: ['gn_memoria_selos'],
     effectText: 'Mais Fiéis aumentam toda a Fé',
   },
@@ -148,25 +160,13 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     id: 'gn_bencao_eterna',
     name: 'Vigília Perpétua',
     title: 'Êxtase Sem Fim',
-    desc: 'Mantém a Bênção de 2e0× Fé/s sempre ativa enquanto a Encarnação estiver desbloqueada.',
+    desc: 'Mantém a Bênção de 2× Fé/s sempre ativa enquanto a Encarnação estiver desbloqueada.',
     lore: 'Quando o Profeta contempla a Gnose, sua prece deixa de ser um sopro passageiro e se torna um estado eterno do ser.',
     icon: 'hourglass',
     tier: 2,
-    cost: 2.9e11,
+    cost: 1e11,
     prerequisites: ['gn_init_fervor'],
     effectText: 'Bênção sempre ativa',
-  },
-  {
-    id: 'gn_keep_relics',
-    name: 'Cripta Eterna',
-    title: 'Preservação do Opus Magnum',
-    desc: 'Preserva todos os níveis das Relíquias restauradas nos reinícios de Gnose.',
-    lore: 'As relíquias dos deuses esquecidos foram fundidas ao próprio núcleo da Esfera, tornando-se imunes à dissolução dos ciclos.',
-    icon: 'urn',
-    tier: 2,
-    cost: 2.5e9,
-    prerequisites: ['gn_memoria_selos', 'gn_init_fervor'],
-    effectText: 'Relíquias não se perdem ao Ascender',
   },
   {
     id: 'gn_followers_economy',
@@ -176,7 +176,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Cada voz reunida torna o chamado seguinte mais fácil de ouvir.',
     icon: 'followers',
     tier: 2,
-    cost: 2.3e12,
+    cost: 1e12,
     prerequisites: ['gn_init_faith', 'gn_followers_syn'],
     effectText: 'Fiéis ainda mais baratos',
   },
@@ -188,7 +188,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Três dimensões da mente, três oitavas do cântico: a devoção coletiva cresce a cada alma convertida.',
     icon: 'gem',
     tier: 3,
-    cost: 1.8e13,
+    cost: 1e13,
     prerequisites: ['gn_followers_syn'],
     effectText: 'Fiéis aumentam ainda mais a Fé',
   },
@@ -200,7 +200,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Três vezes grande é aquele que enxerga simultaneamente o abismo mortal, o fogo astral e a mente divina.',
     icon: 'eye',
     tier: 3,
-    cost: 1.5e14,
+    cost: 1e14,
     prerequisites: ['gn_bencao_eterna'],
     effectText: 'Mais Gnose a cada Ascensão',
   },
@@ -212,7 +212,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'O cadinho aprende a separar cada vez menos cinza de cada vez mais essência.',
     icon: 'gem',
     tier: 3,
-    cost: 8.0e16,
+    cost: 8e16,
     prerequisites: ['gn_relic_gain', 'gn_keep_relics'],
     effectText: 'Rito de Fragmentos ainda mais forte e barato',
   },
@@ -236,7 +236,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Aquele que tudo vê não apenas compreende o universo: ele se torna a própria mente que o concebe.',
     icon: 'orb',
     tier: 4,
-    cost: 2.0e20,
+    cost: 2e20,
     prerequisites: ['gn_gnose_mult', 'gn_automation'],
     effectText: 'Fiéis e Ritos automáticos de graça · Transmutação automática',
   },
@@ -244,7 +244,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     id: 'gn_apotheosis',
     name: 'Gnosis Suprema',
     title: 'A Circunferência Infinita',
-    desc: 'Reduz em 0,05 a escala de custo de cada Rito, depois das melhorias específicas. A fórmula continua custo base × escala^nível. Mantém o acesso aos Avatares finais: Eclipse por 1e20 Fé e Solar por 1e30 Fé, exigindo Gnosis Suprema.',
+    desc: 'Reduz em 0,05 a escala de custo de cada Rito, depois das melhorias específicas. A fórmula continua custo base × escala^nível. Reduz o custo do Avatar do Eclipse para 1e20 Fé. O Avatar Solar custa 1e30 Fé e não exige este nó.',
     lore: 'O centro está em toda parte; a circunferência, em lugar nenhum. A Esfera recorda sua plenitude anterior à criação.',
     icon: 'crown',
     tier: 4,
@@ -305,6 +305,31 @@ export const PROGRESSION_OLD_PRICES: Readonly<Record<string, number>> = {
   gn_automation: 8, gn_ritual_automation: 15, gn_relic_automation: 20, gn_keep_relics: 78,
 };
 
+/** Revision 1 prices, used only to refund purchases from that revision. */
+export const PROGRESSION_REVISION = 2;
+export const PROGRESSION_REVISION_1_PRICES: Readonly<Record<string, number>> = {
+  gn_init_faith: 1,
+  gn_memoria_selos: 57,
+  gn_init_fervor: 290_000,
+  gn_relic_gain: 3.4e8,
+  gn_automation: 1_100,
+  gn_seal_automation: 26_000,
+  gn_ritual_automation: 3.5e6,
+  gn_relic_automation: 3.5e7,
+  gn_followers_syn: 1.9e10,
+  gn_bencao_eterna: 2.9e11,
+  gn_keep_relics: 2.5e9,
+  gn_followers_economy: 2.3e12,
+  gn_followers_cubic: 1.8e13,
+  gn_gnose_mult: 1.5e14,
+  gn_relic_refinement: 8.0e16,
+  gn_fu1_boost: 2.8e18,
+  gn_omniscience: 2.0e20,
+  gn_apotheosis: 1.7e22,
+  gn_empyrean_fire: 1.2e28,
+  gn_perfect_opus: 9.8e31,
+};
+
 /** Campaign calibration coefficients, shared by game and simulation. */
 export const PROGRESSION_BALANCE = {
   ascensionExponent: 0.25,
@@ -318,5 +343,5 @@ export const PROGRESSION_BALANCE = {
 };
 
 for (const upgrade of GNOSE_UPGRADES) {
-  upgrade.desc += ' Cada nó assimilado também multiplica Fé por clique, Fé/s, Fervor/s e Fragmentos/s por 4e0, permanentemente.';
+  upgrade.desc += ' Cada nó assimilado também multiplica Fé por clique, Fé/s, Fervor/s e Fragmentos/s por 4, permanentemente.';
 }

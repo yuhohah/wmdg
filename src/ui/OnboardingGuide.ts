@@ -227,7 +227,7 @@ export class OnboardingGuide {
       if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 1/2 • O DESPERTAR';
       if (this.titleEl) this.titleEl.textContent = 'Clique na Esfera';
       if (this.descEl) {
-        this.descEl.textContent = 'Você é a Esfera, selada há eras. Cada clique seu arranca Fé das mentes mortais (com 5% de chance de clique crítico 2×).';
+        this.descEl.textContent = 'Você é a Esfera, selada há eras. Cada clique seu arranca Fé das mentes mortais (aos 250 cliques, desbloqueia pulso crítico 2×; aos 1.000, a chance aumenta).';
       }
       if (this.trackerMetaEl) this.trackerMetaEl.textContent = `Meta inicial: ${formatNumber(targetFaith)} Fé`;
       if (this.trackerValEl) this.trackerValEl.textContent = `${formatNumber(faith)} / ${formatNumber(targetFaith)} Fé (${percent}%)`;

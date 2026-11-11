@@ -1,6 +1,11 @@
 import { formatNumber } from '../systems/numberFormat.js';
 import type { RelicUpgrade } from '../types.js';
 
+/** Cripta Eterna removes the purchase cap for these relics. */
+export const ETERNAL_RELIC_COST_GROWTH = 1.15;
+export const ETERNAL_RELIC_FIXED_LEVELS = 20;
+export const ETERNAL_RELIC_IDS: readonly string[] = ['relic_cornucopia', 'relic_torch'];
+
 export const initialRelicUpgrades: RelicUpgrade[] = [
   {
     id: 'relic_cornucopia',
@@ -11,7 +16,7 @@ export const initialRelicUpgrades: RelicUpgrade[] = [
     cost: 200,
     level: 0,
     maxLevel: 20,
-    effectText: (level) => `+${level * 20}% Fé/s (Nível ${level}/20)`
+    effectText: (level, _points, maxLevel = 20) => `+${formatNumber(level * 20)}% Fé/s (Nível ${formatNumber(level)}/${Number.isFinite(maxLevel) ? maxLevel : '∞'})`
   },
   {
     id: 'relic_phoenix',
@@ -33,7 +38,7 @@ export const initialRelicUpgrades: RelicUpgrade[] = [
     cost: 500,
     level: 0,
     maxLevel: 20,
-    effectText: (level) => `+${level * 20}% Fervor/s (Nível ${level}/20)`
+    effectText: (level, _points, maxLevel = 20) => `+${formatNumber(level * 20)}% Fervor/s (Nível ${formatNumber(level)}/${Number.isFinite(maxLevel) ? maxLevel : '∞'})`
   },
   {
     id: 'relic_caduceus',

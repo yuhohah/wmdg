@@ -316,6 +316,32 @@ describe('Gnose tree revision', () => {
     expect(g.incarnationStage).toBe(5);
   });
 
+  it('buys Avatar Solar before the final guardian is even available to challenge', () => {
+    const game = prepared();
+    for (const id of ['boss_anubis', 'boss_cronos', 'boss_odin']) game.defeatedBosses.add(id);
+    const buy = (id: string) => {
+      if (game.hasGnoseUpgrade(id)) return;
+      const node = GNOSE_UPGRADES.find(upgrade => upgrade.id === id)!;
+      node.prerequisites.forEach(buy);
+      game.gnosePoints = node.cost;
+      expect(game.buyGnoseUpgrade(id)).toBe(true);
+    };
+    buy('gn_apotheosis');
+    expect(game.canChallengeBoss('boss_tiamat')).toBe(false);
+    game.incarnationStage = 4;
+    const solar = INCARNATION_STAGES.at(-1)!;
+    game.faithPoints = game.getIncarnationStageCost(solar);
+    expect(game.upgradeIncarnation()).toBe(true);
+    expect(game.incarnationStage).toBe(solar.stage);
+    expect(game.faithPoints).toBe(0);
+    expect(game.isBossDefeated('boss_tiamat')).toBe(false);
+    expect(game.isCampaignComplete()).toBe(false);
+    const restored = new GameStateManager();
+    restored.applySaveData(game.buildSaveData());
+    expect(restored.incarnationStage).toBe(solar.stage);
+    expect(restored.isCampaignComplete()).toBe(false);
+  });
+
   it('preserves all purchased IDs and automation switches on a save round trip', () => {
     const g = prepared(); GNOSE_UPGRADES.forEach(u => g.unlockedGnoseUpgrades.add(u.id));
     g.autoFollowersEnabled = false; g.autoFervorEnabled = false; g.autoRelicsEnabled = false; g.autoRelicUpgradesEnabled = false;

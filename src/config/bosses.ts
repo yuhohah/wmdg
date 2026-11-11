@@ -1,5 +1,8 @@
 import type { GnoseBoss } from '../types.js';
 
+/** Minimum assimilated nodes before the first campaign duel. */
+export const ANUBIS_MIN_GNOSE_UPGRADES = 3;
+
 /** Duration (in seconds) of the mild -25% Faith/s & Fervor/s penalty when Altar Integrity reaches 0% */
 export const BOSS_CURSE_DURATION_SEC = 20;
 

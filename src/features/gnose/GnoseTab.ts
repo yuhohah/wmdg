@@ -2,7 +2,7 @@ import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { NotificationManager } from '../../systems/notifications.js';
 import { GNOSE_UPGRADES, GNOSE_TIER_LABELS, GNOSE_MIN_FAITH_REQ } from '../../config/gnose.js';
-import { GNOSE_BOSSES } from '../../config/bosses.js';
+import { GNOSE_BOSSES, ANUBIS_MIN_GNOSE_UPGRADES } from '../../config/bosses.js';
 import { calculateFaithForNextGnose, formatNumber } from '../../systems/calculations.js';
 import { formatFixed } from '../../systems/numberFormat.js';
 import { cultDialog } from '../../ui/CultDialog.js';
@@ -46,6 +46,7 @@ export function readinessLine(breakdown: BossCombatBreakdown): string {
 
 export function guardianRequirement(tier: number, canChallenge: boolean, previousTierOwned: number): string {
   if (canChallenge) return 'Vença para liberar estes nós.';
+  if (tier === 2) return `Assimile ${ANUBIS_MIN_GNOSE_UPGRADES} nós de Gnose (${previousTierOwned}/${ANUBIS_MIN_GNOSE_UPGRADES})`;
   return `Assimile 2 nós do Tier ${tier === 3 ? 'II' : 'III'} (${previousTierOwned}/2)`;
 }
 
@@ -119,7 +120,7 @@ export class GnoseTab {
   }
 
   private previousTierOwned(tier: number): number {
-    return GNOSE_UPGRADES.filter((u) => u.tier === tier - 1 && this.options.gameState.hasGnoseUpgrade(u.id)).length;
+    return GNOSE_UPGRADES.filter((u) => (tier === 2 || u.tier === tier - 1) && this.options.gameState.hasGnoseUpgrade(u.id)).length;
   }
 
   public async handleResetClick(): Promise<void> {

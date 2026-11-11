@@ -124,7 +124,7 @@ export class TestMenu {
     const launcher = document.createElement('button');
     launcher.id = 'test-menu-launcher';
     launcher.className = 'test-menu-launcher';
-    launcher.innerHTML = `<span class="test-launcher-icon">${icon('gear')}</span> <span class="test-launcher-badge">1e0x</span>`;
+    launcher.innerHTML = `<span class="test-launcher-icon">${icon('gear')}</span> <span class="test-launcher-badge">1x</span>`;
     launcher.addEventListener('click', (e) => {
       e.stopPropagation();
       this.toggle();
@@ -151,15 +151,15 @@ export class TestMenu {
           <div class="test-section">
             <div class="test-section-header">
               <span class="test-section-title">⏱️ MODIFICADORES DE VELOCIDADE</span>
-              <span id="test-current-speed-label" class="test-current-speed-tag">1e0x</span>
+              <span id="test-current-speed-label" class="test-current-speed-tag">1x</span>
             </div>
             <div class="test-speed-grid">
-              <button class="test-btn test-speed-btn" data-speed="0">Pausar (0e0x)</button>
-              <button class="test-btn test-speed-btn active" data-speed="1">1e0x Normal</button>
-              <button class="test-btn test-speed-btn" data-speed="2">2e0x</button>
-              <button class="test-btn test-speed-btn" data-speed="5">5e0x</button>
-              <button class="test-btn test-speed-btn" data-speed="10">1e1x</button>
-              <button class="test-btn test-speed-btn test-speed-max" data-speed="100">1e2x</button>
+              <button class="test-btn test-speed-btn" data-speed="0">Pausar (0x)</button>
+              <button class="test-btn test-speed-btn active" data-speed="1">1x Normal</button>
+              <button class="test-btn test-speed-btn" data-speed="2">2x</button>
+              <button class="test-btn test-speed-btn" data-speed="5">5x</button>
+              <button class="test-btn test-speed-btn" data-speed="10">10x</button>
+              <button class="test-btn test-speed-btn test-speed-max" data-speed="100">100x</button>
             </div>
           </div>
 
@@ -184,19 +184,19 @@ export class TestMenu {
               </div>
               <div class="test-resource-row">
                 <label class="test-resource-label" for="test-input-relics">${icon('gem')} <span>Relíquias</span></label>
-                <input id="test-input-relics" type="text" inputmode="text" class="test-resource-input" data-resource-input="relics" value="1e2" placeholder="Valor de Relíquias..." />
+                <input id="test-input-relics" type="text" inputmode="text" class="test-resource-input" data-resource-input="relics" value="100" placeholder="Valor de Relíquias..." />
                 <button type="button" class="test-btn test-resource-btn" data-resource-add="relics">+ Adicionar</button>
                 <button type="button" class="test-btn test-resource-set-btn" data-resource-set="relics">Definir</button>
               </div>
               <div class="test-resource-row">
                 <label class="test-resource-label" for="test-input-gnose">${icon('gnose')} <span>Gnose</span></label>
-                <input id="test-input-gnose" type="text" inputmode="text" class="test-resource-input" data-resource-input="gnose" value="1e1" placeholder="Valor de Gnose..." />
+                <input id="test-input-gnose" type="text" inputmode="text" class="test-resource-input" data-resource-input="gnose" value="10" placeholder="Valor de Gnose..." />
                 <button type="button" class="test-btn test-resource-btn" data-resource-add="gnose">+ Adicionar</button>
                 <button type="button" class="test-btn test-resource-set-btn" data-resource-set="gnose">Definir</button>
               </div>
               <div class="test-resource-row">
                 <label class="test-resource-label" for="test-input-followers">${icon('followers')} <span>Fiéis</span></label>
-                <input id="test-input-followers" type="text" inputmode="text" class="test-resource-input" data-resource-input="followers" value="1e1" placeholder="Qtd. de Fiéis..." />
+                <input id="test-input-followers" type="text" inputmode="text" class="test-resource-input" data-resource-input="followers" value="10" placeholder="Qtd. de Fiéis..." />
                 <button type="button" class="test-btn test-resource-btn" data-resource-add="followers">+ Adicionar</button>
                 <button type="button" class="test-btn test-resource-set-btn" data-resource-set="followers">Definir</button>
               </div>
@@ -231,7 +231,7 @@ export class TestMenu {
         </div>
 
         <div class="test-menu-footer">
-          <span>Atalho de Teclado: <strong>[T]</strong> ou <strong>[F2]</strong></span>
+          <span>Atalho de Teclado: <strong>[F2]</strong></span>
           <span class="test-menu-hint">Modificadores aceleram simulação, acúmulos e animações.</span>
         </div>
       </div>
@@ -407,7 +407,7 @@ export class TestMenu {
       const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA');
 
       if (!isInput) {
-        if (e.key === 't' || e.key === 'T' || e.key === 'F2') {
+        if (e.key === 'F2') {
           e.preventDefault();
           this.toggle();
         } else if (e.key === 'Escape' && this.isOpen) {

@@ -282,6 +282,7 @@ function setupBossModalHarness(
       if (id === 'dodeca-board-world') return worldEl;
       return extraById.get(id) ?? null;
     },
+    querySelector: vi.fn(() => null),
     querySelectorAll: (sel: string) => {
       if (sel === '#boss-world-stage') {
         return worldEl.children.filter((c) => c.id === 'boss-world-stage');
@@ -332,6 +333,19 @@ function setupBossModalHarness(
 }
 
 describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox tracking', () => {
+  it('leaves Escape to a native confirmation above the duel', () => {
+    const { modal, gameState } = setupBossModalHarness(100);
+    expect(modal.openForBoss('boss_cronos')).toBe(true);
+    vi.mocked(document.querySelector).mockReturnValue(document.createElement('dialog'));
+    const registration = vi.mocked(document.addEventListener).mock.calls.find(([type]) => type === 'keydown');
+    const listener = registration![1] as EventListener;
+    const event = Object.assign(new Event('keydown', { cancelable: true }), { key: 'Escape' });
+    listener(event);
+    expect(event.defaultPrevented).toBe(false);
+    expect(modal.isOpen()).toBe(true);
+    expect(gameState.activeBossBattle).not.toBeNull();
+  });
+
   it('follows the incarnation until the full circle is formed, then follows the distant boss before framing combat', () => {
     const { modal, audio, gameState, cameraFrames } = setupBossModalHarness(100);
     modal.openForBoss('boss_cronos');
@@ -784,6 +798,18 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     for (let i = 0; i < 800 && modal.isOpen(); i++) modal.stepSceneForTest(0.1);
     expect(modal.isOpen()).toBe(false);
     expect(courtyardVisible()).toBe(false);
+  });
+
+  it('caps the actual backing canvas after moving procession cards to the far edge', () => {
+    const { modal, worldEl } = setupBossModalHarness(100, {
+      incarnationBox: { x: 6600, y: 4000, w: 420, h: 210 },
+      followersBox: { x: 6400, y: 3900, w: 512, h: 240 },
+    });
+    expect(modal.openForBoss('boss_cronos')).toBe(true);
+    const canvas = worldEl.children[0].querySelector('#boss-world-canvas') as unknown as { width: number; height: number };
+    expect(canvas.width * canvas.height).toBeLessThanOrEqual(4_000_000);
+    expect(Math.max(canvas.width, canvas.height)).toBeLessThanOrEqual(4096);
+    modal.close();
   });
 
   it('holds the large battle canvas only while a fight is open', () => {

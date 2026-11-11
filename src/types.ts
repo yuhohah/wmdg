@@ -92,7 +92,7 @@ export interface RelicUpgrade {
   cost: number;
   level: number;
   maxLevel: number;
-  effectText: (level: number, relicPoints?: number) => string;
+  effectText: (level: number, relicPoints?: number, maxLevel?: number) => string;
 }
 
 // --- Gnose (True Prestige) & Mythological Guardians Types ---

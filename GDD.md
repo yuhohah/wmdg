@@ -39,7 +39,7 @@ O ciclo de decisões é: gerar Fé → investir em Fiéis e sistemas → alcanç
 
 ### Fé e Fiéis
 
-Tocar a Esfera produz Fé; há 5% de chance de crítico com ganho dobrado. O Fiel Devoto custa inicialmente 20 Fé, produz 1 Fé/s antes dos multiplicadores e fica progressivamente mais caro. Relíquias e Gnose reduzem a escala desse custo até o piso configurado.
+Clicar na Esfera ou pressionar Espaço durante o jogo produz Fé. Espaço gera um clique por pressionamento e respeita campos de texto, controles e menus abertos; o crítico com ganho dobrado desbloqueia após 250 cliques, com 5% de chance, e a chance aumenta para 10% após 1.000 cliques. Os bônus aparecem nas respectivas conquistas. O Fiel Devoto custa inicialmente 20 Fé, produz 1 Fé/s antes dos multiplicadores e fica progressivamente mais caro. Relíquias e Gnose reduzem a escala desse custo até o piso configurado.
 
 Converter Máximo abre com 25 Fiéis ou Memória Hermética. Pedidos de milagre aparecem no Pátio; responder concede Fé proporcional ao poder de clique e à produção, sem depender do saldo armazenado.
 
@@ -51,9 +51,11 @@ Converter Máximo abre com 25 Fiéis ou Memória Hermética. Pedidos de milagre 
 | Consagrado | 2,5 milhões | 100× |
 | Ancestral | 250 bilhões | 10.000× |
 | Eclipse | 1e25; 1e20 com Gnosis Suprema | 1e8× |
-| Solar | 1e30; exige Gnosis Suprema | 1e15× |
+| Solar | 1e30; disponível após Eclipse, antes de desafiar Caos Primordial | 1e15× |
 
 O estágio também fortalece os Fiéis e o combate. Cada acionamento do Altar acrescenta 10 segundos de **Bênção 2× Fé/s**, até 60 segundos. Vigília Perpétua a mantém ativa com Encarnação aberta.
+
+O botão Atalhos, no canto inferior esquerdo, revela a lista ao passar o mouse ou clicar. Os cartões de compra mantêm seus nomes sem letras de atalho. Atalhos durante o jogo: Espaço toca a Esfera; Z compra um Fiel; X compra o máximo quando liberado; Q/W/E/R/T/Y compram os seis Ritos na ordem; A/S/D/F/G/H compram as seis Relíquias na ordem (J reservado); Caps Lock transmuta Fé em Fragmentos; M coleta um milagre disponível; I carrega a Bênção; U evolui a Encarnação. Cada pressionamento executa uma ação, respeitando custos e desbloqueios. Campos de texto e menus suspendem os atalhos. Durante duelos, as compras e ações da Encarnação ficam bloqueadas e M coleta o milagre de combate.
 
 ### Fervor e Ritos
 
@@ -105,7 +107,9 @@ São **20 nós em quatro tiers (6 / 6 / 4 / 4)**. Cada nó é comprado uma vez, 
 | III — Poder do Culto | Coro, ganho de Gnose e refinamentos herméticos. | Vitória sobre Hades. |
 | IV — Apoteose | Olho do Infinito, Gnosis Suprema, Fogo Empíreo e Opus Perfeito. | Vitória sobre Odin. |
 
-Cada nó exibe nome e efeito em linguagem simples; os valores exatos ficam na opção **Nerds** das configurações. Os custos da Gnose foram comprimidos para encurtar a campanha, com reduções proporcionalmente maiores nos nós mais caros. Os preços acima de 1.000 Gnose usam dois algarismos significativos para manter as metas legíveis. O catálogo completo, custos e pré-requisitos estão em [FormulasJogo.md](FormulasJogo.md#8-gnose-e-todos-os-upgrades) e [src/config/gnose.ts](src/config/gnose.ts).
+Cada nó exibe nome e efeito em linguagem simples; os valores exatos ficam na opção **Nerds** das configurações. Os nós da Gnose aparecem em cada tier por custo crescente e com os pré-requisitos antes dos dependentes. Os preços iniciais e intermediários foram suavizados para antecipar as automações. A revisão 2 devolve uma única vez a diferença dos nós já comprados nos saves da revisão 1, sem aumentar a Gnose total acumulada. Os preços acima de 1.000 Gnose usam dois algarismos significativos para manter as metas legíveis. O catálogo completo, custos e pré-requisitos estão em [FormulasJogo.md](FormulasJogo.md#8-gnose-e-todos-os-upgrades) e [src/config/gnose.ts](src/config/gnose.ts).
+
+A Cripta Eterna torna permanentes os níveis de todas as Relíquias e libera níveis ilimitados para a Cornucópia de Amalteia e a Tocha de Prometeu. As outras Relíquias mantêm seus limites de compra. Cornucópia e Tocha mantêm o preço inicial nos primeiros 20 níveis; os níveis seguintes ficam 15% mais caros a cada compra, preservando o ganho linear de produção.
 
 ### Automações
 
@@ -119,7 +123,7 @@ Auto-Fiéis compra com toda a Fé disponível; por isso o controle permite paus�
 
 | Guardião | Liberação do desafio | Vitória |
 | --- | --- | --- |
-| Anúbis — O Pesador de Almas | Acesso à Gnose. | Tier II e 1,5× Fé/Fervor. |
+| Anúbis — O Pesador de Almas | Acesso à Gnose e pelo menos 3 nós assimilados. | Tier II e 1,5× Fé/Fervor. |
 | Hades — O Senhor do Submundo | Tier II aberto e dois nós desse tier. | Tier III e mais 1,5× Fé/Fervor. |
 | Odin — O Pai de Todos da Árvore Cósmica | Tier III aberto e dois nós desse tier. | Tier IV e mais 1,5× Fé/Fervor. |
 | Caos Primordial — O Vazio Antes da Criação | Árvore completa, com 20 nós. | Mais 10× Fé/Fervor e conquista Crepúsculo dos Deuses. |
@@ -140,7 +144,7 @@ A Câmara da Gnose mostra a prontidão e os pilares a fortalecer do Guardião qu
 
 A Encarnação vai ao Pátio, reúne os Fiéis e conduz a procissão ao círculo. O Guardião chega depois. Não há dano, pressão ou novas fendas durante a preparação; a luta começa quando ele alcança o ponto de combate.
 
-1. **Atacar o Guardião:** até cinco pulsos de dano por segundo simulado, com cooldown de 0,2 s. Há 5% de chance de crítico dobrado. Cliques continuam gerando Fé.
+1. **Atacar o Guardião:** até cinco pulsos de dano por segundo simulado, com cooldown de 0,2 s. O crítico dobrado usa os marcos de cliques da Esfera: 5% após 250 cliques e 10% após 1.000. Cliques continuam gerando Fé.
 2. **Aparar:** clicar nos cartões antes de expirarem bloqueia o golpe e dá 25 pontos de carga. O aparo não causa dano ao Guardião nem cura a Esfera. O combo conta os aparos seguidos e zera ao errar; é apenas informativo.
 3. **Fulgor Divino:** com carga 100, o botão sobre a Esfera dispara um ataque e esvazia a carga. Cliques de combate acrescentam 8 pontos. O disparo exige prontidão de ataque e não cura.
 4. **Milagre dos Fiéis na roda:** pedido de 1,5 segundo que recupera até 10 pontos de integridade. É a fonte de cura do combate.

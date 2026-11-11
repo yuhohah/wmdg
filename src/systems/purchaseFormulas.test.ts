@@ -42,7 +42,7 @@ describe('purchase formula presentation', () => {
       expect(formula.bonus).not.toContain(item.lore);
       expect(formula.bonus).not.toContain(item.desc);
     }
-    expect(getPurchaseFormulas(game, 'relic_cornucopia')?.cost).toContain('200 Fragmentos');
+    expect(getPurchaseFormulas(game, 'relic_cornucopia')?.cost).toContain('200 × 1,15^max(0, nível − 19) Fragmentos');
     expect(getPurchaseFormulas(game, 'unlock_gnose')?.cost).toBe('C = 0 Fé; Fé ≥ 1e15');
     expect(getPurchaseFormulas(game, 'incarnation')?.cost).toContain('2,5M Fé');
     game.incarnationStage = 5;

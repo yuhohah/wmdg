@@ -26,8 +26,7 @@ export default defineConfig({
   plugins: [removeUnshippedAssets()],
   server: {
     port: 5173,
-    host: true,
-    allowedHosts: true
+    host: 'localhost'
   },
   test: {
     include: ['src/**/*.test.ts']

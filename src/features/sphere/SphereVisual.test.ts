@@ -84,6 +84,42 @@ describe('Esfera progression visuals', () => {
     return view;
   };
 
+  it('uses Space for a normal sphere click, skips repeats and controls, and removes the shortcut on destroy', () => {
+    const gameState = new GameStateManager();
+    const audio = { init: vi.fn(), playTone: vi.fn() };
+    const sphere = new SphereController(Object.assign(Object.create(null), { gameState, audio, triggerHaptic: vi.fn() }));
+    cleanup.push(() => sphere.destroy());
+    vi.spyOn(sphere, 'spawnFloatingText').mockImplementation(() => {});
+    const selector = vi.fn((value: string) => value === '#gameplay-screen.active' ? button : null);
+    Object.assign(doc, { querySelector: selector });
+    Object.assign(button, { click: () => button.dispatchEvent(new Event('click')) });
+    const press = (properties: object = {}, target?: object) => {
+      const event = Object.assign(new Event('keydown', { cancelable: true }), { code: 'Space', key: ' ', repeat: false }, properties);
+      if (target) Object.defineProperty(event, 'target', { value: target });
+      doc.dispatchEvent(event);
+      return event;
+    };
+    expect(press().defaultPrevented).toBe(true);
+    expect(gameState.totalClicks).toBe(1);
+    expect(gameState.faithPoints).toBeGreaterThan(1);
+    expect(audio.init).toHaveBeenCalledOnce();
+    expect(press({ repeat: true }).defaultPrevented).toBe(true);
+    expect(gameState.totalClicks).toBe(1);
+    expect(press({}, { closest: () => ({ tagName: 'INPUT' }) }).defaultPrevented).toBe(false);
+    expect(press({}, { closest: () => ({ tagName: 'BUTTON' }) }).defaultPrevented).toBe(false);
+    expect(press({ ctrlKey: true }).defaultPrevented).toBe(false);
+    expect(press({ code: 'Enter', key: 'Enter' }).defaultPrevented).toBe(false);
+    expect(gameState.totalClicks).toBe(1);
+    selector.mockImplementation(() => null); // Initial screen, before Play.
+    expect(press().defaultPrevented).toBe(false);
+    selector.mockImplementation(() => button); // An open dialog or menu.
+    expect(press().defaultPrevented).toBe(false);
+    selector.mockImplementation(value => value === '#gameplay-screen.active' ? button : null);
+    sphere.destroy();
+    expect(press().defaultPrevented).toBe(false);
+    expect(gameState.totalClicks).toBe(1);
+  });
+
   it('uses the seal before stage numbers, and keeps the final form for Eclipse and Solar', () => {
     expect(sphereFormForProgress(false, 5).id).toBe('nucleo');
     expect([1, 2, 3, 4, 5].map(stage => sphereFormForProgress(true, stage).id))

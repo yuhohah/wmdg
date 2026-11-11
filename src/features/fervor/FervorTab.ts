@@ -1,3 +1,4 @@
+import { FERVOR_SHORTCUTS } from '../../ui/GameplayShortcuts.js';
 import { AutomationToggle } from '../../ui/AutomationToggle.js';
 import { setText } from '../../ui/dom.js';
 import { GameStateManager } from '../../core/GameState.js';
@@ -56,7 +57,7 @@ export class FervorTab {
     const fervor = this.options.gameState.fervorPoints;
     const phoenixUnlocked = this.options.gameState.isPhoenixRelicUnlocked();
 
-    this.options.gameState.fervorUpgrades.forEach((upg) => {
+    this.options.gameState.fervorUpgrades.forEach((upg, index) => {
       if (upg.id === 'fu_relics' && !phoenixUnlocked && upg.level === 0) {
         return;
       }
@@ -67,6 +68,7 @@ export class FervorTab {
       const card = document.createElement('div');
       card.className = `cult-action-card fervor-upgrade-card ${canAfford ? '' : 'unaffordable'}`;
       card.id = `card-${upg.id}`;
+      if (FERVOR_SHORTCUTS[index]) card.setAttribute('aria-keyshortcuts', FERVOR_SHORTCUTS[index].toUpperCase());
 
       const symbolHtml = DISPLAY_CONFIG.showEmojisAndSymbols
         ? `<span class="card-symbol">${upg.icon}</span>`
@@ -93,7 +95,8 @@ export class FervorTab {
 
       if (this.options.gameState.hasGnoseUpgrade('gn_memoria_selos')) {
         const bulk = document.createElement('button');
-        bulk.className = 'btn-ritual-max'; bulk.textContent = 'Ritualizar máximo';
+        bulk.className = 'btn-ritual-max';
+        bulk.textContent = `Ritualizar máximo (${formatNumber(this.options.gameState.getMaxFervorUpgradeCount(upg))})`;
         bulk.addEventListener('click', event => { event.stopPropagation(); this.buyUpgrade(upg, true); });
         card.appendChild(bulk);
       }
@@ -125,6 +128,7 @@ export class FervorTab {
       const cost = this.options.gameState.getFervorUpgradeCost(upg);
       const card = document.getElementById(`card-${upg.id}`);
       if (card) {
+        setText(card.querySelector('.btn-ritual-max'), `Ritualizar máximo (${formatNumber(this.options.gameState.getMaxFervorUpgradeCount(upg))})`);
         if (fervor >= cost) {
           card.classList.remove('unaffordable');
         } else {

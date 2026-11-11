@@ -25,6 +25,15 @@ describe('battle canvas resolution', () => {
     expect(battleCanvasScale(861)).toBe(1);
   });
 
+  it('caps the canvas pixel budget when the cards are moved far away', () => {
+    for (const viewport of [390, 1600]) {
+      const scale = battleCanvasScale(viewport, 7000, 4400);
+      const pixels = Math.floor(7000 * scale) * Math.floor(4400 * scale);
+      expect(pixels).toBeLessThanOrEqual(viewport < 861 ? 2000000 : 4000000);
+      expect(7000 * scale).toBeLessThanOrEqual(4096);
+    }
+  });
+
   it('draws fewer pixels on phones', () => {
     expect(battleCanvasScale(860)).toBe(0.6);
     expect(battleCanvasScale(390)).toBe(0.6);

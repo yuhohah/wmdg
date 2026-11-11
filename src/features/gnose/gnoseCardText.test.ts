@@ -59,6 +59,8 @@ describe('Guardian requirement', () => {
   });
 
   it('shows the nodes missing from the previous tier', () => {
+    expect(guardianRequirement(2, false, 0)).toBe('Assimile 3 nós de Gnose (0/3)');
+    expect(guardianRequirement(2, false, 2)).toBe('Assimile 3 nós de Gnose (2/3)');
     expect(guardianRequirement(3, false, 0)).toBe('Assimile 2 nós do Tier II (0/2)');
     expect(guardianRequirement(4, false, 1)).toBe('Assimile 2 nós do Tier III (1/2)');
   });

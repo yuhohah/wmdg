@@ -159,7 +159,7 @@
                         <div class="sphere-orbit-ring ring-2"></div>
                         <div class="sphere-aura"></div>
 
-                        <div id="divine-sphere-btn" class="divine-sphere-btn" role="button" aria-label="Clicar na Esfera"></div>
+                        <div id="divine-sphere-btn" class="divine-sphere-btn" role="button" tabindex="0" aria-label="Clicar na Esfera" aria-keyshortcuts="Space"></div>
                       </div>
                     </div>
                   </div>
@@ -200,7 +200,7 @@
                   </label>
                   <div class="followers-controls">
                     <!-- Buy 1 Button -->
-                    <button id="btn-convert-one" class="btn-follower-action btn-convert-primary">
+                    <button id="btn-convert-one" aria-keyshortcuts="Z" class="btn-follower-action btn-convert-primary">
                       <div class="btn-action-main">
                         <span class="btn-action-title">CONVERTER FIEL</span>
                         <span class="btn-action-benefit" id="convert-one-benefit">+1 Fé/s</span>
@@ -212,7 +212,7 @@
                     </button>
 
                     <!-- Buy Max Button (Future Unlock at 25 followers) -->
-                    <button id="btn-convert-max" class="btn-follower-action btn-convert-max locked" disabled>
+                    <button id="btn-convert-max" aria-keyshortcuts="X" class="btn-follower-action btn-convert-max locked" disabled>
                       <div class="btn-action-main">
                         <span class="btn-action-title" id="convert-max-title">CONVERTER MÁXIMO</span>
                         <span class="btn-action-benefit" id="convert-max-sub">Desbloqueia com 25 Fiéis</span>
@@ -316,7 +316,7 @@
                   </div>
 
                   <div class="incarnation-controls">
-                    <button id="btn-upgrade-incarnation" class="btn-follower-action btn-incarnation-upgrade">
+                    <button id="btn-upgrade-incarnation" aria-keyshortcuts="U" class="btn-follower-action btn-incarnation-upgrade">
                       <div class="btn-action-main">
                         <span class="btn-action-title" id="incarnation-upgrade-title">EVOLUIR</span>
                         <span class="btn-action-benefit" id="incarnation-upgrade-benefit">100x Fervor/s</span>
@@ -517,6 +517,13 @@
     </div>
 
     <!-- ACHIEVEMENTS MODAL OVERLAY -->
+    <aside id="shortcuts-help" class="shortcuts-help" aria-label="Ajuda de teclado">
+      <button id="shortcuts-help-button" type="button" aria-expanded="false" aria-controls="shortcuts-help-panel">
+        <span data-icon="scroll" aria-hidden="true"></span><span>Atalhos</span>
+      </button>
+      <section id="shortcuts-help-panel" class="shortcuts-help-panel" aria-label="Atalhos de teclado" hidden></section>
+    </aside>
+
     <div id="achievements-modal" class="modal-overlay">
       <div class="modal-slide-card" style="max-width: 560px;">
         <div class="modal-header">
@@ -551,6 +558,10 @@
         <button id="close-cult-status-btn" type="button" class="close-btn-gold" aria-label="Fechar Status do Culto">&times;</button>
       </div>
         <div class="stats-panel-content cult-status-stats">
+          <div class="stat-box" title="Tempo corrido desde o início registrado, incluindo períodos fora do jogo.">
+            <span class="stat-label">TEMPO TOTAL DE JOGO</span>
+            <span id="stat-total-play-time" class="stat-val">00h 00m 00s</span>
+          </div>
           <div class="stat-box">
             <span class="stat-label">FÉ TOTAL ACUMULADA</span>
             <span id="stat-total-faith" class="stat-val">1</span>
@@ -602,6 +613,7 @@
             </svg>
           </button>
         </div>
+
 
         <div class="settings-group">
           <div class="setting-item audio-setting">

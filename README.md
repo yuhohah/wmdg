@@ -7,7 +7,7 @@
 Um idle/clicker hermético em um santuário astral navegável.
 Converta fiéis, reacenda o Fervor e confronte os deuses que ocuparam seu lugar.
 
-**Versão atual: 0.8.0** · [Changelog](CHANGELOG.md)
+**Versão atual: 0.9.1** · [Changelog](CHANGELOG.md)
 
 [O jogo](#o-santuário) · [Executar](#executar-localmente) · [GDD](GDD.md) · [Fórmulas](FormulasJogo.md) · [Documentação](docs/README.md)
 
@@ -82,13 +82,13 @@ npm ci
 npm run dev
 ```
 
-O painel de desenvolvimento abre com **T** ou **F2** em ambiente de desenvolvimento; oferece recursos de teste, velocidade e benchmark em Web Worker.
+O painel de desenvolvimento abre com **F2** em ambiente de desenvolvimento; oferece recursos de teste, velocidade e benchmark em Web Worker.
 
 ## Persistência e controles
 
 - Salvamento local automático a cada 20 segundos, ao ocultar a aba e ao sair, com backup.
 - Exportação/importação do progresso em Base64 e reinício nas Configurações.
-- Produção durante ausência de até **24 horas**, incluindo automações já adquiridas. Combates não continuam offline.
+- Produção durante ausência de até **24 horas**, incluindo automações já adquiridas. A recuperação ocorre em lotes para manter a interface responsiva; o estado calculado é salvo por inteiro antes de substituir o progresso ativo. Combates não continuam offline.
 - Arraste para navegar; roda do mouse ou pinça para zoom. Atalhos inferiores focam os altares.
 - Áudio ambiente e efeitos, com controles na interface; guia contextual para os primeiros passos.
 - Novidades exibidas ao abrir uma versão diferente da última vista neste navegador; histórico acessível em **Configurações → Ver novidades**.

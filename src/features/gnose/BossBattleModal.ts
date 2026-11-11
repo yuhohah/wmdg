@@ -345,8 +345,10 @@ export function loadBossSprites(bossId: string): BossLateralSprites | undefined 
 const PHONE_MAX_WIDTH = 860;
 
 /** The stage spans thousands of world pixels; phones show it zoomed out, so they draw fewer. */
-export function battleCanvasScale(viewportWidth: number): number {
-  return viewportWidth <= PHONE_MAX_WIDTH ? 0.6 : 1;
+export function battleCanvasScale(viewportWidth: number, worldWidth = 1, worldHeight = 1): number {
+  const phone = viewportWidth <= PHONE_MAX_WIDTH;
+  const pixelBudget = phone ? 2_000_000 : 4_000_000;
+  return Math.min(phone ? 0.6 : 1, Math.sqrt(pixelBudget / worldWidth / worldHeight), 4096 / worldWidth, 4096 / worldHeight);
 }
 
 function bossSheetFrameCount(sheet: HTMLImageElement | undefined): number {
@@ -849,7 +851,7 @@ export class BossBattleModal {
     this.attackBtnEl = stage.querySelector('#boss-arena-attack-btn');
 
     if (this.attackBtnEl) {
-      this.attackBtnEl.title = 'Clique diretamente no Guardião para atacá-lo (até 5 ataques/s; 5% de chance de dano crítico dobrado).';
+      this.attackBtnEl.title = 'Clique diretamente no Guardião para atacá-lo (até 5 ataques/s). Crítico 2× desbloqueia aos 250 cliques com 5% de chance; aos 1.000 cliques, a chance sobe para 10%.';
     }
   }
 
@@ -908,6 +910,7 @@ export class BossBattleModal {
     document.addEventListener('keydown', (event) => {
       if (!this.isOpen()) return;
       if (event.key === 'Escape') {
+        if (document.querySelector('dialog[open]')) return;
         const testOverlay = document.getElementById('test-menu-overlay');
         if (testOverlay?.classList.contains('visible')) return;
         event.preventDefault();
@@ -1424,9 +1427,9 @@ export class BossBattleModal {
 
   private allocateWorldCanvas(): void {
     if (!this.worldCanvasEl) return;
-    this.worldCanvasScale = battleCanvasScale(window.innerWidth);
-    this.worldCanvasEl.width = Math.ceil(this.stageWidth * this.worldCanvasScale);
-    this.worldCanvasEl.height = Math.ceil(this.stageHeight * this.worldCanvasScale);
+    this.worldCanvasScale = battleCanvasScale(window.innerWidth, this.stageWidth, this.stageHeight);
+    this.worldCanvasEl.width = Math.max(1, Math.floor(this.stageWidth * this.worldCanvasScale));
+    this.worldCanvasEl.height = Math.max(1, Math.floor(this.stageHeight * this.worldCanvasScale));
     // A reduced canvas is scaled up on screen, where smoothing reads better than hard pixels.
     this.worldCanvasEl.style.imageRendering = this.worldCanvasScale < 1 ? 'auto' : '';
   }

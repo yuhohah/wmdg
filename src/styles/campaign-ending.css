@@ -1,0 +1,86 @@
+/* A fullscreen ceremonial stage; the choice card appears only after the void. */
+body.is-ending-active > :not(.campaign-ending) { visibility: hidden !important; }
+.campaign-ending {
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: #090a0f;
+  color: #e2e8f0;
+  text-align: center;
+}
+.campaign-ending::backdrop { background: #090a0f; }
+.campaign-ending [hidden] { display: none !important; }
+.ending-theatre, .ending-ritual-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ending-ritual-canvas { display: block; }
+.ending-caption { position: absolute; top: max(24px, env(safe-area-inset-top)); left: 7%; right: 7%; pointer-events: none; }
+.ending-inscription, .ending-eyebrow { font-size: 10px; letter-spacing: .22em; color: #b99b56; }
+.ending-caption h1, .ending-copy h1 { font-family: var(--font-heading, Georgia, serif); font-size: clamp(22px, 3vw, 36px); margin: 12px 0; color: #e2e8f0; }
+.ending-caption p, .ending-copy p { font-size: 14px; line-height: 1.65; }
+.ending-caption > p:last-child { color: #a9adb7; }
+.ending-credits { position: absolute; bottom: max(56px, calc(env(safe-area-inset-bottom) + 40px)); left: 12px; right: 12px; animation: ending-reveal 1.4s both; }
+.ending-credits > p:not(.ending-eyebrow) { font-family: var(--font-heading, Georgia, serif); font-size: 18px; line-height: 1.7; }
+.ending-credits span { font-size: 12px; color: #a9adb7; }
+.ending-skip { position: absolute; bottom: max(16px, env(safe-area-inset-bottom)); right: 20px; font-size: 11px; opacity: .65; }
+.campaign-ending[data-phase='vanishing'] .ending-caption,
+.campaign-ending[data-phase='vanishing'] .ending-credits,
+.campaign-ending[data-phase='vanishing'] .ending-skip { opacity: 0; animation: none; transition: opacity 1.5s; pointer-events: none; }
+.campaign-ending[data-phase='silence'] .ending-caption,
+.campaign-ending[data-phase='silence'] .ending-skip { visibility: hidden; }
+.ending-panel {
+  box-sizing: border-box;
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(680px, calc(100% - 32px));
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
+  padding: 32px;
+  border: 1px solid #77756d;
+  background: #101116;
+  box-shadow: inset 0 0 0 5px #101116, inset 0 0 0 6px #37383e;
+  animation: ending-reveal 1.4s both;
+}
+.ending-copy { margin: 0 auto 24px; }
+.ending-copy h1 { font-size: clamp(23px, 4vw, 32px); }
+.ending-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.ending-actions button, .ending-launcher, .ending-skip { font-family: inherit; color: #e2e8f0; background: #15161c; border: 1px solid #77756d; padding: 12px 18px; cursor: pointer; }
+.ending-actions button:first-child { border-color: #b99b56; color: #ddc99a; }
+.ending-actions button:hover, .ending-launcher:hover, .ending-skip:hover { background: #27282e; }
+.ending-actions button:focus-visible, .ending-launcher:focus-visible, .ending-records summary:focus-visible, .ending-skip:focus-visible { outline: 2px solid #ddc99a; outline-offset: 3px; }
+.ending-launcher { position: fixed; bottom: 68px; left: 16px; z-index: 50; font-size: 11px; }
+.ending-launcher[hidden] { display: none; }
+.ending-records { text-align: left; margin: 20px auto; max-width: 490px; border-block: 1px solid #37383e; padding: 12px 0; }
+.ending-records summary { cursor: pointer; color: #ddc99a; }
+.ending-records p { color: #a6a7ad; font-size: 12px; }
+.ending-records ol { padding-left: 24px; }
+.ending-records li { padding: 5px; font-size: 13px; }
+.ending-records strong { float: right; }
+.ending-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+@keyframes ending-reveal { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 540px) {
+  .ending-caption { top: max(22px, env(safe-area-inset-top)); left: 20px; right: 20px; }
+  .ending-caption h1 { font-size: 25px; }
+  .ending-caption p { font-size: 12px; }
+  .ending-credits { bottom: 85px; }
+  .ending-credits > p:not(.ending-eyebrow) { font-size: 17px; }
+  .ending-panel { padding: 24px 18px; }
+  .ending-actions button { width: 100%; }
+}
+@media (max-height: 540px) and (min-width: 541px) {
+  .ending-caption { top: 12px; }
+  .ending-caption h1 { font-size: 22px; margin: 6px; }
+  .ending-caption p { margin: 5px; font-size: 11px; }
+  .ending-credits { bottom: 12px; }
+  .ending-credits > p:not(.ending-eyebrow) { font-size: 14px; margin: 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .campaign-ending *, .campaign-ending *::before, .campaign-ending *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

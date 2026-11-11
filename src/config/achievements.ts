@@ -1,6 +1,14 @@
 import { formatNumber } from '../systems/numberFormat.js';
 import type { Achievement } from '../types.js';
 
+export const SPHERE_CRITICAL = {
+  unlockClicks: 250,
+  improvedClicks: 1000,
+  baseChance: 0.05,
+  improvedChance: 0.10,
+  multiplier: 2,
+} as const;
+
 export const initialAchievements: Achievement[] = [
   // --- Clicks Milestones ---
   {
@@ -46,7 +54,7 @@ export const initialAchievements: Achievement[] = [
     lore: 'Tudo vibra. Seus pulsos encontraram o ritmo das preces.',
     icon: '',
     unlocked: false,
-    buffText: '+35% de Fé por clique',
+    buffText: `+35% de Fé por clique · Desbloqueia crítico: ${SPHERE_CRITICAL.baseChance * 100}% de chance de Fé e dano por clique ${SPHERE_CRITICAL.multiplier}×`,
     buffType: 'fpc_mult',
     buffVal: 0.35,
     check: (s) => s.clicks >= 250,
@@ -64,7 +72,7 @@ export const initialAchievements: Achievement[] = [
     lore: 'Mil pulsos. Os fiéis juram que o chão bate junto com você, como um coração.',
     icon: '',
     unlocked: false,
-    buffText: '+50% de Fé por clique',
+    buffText: `+50% de Fé por clique · Chance de crítico aumenta de ${SPHERE_CRITICAL.baseChance * 100}% para ${SPHERE_CRITICAL.improvedChance * 100}% (${SPHERE_CRITICAL.multiplier}×)`,
     buffType: 'fpc_mult',
     buffVal: 0.50,
     check: (s) => s.clicks >= 1000,
