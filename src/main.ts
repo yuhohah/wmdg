@@ -25,6 +25,7 @@ import { UnlocksTab } from './features/unlocks/UnlocksTab.js';
 import { AchievementsTab } from './features/achievements/AchievementsTab.js';
 import { StatsTab } from './features/stats/StatsTab.js';
 import { SphereController } from './features/sphere/SphereController.js';
+import { SphereVisual, SPHERE_FORMS } from './features/sphere/SphereVisual.js';
 import { OnboardingGuide } from './ui/OnboardingGuide.js';
 import { FormulaTooltip } from './ui/FormulaTooltip.js';
 import { BoardManager } from './ui/BoardManager.js';
@@ -259,8 +260,13 @@ class AppManager {
     const playBtn = document.getElementById('play-btn');
     const startScreen = document.getElementById('start-screen');
     const gameplayScreen = document.getElementById('gameplay-screen');
+    const startSphereHost = document.getElementById('start-sphere');
+    // Title screen always shows the sphere's final form.
+    const startSphere = startSphereHost ? new SphereVisual(startSphereHost) : null;
+    startSphere?.setProgress(true, SPHERE_FORMS.length - 1);
 
     playBtn?.addEventListener('click', () => {
+      startSphere?.destroy();
       this.audio.init();
       this.audio.playMusic();
       this.audio.playTone(440, 'sine', 0.1);
