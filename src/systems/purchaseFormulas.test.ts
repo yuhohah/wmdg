@@ -11,8 +11,8 @@ describe('purchase formula presentation', () => {
     const achievement = game.achievements.find(a => a.buffType === 'cost_discount')!;
     achievement.unlocked = true;
     const formula = getPurchaseFormulas(game, 'f_devotee')!;
-    expect(formula.cost).toContain('(1.08e0)^N');
-    expect(formula.cost).toContain('9.5e-1');
+    expect(formula.cost).toContain('(1,08)^N');
+    expect(formula.cost).toContain('0,95');
     expect(getPurchaseFormulas(game, 'f_devotee', true)?.cost).toContain('Σ[i=0…n−1]');
     expect(getPurchaseFormulas(game, 'f_devotee', true)?.bonus).toContain('Fiéis + n');
   });
@@ -20,15 +20,15 @@ describe('purchase formula presentation', () => {
   it('updates ritual cost and gain formulas after permanent coefficient upgrades', () => {
     const game = new GameStateManager();
     expect(getPurchaseFormulas(game, 'fu_prod')).toEqual({
-      cost: 'C(nível) = ⌊5e1 × (1.8e0)^nível⌋ Fervor', bonus: 'M_Fervor/s(nível) = (2e0)^(nível^0.6)',
+      cost: 'C(nível) = ⌊50 × (1,8)^nível⌋ Fervor', bonus: 'M_Fervor/s(nível) = (2)^(nível^0.6)',
     });
     for (const id of ['gn_init_fervor', 'gn_fu1_boost', 'gn_apotheosis', 'gn_empyrean_fire']) game.unlockedGnoseUpgrades.add(id);
     const upgraded = getPurchaseFormulas(game, 'fu_prod')!;
-    expect(upgraded.cost).toContain('(1.6e0)^nível');
-    expect(upgraded.bonus).toContain('(2.65e0)^(nível^0.6)');
+    expect(upgraded.cost).toContain('(1,6)^nível');
+    expect(upgraded.bonus).toContain('(2,65)^(nível^0.6)');
     for (const id of ['gn_relic_gain', 'gn_relic_refinement', 'gn_perfect_opus']) game.unlockedGnoseUpgrades.add(id);
-    expect(getPurchaseFormulas(game, 'fu_relics')?.cost).toContain('(4.15e0)^nível');
-    expect(getPurchaseFormulas(game, 'fu_relics')?.bonus).toContain('(3.75e0)^(nível^0.6)');
+    expect(getPurchaseFormulas(game, 'fu_relics')?.cost).toContain('(4,15)^nível');
+    expect(getPurchaseFormulas(game, 'fu_relics')?.bonus).toContain('(3,75)^(nível^0.6)');
   });
 
   it('covers all purchasable upgrades without falling back to lore or descriptions', () => {
@@ -42,9 +42,9 @@ describe('purchase formula presentation', () => {
       expect(formula.bonus).not.toContain(item.lore);
       expect(formula.bonus).not.toContain(item.desc);
     }
-    expect(getPurchaseFormulas(game, 'relic_cornucopia')?.cost).toContain('2e2 Fragmentos');
-    expect(getPurchaseFormulas(game, 'unlock_gnose')?.cost).toBe('C = 0e0 Fé; Fé ≥ 1e15');
-    expect(getPurchaseFormulas(game, 'incarnation')?.cost).toContain('2.5e6 Fé');
+    expect(getPurchaseFormulas(game, 'relic_cornucopia')?.cost).toContain('200 Fragmentos');
+    expect(getPurchaseFormulas(game, 'unlock_gnose')?.cost).toBe('C = 0 Fé; Fé ≥ 1e15');
+    expect(getPurchaseFormulas(game, 'incarnation')?.cost).toContain('2,5M Fé');
     game.incarnationStage = 5;
     expect(getPurchaseFormulas(game, 'incarnation')).toBeNull();
     expect(getPurchaseFormulas(game, 'unknown')).toBeNull();

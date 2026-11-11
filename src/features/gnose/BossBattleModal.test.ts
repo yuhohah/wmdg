@@ -467,7 +467,7 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     expect(stage.querySelector('#boss-combat-feedback')!.textContent)
       .toContain(`Peso menor! `);
     expect(stage.querySelector('#boss-combat-feedback')!.textContent)
-      .toContain(`(×${higherFirst ? 3 : 2}e0)`);
+      .toContain(`(×${higherFirst ? 3 : 2})`);
     modal.close();
   });
 
@@ -483,7 +483,7 @@ describe('BossBattleModal ritual gating, Boss descent & continuous sprite hitbox
     stage.querySelector('#boss-rifts-layer')!.children[0].dispatchClick();
     expect(stage.querySelector('#boss-combat-feedback')!.textContent).toBe('Aparado! +25% de Fulgor');
     modal.updateUI();
-    expect(stats.textContent).toBe('Combo ×1e0');
+    expect(stats.textContent).toBe('Combo ×1');
     modal.close();
   });
 

@@ -110,7 +110,7 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
       unlock_relics: `Fragmentos_Transmutação = ⌊log2(Fé + 1) × M_Transmutação⌋`,
       unlock_gnose: `Gnose = ⌊(Fé / 1e15)^${game.getGnoseGainExponent()}⌋; Fé ≥ 1e15`,
     };
-    return { cost: seal.id === 'unlock_gnose' ? 'C = 0e0 Fé; Fé ≥ 1e15'
+    return { cost: seal.id === 'unlock_gnose' ? 'C = 0 Fé; Fé ≥ 1e15'
       : `C = ${formatNumber(seal.cost)} ${seal.costCurrency === 'faith' ? 'Fé' : 'Fervor'}`, bonus: effects[id] };
   }
 
