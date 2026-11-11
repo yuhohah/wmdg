@@ -14,6 +14,17 @@ export const initialRelicUpgrades: RelicUpgrade[] = [
     effectText: (level) => `+${level * 20}% Fé/s (Nível ${level}/20)`
   },
   {
+    id: 'relic_phoenix',
+    name: 'Pena Solar de Fênix',
+    desc: 'Multiplica o Fervor/s por 1.5e0 e revela o Rito de Fervor que multiplica os Fragmentos de cada Transmutação.',
+    lore: 'A cada renascimento solar, a ave mitológica deixa para trás relíquias purificadas em chamas eternas.',
+    icon: '',
+    cost: 750,
+    level: 0,
+    maxLevel: 1,
+    effectText: (level) => level >= 1 ? 'Fervor/s x1.5e0 • Rito que multiplica os Fragmentos revelado no Fervor' : 'Fervor/s x1.5e0 e revela o Rito que multiplica os Fragmentos (0/1)'
+  },
+  {
     id: 'relic_torch',
     name: 'Tocha de Prometeu',
     desc: 'O fogo sagrado roubado dos deuses celestes incendeia a alma dos devotos com vigor renovado.',
@@ -23,17 +34,6 @@ export const initialRelicUpgrades: RelicUpgrade[] = [
     level: 0,
     maxLevel: 20,
     effectText: (level) => `+${level * 20}% Fervor/s (Nível ${level}/20)`
-  },
-  {
-    id: 'relic_phoenix',
-    name: 'Pena Solar de Fênix',
-    desc: 'Multiplica o Fervor/s por 1.5e0 e revela o upgrade de Fervor que aumenta o ganho de Fragmentos.',
-    lore: 'A cada renascimento solar, a ave mitológica deixa para trás relíquias purificadas em chamas eternas.',
-    icon: '',
-    cost: 750,
-    level: 0,
-    maxLevel: 1,
-    effectText: (level) => level >= 1 ? 'Fervor/s x1.5e0 • Upgrade de Fragmentos revelado no Fervor' : 'Fervor/s x1.5e0 e revela um upgrade de Fervor (0/1)'
   },
   {
     id: 'relic_caduceus',

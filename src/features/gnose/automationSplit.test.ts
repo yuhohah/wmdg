@@ -154,7 +154,7 @@ describe('unified seal automation and full-balance buyers', () => {
     expect(g.fervorPoints).toBe(reference.fervorPoints);
     expect(g.getTotalFollowersCount()).toBe(0);
     expect(g.fervorUpgrades[5].level).toBe(0);
-    g.relicUpgrades[2].level = 1;
+    g.relicUpgrades.find(r => r.id === 'relic_phoenix')!.level = 1;
     g.fervorPoints = 1e10;
     g.runGnoseAutomation();
     expect(g.fervorUpgrades[5].level).toBeGreaterThan(0);
@@ -170,7 +170,7 @@ describe('unified seal automation and full-balance buyers', () => {
     expect(g.relicPoints).toBe(1000);
     g.autoRelicUpgradesEnabled = true;
     g.runGnoseAutomation();
-    expect(g.relicUpgrades[2].level).toBe(1); // Phoenix unlock precedes minor repeated levels.
+    expect(g.relicUpgrades.find(r => r.id === 'relic_phoenix')!.level).toBe(1); // Phoenix unlock precedes minor repeated levels.
     expect(g.relicUpgrades[0].level).toBe(1);
     expect(g.relicPoints).toBe(50);
     expect(g.faithPoints).toBe(1234);
