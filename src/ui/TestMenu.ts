@@ -1,5 +1,6 @@
 import { formatNumber } from '../systems/numberFormat.js';
 import { INCARNATION_STAGES } from '../config/incarnation.js';
+import { GNOSE_BOSSES } from '../config/bosses.js';
 import type { BenchmarkWorkerMessage } from '../benchmark/types.js';
 import { formatHtmlReport } from '../benchmark/reporters.js';
 import { SaveSystem } from '../systems/saveSystem.js';
@@ -219,6 +220,18 @@ export class TestMenu {
           <!-- SEÇÃO 4: BENCHMARK ANALÍTICO DEFINITIVO -->
           <div class="test-section">
             <div class="test-section-header">
+              <span class="test-section-title">${icon('orb')} VITÓRIAS CONTRA BOSSES</span>
+              <span class="test-section-subtitle">Concede a vitória e libera as recompensas, sem requisitos.</span>
+            </div>
+            <div class="test-grid">
+              ${GNOSE_BOSSES.map(boss => `
+                <button type="button" class="test-btn test-action-btn test-highlight" data-action="defeat-${boss.id}">Vencer ${boss.name}</button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="test-section">
+            <div class="test-section-header">
               <span class="test-section-title">${icon('chart')} SIMULAÇÃO DE PROGRESSÃO POR SESSÕES</span>
             </div>
             <div class="test-grid">
@@ -424,6 +437,13 @@ export class TestMenu {
   private executeAction(action: string): void {
     const gs = this.game.gameState;
     if (!gs) return;
+
+    const boss = GNOSE_BOSSES.find(boss => action === `defeat-${boss.id}`);
+    if (boss) {
+      gs.defeatBossForTesting(boss.id);
+      this.game.refreshAllUI?.();
+      return;
+    }
 
     switch (action) {
       case 'run-progression-benchmark': {

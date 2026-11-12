@@ -69,7 +69,6 @@ Abra o endereço informado pelo Vite, normalmente `http://localhost:5173`.
 
 | Comando | Uso |
 | --- | --- |
-| `npm test` | Executa os testes com Vitest. |
 | `npm run build` | Verifica TypeScript e gera `dist/`. |
 | `npm run preview` | Serve o build de produção localmente. |
 | `npm run benchmark -- --seed=42 --hours=24` | Simula os perfis de progressão com horizonte explícito. |

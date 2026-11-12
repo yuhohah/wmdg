@@ -4,6 +4,7 @@ export interface SettingsModalOptions {
   audio: AudioManager;
   onOpen?: () => void;
   onShowChangelog?: () => void;
+  onReplayTutorials?: () => void;
   getLastSaveTime: () => number;
   onManualSave: () => void;
   onExportSave: () => void;
@@ -11,6 +12,8 @@ export interface SettingsModalOptions {
   onResetSave: () => void;
   onToggleHaptics?: (enabled: boolean) => void;
   isHapticsEnabled?: () => boolean;
+  isGuidanceHidden?: () => boolean;
+  onToggleHideGuidance?: (hidden: boolean) => void;
   isNerdsEnabled?: () => boolean;
   onToggleNerds?: (enabled: boolean) => void;
   onTriggerHaptic?: (pattern: number | number[]) => void;
@@ -35,6 +38,7 @@ export class SettingsModal {
 
   // Haptics & Preferences Controls
   private hapticsToggleEl: HTMLInputElement | null = null;
+  private hideGuidanceEl: HTMLInputElement | null = null;
   private nerdsToggleEl: HTMLInputElement | null = null;
 
   // Save Progress Controls
@@ -71,6 +75,7 @@ export class SettingsModal {
     this.musicIconOffEl = document.getElementById('music-icon-off');
 
     this.hapticsToggleEl = document.getElementById('haptics-toggle') as HTMLInputElement | null;
+    this.hideGuidanceEl = document.getElementById('hide-guidance-toggle') as HTMLInputElement | null;
     this.nerdsToggleEl = document.getElementById('nerds-toggle') as HTMLInputElement | null;
 
     this.saveStatusTextEl = document.getElementById('save-status-text');
@@ -81,6 +86,10 @@ export class SettingsModal {
   }
 
   private bindEvents(): void {
+    document.getElementById('btn-replay-tutorials')?.addEventListener('click', () => {
+      this.close();
+      this.options.onReplayTutorials?.();
+    });
     document.getElementById('btn-show-changelog')?.addEventListener('click', () => {
       this.close();
       this.options.onShowChangelog?.();
@@ -89,6 +98,12 @@ export class SettingsModal {
       this.nerdsToggleEl.checked = this.options.isNerdsEnabled?.() ?? false;
       this.nerdsToggleEl.addEventListener('change', () => {
         this.options.onToggleNerds?.(this.nerdsToggleEl!.checked);
+      });
+    }
+    if (this.hideGuidanceEl) {
+      this.hideGuidanceEl.checked = this.options.isGuidanceHidden?.() ?? false;
+      this.hideGuidanceEl.addEventListener('change', () => {
+        this.options.onToggleHideGuidance?.(this.hideGuidanceEl!.checked);
       });
     }
     // Open/Close triggers
@@ -209,6 +224,7 @@ export class SettingsModal {
   }
 
   public open(): void {
+    if (this.hideGuidanceEl) this.hideGuidanceEl.checked = this.options.isGuidanceHidden?.() ?? false;
     if (this.nerdsToggleEl) this.nerdsToggleEl.checked = this.options.isNerdsEnabled?.() ?? false;
     this.modalEl?.classList.add('open');
     this.updateSaveStatus();

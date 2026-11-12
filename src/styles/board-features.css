@@ -776,9 +776,8 @@
 
 .fervor-upgrade-card .card-header-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: nowrap;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 8px;
 }
 
@@ -787,13 +786,39 @@
   align-items: center;
   gap: 6px;
   min-width: 0;
-  flex: 1 1 auto;
+  max-width: 100%;
 }
 
 .fervor-upgrade-card .card-name {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.fervor-upgrade-card .fervor-mult-tag {
+  max-width: 100%;
+  box-sizing: border-box;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.fervor-upgrade-card .card-footer-row {
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.fervor-upgrade-card .cost-tag {
+  flex-wrap: wrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.fervor-upgrade-card .card-click-prompt {
+  margin-left: auto;
+  max-width: 100%;
+}
+
+.fervor-upgrade-card .card-click-hint {
+  white-space: normal;
 }
 
 /* ===================================================

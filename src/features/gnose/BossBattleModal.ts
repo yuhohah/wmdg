@@ -850,9 +850,6 @@ export class BossBattleModal {
     this.riftsLayerEl = stage.querySelector('#boss-rifts-layer');
     this.attackBtnEl = stage.querySelector('#boss-arena-attack-btn');
 
-    if (this.attackBtnEl) {
-      this.attackBtnEl.title = 'Clique diretamente no Guardião para atacá-lo (até 5 ataques/s). Crítico 2× desbloqueia aos 250 cliques com 5% de chance; aos 1.000 cliques, a chance sobe para 10%.';
-    }
   }
 
   private bindEvents(): void {

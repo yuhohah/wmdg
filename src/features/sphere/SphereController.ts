@@ -142,7 +142,7 @@ export class SphereController {
     const fps = this.gameState.getFaithPerSecond();
     const currentFaith = this.gameState.faithPoints;
 
-    // Fórmula: 30x produção/s + 10% da Fé atual acumulada
+    // Maior entre 30 Fé, 15 cliques e 30 segundos de produção; o saldo não entra no cálculo.
     const finalReward = calculateMiracleReward(currentFaith, this.gameState.getFaithPerClick(), fps);
 
     this.gameState.faithPoints += finalReward;

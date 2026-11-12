@@ -1,4 +1,4 @@
-/* Readable UI type, serif item names, and pixel type for large decorative titles. */
+/* One readable typeface inside cards; decorative type stays on outer titles. */
 :root {
   --font-game: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-decorative: 'Cult Pixel', monospace;
@@ -43,9 +43,17 @@ button, input, textarea, select {
   text-shadow: none;
 }
 
+/* Older card styles use heading/mono variables for names and values.
+   Resolve both to the UI family inside cards so the same roles stay consistent. */
+.dodeca-card-body {
+  --font-heading: var(--font-game);
+  --font-mono: var(--font-game);
+  font-family: var(--font-game);
+}
+
 /* These names and prompts previously used !important pixel-font shorthands. */
 html .cult-action-card .card-name {
-  font: 400 22px/1.25 var(--font-heading) !important;
+  font: 600 20px/1.3 var(--font-game) !important;
 }
 
 .gnose-node-title, .boss-modal-name, .intro-title, .slide-title,

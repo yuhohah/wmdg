@@ -2,9 +2,42 @@
 
 Histórico de mudanças de *Cult of the Sphere*, em ordem da versão mais recente para a mais antiga.
 
-A versão atual é **0.10.0**. A numeração anterior foi atribuída retrospectivamente aos últimos dez commits: o mais antigo corresponde à 0.7.0, os oito seguintes vão de 0.7.1 a 0.7.8 e o mais recente inicia a 0.8.0. As datas anteriores são as dos commits de referência, não datas de publicação. A 0.8.0 também reúne as mudanças locais mais recentes.
+A versão atual é **0.10.1**. A numeração anterior foi atribuída retrospectivamente aos últimos dez commits: o mais antigo corresponde à 0.7.0, os oito seguintes vão de 0.7.1 a 0.7.8 e o mais recente inicia a 0.8.0. As datas anteriores são as dos commits de referência, não datas de publicação. A 0.8.0 também reúne as mudanças locais mais recentes.
 
 Para as próximas versões, usamos `MAJOR.MINOR.PATCH`: novidades e mudanças relevantes de jogabilidade avançam o número do meio; correções e ajustes menores avançam o último. Enquanto o jogo estiver em desenvolvimento, o primeiro número permanece em zero. Cada nova versão deve atualizar este arquivo, `package.json` e a versão do projeto em `package-lock.json`.
+
+## 0.10.1 — 2026-11-12
+
+- Removidos os testes automatizados, seus comandos e a dependência Vitest. A validação passa a usar build e verificações manuais.
+
+- Vigília Perpétua mantém a barra de Bênção cheia e oculta o texto de status e duração.
+
+- Memória Hermética libera uma checkbox de compra máxima em Fervor e Relíquias, substituindo os botões de compra em massa. O clique e os atalhos respeitam o modo escolhido, com custo total e quantidade atualizados; a prévia de Fervor mostra o efeito após comprar o máximo. As preferências ficam salvas separadamente.
+
+- O tutorial dos Guardiões só aparece quando Anúbis pode ser desafiado e destaca a área do desafio na parte inferior da Câmara da Gnose.
+
+- A fonte dos nomes de melhorias e dos textos internos foi padronizada entre os cards, mantendo a fonte decorativa nos títulos externos.
+
+- Os upgrades de Fervor usam nomes mais curtos, sem “Aumentar”. Títulos completos, multiplicadores e custos podem ocupar linhas próprias, evitando cortes e sobreposição.
+
+- Encarnação e Pátio dos Fiéis permanecem expandidos e deixam de exibir o botão de minimizar.
+
+- Os textos do Pátio dos Fiéis seguem a hierarquia visual da Encarnação, com contagem, produção e ações mais bem separados e alinhados.
+
+- O card de Encarnação separa o nome do Avatar, o bônus de Fervor e a descrição em linhas mais legíveis; o título deixa de exibir o número do estágio e a bênção usa um status mais curto.
+
+- A notificação de ganhos offline mostra cada recurso em uma linha, com espaçamento e quebra de texto ajustados para facilitar a leitura. O botão de fechar fica ao lado do título, eliminando a linha vazia acima do resumo.
+
+- Configurações agora permitem ocultar tutoriais e orientações iniciais, com a preferência salva e opção de reativar. As dicas dos recursos e as fórmulas Nerds continuam disponíveis. Um card no início do tutorial apresenta essa opção. Reativar as dicas reinicia as orientações; o botão “Rever tutoriais” também permite revê-las sem alterar o progresso.
+- A tela inicial mostra a forma atual da Esfera conforme o progresso da partida e traz uma orientação breve para arrastar e organizar os cards, no computador e no celular.
+- As barras de rolagem dos menus agora seguem a temática do jogo, com fundo escuro e detalhes dourados.
+- Corrigida a abertura do primeiro card do tutorial, que tentava se posicionar no cabeçalho oculto da Esfera e não aparecia ao iniciar ou rever as orientações.
+- Partidas novas começam com 0 Fé.
+- Os tutoriais inicial e dos Selos Sagrados tiveram seus textos simplificados. A barra da Encarnação agora usa apenas o título “Bênção”, e o Status do Culto deixou de exibir o estágio do culto.
+- As Relíquias voltam à ordem crescente de custo base; o nível aparece apenas no indicador ao lado do nome, sem repetição na descrição.
+- A minimização automática ao concluir melhorias agora ocorre apenas no card de Relíquias; Encarnação e Gnose permanecem abertas.
+- Após a Ascensão Gnóstica, o card de Relíquias volta expandido.
+- Ao comprar Cripta Eterna, as relíquias com limite ficam em uma seção recolhível, deixando Cornucópia de Amalteia e Tocha de Prometeu diretamente visíveis. A seção pode ser expandida para consultar e restaurar as demais relíquias.
 
 ## 0.10.0 — 2026-11-11
 

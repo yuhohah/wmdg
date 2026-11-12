@@ -14,3 +14,8 @@ See `docs/agents/triage-labels.md`.
 
 Use a single-context layout: root `GLOSSARY.md` and `docs/adr/`.
 See `docs/agents/domain.md`.
+
+### Validation
+
+Do not create or reintroduce automated tests in this project.
+Validate changes with `npm run build` and manual checks when relevant.

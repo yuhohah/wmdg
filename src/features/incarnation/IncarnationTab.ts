@@ -21,6 +21,7 @@ export class IncarnationTab {
 
   // DOM Elements
   private stageBadgeEl: HTMLElement | null = null;
+  private stageEffectEl: HTMLElement | null = null;
   private rateBadgeEl: HTMLElement | null = null;
   private btnUpgradeEl: HTMLButtonElement | null = null;
   private upgradeTitleEl: HTMLElement | null = null;
@@ -51,6 +52,7 @@ export class IncarnationTab {
     }
 
     this.stageBadgeEl = document.getElementById('incarnation-stage-badge');
+    this.stageEffectEl = document.getElementById('incarnation-stage-effect');
     this.rateBadgeEl = document.getElementById('incarnation-rate-badge');
     this.btnUpgradeEl = document.getElementById('btn-upgrade-incarnation') as HTMLButtonElement | null;
     this.upgradeTitleEl = document.getElementById('incarnation-upgrade-title');
@@ -96,16 +98,23 @@ export class IncarnationTab {
       this.options.gameState.isIncarnationUnlocked();
     this.altar?.setBlessingActive(boostSec > 0 || eternalBlessing);
     if (!this.blessingFillEl || !this.blessingStatusEl) return;
+    this.blessingStatusEl.hidden = eternalBlessing;
+    if (eternalBlessing) {
+      this.blessingStatusEl.textContent = '';
+      this.blessingFillEl.style.width = '100%';
+      this.blessingPanelEl?.classList.add('active');
+      return;
+    }
     const maxCap = this.options.gameState.getMaxIncarnationBoost();
     const percent = Math.min(100, Math.max(0, (boostSec / maxCap) * 100));
 
     this.blessingFillEl.style.width = `${percent.toFixed(1)}%`;
 
     if (boostSec > 0) {
-      this.blessingStatusEl.textContent = `✦ 2× FÉ ATIVO · ${Math.ceil(boostSec)}s / ${maxCap}s`;
+      this.blessingStatusEl.textContent = `Ativa · ${Math.ceil(boostSec)}s / ${maxCap}s`;
       this.blessingPanelEl?.classList.add('active');
     } else {
-      this.blessingStatusEl.textContent = `INATIVA (Clique no Altar para +${BLESSING_SECONDS_PER_PRESS}s)`;
+      this.blessingStatusEl.textContent = 'Inativa';
       this.blessingPanelEl?.classList.remove('active');
     }
   }
@@ -138,9 +147,10 @@ export class IncarnationTab {
     if (this.altar && this.altar.getCurrentStage() !== stage) this.altar.setStage(stage, true);
 
     if (this.stageBadgeEl) {
-      const stageName = currentStage ? currentStage.name.toUpperCase() : `ESTÁGIO ${stage}`;
-      const multText = currentStage ? ` (${formatNumber(currentStage.multiplier)}x)` : '';
-      this.stageBadgeEl.textContent = `ESTÁGIO ${stage}: ${stageName}${multText}`;
+      this.stageBadgeEl.textContent = currentStage?.name ?? 'Encarnação';
+    }
+    if (this.stageEffectEl) {
+      this.stageEffectEl.textContent = currentStage ? `Fervor/s ×${formatNumber(currentStage.multiplier)}` : '';
     }
     if (this.rateBadgeEl) {
       const incFollowerMult = this.options.gameState.getEffectiveIncarnationFollowerMultiplier();

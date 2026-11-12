@@ -9,8 +9,6 @@ import { NotificationManager } from './systems/notifications.js';
 import { SaveSystem, type SaveData } from './systems/saveSystem.js';
 import { SettingsModal } from './ui/SettingsModal.js';
 import { ChangelogModal } from './ui/ChangelogModal.js';
-import { GNOSE_UPGRADES } from './config/gnose.js';
-import { INCARNATION_STAGES } from './config/incarnation.js';
 import { GAME_VERSION } from './config/changelog.js';
 import { SaveDataModal } from './ui/SaveDataModal.js';
 import { HUDController } from './ui/HUDController.js';
@@ -27,7 +25,7 @@ import { UnlocksTab } from './features/unlocks/UnlocksTab.js';
 import { AchievementsTab } from './features/achievements/AchievementsTab.js';
 import { StatsTab } from './features/stats/StatsTab.js';
 import { SphereController } from './features/sphere/SphereController.js';
-import { SphereVisual, SPHERE_FORMS } from './features/sphere/SphereVisual.js';
+import { SphereVisual } from './features/sphere/SphereVisual.js';
 import { OnboardingGuide } from './ui/OnboardingGuide.js';
 import { FormulaTooltip } from './ui/FormulaTooltip.js';
 import { BoardManager } from './ui/BoardManager.js';
@@ -152,6 +150,7 @@ class AppManager {
       onGnoseReset: () => {
         this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
         this.refreshAllUI();
+        this.board.setCardCollapsed('card-relics', false);
         this.board.centerOnCard('card-altar-sphere', true);
       },
       onUpgradePurchased: () => {
@@ -226,6 +225,18 @@ class AppManager {
         this.isHapticsEnabled = enabled;
       },
       isHapticsEnabled: () => this.isHapticsEnabled,
+      isGuidanceHidden: () => this.gameState.hideGuidance,
+      onReplayTutorials: () => {
+        this.onboardingGuide.restart();
+        this.refreshAllUI();
+        this.saveProgress();
+      },
+      onToggleHideGuidance: hidden => {
+        this.gameState.hideGuidance = hidden;
+        if (!hidden) this.onboardingGuide.restart();
+        this.refreshAllUI();
+        this.saveProgress();
+      },
       isNerdsEnabled: () => this.gameState.nerdsEnabled,
       onToggleNerds: enabled => {
         this.gameState.nerdsEnabled = enabled;
@@ -257,8 +268,8 @@ class AppManager {
     // 6. Setup Listeners, Initial Renders & Loops
     this.board = new BoardManager();
     this.cardUpdates = this.setupCardUpdates();
-    this.onboardingGuide.setOnFocusCard((cardId, immediate) => {
-      this.board.centerOnCard(cardId, immediate);
+    this.onboardingGuide.setOnFocusCard((cardId, immediate, targetSelector) => {
+      this.board.centerOnCard(cardId, immediate, targetSelector);
     });
     this.campaignEnding = new CampaignEnding(this.gameState, () => this.saveProgress(),
       () => document.body.classList.contains('is-playing') && !this.gnoseTab.bossBattleModal.isOpen(), this.audio);
@@ -285,11 +296,15 @@ class AppManager {
     const startScreen = document.getElementById('start-screen');
     const gameplayScreen = document.getElementById('gameplay-screen');
     const startSphereHost = document.getElementById('start-sphere');
-    // Title screen always shows the sphere's final form.
     const startSphere = startSphereHost ? new SphereVisual(startSphereHost) : null;
-    startSphere?.setProgress(true, SPHERE_FORMS.length - 1);
+    const syncStartSphere = () => startSphere?.setProgress(
+      this.gameState.isIncarnationUnlocked(), this.gameState.incarnationStage,
+    );
+    syncStartSphere();
+    const stopSyncStartSphere = events.on(GameEvents.STATE_CHANGED, syncStartSphere);
 
     playBtn?.addEventListener('click', () => {
+      stopSyncStartSphere();
       startSphere?.destroy();
       this.gameState.startGameClock();
       this.saveProgress();
@@ -376,6 +391,8 @@ class AppManager {
   }
 
   public updateUnlockedTabsVisibility(): void {
+    const tips = document.querySelector<HTMLElement>('.start-game-tips');
+    if (tips) tips.hidden = this.gameState.hideGuidance;
     const inc = this.gameState.isIncarnationUnlocked();
     const ferv = this.gameState.isFervorUpgradesUnlocked();
     const rel = this.gameState.isRelicsUnlocked();
@@ -398,8 +415,6 @@ class AppManager {
     const gs = this.gameState;
     this.board.setCardCompleted('card-relics', gs.relicUpgrades.length > 0 &&
       gs.relicUpgrades.every(relic => relic.level >= gs.getRelicMaxLevel(relic)));
-    this.board.setCardCompleted('card-incarnation', gs.incarnationStage >= INCARNATION_STAGES.at(-1)!.stage);
-    this.board.setCardCompleted('card-gnose', GNOSE_UPGRADES.every(upgrade => gs.hasGnoseUpgrade(upgrade.id)));
   }
 
   public renderAllLists(): void {

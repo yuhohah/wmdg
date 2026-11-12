@@ -7,7 +7,7 @@ import { CARD_TUTORIALS, cardTutorialKey, type CardTutorial } from '../config/ca
 export interface OnboardingGuideOptions {
   gameState: GameStateManager;
   audio?: AudioManager;
-  onFocusCard?: (cardId: string, immediate?: boolean) => void;
+  onFocusCard?: (cardId: string, immediate?: boolean, targetSelector?: string) => void;
 }
 
 export type SpotlightStep = 'sphere' | 'buy_follower' | 'complete';
@@ -15,7 +15,7 @@ export type SpotlightStep = 'sphere' | 'buy_follower' | 'complete';
 export class OnboardingGuide {
   private gameState: GameStateManager;
   private audio?: AudioManager;
-  private onFocusCard?: (cardId: string, immediate?: boolean) => void;
+  private onFocusCard?: (cardId: string, immediate?: boolean, targetSelector?: string) => void;
 
   // DOM Elements
   private overlayEl: HTMLElement | null = null;
@@ -55,7 +55,7 @@ export class OnboardingGuide {
     this.bindEvents();
   }
 
-  public setOnFocusCard(cb: (cardId: string, immediate?: boolean) => void): void {
+  public setOnFocusCard(cb: (cardId: string, immediate?: boolean, targetSelector?: string) => void): void {
     this.onFocusCard = cb;
   }
 
@@ -122,6 +122,16 @@ export class OnboardingGuide {
     }
   }
 
+  public restart(): void {
+    this.gameState.hideGuidance = false;
+    this.gameState.hasSeenIntro = false;
+    this.gameState.seenCardTutorials.clear();
+    this.cardTutorial = null;
+    this.isDismissed = false;
+    this.currentStep = 'sphere';
+    this.update();
+  }
+
   public dismiss(): void {
     if (this.cardTutorial) {
       this.gameState.seenCardTutorials.add(cardTutorialKey(this.cardTutorial));
@@ -144,12 +154,16 @@ export class OnboardingGuide {
   public update(): void {
     this.canPresent = false;
     if (!this.overlayEl) return;
+    if (this.gameState.hideGuidance) {
+      this.hideOverlay();
+      return;
+    }
 
     // Sync dismissal state if save loaded after construction
     const devotee = this.gameState.followers[0];
     const followerCount = devotee ? devotee.count : 0;
     this.isDismissed = this.gameState.hasSeenIntro;
-    if (!this.isDismissed) this.cardTutorial = null;
+    if (!this.isDismissed && this.cardTutorial && !('requiresIntro' in this.cardTutorial)) this.cardTutorial = null;
 
     // This runs on every game tick: with nothing to present, skip searching the page.
     if (this.isDismissed && !this.cardTutorial && !CARD_TUTORIALS.some(tutorial => this.isTutorialAvailable(tutorial))) {
@@ -172,7 +186,7 @@ export class OnboardingGuide {
     }
 
     this.canPresent = true;
-    if (this.isDismissed) {
+    if (this.isDismissed || CARD_TUTORIALS.some(tutorial => 'requiresIntro' in tutorial && this.isTutorialAvailable(tutorial))) {
       this.updateCardTutorial();
       return;
     }
@@ -221,13 +235,12 @@ export class OnboardingGuide {
     if (tracker) tracker.style.display = '';
     if (this.currentStep === 'sphere') {
       const percent = Math.min(100, Math.floor((faith / targetFaith) * 100));
-      const fpc = formatNumber(this.gameState.getFaithPerClick());
 
       if (this.iconEl) this.iconEl.innerHTML = icon('orb');
       if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 1/2 • O DESPERTAR';
       if (this.titleEl) this.titleEl.textContent = 'Clique na Esfera';
       if (this.descEl) {
-        this.descEl.textContent = 'Você é a Esfera, selada há eras. Cada clique seu arranca Fé das mentes mortais (aos 250 cliques, desbloqueia pulso crítico 2×; aos 1.000, a chance aumenta).';
+        this.descEl.textContent = 'Você é a Esfera, selada há eras. Cada clique seu arranca Fé das mentes mortais.';
       }
       if (this.trackerMetaEl) this.trackerMetaEl.textContent = `Meta inicial: ${formatNumber(targetFaith)} Fé`;
       if (this.trackerValEl) this.trackerValEl.textContent = `${formatNumber(faith)} / ${formatNumber(targetFaith)} Fé (${percent}%)`;
@@ -236,7 +249,7 @@ export class OnboardingGuide {
         this.trackerFillEl.style.background = 'linear-gradient(90deg, #f59e0b, #fef08a)';
       }
       if (this.actionTipEl) {
-        this.actionTipEl.textContent = `Clique na Esfera até juntar Fé suficiente (+${fpc} Fé por clique).`;
+        this.actionTipEl.textContent = `Clique na Esfera até juntar Fé suficiente.`;
       }
     } else {
       // Step 2: Buy follower
@@ -244,7 +257,7 @@ export class OnboardingGuide {
       if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 2/2 • CONVERTA FIÉIS';
       if (this.titleEl) this.titleEl.textContent = 'Converta seu primeiro fiel';
       if (this.descEl) {
-        this.descEl.textContent = 'Um primeiro mortal ouviu o chamado da Esfera. No Pátio dos Fiéis, converta-o: ele vai orar por você, gerar +1 Fé/s e pedir Milagres (balão com estrela) que rendem Fé extra.';
+        this.descEl.textContent = 'Um mortal ouviu o chamado da Esfera. Converta-o para o Pátio dos Fiéis para gerar Fé. Atenda aos pedidos dos fiéis oferecendo Milagres para ganhar Fé extra.';
       }
       if (this.trackerMetaEl) this.trackerMetaEl.textContent = `Custo: ${formatNumber(targetFaith)} Fé`;
       if (this.trackerValEl) this.trackerValEl.textContent = 'Pronto para converter!';
@@ -253,14 +266,15 @@ export class OnboardingGuide {
         this.trackerFillEl.style.background = 'linear-gradient(90deg, #22c55e, #86efac)';
       }
       if (this.actionTipEl) {
-        this.actionTipEl.textContent = 'Clique no botão "CONVERTER FIEL" (Converter Máximo abre com 25 Fiéis).';
+        this.actionTipEl.textContent = 'Clique em “CONVERTER FIEL” para iniciar a produção de Fé.';
       }
     }
   }
 
   private isTutorialAvailable(tutorial: CardTutorial): boolean {
     if (this.gameState.seenCardTutorials.has(cardTutorialKey(tutorial))) return false;
-    if ('requiresAscension' in tutorial && this.gameState.gnoseResets === 0) return false;
+    if ('requiresIntro' in tutorial) return !this.gameState.hasSeenIntro;
+    if ('requiresBoss' in tutorial && !this.gameState.canChallengeBoss(tutorial.requiresBoss)) return false;
     if ('unlockId' in tutorial) {
       return this.gameState.unlocks.some(u => u.id === tutorial.unlockId && u.unlocked);
     }
@@ -282,7 +296,10 @@ export class OnboardingGuide {
     }
     const entering = this.cardTutorial !== tutorial;
     this.cardTutorial = tutorial;
-    if (entering) this.onFocusCard?.(tutorial.cardId, true);
+    if (entering) {
+      if ('targetSelector' in tutorial) this.onFocusCard?.(tutorial.cardId, true, tutorial.targetSelector);
+      else this.onFocusCard?.(tutorial.cardId, true);
+    }
     if (this.iconEl) this.iconEl.innerHTML = icon(tutorial.icon);
     if (this.badgeEl) this.badgeEl.textContent = 'CONHEÇA A MECÂNICA';
     if (this.titleEl) this.titleEl.textContent = tutorial.title;
@@ -299,9 +316,12 @@ export class OnboardingGuide {
   private applyPositionSync(): void {
     if (!this.canPresent || !this.overlayEl || (this.isDismissed && !this.cardTutorial)) return;
 
-    const tutorialHeader = this.cardTutorial
+    // The Sphere's header is intentionally hidden; anchor its tutorial to the Sphere itself.
+    const tutorialHeader = this.cardTutorial && this.cardTutorial.cardId !== 'card-altar-sphere'
       ? document.getElementById(this.cardTutorial.cardId)?.querySelector<HTMLElement>('.dodeca-card-header') : null;
-    const targetEl = tutorialHeader ?? (this.currentStep === 'sphere'
+    const tutorialTarget = this.cardTutorial && 'targetSelector' in this.cardTutorial
+      ? document.getElementById(this.cardTutorial.cardId)?.querySelector<HTMLElement>(this.cardTutorial.targetSelector) : null;
+    const targetEl = tutorialTarget ?? tutorialHeader ?? (this.currentStep === 'sphere'
       ? (document.getElementById('divine-sphere-btn') || document.getElementById('divine-sphere-container'))
       : (document.getElementById('btn-convert-one') || document.getElementById('card-followers')));
 
@@ -320,7 +340,9 @@ export class OnboardingGuide {
       rect.top > vh - 60
     ) {
       const targetCardId = this.cardTutorial?.cardId ?? (this.currentStep === 'sphere' ? 'card-altar-sphere' : 'card-followers');
-      this.onFocusCard?.(targetCardId, true);
+      if (this.cardTutorial && 'targetSelector' in this.cardTutorial) {
+        this.onFocusCard?.(targetCardId, true, this.cardTutorial.targetSelector);
+      } else this.onFocusCard?.(targetCardId, true);
       rect = targetEl.getBoundingClientRect();
     }
 

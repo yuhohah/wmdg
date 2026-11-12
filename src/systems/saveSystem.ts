@@ -23,6 +23,9 @@ export interface SaveData {
     hasSeenIntro?: boolean;
     seenCardTutorials?: string[];
     nerdsEnabled?: boolean;
+    hideGuidance?: boolean;
+    bulkFervorEnabled?: boolean;
+    bulkRelicsEnabled?: boolean;
   };
   followers: Array<{ id: string; count: number }>;
   fervorUpgrades: Array<{ id: string; level: number }>;
@@ -49,7 +52,7 @@ export function isValidSaveData(value: unknown): value is SaveData {
   if (!integer(stats.totalClicks) || !integer(stats.incarnationStage) || stats.incarnationStage === 0) return false;
   if (!['fervorPeakThisRun', 'relicPeakThisRun', 'totalFervorGenerated', 'totalRelicsGenerated', 'incarnationBoostTimer', 'gameStartedAtMs']
     .every(key => optional(stats, key, nonnegative))) return false;
-  if (!['hasSeenIntro', 'nerdsEnabled'].every(key => optional(stats, key, v => typeof v === 'boolean'))) return false;
+  if (!['hasSeenIntro', 'nerdsEnabled', 'hideGuidance', 'bulkFervorEnabled', 'bulkRelicsEnabled'].every(key => optional(stats, key, v => typeof v === 'boolean'))) return false;
   if (!optional(stats, 'seenCardTutorials', strings) || !optional(stats, 'campaignEnding', v => typeof v === 'string' && ['pending', 'completed', 'freeplay'].includes(v))) return false;
   for (const [key, field] of [['followers', 'count'], ['fervorUpgrades', 'level'], ['relicUpgrades', 'level']]) {
     const items = value[key];

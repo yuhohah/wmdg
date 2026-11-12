@@ -109,6 +109,10 @@ export class BoardManager {
     this.cards.forEach((card) => {
       // The sphere has no visible header.
       if (card.id === 'card-altar-sphere') return;
+      if (card.id === 'card-incarnation' || card.id === 'card-followers') {
+        this.setCardCollapsed(card.id, false);
+        return;
+      }
       const header = card.querySelector<HTMLElement>('.dodeca-card-header');
       const body = card.querySelector<HTMLElement>('.dodeca-card-body');
       if (!header || !body) return;
@@ -309,6 +313,7 @@ export class BoardManager {
   }
 
   public setCardCollapsed(cardId: string, collapsed: boolean): void {
+    if (cardId === 'card-incarnation' || cardId === 'card-followers') collapsed = false;
     const card = this.cards.get(cardId);
     if (!card) return;
     const toggle = card.querySelector<HTMLButtonElement>('.dodeca-card-btn-toggle');
@@ -328,8 +333,9 @@ export class BoardManager {
 
   /** Collapse on completion once, allowing manual reopening until purchases reset. */
   public setCardCompleted(cardId: string, complete: boolean): void {
+    if (cardId !== 'card-relics') return;
     if (!complete) {
-      this.completedCards.delete(cardId);
+      if (this.completedCards.delete(cardId)) this.setCardCollapsed(cardId, false);
     } else if (!this.completedCards.has(cardId) && this.cards.has(cardId)) {
       this.completedCards.add(cardId);
       this.setCardCollapsed(cardId, true);
@@ -449,12 +455,13 @@ export class BoardManager {
     };
   }
 
-  public centerOnCard(cardId: string, immediate: boolean = false): void {
+  public centerOnCard(cardId: string, immediate: boolean = false, targetSelector?: string): void {
     const card = this.cards.get(cardId);
     if (!card || !this.viewportEl) return;
     this.invalidateFollowMeasure();
 
     this.currentFocusedCardId = cardId;
+    if (targetSelector) this.setCardCollapsed(cardId, false);
 
     const viewWidth = this.viewportEl.clientWidth || window.innerWidth;
     const viewHeight = this.viewportEl.clientHeight || window.innerHeight;
@@ -508,6 +515,16 @@ export class BoardManager {
       targetZoom = Math.max(this.minZoom, Math.min(maxDesiredZoom, fitW));
       // Frame the top of long cards at readable scale; pan the board to reach the rest.
       cardCenterY = cardTop + Math.min(cardHeight, availH / targetZoom) / 2;
+    }
+
+    if (targetSelector) {
+      const target = card.querySelector<HTMLElement>(targetSelector);
+      const rect = target?.getBoundingClientRect();
+      if (rect && rect.width > 0 && rect.height > 0) {
+        const viewport = this.viewportEl.getBoundingClientRect();
+        cardCenterX = (rect.left + rect.width / 2 - viewport.left - this.panX) / this.zoom;
+        cardCenterY = (rect.top + rect.height / 2 - viewport.top - this.panY) / this.zoom;
+      }
     }
 
     const safeCenterX = viewWidth / 2;

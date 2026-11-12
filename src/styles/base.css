@@ -258,3 +258,19 @@ html, body {
 .footer-right {
   color: var(--text-muted);
 }
+
+.start-game-tips {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 24px;
+  text-align: left;
+  line-height: 1.5;
+}
+
+.start-game-tips p {
+  margin: 0;
+}
+
+.start-game-tips[hidden] {
+  display: none;
+}

@@ -158,7 +158,7 @@ export class FollowersTab {
         this.btnConvertMaxEl.classList.add('locked');
         this.btnConvertMaxEl.disabled = true;
         setText(this.convertMaxTitleEl, 'CONVERTER MÁXIMO (0)');
-        setText(this.convertMaxSubEl, `Desbloqueia com 25 Fiéis (${formatNumber(totalCount)}/25)`);
+        setText(this.convertMaxSubEl, `${formatNumber(totalCount)} de 25 Fiéis para desbloquear`);
         setText(this.convertMaxCostLabelEl, 'BLOQUEADO');
         setText(this.convertMaxCostValEl, '');
       } else {

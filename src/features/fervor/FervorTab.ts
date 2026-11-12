@@ -17,6 +17,7 @@ export interface FervorTabOptions {
 export class FervorTab {
   private options: FervorTabOptions;
   private automation: AutomationToggle;
+  private bulkToggle: AutomationToggle;
 
   private listEl: HTMLElement | null = null;
   private hudDividerEl: HTMLElement | null = null;
@@ -29,6 +30,15 @@ export class FervorTab {
       isEnabled: () => options.gameState.autoFervorEnabled,
       setEnabled: enabled => { options.gameState.autoFervorEnabled = enabled; },
     });
+    this.bulkToggle = new AutomationToggle('bulk-fervor', {
+      isUnlocked: () => options.gameState.hasGnoseUpgrade('gn_memoria_selos'),
+      isEnabled: () => options.gameState.bulkFervorEnabled,
+      setEnabled: enabled => {
+        options.gameState.bulkFervorEnabled = enabled;
+        this.renderList();
+        this.updateButtonStates();
+      },
+    });
     this.initElements();
   }
 
@@ -38,7 +48,7 @@ export class FervorTab {
     this.hudItemEl = document.getElementById('hud-fervor-item');
   }
 
-  public buyUpgrade(upg: FervorUpgrade, bulk = false): void {
+  public buyUpgrade(upg: FervorUpgrade, bulk = this.isBulkEnabled()): void {
     const success = bulk ? this.options.gameState.buyMaxFervorUpgrade(upg) > 0 : this.options.gameState.buyFervorUpgrade(upg);
     if (success) {
       this.options.triggerHaptic(15);
@@ -51,6 +61,7 @@ export class FervorTab {
   }
 
   public renderList(): void {
+    this.bulkToggle.update();
     if (!this.listEl) return;
     this.listEl.innerHTML = '';
 
@@ -62,8 +73,8 @@ export class FervorTab {
         return;
       }
 
-      const cost = this.options.gameState.getFervorUpgradeCost(upg);
-      const canAfford = fervor >= cost;
+      const { count, cost } = this.purchasePreview(upg);
+      const canAfford = fervor >= cost && (!this.isBulkEnabled() || count > 0);
 
       const card = document.createElement('div');
       card.className = `cult-action-card fervor-upgrade-card ${canAfford ? '' : 'unaffordable'}`;
@@ -88,18 +99,10 @@ export class FervorTab {
             <span>${formatNumber(cost)} Fervor</span>
           </div>
           <div class="card-click-prompt">
-            <span class="card-click-hint">CLIQUE PARA AUMENTAR</span>
+            <span class="card-click-hint">${this.purchaseHint(count)}</span>
           </div>
         </div>
       `;
-
-      if (this.options.gameState.hasGnoseUpgrade('gn_memoria_selos')) {
-        const bulk = document.createElement('button');
-        bulk.className = 'btn-ritual-max';
-        bulk.textContent = `Ritualizar máximo (${formatNumber(this.options.gameState.getMaxFervorUpgradeCount(upg))})`;
-        bulk.addEventListener('click', event => { event.stopPropagation(); this.buyUpgrade(upg, true); });
-        card.appendChild(bulk);
-      }
 
       card.addEventListener('click', () => {
         this.buyUpgrade(upg);
@@ -118,6 +121,7 @@ export class FervorTab {
       setText(resonance, `Ressonância da Gnose: seu pico de Fervor rende ×${formatNumber(mult)} Fé`);
     }
     this.automation.update();
+    this.bulkToggle.update();
     // The relic autobuyer can restore Phoenix while this card is already visible.
     if (this.options.gameState.isPhoenixRelicUnlocked() && !document.getElementById('card-fu_relics')) {
       this.renderList();
@@ -125,11 +129,11 @@ export class FervorTab {
     const fervor = this.options.gameState.fervorPoints;
 
     this.options.gameState.fervorUpgrades.forEach((upg) => {
-      const cost = this.options.gameState.getFervorUpgradeCost(upg);
+      const { count, cost } = this.purchasePreview(upg);
       const card = document.getElementById(`card-${upg.id}`);
       if (card) {
-        setText(card.querySelector('.btn-ritual-max'), `Ritualizar máximo (${formatNumber(this.options.gameState.getMaxFervorUpgradeCount(upg))})`);
-        if (fervor >= cost) {
+        setText(card.querySelector('.card-click-hint'), this.purchaseHint(count));
+        if (fervor >= cost && (!this.isBulkEnabled() || count > 0)) {
           card.classList.remove('unaffordable');
         } else {
           card.classList.add('unaffordable');
@@ -149,8 +153,27 @@ export class FervorTab {
   /** Current effect and what the next level would give, so the player can judge each Rite. */
   private multText(upg: FervorUpgrade): string {
     const game = this.options.gameState;
-    const next = game.getFervorUpgradeEffect({ ...upg, level: upg.level + 1 });
+    const count = this.isBulkEnabled() ? game.getMaxFervorUpgradeCount(upg) : 1;
+    const next = game.getFervorUpgradeEffect({ ...upg, level: upg.level + count });
     return `x${formatNumber(game.getFervorUpgradeEffect(upg))} → x${formatNumber(next)}`;
+  }
+
+  private isBulkEnabled(): boolean {
+    return this.options.gameState.bulkFervorEnabled && this.options.gameState.hasGnoseUpgrade('gn_memoria_selos');
+  }
+
+  private purchasePreview(upg: FervorUpgrade): { count: number; cost: number } {
+    const game = this.options.gameState;
+    const count = this.isBulkEnabled() ? game.getMaxFervorUpgradeCount(upg) : 1;
+    let cost = 0;
+    for (let i = 0; i < Math.max(1, count); i++) {
+      cost += game.getFervorUpgradeCost({ ...upg, level: upg.level + i });
+    }
+    return { count, cost };
+  }
+
+  private purchaseHint(count: number): string {
+    return this.isBulkEnabled() ? `MELHORAR MÁXIMO (${formatNumber(count)})` : 'MELHORAR';
   }
 
   public setHudVisibility(unlocked: boolean): void {

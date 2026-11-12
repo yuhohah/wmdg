@@ -17,7 +17,7 @@ export function buildOfflineNotice(
   const timeStr = elapsedSec >= 3600 ? `${formatFixed(elapsedSec / 3600, 1)}h` : `${Math.floor(elapsedSec / 60)}m`;
   return {
     title: `VIGÍLIA SAGRADA (${timeStr})`,
-    desc: `Durante sua ausência, o culto continuou ardendo: ${parts.join(', ')}.`
+    desc: `Ganhos durante sua ausência:\n${parts.join('\n')}`
   };
 }
 

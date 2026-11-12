@@ -69,7 +69,10 @@ export class FormulaTooltip {
       : target.id === 'btn-unlock-single' ? this.game.unlocks.find(u => !u.unlocked &&
         (!u.prerequisiteId || this.game.unlocks.some(p => p.id === u.prerequisiteId && p.unlocked)))?.id
       : target.id.replace(/^card-/, '');
-    const bulk = target.id === 'btn-convert-max' || !!this.target.closest('.btn-ritual-max');
+    const bulk = target.id === 'btn-convert-max' || (this.game.hasGnoseUpgrade('gn_memoria_selos') && (
+      (target.classList.contains('fervor-upgrade-card') && this.game.bulkFervorEnabled) ||
+      (target.classList.contains('relic-action-card') && this.game.bulkRelicsEnabled)
+    ));
     const formulas = id && getPurchaseFormulas(this.game, id, bulk);
     if (!formulas) {
       this.hide();

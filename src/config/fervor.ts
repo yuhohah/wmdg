@@ -5,7 +5,7 @@ export const BASE_FERVOR_RATE = 1.0;
 export const initialFervorUpgrades: FervorUpgrade[] = [
   {
     id: 'fu_prod',
-    name: 'Aumentar Produção de Fervor',
+    name: 'Produção de Fervor',
     desc: 'Intensifica a chama interior do culto, gerando mais Fervor por segundo.',
     lore: '<strong>Rito: Alimentar a Chama.</strong> Seus fiéis lançam preces ao fogo dia e noite, e o Fervor sobe mais rápido.',
     icon: '',
@@ -15,7 +15,7 @@ export const initialFervorUpgrades: FervorUpgrade[] = [
   },
   {
     id: 'fu_effect',
-    name: 'Aumentar Efeito do Fervor',
+    name: 'Efeito do Fervor',
     desc: 'Amplifica o bônus místico que todo o Fervor acumulado concede à geração de Fé.',
     lore: '<strong>Rito: Brasa Reveladora.</strong> Diante da brasa certa, até a dúvida vira combustível: cada ponto de Fervor fortalece mais a sua Fé.',
     icon: '',
@@ -25,7 +25,7 @@ export const initialFervorUpgrades: FervorUpgrade[] = [
   },
   {
     id: 'fu_click',
-    name: 'Aumentar Fé por Clique',
+    name: 'Fé por Clique',
     desc: 'Multiplica a Fé obtida a cada clique na Esfera.',
     lore: '<strong>Rito: Pulso em Brasa.</strong> Sua vontade arde, e cada pulso seu queima mais fundo nas mentes mortais.',
     icon: '',
@@ -35,7 +35,7 @@ export const initialFervorUpgrades: FervorUpgrade[] = [
   },
   {
     id: 'fu_followers',
-    name: 'Fiéis Aumentam Fé/s',
+    name: 'Fé/s por Fiéis',
     desc: 'Acende o fervor nos corações dos Fiéis Devotos, multiplicando sua devoção passiva.',
     lore: '<strong>Rito: Coro das Tochas.</strong> Uma voz é uma prece; mil vozes ao redor do fogo são um único pensamento. Quanto mais fiéis, mais cada um rende.',
     icon: '',
@@ -45,7 +45,7 @@ export const initialFervorUpgrades: FervorUpgrade[] = [
   },
   {
     id: 'fu_synergy',
-    name: 'Fé Aumenta Fervor/s',
+    name: 'Fervor/s por Fé',
     desc: 'Converte a densidade de Fé acumulada em combustível puro para a chama do Fervor.',
     lore: '<strong>Rito: Óleo da Devoção.</strong> A Fé guardada não é desperdício: derramada no fogo, faz o Fervor subir.',
     icon: '',
@@ -55,7 +55,7 @@ export const initialFervorUpgrades: FervorUpgrade[] = [
   },
   {
     id: 'fu_relics',
-    name: 'Aumentar Ganho de Fragmentos',
+    name: 'Ganho de Fragmentos',
     desc: 'Multiplica os Fragmentos obtidos a cada Transmutação.',
     lore: '<strong>Rito: Cinzas da Fênix.</strong> Das cinzas, a Transmutação aprende a render mais Fragmentos a cada vez.',
     icon: '',

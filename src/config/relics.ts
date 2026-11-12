@@ -16,18 +16,7 @@ export const initialRelicUpgrades: RelicUpgrade[] = [
     cost: 200,
     level: 0,
     maxLevel: 20,
-    effectText: (level, _points, maxLevel = 20) => `+${formatNumber(level * 20)}% Fé/s (Nível ${formatNumber(level)}/${Number.isFinite(maxLevel) ? maxLevel : '∞'})`
-  },
-  {
-    id: 'relic_phoenix',
-    name: 'Pena Solar de Fênix',
-    desc: 'Multiplica o Fervor/s por 1.5e0 e revela o Rito de Fervor que multiplica os Fragmentos de cada Transmutação.',
-    lore: 'A cada renascimento solar, a ave mitológica deixa para trás relíquias purificadas em chamas eternas.',
-    icon: '',
-    cost: 750,
-    level: 0,
-    maxLevel: 1,
-    effectText: (level) => level >= 1 ? 'Fervor/s x1,5 • Rito que multiplica os Fragmentos revelado no Fervor' : 'Fervor/s x1,5 e revela o Rito que multiplica os Fragmentos (0/1)'
+    effectText: (level) => `+${formatNumber(level * 20)}% Fé/s`
   },
   {
     id: 'relic_torch',
@@ -38,7 +27,18 @@ export const initialRelicUpgrades: RelicUpgrade[] = [
     cost: 500,
     level: 0,
     maxLevel: 20,
-    effectText: (level, _points, maxLevel = 20) => `+${formatNumber(level * 20)}% Fervor/s (Nível ${formatNumber(level)}/${Number.isFinite(maxLevel) ? maxLevel : '∞'})`
+    effectText: (level) => `+${formatNumber(level * 20)}% Fervor/s`
+  },
+  {
+    id: 'relic_phoenix',
+    name: 'Pena Solar de Fênix',
+    desc: 'Multiplica o Fervor/s por 1.5e0 e revela o Rito de Fervor que multiplica os Fragmentos de cada Transmutação.',
+    lore: 'A cada renascimento solar, a ave mitológica deixa para trás relíquias purificadas em chamas eternas.',
+    icon: '',
+    cost: 750,
+    level: 0,
+    maxLevel: 1,
+    effectText: (level) => level >= 1 ? 'Fervor/s x1,5 • Rito que multiplica os Fragmentos revelado no Fervor' : 'Fervor/s x1,5 e revela o Rito que multiplica os Fragmentos'
   },
   {
     id: 'relic_caduceus',
@@ -49,7 +49,7 @@ export const initialRelicUpgrades: RelicUpgrade[] = [
     cost: 1500,
     level: 0,
     maxLevel: 5,
-    effectText: (level) => `Custo dos Fiéis escala ${level * 5}% mais devagar (Nível ${level}/5)`
+    effectText: (level) => `Custo dos Fiéis escala ${level * 5}% mais devagar`
   },
   {
     id: 'relic_draupnir',
@@ -60,7 +60,7 @@ export const initialRelicUpgrades: RelicUpgrade[] = [
     cost: 2000,
     level: 0,
     maxLevel: 1,
-    effectText: (level) => level >= 1 ? '+5% da Transmutação por segundo, sem gastar Fé' : 'Rende 5% da Transmutação por segundo (0/1)'
+    effectText: (level) => level >= 1 ? '+5% da Transmutação por segundo, sem gastar Fé' : 'Rende 5% da Transmutação por segundo'
   },
   {
     id: 'relic_ark',
@@ -73,7 +73,7 @@ export const initialRelicUpgrades: RelicUpgrade[] = [
     maxLevel: 4,
     effectText: (level, relicPoints = 0) => {
       const mult = level > 0 ? Math.pow(Math.log10(Math.max(0, relicPoints) + 1) + 1, level * 1.2) : 1.0;
-      return `Fragmentos multiplicam Fé/s (Nível ${level}/4) • Atualmente x${formatNumber(mult)}`;
+      return `Fragmentos multiplicam Fé/s • Atualmente x${formatNumber(mult)}`;
     }
   }
 ];

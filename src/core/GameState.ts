@@ -58,8 +58,8 @@ import { SaveSystem, isValidSaveData, type SaveData } from '../systems/saveSyste
 
 export class GameStateManager {
   // Numeric Resources & Stats
-  public faithPoints: number = 1;
-  public totalFaithAccumulated: number = 1;
+  public faithPoints: number = 0;
+  public totalFaithAccumulated: number = 0;
   public totalClicks: number = 0;
   public gameStartedAtMs: number = 0;
   public fervorPoints: number = 0;
@@ -108,6 +108,9 @@ export class GameStateManager {
   public hasSeenIntro: boolean = false;
   public seenCardTutorials: Set<string> = new Set();
   public nerdsEnabled: boolean = false;
+  public hideGuidance: boolean = false;
+  public bulkFervorEnabled: boolean = false;
+  public bulkRelicsEnabled: boolean = false;
 
   // Optional callback when an active boss battle concludes during tick or click
   public onBossBattleFinished?: (result: {
@@ -123,8 +126,8 @@ export class GameStateManager {
 
   public resetToDefaults(): void {
     this.campaignEnding = 'pending';
-    this.faithPoints = 1;
-    this.totalFaithAccumulated = 1;
+    this.faithPoints = 0;
+    this.totalFaithAccumulated = 0;
     this.totalClicks = 0;
     this.gameStartedAtMs = 0;
     this.fervorPoints = 0;
@@ -140,6 +143,9 @@ export class GameStateManager {
     this.hasSeenIntro = false;
     this.seenCardTutorials.clear();
     this.nerdsEnabled = false;
+    this.hideGuidance = false;
+    this.bulkFervorEnabled = false;
+    this.bulkRelicsEnabled = false;
 
     this.gnosePoints = 0;
     this.totalGnoseEarned = 0;
@@ -945,6 +951,18 @@ export class GameStateManager {
     this.activeBossBattle = null;
   }
 
+  /** Test panel shortcut: grant a Guardian victory without campaign requirements. */
+  public defeatBossForTesting(bossId: string): boolean {
+    if (!GNOSE_BOSSES.some(boss => boss.id === bossId)) return false;
+    if (this.activeBossBattle?.bossId === bossId) {
+      this.completeBossBattle(true);
+    } else {
+      this.defeatedBosses.add(bossId);
+      this.bossCurseTimerSec = 0;
+    }
+    return true;
+  }
+
   private completeBossBattle(victory: boolean): void {
     if (!this.activeBossBattle) return;
     const battle = this.activeBossBattle;
@@ -1697,7 +1715,7 @@ export class GameStateManager {
     this.gnoseResets += 1;
 
     // Reset Fé (starts at 1000 if gn_init_faith is unlocked)
-    this.faithPoints = this.hasGnoseUpgrade('gn_init_faith') ? 1000 : 1;
+    this.faithPoints = this.hasGnoseUpgrade('gn_init_faith') ? 1000 : 0;
 
     // Reset Followers
     this.followers.forEach((f) => {
@@ -1794,6 +1812,9 @@ export class GameStateManager {
         incarnationBoostTimer: this.incarnationBoostTimer,
         hasSeenIntro: this.hasSeenIntro,
         seenCardTutorials: Array.from(this.seenCardTutorials),
+        hideGuidance: this.hideGuidance,
+        bulkFervorEnabled: this.bulkFervorEnabled,
+        bulkRelicsEnabled: this.bulkRelicsEnabled,
         nerdsEnabled: this.nerdsEnabled
       },
       followers: this.followers.map((f) => ({ id: f.id, count: f.count })),
@@ -1830,8 +1851,8 @@ export class GameStateManager {
     this.miracleIdCounter = 0;
     this.gnoseAutoAccumulatorSec = 0;
 
-    this.faithPoints = typeof save.stats.faithPoints === 'number' ? Math.max(0, save.stats.faithPoints) : 1;
-    this.totalFaithAccumulated = typeof save.stats.totalFaithAccumulated === 'number' ? Math.max(1, save.stats.totalFaithAccumulated) : 1;
+    this.faithPoints = typeof save.stats.faithPoints === 'number' ? Math.max(0, save.stats.faithPoints) : 0;
+    this.totalFaithAccumulated = typeof save.stats.totalFaithAccumulated === 'number' ? Math.max(0, save.stats.totalFaithAccumulated) : 0;
     this.totalClicks = typeof save.stats.totalClicks === 'number' ? Math.max(0, save.stats.totalClicks) : 0;
     this.gameStartedAtMs = save.stats.gameStartedAtMs ?? 0;
     this.fervorPoints = typeof save.stats.fervorPoints === 'number' ? Math.max(0, save.stats.fervorPoints) : 0;
@@ -1849,6 +1870,9 @@ export class GameStateManager {
       : 0;
     this.hasSeenIntro = typeof save.stats.hasSeenIntro === 'boolean' ? save.stats.hasSeenIntro : false;
     this.nerdsEnabled = save.stats.nerdsEnabled === true;
+    this.hideGuidance = save.stats.hideGuidance === true;
+    this.bulkFervorEnabled = save.stats.bulkFervorEnabled === true;
+    this.bulkRelicsEnabled = save.stats.bulkRelicsEnabled === true;
     this.seenCardTutorials = new Set(Array.isArray(save.stats.seenCardTutorials)
       ? save.stats.seenCardTutorials.filter(id => typeof id === 'string') : []);
 

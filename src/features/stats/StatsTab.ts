@@ -26,7 +26,6 @@ export class StatsTab {
   private statFervorAccumEl: HTMLElement | null = null;
   private statFervorRateEl: HTMLElement | null = null;
   private statAchievementsCountEl: HTMLElement | null = null;
-  private statCultTierEl: HTMLElement | null = null;
 
   constructor(options: StatsTabOptions) {
     this.gameState = options.gameState;
@@ -45,7 +44,6 @@ export class StatsTab {
     this.statFervorAccumEl = document.getElementById('stat-fervor-accum');
     this.statFervorRateEl = document.getElementById('stat-fervor-rate');
     this.statAchievementsCountEl = document.getElementById('stat-achievements-count');
-    this.statCultTierEl = document.getElementById('stat-cult-tier');
   }
 
   private bindEvents(): void {
@@ -106,18 +104,5 @@ export class StatsTab {
       this.statAchievementsCountEl.textContent = `${unlockedCount} / ${this.gameState.achievements.length}`;
     }
 
-    if (this.statCultTierEl) {
-      this.statCultTierEl.textContent = this.getCultTier(totalFaith);
-    }
-  }
-
-  private getCultTier(totalFaith: number): string {
-    if (this.gameState.isBossDefeated('boss_tiamat')) return 'Crepúsculo dos Deuses';
-    if (totalFaith >= 1e50) return 'Mente Única';
-    if (totalFaith >= 1e25) return 'Credo Mundial';
-    if (totalFaith >= 1e12) return 'Igreja';
-    if (totalFaith >= 1e6) return 'Culto';
-    if (totalFaith >= 1e3) return 'Seita';
-    return 'Boato';
   }
 }

@@ -100,6 +100,10 @@
             <div id="start-sphere" class="start-sphere-img" role="img" aria-label="A Entidade Divina"></div>
           </div>
 
+          <div class="start-game-tips">
+            <p><strong>Monte seu quadro:</strong> arraste os cards pelo título para organizar a tela. No celular, pressione e segure antes de arrastar.</p>
+          </div>
+
           <div class="play-btn-container">
             <button id="play-btn" class="btn-slide-play" type="button">
               <span>INICIAR CULTO</span>
@@ -180,13 +184,16 @@
                 <div id="tab-followers" class="tab-pane active" style="display: block;">
                   <div class="followers-tab-header">
                     <div class="followers-stat-group">
-                      <span class="followers-stat-label">ALMAS DEVOTADAS</span>
+                      <span class="followers-stat-label">Almas devotadas</span>
                       <div class="followers-stat-row">
                         <span id="followers-total-count" class="followers-total-val">0</span>
                         <span class="followers-stat-unit">Fiéis</span>
                       </div>
                     </div>
-                    <div class="followers-rate-badge" id="followers-rate-badge">+0 Fé/s</div>
+                    <div class="followers-production-summary">
+                      <span class="followers-production-label">Produção de Fé</span>
+                      <div class="followers-rate-badge" id="followers-rate-badge">+0 Fé/s</div>
+                    </div>
                   </div>
 
                   <!-- Pátio dos Fiéis Hermético (Walking & Praying Cultists Arena) -->
@@ -255,6 +262,10 @@
                     <input type="checkbox" id="auto-fervor-toggle" checked />
                     <span>Auto-Ritos</span>
                   </label>
+                  <label class="card-automation-toggle" id="bulk-fervor-wrap" hidden>
+                    <input type="checkbox" id="bulk-fervor-toggle" />
+                    <span>Compra máxima</span>
+                  </label>
                   <div class="card-list" id="fervor-upgrades-list"></div>
                 </div>
               </div>
@@ -280,11 +291,12 @@
                   <div class="incarnation-tab-header">
                     <div class="incarnation-stat-group">
                       <div class="incarnation-stat-row">
-                        <span class="incarnation-stage-tag" id="incarnation-stage-badge">ESTÁGIO 1</span>
+                        <span class="incarnation-stage-tag" id="incarnation-stage-badge">Avatar Neófito</span>
+                      <span class="incarnation-stage-effect" id="incarnation-stage-effect">Fervor/s ×1</span>
                       </div>
                     </div>
-                    <div class="incarnation-mult-wrapper" style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
-                      <span class="incarnation-mult-sublabel" style="font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #a1a1aa; text-transform: uppercase;">MULTIPLICADOR DOS FIÉIS</span>
+                    <div class="incarnation-mult-wrapper">
+                      <span class="incarnation-mult-sublabel">Multiplicador dos Fiéis</span>
                       <div class="incarnation-rate-badge" id="incarnation-rate-badge">x1</div>
                     </div>
                   </div>
@@ -307,8 +319,8 @@
                   <!-- Bênção 2x Fé da Encarnação (Preenche ao Clicar no Altar) -->
                   <div class="incarnation-blessing-panel" id="incarnation-blessing-panel">
                     <div class="incarnation-blessing-header">
-                      <span class="incarnation-blessing-title">✦ BÊNÇÃO 2× FÉ</span>
-                      <span class="incarnation-blessing-status" id="incarnation-blessing-status">INATIVA (Clique no Altar para +3s)</span>
+                      <span class="incarnation-blessing-title">✦ BÊNÇÃO</span>
+                      <span class="incarnation-blessing-status" id="incarnation-blessing-status">Inativa</span>
                     </div>
                     <div class="incarnation-blessing-track">
                       <div class="incarnation-blessing-fill" id="incarnation-blessing-fill" style="width: 0%;"></div>
@@ -367,6 +379,10 @@
                     <span>Auto-Relíquias</span>
                   </label>
                   <!-- Mythological Relics Upgrades List -->
+                  <label class="card-automation-toggle" id="bulk-relics-wrap" hidden>
+                    <input type="checkbox" id="bulk-relics-toggle" />
+                    <span>Compra máxima</span>
+                  </label>
                   <div class="card-list" id="relic-upgrades-list"></div>
                 </div>
               </div>
@@ -510,7 +526,7 @@
           </div>
 
           <div class="spotlight-balloon-action-tip" id="spotlight-balloon-action-tip">
-            Clique na Esfera até juntar Fé suficiente (+1 Fé por clique).
+            Clique na Esfera até juntar Fé suficiente.
           </div>
         </div>
       </div>
@@ -594,10 +610,6 @@
             <span class="stat-label">CONQUISTAS DESBLOQUEADAS</span>
             <span id="stat-achievements-count" class="stat-val">0 / 20</span>
           </div>
-          <div class="stat-box">
-            <span class="stat-label">ESTÁGIO DO CULTO</span>
-            <span id="stat-cult-tier" class="stat-val">Boato</span>
-          </div>
         </div>
     </dialog>
 
@@ -675,6 +687,20 @@
         </div>
 
         <div class="settings-group">
+          <label class="setting-item" for="hide-guidance-toggle">
+            <div>
+              <div class="setting-name">Ocultar dicas e tutoriais</div>
+              <div class="setting-desc">Esconder tutoriais e orientações iniciais. Dicas dos recursos e fórmulas Nerds continuam disponíveis. Desmarque para reiniciar as orientações.</div>
+            </div>
+            <input type="checkbox" id="hide-guidance-toggle" />
+          </label>
+          <div class="setting-item">
+            <div>
+              <div class="setting-name">Rever tutoriais</div>
+              <div class="setting-desc">Reiniciar as orientações sem alterar seu progresso.</div>
+            </div>
+            <button type="button" id="btn-replay-tutorials" class="btn-setting-action">Rever</button>
+          </div>
           <label class="setting-item" for="nerds-toggle">
             <div>
               <div class="setting-name">Nerds</div>

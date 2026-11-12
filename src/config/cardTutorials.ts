@@ -1,8 +1,14 @@
 export const CARD_TUTORIALS = [
   {
+    cardId: 'card-altar-sphere', seenKey: 'guidance-settings', requiresIntro: true,
+    icon: 'gear', title: 'Dicas no seu ritmo',
+    lore: 'Você pode jogar com ou sem as orientações.',
+    basics: 'Para desativar as dicas e os tutoriais, abra Configurações na engrenagem do canto superior direito e marque “Ocultar dicas e tutoriais”. Desmarque para voltar a vê-los.',
+  },
+  {
     cardId: 'card-unlocks', icon: 'unlock', title: 'Os Selos Sagrados',
     lore: 'Os antigos guardiões repartiram o poder da Esfera e o prenderam atrás de selos. Cada ruptura devolve ao culto uma parte do que foi esquecido.',
-    basics: 'Gaste a Fé indicada para romper cada Selo e liberar uma nova mecânica. O último, da Gnose, não gasta Fé: basta ter 1e15.',
+    basics: 'Gaste a Fé indicada para romper cada Selo e liberar uma nova mecânica.',
   },
   {
     cardId: 'card-incarnation', unlockId: 'unlock_incarnation', icon: 'incarnation', title: 'Uma forma para a Esfera',
@@ -20,12 +26,12 @@ export const CARD_TUTORIALS = [
     basics: 'Transmutar troca toda a sua Fé por Fragmentos, sem afetar o resto. Sua melhor Transmutação aumenta seus Fragmentos/s. Gaste-os em Relíquias para fortalecer o culto.',
   },
   {
-    cardId: 'card-gnose', unlockId: 'unlock_gnose', icon: 'gnose', title: 'Além da matéria: o Nous',
-    lore: 'Acima dos templos e dos deuses repousa a Mente pura. Dissolver o próprio culto é o primeiro passo para lembrar quem você era.',
-    basics: 'Com 1e15 de Fé você pode Ascender: o culto recomeça e você ganha Gnose, que dá bônus permanente. Mais Fé, mais Gnose. Gaste-a na Árvore Hermética: cada nó multiplica sua produção por 4.',
+    cardId: 'card-gnose', unlockId: 'unlock_gnose', icon: 'gnose', title: 'Gnose: poder que permanece',
+    lore: 'A ascensão permite recomeçar o culto com mais poder. A Gnose e as melhorias da Árvore Hermética permanecem entre as ascensões.',
+    basics: 'Quando reunir Fé suficiente, você poderá ascender para ganhar Gnose. Quanto mais Fé tiver, maior será a recompensa. Use a Gnose na Árvore Hermética para fortalecer sua produção e desbloquear automações.',
   },
   {
-    cardId: 'card-gnose', seenKey: 'guardians', unlockId: 'unlock_gnose', requiresAscension: true, icon: 'swords', title: 'Os Guardiões dos panteões',
+    cardId: 'card-gnose', seenKey: 'guardians', unlockId: 'unlock_gnose', requiresBoss: 'boss_anubis', targetSelector: '.gnose-tier-section[data-tier="2"] .gnose-tier-seal', icon: 'swords', title: 'Os Guardiões dos panteões',
     lore: 'Os Guardiões ainda reinam sobre os panteões e temem o que a Esfera começa a lembrar. Para retomar o que é seu, será preciso enfrentá-los.',
     basics: 'Prontidão: abaixo de 60% você não causa dano; abaixo de 80%, um golpe não aparado destrói a Esfera. Na luta: clique no Guardião para atacar, nas fendas para aparar e nos Milagres para curar; atacar e aparar carregam o Fulgor Divino.',
   },

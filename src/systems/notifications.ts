@@ -120,7 +120,7 @@ export class NotificationManager {
 
     const popup = document.createElement('div');
     const variantClass = this.getToastVariant(title, badge);
-    popup.className = `ach-popup-toast ${variantClass} ach-popup-square`;
+    popup.className = `ach-popup-toast ${variantClass} ach-popup-square${badge ? '' : ' ach-popup-no-badge'}`;
 
     const finalIcon = DISPLAY_CONFIG.showEmojisAndSymbols
       ? (icon && icon.trim().length > 0 ? icon : this.getCustomFallbackIcon(title, badge))
@@ -134,10 +134,10 @@ export class NotificationManager {
       <div class="ach-popup-timer-bar"></div>
       ${iconHtml}
       <div class="ach-popup-content">
-        <div class="ach-popup-header-row">
-          ${badge ? `<span class="ach-popup-badge">${badge}</span>` : ''}
+        ${badge ? `<div class="ach-popup-header-row">
+          <span class="ach-popup-badge">${badge}</span>
           <button type="button" class="ach-popup-close" aria-label="Fechar">&times;</button>
-        </div>
+        </div>` : '<button type="button" class="ach-popup-close" aria-label="Fechar">&times;</button>'}
         <div class="ach-popup-title">${title}</div>
         <div class="ach-popup-desc">${desc}</div>
       </div>
