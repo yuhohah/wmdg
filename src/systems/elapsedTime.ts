@@ -25,20 +25,27 @@ export function buildOfflineNotice(
 export class ElapsedTimeCredit {
   constructor(private creditedThroughMs: number) {}
 
-  public consume(game: GameStateManager, nowMs: number): { seconds: number; faithGained: number; fervorGained: number; relicGained: number } {
-    if (!Number.isFinite(nowMs) || nowMs <= this.creditedThroughMs) return { seconds: 0, faithGained: 0, fervorGained: 0, relicGained: 0 };
+  public consume(
+    game: GameStateManager,
+    nowMs: number,
+    random: () => number = Math.random
+  ): { seconds: number; faithGained: number; fervorGained: number; relicGained: number; autoClickFaithGained: number } {
+    if (!Number.isFinite(nowMs) || nowMs <= this.creditedThroughMs) {
+      return { seconds: 0, faithGained: 0, fervorGained: 0, relicGained: 0, autoClickFaithGained: 0 };
+    }
     const seconds = Math.min(86400, Math.max(0, (nowMs - this.creditedThroughMs) / 1000));
     this.creditedThroughMs = nowMs;
     // Combat requires presence; no clicks, miracles, ascensions or Avatar purchases offline.
     game.retreatBossBattle();
-    const gains = { faithGained: 0, fervorGained: 0, relicGained: 0 };
+    const gains = { faithGained: 0, fervorGained: 0, relicGained: 0, autoClickFaithGained: 0 };
     let remaining = seconds;
     while (remaining > 1e-8) {
       const dt = Math.min(0.1, remaining);
-      const step = game.tick(dt);
+      const step = game.tick(dt, random);
       gains.faithGained += step.faithGained;
       gains.fervorGained += step.fervorGained;
       gains.relicGained += step.relicGained;
+      gains.autoClickFaithGained += step.autoClickFaithGained;
       game.checkAchievements();
       remaining -= dt;
     }
@@ -55,7 +62,7 @@ export async function consumeElapsedTime(
   yieldControl: () => Promise<void> = () => new Promise(resolve => setTimeout(resolve, 0)),
 ): Promise<ReturnType<ElapsedTimeCredit['consume']>> {
   const target = Math.min(throughMs, fromMs + 86400000);
-  const result = { seconds: 0, faithGained: 0, fervorGained: 0, relicGained: 0 };
+  const result = { seconds: 0, faithGained: 0, fervorGained: 0, relicGained: 0, autoClickFaithGained: 0 };
   if (!Number.isFinite(fromMs) || !Number.isFinite(throughMs) || target <= fromMs) return result;
   await yieldControl();
   let cursor = fromMs;
@@ -67,6 +74,7 @@ export async function consumeElapsedTime(
     result.faithGained += step.faithGained;
     result.fervorGained += step.fervorGained;
     result.relicGained += step.relicGained;
+    result.autoClickFaithGained += step.autoClickFaithGained;
     if (cursor < target && performance.now() - budgetStarted >= 8) {
       await yieldControl();
       budgetStarted = performance.now();

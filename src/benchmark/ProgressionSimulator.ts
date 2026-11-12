@@ -84,10 +84,22 @@ class Simulation {
         const battle = this.game.activeBossBattle;
         const hpBefore = battle?.bossHp ?? 0;
         this.tickOffset = dt;
-        const gains = this.absenceCredit ? { faithGained: 0 } : this.game.tick(dt);
+        const gains = this.absenceCredit
+          ? { faithGained: 0, autoClickFaithGained: 0, autoClickBossDamage: 0 }
+          : this.game.tick(dt, this.randomClicks);
         this.tickOffset = 0;
-        if (battle) this.metrics.damageCombat('passive', hpBefore - battle.bossHp, battle.bossMaxHp);
-        this.metrics.passiveFaith += gains.faithGained;
+        if (battle) {
+          const totalTickDamage = Math.max(0, hpBefore - battle.bossHp);
+          const autoClickDamage = Math.min(totalTickDamage, gains.autoClickBossDamage ?? 0);
+          const passiveDamage = Math.max(0, totalTickDamage - autoClickDamage);
+          this.metrics.damageCombat('passive', passiveDamage, battle.bossMaxHp);
+          if (autoClickDamage > 0) {
+            this.metrics.damageCombat('sphere', autoClickDamage, battle.bossMaxHp, false);
+          }
+        }
+        const autoClickFaith = gains.autoClickFaithGained ?? 0;
+        this.metrics.passiveFaith += Math.max(0, gains.faithGained - autoClickFaith);
+        this.metrics.clickFaith += autoClickFaith;
         if (!this.absenceCredit) this.tickSeconds += dt;
         this.progress.advance(dt, this.visits.present);
         if (this.visits.present) this.presentTime += dt;
@@ -168,8 +180,10 @@ class Simulation {
   private creditAbsence(): void {
     if (!this.absenceCredit) return;
     if (this.options.absenceMode === 'save' && this.absenceSave) this.game.applySaveData(this.absenceSave);
-    const gains = this.absenceCredit.consume(this.game, this.time * 1000);
-    this.metrics.passiveFaith += gains.faithGained;
+    const gains = this.absenceCredit.consume(this.game, this.time * 1000, this.randomClicks);
+    const autoClickFaith = gains.autoClickFaithGained ?? 0;
+    this.metrics.passiveFaith += Math.max(0, gains.faithGained - autoClickFaith);
+    this.metrics.clickFaith += autoClickFaith;
     this.tickSeconds += gains.seconds;
     this.absenceCredit = undefined; this.absenceSave = undefined;
   }
@@ -179,7 +193,7 @@ class Simulation {
   }
 
   private completed(): boolean {
-    return this.game.isBossDefeated('boss_tiamat') && GNOSE_UPGRADES.every(upgrade => this.game.hasGnoseUpgrade(upgrade.id));
+    return this.game.isCampaignComplete() && GNOSE_UPGRADES.every(upgrade => this.game.hasGnoseUpgrade(upgrade.id));
   }
 
   private signature(): string {
@@ -189,6 +203,8 @@ class Simulation {
 
   private updateMiracle(dt: number): void {
     if (!this.game.areMiraclesUnlocked() || this.game.getTotalFollowersCount() === 0) { this.miracle = null; return; }
+    // Courtyard updates pause while a Guardian duel is active, matching FollowersArena.
+    if (this.game.activeBossBattle) return;
     if (this.miracle) {
       if (this.time + EPSILON >= this.miracle.expires) {
         this.miracle = null;
@@ -238,7 +254,23 @@ class Simulation {
       // A real attempt consumes its slot even if the domain rejects the parry.
       if (riftHit.shattered && battleBeforeRift) this.metrics.damageCombat('rift', Math.min(hpBeforeRift, riftHit.damage), battleBeforeRift.bossMaxHp);
       action = 'rift';
-    } else if (!this.awaitingConfirmation && this.miracle?.willing && this.time + EPSILON >= this.miracle.born + this.behavior.miracleResponseSec) {
+    } else if (!this.awaitingConfirmation && battleBeforeRift?.activeMiracle
+      && manualSphereAllowed(this.behavior, this.time)
+      && battleBeforeRift.activeMiracle.maxSec - battleBeforeRift.activeMiracle.remainingSec + EPSILON >= this.behavior.riftResponseSec) {
+      if (g.clickBossMiracle().triggered) {
+        this.metrics.recordCombatInteraction();
+        action = 'boss_miracle';
+      }
+    } else if (!this.awaitingConfirmation && battleBeforeRift
+      && manualSphereAllowed(this.behavior, this.time)
+      && (battleBeforeRift.sphereCharge ?? 0) >= 100 - 1e-6
+      && g.getBossCombatBreakdown(battleBeforeRift.bossId).canDamageBoss) {
+      const fulgor = g.triggerSphereFulgor();
+      if (fulgor.triggered) {
+        this.metrics.damageCombat('fulgor', Math.min(hpBeforeRift, fulgor.damage), battleBeforeRift.bossMaxHp);
+        action = 'fulgor';
+      }
+    } else if (!this.awaitingConfirmation && !g.activeBossBattle && this.miracle?.willing && this.time + EPSILON >= this.miracle.born + this.behavior.miracleResponseSec) {
       const reward = calculateMiracleReward(g.faithPoints, g.getFaithPerClick(), g.getFaithPerSecond());
       this.metrics.miracleFaith += reward;
       g.faithPoints += reward;
@@ -316,6 +348,8 @@ class Simulation {
     const decision = (key: string, action: ManualAction, execute: () => boolean): Decision => ({ key, action, execute });
     const ascend = () => {
       this.awaitingConfirmation = false;
+      // Only the first Ascension shows the confirmation dialog, matching GnoseTab.
+      if (g.gnoseResets === 0) g.confirmGnoseReset = false;
       this.metrics.beforeReset(this.time, g);
       const result = g.performGnoseReset();
       if (result.success) this.gnoseResets++;
@@ -342,7 +376,7 @@ class Simulation {
     if (nextGnose && g.canBuyGnoseUpgrade(nextGnose)) {
       return decision(nextGnose.id, 'gnose_upgrade', () => g.buyGnoseUpgrade(nextGnose.id));
     }
-    const boss = GNOSE_BOSSES.find(b => g.canChallengeBoss(b.id));
+    const boss = GNOSE_BOSSES.find(b => g.canChallengeBoss(b.id) && g.getBossCombatBreakdown(b.id).canWithstandBoss);
     if (boss && g.bossCurseTimerSec === 0) {
       return decision(boss.id, 'challenge', () => {
         const started = g.startBossBattle(boss.id);
@@ -382,7 +416,8 @@ class Simulation {
         .sort((a, b) => g.getFervorUpgradeCost(a) - g.getFervorUpgradeCost(b))[0];
       if (rito) return decision(rito.id, 'fervor', () => g.hasGnoseUpgrade('gn_memoria_selos') ? g.buyMaxFervorUpgrade(rito) > 0 : g.buyFervorUpgrade(rito));
     }
-    const passiveRelics = (g.hasGnoseUpgrade('gn_omniscience') && g.autoRelicsEnabled) || g.relicUpgrades[4].level > 0;
+    const draupnirLevel = g.relicUpgrades.find(r => r.id === 'relic_draupnir')?.level ?? 0;
+    const passiveRelics = (g.hasGnoseUpgrade('gn_omniscience') && g.autoRelicsEnabled) || draupnirLevel > 0;
     const transmute = g.getRelicsToGet();
     if (g.isRelicsUnlocked() && g.relicConvertCooldown === 0 && transmute >= 15
       && ((!passiveRelics && transmute >= Math.max(20, g.relicPoints * 1.5)) || g.bestRelicsToGet === 0)) {
@@ -411,6 +446,9 @@ class Simulation {
     record('unlock_incarnation', 'Selo da Encarnação', g.isIncarnationUnlocked());
     record('unlock_fervor_upgrades', 'Selo do Fervor', g.isFervorUpgradesUnlocked());
     record('incarnation_stage_2', 'Avatar Consagrado', g.incarnationStage >= 2);
+    record('incarnation_stage_3', 'Avatar Ancestral', g.incarnationStage >= 3);
+    record('incarnation_stage_4', 'Avatar do Eclipse', g.incarnationStage >= 4);
+    record('incarnation_stage_5', 'Avatar Solar', g.incarnationStage >= 5);
     record('unlock_relics', 'Selo das Relíquias', g.isRelicsUnlocked());
     record('unlock_gnose', 'Selo da Gnose', g.isGnoseUnlocked());
     record('first_relic_reset', '1ª Transmutação', this.relicResets > 0);

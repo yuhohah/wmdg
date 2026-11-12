@@ -1293,27 +1293,55 @@ export class GameStateManager {
   }
 
   // --- Game Loop Tick Logic ---
-  public tick(deltaSec: number): { faithGained: number; fervorGained: number; relicGained: number } {
+  public tick(
+    deltaSec: number,
+    random: () => number = Math.random
+  ): {
+    faithGained: number;
+    fervorGained: number;
+    relicGained: number;
+    autoClickFaithGained: number;
+    autoClickBossDamage: number;
+  } {
     if (!Number.isFinite(deltaSec) || deltaSec < 0) throw new RangeError('Intervalo de simulação inválido.');
     let faithGained = 0;
     let fervorGained = 0;
     let relicGained = 0;
+    let autoClickFaithGained = 0;
+    let autoClickBossDamage = 0;
     // All systems share the same substeps, including buffs, combat and automation.
     let remaining = deltaSec;
     while (remaining > 1e-8) {
       const step = Math.min(0.1, remaining);
-      const result = this.advanceTick(step);
+      const result = this.advanceTick(step, random);
       faithGained += result.faithGained;
       fervorGained += result.fervorGained;
       relicGained += result.relicGained;
+      autoClickFaithGained += result.autoClickFaithGained;
+      autoClickBossDamage += result.autoClickBossDamage;
       remaining -= step;
     }
-    return { faithGained, fervorGained, relicGained };
+    return { faithGained, fervorGained, relicGained, autoClickFaithGained, autoClickBossDamage };
   }
 
-  private readonly tickResult = { faithGained: 0, fervorGained: 0, relicGained: 0 };
+  private readonly tickResult = {
+    faithGained: 0,
+    fervorGained: 0,
+    relicGained: 0,
+    autoClickFaithGained: 0,
+    autoClickBossDamage: 0
+  };
 
-  private advanceTick(deltaSec: number): { faithGained: number; fervorGained: number; relicGained: number } {
+  private advanceTick(
+    deltaSec: number,
+    random: () => number = Math.random
+  ): {
+    faithGained: number;
+    fervorGained: number;
+    relicGained: number;
+    autoClickFaithGained: number;
+    autoClickBossDamage: number;
+  } {
     if (this.bossCurseTimerSec > 0) {
       this.bossCurseTimerSec = Math.max(0, this.bossCurseTimerSec - deltaSec);
     }
@@ -1354,12 +1382,20 @@ export class GameStateManager {
       this.tickBossBattle(deltaSec);
     }
 
+    let autoClickFaithGained = 0;
+    let autoClickBossDamage = 0;
     // Automatic Sphere clicks use the same rewards, criticals and lifetime counter as manual clicks.
     if (this.hasUnlockedAchievementBuff('sphere_autoclick')) {
       this.sphereAutoAccumulatorSec += deltaSec;
       if (this.sphereAutoAccumulatorSec + 1e-8 >= 1) {
         this.sphereAutoAccumulatorSec = Math.max(0, this.sphereAutoAccumulatorSec - 1);
-        const result = this.addClick();
+        const battleBefore = this.activeBossBattle;
+        const hpBefore = battleBefore?.bossHp ?? 0;
+        const result = this.addClick(random);
+        autoClickFaithGained = result.fpc;
+        if (battleBefore) {
+          autoClickBossDamage = Math.min(hpBefore, result.bossClickDamage);
+        }
         this.lastSphereAutoclick = { fpc: result.fpc, isCrit: result.isCrit };
         faithGained += result.fpc;
       }
@@ -1375,6 +1411,8 @@ export class GameStateManager {
     this.tickResult.faithGained = faithGained;
     this.tickResult.fervorGained = fervorGained;
     this.tickResult.relicGained = relicGained;
+    this.tickResult.autoClickFaithGained = autoClickFaithGained;
+    this.tickResult.autoClickBossDamage = autoClickBossDamage;
     return this.tickResult;
   }
 

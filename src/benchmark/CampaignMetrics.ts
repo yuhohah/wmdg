@@ -44,12 +44,23 @@ export class CampaignMetrics {
     if (combat?.result === 'active') { combat.endSec = time; combat.result = result; }
   }
 
-  public damageCombat(kind: 'passive' | 'sphere' | 'rift', damage: number, maxHp: number): void {
+  public damageCombat(kind: 'passive' | 'sphere' | 'rift' | 'fulgor', damage: number, maxHp: number, countInteraction = true): void {
     const combat = this.combat.at(-1);
     if (!combat) return;
     if (kind === 'passive') combat.passiveHpFraction += damage / maxHp;
-    if (kind === 'sphere') { combat.sphereHpFraction += damage / maxHp; combat.interactions++; }
-    if (kind === 'rift') { combat.riftHpFraction += damage / maxHp; combat.interactions++; }
+    if (kind === 'sphere' || kind === 'fulgor') {
+      combat.sphereHpFraction += damage / maxHp;
+      if (countInteraction) combat.interactions++;
+    }
+    if (kind === 'rift') {
+      combat.riftHpFraction += damage / maxHp;
+      if (countInteraction) combat.interactions++;
+    }
+  }
+
+  public recordCombatInteraction(): void {
+    const combat = this.combat.at(-1);
+    if (combat) combat.interactions++;
   }
 
   public observe(time: number, game: GameStateManager): void {

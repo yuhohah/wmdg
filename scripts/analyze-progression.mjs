@@ -10,19 +10,16 @@ if (!['baseline', 'no-miracles', 'short-resets', 'no-auto-pause'].includes(mode)
 if (!Number.isFinite(hours) || hours <= 0) throw new Error('Horas devem ser positivas');
 const profile = process.argv[4] ?? 'active';
 const seed = Number(process.argv[5] ?? 0xc0172);
-if (!['active', 'casual', 'afk'].includes(profile)) throw new Error('Perfil inválido');
+if (!['reference', 'active', 'casual', 'afk'].includes(profile)) throw new Error('Perfil inválido');
 if (!Number.isInteger(seed)) throw new Error('Seed deve ser inteira');
 const server = await createServer({ server: { middlewareMode: true, hmr: false }, appType: 'custom', plugins: [{
   name: 'analysis-only-policy', enforce: 'pre', transform(source, id) {
     if (!id.endsWith('/src/benchmark/ProgressionSimulator.ts')) return;
-    const replacePolicy = (from, to) => {
+    if (mode === 'no-auto-pause') {
+      const from = 'if (!savingForUnlock && !savingForIncarnation && !savingForGnose';
       if (!source.includes(from)) throw new Error('Política do benchmark mudou; revise o experimento.');
-      return source.replace(from, to);
-    };
-    if (mode === 'short-resets') return replacePolicy(
-      'g.getGnoseToGet() >= Math.max(1, nextGnose.cost - g.gnosePoints)', 'g.getGnoseToGet() >= 1');
-    if (mode === 'no-auto-pause') return replacePolicy(
-      'const enabled = !(savingForUnlock || savingForIncarnation || savingForGnose);', 'const enabled = true;');
+      return source.replace(from, 'if (true');
+    }
   }
 }] });
 try {
@@ -38,8 +35,8 @@ try {
     levels: g.fervorUpgrades.map(u => u.level), relicLevels: g.relicUpgrades.map(u => u.level),
     nodes: [...g.unlockedGnoseUpgrades], bosses: [...g.defeatedBosses] });
   const tick = GameStateManager.prototype.tick;
-  GameStateManager.prototype.tick = function(dt) {
-    t += dt; game = this; const gains = tick.call(this, dt);
+  GameStateManager.prototype.tick = function(dt, ...args) {
+    t += dt; game = this; const gains = tick.call(this, dt, ...args);
     if (t >= nextSample) {
       snapshots.push(snapshot(this)); nextSample += 3600;
     }
@@ -55,7 +52,11 @@ try {
   GameStateManager.prototype.buyGnoseUpgrade = function(id) {
     const result = buy.call(this, id); if (result) upgrades.push({ id, ...snapshot(this) }); return result;
   };
-  const result = ProgressionSimulator.runArchetype(profile, { seed, maxDurationSec: hours * 3600 });
+  const result = ProgressionSimulator.runArchetype(profile, {
+    seed,
+    maxDurationSec: hours * 3600,
+    ...(mode === 'short-resets' ? { resetPolicy: 'immediate' } : {})
+  });
   const output = { mode, hours, profile, seed, result, snapshots, resets, upgrades, final: snapshot(game) };
   const file = process.argv[6] ?? `/tmp/wmdg-${mode}-${profile}-${seed}-${hours}h.json`;
   writeFileSync(file, JSON.stringify(output, null, 2));

@@ -1,6 +1,6 @@
 export type PlayerArchetype = 'reference' | 'active' | 'casual' | 'afk';
 
-export type ManualAction = 'sphere' | 'blessing' | 'miracle' | 'rift' | 'follower'
+export type ManualAction = 'sphere' | 'blessing' | 'miracle' | 'rift' | 'fulgor' | 'boss_miracle' | 'follower'
   | 'fervor' | 'relic' | 'unlock' | 'incarnation' | 'transmutation' | 'gnose' | 'gnose_confirm' | 'gnose_upgrade' | 'challenge' | 'automation_toggle';
 
 export interface BenchmarkEvent {

@@ -21,9 +21,11 @@ const MILESTONES = [
   ['first_follower', '1º Fiel Devoto'], ['unlock_incarnation', 'Selo da Encarnação'],
   ['unlock_fervor_upgrades', 'Selo do Fervor'], ['incarnation_stage_2', 'Avatar Consagrado'],
   ['unlock_relics', 'Selo das Relíquias'], ['first_relic_reset', '1ª Transmutação'],
-  ['unlock_gnose', 'Selo da Gnose'], ['first_gnose_reset', '1ª Ascensão'],
-  ['first_gnose_upgrade', '1º Upgrade da Gnose'], ['boss_anubis', 'Anúbis'],
-  ['boss_cronos', 'Hades'], ['boss_odin', 'Odin'], ['gnose_tree_complete', 'Árvore da Gnose completa'],
+  ['incarnation_stage_3', 'Avatar Ancestral'], ['unlock_gnose', 'Selo da Gnose'],
+  ['first_gnose_reset', '1ª Ascensão'], ['first_gnose_upgrade', '1º Upgrade da Gnose'],
+  ['boss_anubis', 'Anúbis'], ['incarnation_stage_4', 'Avatar do Eclipse'],
+  ['boss_cronos', 'Hades'], ['incarnation_stage_5', 'Avatar Solar'],
+  ['boss_odin', 'Odin'], ['gnose_tree_complete', 'Árvore da Gnose completa'],
   ['boss_tiamat', 'Caos Primordial'],
 ];
 

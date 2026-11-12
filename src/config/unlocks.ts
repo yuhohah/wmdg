@@ -32,7 +32,7 @@ export const initialUnlocks: MechanicUnlock[] = [
     desc: 'Libera a Transmutação: converta sua Fé atual em Fragmentos (mantendo Fiéis, Fervor e Ritos) para restaurar Relíquias Divinas.',
     lore: 'Enquanto você dormia, deuses nasceram e morreram esquecidos. Este selo guarda o que restou deles.',
     symbol: '',
-    cost: 20000000,
+    cost: 25e9,
     costCurrency: 'faith',
     unlocked: false,
     tabId: 'tab-relics',

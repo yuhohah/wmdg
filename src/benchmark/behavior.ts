@@ -76,9 +76,9 @@ export function routineClicksAvailable(behavior: Readonly<PlayerBehavior>, nowSe
 }
 
 export function describeBehavior(profile: PlayerArchetype): string {
-  if (profile === 'reference') return 'Referência: 2 cliques/s em rajadas de 10 s por minuto, 70% dos milagres e orçamento compartilhado de compras, Bênção e APARAR nos combates.';
-  if (profile === 'active') return 'Ativo: presença contínua, cliques rotineiros, manutenção manual do 2× e APARAR nos combates.';
-  if (profile === 'casual') return 'Casual: sessões de 8 min a cada 20 min (12 min ausente); cliques contínuos a 1/s durante a presença, compras/prestígios e manutenção manual do 2× até 6 s de carga e APARAR nos combates durante as visitas.';
+  if (profile === 'reference') return 'Referência: 2 cliques/s em rajadas de 10 s por minuto, 70% dos milagres e orçamento compartilhado de compras, Bênção, APARAR, Fulgor e milagres de combate.';
+  if (profile === 'active') return 'Ativo: presença contínua, cliques rotineiros, manutenção manual do 2×, APARAR, Fulgor e milagres nos combates.';
+  if (profile === 'casual') return 'Casual: sessões de 8 min a cada 20 min (12 min ausente); cliques contínuos a 1/s durante a presença, compras/prestígios, manutenção manual do 2× até 6 s de carga e APARAR/Fulgor/milagres nos combates durante as visitas.';
   return 'AFK: compras e prestígios contínuos; cliques na Esfera e ativação manual do 2× antes dos 10 min de tempo total; após Gnose, permite apenas cliques de recuperação até haver Fé para o primeiro fiel, sem reativar o 2× manual. Nos combates, usa APARAR com reação de 0,3 s e orçamento compartilhado de 2 interações/s, inclusive após os 10 min.';
 }
 

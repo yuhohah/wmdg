@@ -17,18 +17,18 @@ Com Nix, envolva o comando em `nix-shell --run '...'`. O horizonte padrão é 72
 
 | Perfil | Política |
 | --- | --- |
-| Referência | 2 cliques/s em rajadas de 10 segundos por minuto, 70% de captura pretendida de milagres. |
-| Ativo intenso | Presença contínua, 2 cliques/s rotineiros, manutenção de Bênção e participação no combate. |
-| Casual | 8 minutos presente a cada 20 minutos; 12 minutos ausente, 1 clique/s durante a presença e Bênção com alvo de 6 segundos. |
-| AFK | Compras e prestígios continuam; cliques e Bênção manuais param após 10 minutos, com recuperação do primeiro Fiel após Gnose. Não coleta milagres. Nos combates, usa APARAR mesmo após os 10 minutos, com reação de 0,3 s e limite compartilhado de 2 interações/s. |
+| Referência | 2 cliques/s em rajadas de 10 segundos por minuto, 70% de captura pretendida de milagres, APARAR, Fulgor e milagres de combate. |
+| Ativo intenso | Presença contínua, 2 cliques/s rotineiros, manutenção de Bênção e participação completa no combate (APARAR, Fulgor e milagres). |
+| Casual | 8 minutos presente a cada 20 minutos; 12 minutos ausente, 1 clique/s durante a presença, Bênção com alvo de 6 segundos e APARAR/Fulgor/milagres nos combates durante as visitas. |
+| AFK | Compras e prestígios continuam; cliques e Bênção manuais param após 10 minutos, com recuperação do primeiro Fiel após Gnose. Não coleta milagres manualmente. Nos combates, usa APARAR mesmo após os 10 minutos, com reação de 0,3 s e limite compartilhado de 2 interações/s. |
 
 As ações compartilham um orçamento de interações e atrasos de decisão. AFK é uma política do simulador com decisões de compra e Ascensão; não significa fechar o navegador. Os parâmetros completos estão em [behavior.ts](../../src/benchmark/behavior.ts).
 
 ## Fidelidade e conclusão
 
-Produção, cooldowns, Bênção, maldição, automações e combate usam subpassos de até 0,1 segundo. RNGs separados controlam críticos e calendário de milagres. A política decide quando comprar, ascender e desafiar; não substitui as validações do domínio. O acesso ao desafio não garante prontidão suficiente para vencer. Os quatro perfis usam a mesma seleção de APARAR, respeitando seus tempos de reação e orçamento de interações; o Casual só age quando está presente. As aparadas selecionam apenas o peso maior de Anúbis e deixam o menor expirar; toda tentativa realizada consome uma interação, mesmo se falhar.
+Produção, cooldowns, Bênção, maldição, automações, autoclicker da Esfera e combate usam subpassos de até 0,1 segundo. RNGs separados controlam críticos (incluindo o autoclicker do Tier 1 da Gnose) e calendário de milagres. A confirmação de Ascensão é cobrada apenas na primeira Ascensão, espelhando a interface. Os desafios aguardam prontidão defensiva (`canWithstandBoss`) antes de iniciar o duelo. Os quatro perfis usam a mesma seleção de APARAR, respeitando seus tempos de reação e orçamento de interações; os perfis com Esfera manual ativa também acionam Fulgor Divino e milagres de combate, enquanto os milagres do pátio pausam durante duelos. As aparadas selecionam apenas o peso maior de Anúbis e deixam o menor expirar; toda tentativa realizada consome uma interação, mesmo se falhar.
 
-A conclusão exige **20 nós assimilados e Caos Primordial derrotado**. `time_limit` e `blocked` são execuções incompletas; o tempo observado nelas não é um tempo de vitória. A CLI com várias seeds separa conclusão, bloqueio e limite; estatísticas de tempo de vitória usam somente campanhas concluídas.
+A conclusão exige **Avatar Solar (Estágio 5), 20 nós assimilados e Caos Primordial derrotado** (`isCampaignComplete()`). `time_limit` e `blocked` são execuções incompletas; o tempo observado nelas não é um tempo de vitória. A CLI com várias seeds separa conclusão, bloqueio e limite; estatísticas de tempo de vitória usam somente campanhas concluídas.
 
 O simulador aceita modos de ausência visível, aba oculta e save nas opções de campanha. Os modos oculto/save usam a produção de ausência, limitada a 24 horas por crédito, sem ações manuais ou combate. Não misture essas condições em uma mesma comparação.
 
