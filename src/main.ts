@@ -346,7 +346,6 @@ class AppManager {
       if (this.gnoseTab.bossBattleModal.isOpen()) this.gnoseTab.bossBattleModal.updateUI();
       this.achievementsTab.updateRealtime();
       this.onboardingGuide.update();
-      this.formulaTooltip.update();
       this.campaignEnding.update();
     });
   }
@@ -413,8 +412,15 @@ class AppManager {
 
   private updateCompletedCards(): void {
     const gs = this.gameState;
-    this.board.setCardCompleted('card-relics', gs.relicUpgrades.length > 0 &&
-      gs.relicUpgrades.every(relic => relic.level >= gs.getRelicMaxLevel(relic)));
+    let allRelicsMaxed = gs.relicUpgrades.length > 0;
+    for (let i = 0; i < gs.relicUpgrades.length; i++) {
+      const relic = gs.relicUpgrades[i];
+      if (relic.level < gs.getRelicMaxLevel(relic)) {
+        allRelicsMaxed = false;
+        break;
+      }
+    }
+    this.board.setCardCompleted('card-relics', allRelicsMaxed);
   }
 
   public renderAllLists(): void {
@@ -437,11 +443,20 @@ class AppManager {
     return views;
   }
 
+  private countUnlockedSeals(): number {
+    let count = 0;
+    const unlocks = this.gameState.unlocks;
+    for (let i = 0; i < unlocks.length; i++) {
+      if (unlocks[i].unlocked) count++;
+    }
+    return count;
+  }
+
   private startPassiveFaithLoop(): void {
     this.gameLoop.onTick((deltaSec) => {
-      const unlockedCount = this.gameState.unlocks.filter(u => u.unlocked).length;
+      const unlockedCount = this.countUnlockedSeals();
       this.gameState.tick(deltaSec);
-      if (this.gameState.unlocks.filter(u => u.unlocked).length !== unlockedCount) {
+      if (this.countUnlockedSeals() !== unlockedCount) {
         this.updateUnlockedTabsVisibility();
         this.renderAllLists();
       }

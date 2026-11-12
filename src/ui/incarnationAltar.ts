@@ -78,12 +78,14 @@ export class IncarnationAltar {
       ro.observe(this.container);
     }
 
-    // Skip drawing while the altar is panned off-screen or its card is still sealed
+    // Skip drawing and particle updates while the altar is panned off-screen or its card is still sealed
     if (typeof IntersectionObserver !== 'undefined') {
       new IntersectionObserver((entries) => {
         this.isOnScreen = entries[entries.length - 1].isIntersecting;
+        this.syncLoop();
       }).observe(this.canvas);
     }
+    document.addEventListener('visibilitychange', () => this.syncLoop());
   }
 
   public resize(): void {
@@ -138,6 +140,7 @@ export class IncarnationAltar {
       this.pulsePhase = 1.0;
       this.spawnBurstParticles(25);
     }
+    if (this.isOnScreen) this.draw();
   }
 
   public evolveToStage(stage: number): void {
@@ -148,6 +151,7 @@ export class IncarnationAltar {
   }
 
   private spawnBurstParticles(count: number): void {
+    if (!this.isOnScreen) return;
     const cx = this.width / 2;
     const cy = this.height * 0.45;
     const colors = incarnationParticleColors(this.currentStage);
@@ -212,7 +216,10 @@ export class IncarnationAltar {
       p.life -= frameScale;
       p.alpha = Math.max(0, p.life / p.maxLife);
       if (p.life <= 0) {
-        this.particles.splice(i, 1);
+        const last = this.particles.pop()!;
+        if (i < this.particles.length) {
+          this.particles[i] = last;
+        }
       }
     }
   }
@@ -280,15 +287,35 @@ export class IncarnationAltar {
     }
   }
 
+  private clock = new VisualFrameClock();
+
+  private syncLoop(): void {
+    const shouldRun = this.isOnScreen && document.visibilityState !== 'hidden';
+    if (!shouldRun) {
+      this.cancelFrame?.();
+      this.cancelFrame = null;
+      return;
+    }
+    if (!this.cancelFrame) {
+      this.clock = new VisualFrameClock();
+      this.startLoop();
+    }
+  }
+
   private startLoop(): void {
-    const clock = new VisualFrameClock();
     const loop = (nowMs: number) => {
-      const elapsedSec = clock.tick(nowMs);
-      if (elapsedSec !== null) {
-        this.update(elapsedSec);
-        if (this.isOnScreen && document.visibilityState !== 'hidden') this.draw();
+      if (!this.isOnScreen || document.visibilityState === 'hidden') {
+        this.cancelFrame = null;
+        return;
       }
-      this.cancelFrame = scheduleVisualFrame(this.isOnScreen, loop);
+      const isBossBattleActive =
+        typeof document !== 'undefined' && document.body.classList.contains('is-boss-battle-active');
+      const elapsedSec = this.clock.tick(nowMs);
+      if (elapsedSec !== null && !isBossBattleActive) {
+        this.update(elapsedSec);
+        this.draw();
+      }
+      this.cancelFrame = scheduleVisualFrame(this.isOnScreen && !isBossBattleActive, loop);
     };
     this.cancelFrame = scheduleVisualFrame(this.isOnScreen, loop);
   }

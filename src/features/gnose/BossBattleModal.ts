@@ -16,7 +16,7 @@ import {
   type FollowerTier,
 } from '../../ui/followerVisuals.js';
 import { FollowersArena } from '../../ui/followersArena.js';
-import { INCARNATION_FRAME_SIZE, incarnationStageIndex } from '../../ui/incarnationSprites.js';
+import { INCARNATION_FRAME_SIZE, incarnationStageIndex, loadIncarnationSprites } from '../../ui/incarnationSprites.js';
 
 export interface BossBattleModalOptions {
   gameState: GameStateManager;
@@ -173,7 +173,7 @@ const BOSS_DEFAULT_BOUNDS: Record<string, SpriteFrameBounds> = {
 const INCARNATION_FILES = ['01-neofito', '02-consagrado', '03-ancestral', '04-eclipse', '05-solar'] as const;
 
 const cachedBossSprites = new Map<string, BossLateralSprites>();
-let cachedIncarnationWalkSprites: IncarnationWalkSprite[] | null = null;
+const cachedIncarnationWalkSprites = new Map<number, IncarnationWalkSprite>();
 const spriteFrameBoundsCache = new WeakMap<HTMLImageElement, Map<number, SpriteFrameBounds>>();
 let boundsProbeCanvas: HTMLCanvasElement | null = null;
 let boundsProbeCtx: CanvasRenderingContext2D | null | undefined;
@@ -297,9 +297,10 @@ function getBossFrameBounds(
     let maxX = -1;
     let maxY = -1;
 
-    for (let y = 0; y < BOSS_SRC_H; y++) {
+    // 2px stride cuts pixel scan cost by 4x while staying well within HITBOX_PAD_PX (6px)
+    for (let y = 0; y < BOSS_SRC_H; y += 2) {
       const rowOffset = y * BOSS_SRC_W * 4;
-      for (let x = 0; x < BOSS_SRC_W; x++) {
+      for (let x = 0; x < BOSS_SRC_W; x += 2) {
         if (data[rowOffset + x * 4 + 3] > 24) {
           if (x < minX) minX = x;
           if (x > maxX) maxX = x;
@@ -357,17 +358,23 @@ function bossSheetFrameCount(sheet: HTMLImageElement | undefined): number {
     : 17;
 }
 
-function loadIncarnationProcessionSprites(): IncarnationWalkSprite[] {
-  if (cachedIncarnationWalkSprites) return cachedIncarnationWalkSprites;
+function loadIncarnationProcessionSprite(stageIndex: number): IncarnationWalkSprite | undefined {
+  const clamped = Math.max(0, Math.min(INCARNATION_FILES.length - 1, stageIndex));
+  const cached = cachedIncarnationWalkSprites.get(clamped);
+  if (cached) return cached;
+  const file = INCARNATION_FILES[clamped];
   const base = `${import.meta.env.BASE_URL}assets/`;
-  cachedIncarnationWalkSprites = INCARNATION_FILES.map((file) => {
-    const still = new Image();
-    still.src = `${base}concepts/encarnacao/${file}.png`;
-    const walk = new Image();
-    walk.src = `${base}sprites/encarnacao/${file}/andar/spritesheet.png`;
-    return { still, walk };
-  });
-  return cachedIncarnationWalkSprites;
+  const sharedStill = loadIncarnationSprites()[clamped]?.still;
+  const still = sharedStill ?? (() => {
+    const img = new Image();
+    img.src = `${base}concepts/encarnacao/${file}.png`;
+    return img;
+  })();
+  const walk = new Image();
+  walk.src = `${base}sprites/encarnacao/${file}/andar/spritesheet.png`;
+  const entry = { still, walk };
+  cachedIncarnationWalkSprites.set(clamped, entry);
+  return entry;
 }
 
 export function bossHpLabel(phase: number, hpPercent: number, passiveVictorySec: number): string {
@@ -1026,9 +1033,9 @@ export class BossBattleModal {
       this.phaseBannerEl.style.display = 'none';
     }
 
-    // Preload lateral boss, incarnation walk, and follower sprites
+    // Preload lateral boss, active incarnation walk, and follower sprites
     loadBossSprites(bossId);
-    loadIncarnationProcessionSprites();
+    loadIncarnationProcessionSprite(incarnationStageIndex(this.options.gameState.incarnationStage));
     loadFollowerSprites();
 
     this.allocateWorldCanvas();
@@ -1519,8 +1526,13 @@ export class BossBattleModal {
       candidateSheet && candidateSheet.complete && candidateSheet.naturalWidth > 0
         ? candidateSheet
         : null;
-    // Hitboxes are inactive during the climax; avoid scanning every collapsing frame.
-    const bounds = this.climaxState?.victory || (bossId === 'boss_tiamat' && this.bossState === 'attacking')
+    // Hitboxes are inactive during climax and pre-combat procession/walk; avoid scanning every frame.
+    const skipDynamicBoundsScan =
+      Boolean(this.climaxState?.victory) ||
+      this.bossState === 'awaiting_ritual' ||
+      this.bossState === 'walking' ||
+      (bossId === 'boss_tiamat' && this.bossState === 'attacking');
+    const bounds = skipDynamicBoundsScan
       ? getBossFrameBounds(bossSprites?.idle ?? null, 0, bossId)
       : getBossFrameBounds(activeSheet, frame, bossId);
 
@@ -1590,10 +1602,13 @@ export class BossBattleModal {
 
   private formatRitualStatsLabel(): string {
     if (this.bossState === 'walking') return 'O Guardião se aproxima da Esfera…';
-    const total = this.followerActors.length;
-    const encircling = this.followerActors.filter((f) => f.state === 'encircling').length;
     if (this.incState === 'walking_to_patio') return 'Ritual: buscando os Fiéis...';
     if (this.incState === 'gathering_at_patio') return 'Ritual: convocando a fila...';
+    const total = this.followerActors.length;
+    let encircling = 0;
+    for (let i = 0; i < total; i++) {
+      if (this.followerActors[i].state === 'encircling') encircling++;
+    }
     return `Ritual: roda ${encircling}/${total}`;
   }
 
@@ -1929,10 +1944,39 @@ export class BossBattleModal {
   }
 
   private resolveMiracleFollowerActor(miracle: ActiveBossMiracle | null | undefined): BattleFollowerActor | null {
-    if (!miracle || this.followerActors.length === 0) return null;
-    const encircling = this.followerActors.filter((f) => f.state === 'encircling');
-    const pool = encircling.length > 0 ? encircling : this.followerActors;
-    return pool[miracle.followerSlot % pool.length] ?? null;
+    const total = this.followerActors.length;
+    if (!miracle || total === 0) return null;
+    let encirclingCount = 0;
+    for (let i = 0; i < total; i++) {
+      if (this.followerActors[i].state === 'encircling') encirclingCount++;
+    }
+    if (encirclingCount === 0) {
+      return this.followerActors[miracle.followerSlot % total] ?? null;
+    }
+    let target = miracle.followerSlot % encirclingCount;
+    for (let i = 0; i < total; i++) {
+      const actor = this.followerActors[i];
+      if (actor.state === 'encircling') {
+        if (target === 0) return actor;
+        target--;
+      }
+    }
+    return this.followerActors[0] ?? null;
+  }
+
+  private readonly drawOrderPool: Array<{ kind: 0 | 1 | 2; index: number; y: number }> = [];
+
+  private pushDrawOrder(count: number, kind: 0 | 1 | 2, index: number, y: number): number {
+    let slot = this.drawOrderPool[count];
+    if (!slot) {
+      slot = { kind, index, y };
+      this.drawOrderPool[count] = slot;
+    } else {
+      slot.kind = kind;
+      slot.index = index;
+      slot.y = y;
+    }
+    return count + 1;
   }
 
   // Pixel speech bubble (3px grid) with a twinkling star matching FollowersArena.drawMiracleSpeechBubble
@@ -2151,76 +2195,78 @@ export class BossBattleModal {
       ctx.restore();
     }
 
-    // 4. Depth-sorted rendering of Followers, Incarnation, and Boss
-    type Renderable = { y: number; draw: () => void };
-    const drawList: Renderable[] = [];
+    // 4. Depth-sorted rendering of Followers, Incarnation, and Boss (zero per-frame closures)
     const miracleActor = this.resolveMiracleFollowerActor(battle?.activeMiracle);
-
     const followerSheets = loadFollowerSprites();
-    for (const f of this.followerActors) {
-      const isMiracleBearer = miracleActor?.id === f.id;
-      drawList.push({
-        y: f.y,
-        draw: () => {
-          const lx = Math.round(f.x - this.stageOriginX);
-          const ly = Math.round(f.y - this.stageOriginY);
-
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-          ctx.fillRect(lx - 12, ly - 2, 24, 4);
-
-          if (isMiracleBearer) {
-            ctx.save();
-            ctx.fillStyle = 'rgba(246, 220, 154, 0.32)';
-            ctx.beginPath();
-            ctx.ellipse(lx, ly - 2, 28, 10, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#f6dc9a';
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            ctx.arc(lx, ly - 38, 42, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.restore();
-          }
-
-          const animState =
-            f.state === 'encircling'
-              ? 'pray'
-              : (f.state === 'following_in_line' || f.state === 'returning_to_patio')
-                ? 'walk'
-                : 'idle';
-          const { action, frame } = followerAnimationFrame(animState, f.walkCycle, f.prayCycle, false);
-          const sheet = followerSheets[f.tier]?.[action];
-          if (sheet && sheet.complete && sheet.naturalWidth > 0) {
-            ctx.save();
-            ctx.translate(lx, ly);
-            ctx.scale(f.facing, 1);
-            ctx.drawImage(
-              sheet,
-              frame * FOLLOWER_FRAME_SIZE,
-              0,
-              FOLLOWER_FRAME_SIZE,
-              FOLLOWER_FRAME_SIZE,
-              -40,
-              -74,
-              80,
-              80
-            );
-            ctx.restore();
-          }
-
-          if (isMiracleBearer) {
-            this.drawFollowerMiracleBubble(ctx, lx, ly, f.prayCycle);
-          }
-        },
-      });
-    }
-
-    // Incarnation Avatar
     const incStageIdx = incarnationStageIndex(this.options.gameState.incarnationStage);
-    const incSprites = loadIncarnationProcessionSprites()[incStageIdx];
-    drawList.push({
-      y: this.incY,
-      draw: () => {
+    const incSprites = loadIncarnationProcessionSprite(incStageIdx);
+
+    let orderCount = 0;
+    for (let i = 0; i < this.followerActors.length; i++) {
+      orderCount = this.pushDrawOrder(orderCount, 0, i, this.followerActors[i].y);
+    }
+    orderCount = this.pushDrawOrder(orderCount, 1, 0, this.incY);
+    if (this.bossState !== 'awaiting_ritual' && !(climax?.victory && climax.remainingSec <= 0)) {
+      orderCount = this.pushDrawOrder(orderCount, 2, 0, this.bossY);
+    }
+    this.drawOrderPool.length = orderCount;
+    this.drawOrderPool.sort((a, b) => a.y - b.y);
+
+    for (let i = 0; i < orderCount; i++) {
+      const entry = this.drawOrderPool[i];
+      if (entry.kind === 0) {
+        const f = this.followerActors[entry.index];
+        const isMiracleBearer = miracleActor?.id === f.id;
+        const lx = Math.round(f.x - this.stageOriginX);
+        const ly = Math.round(f.y - this.stageOriginY);
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(lx - 12, ly - 2, 24, 4);
+
+        if (isMiracleBearer) {
+          ctx.save();
+          ctx.fillStyle = 'rgba(246, 220, 154, 0.32)';
+          ctx.beginPath();
+          ctx.ellipse(lx, ly - 2, 28, 10, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#f6dc9a';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(lx, ly - 38, 42, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        const animState =
+          f.state === 'encircling'
+            ? 'pray'
+            : (f.state === 'following_in_line' || f.state === 'returning_to_patio')
+              ? 'walk'
+              : 'idle';
+        const { action, frame } = followerAnimationFrame(animState, f.walkCycle, f.prayCycle, false);
+        const sheet = followerSheets[f.tier]?.[action];
+        if (sheet && sheet.complete && sheet.naturalWidth > 0) {
+          ctx.save();
+          ctx.translate(lx, ly);
+          ctx.scale(f.facing, 1);
+          ctx.drawImage(
+            sheet,
+            frame * FOLLOWER_FRAME_SIZE,
+            0,
+            FOLLOWER_FRAME_SIZE,
+            FOLLOWER_FRAME_SIZE,
+            -40,
+            -74,
+            80,
+            80
+          );
+          ctx.restore();
+        }
+
+        if (isMiracleBearer) {
+          this.drawFollowerMiracleBubble(ctx, lx, ly, f.prayCycle);
+        }
+      } else if (entry.kind === 1) {
         const lx = Math.round(this.incX - this.stageOriginX);
         const ly = Math.round(this.incY - this.stageOriginY);
 
@@ -2293,34 +2339,44 @@ export class BossBattleModal {
           ctx.fillText(caption, lx, ly - 134);
           ctx.restore();
         }
-      },
-    });
+      } else {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+        ctx.beginPath();
+        ctx.ellipse(bossFrame.lx, bossFrame.ly + 14, 82, 22, 0, 0, Math.PI * 2);
+        ctx.fill();
 
-    // Boss Sprite
-    if (this.bossState !== 'awaiting_ritual' && !(climax?.victory && climax.remainingSec <= 0)) {
-      drawList.push({
-        y: this.bossY,
-        draw: () => {
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
-          ctx.beginPath();
-          ctx.ellipse(bossFrame.lx, bossFrame.ly + 14, 82, 22, 0, 0, Math.PI * 2);
-          ctx.fill();
-
-          if (bossFrame.sheet) {
-            ctx.save();
-            if (climax?.victory) {
-              const isDefeatAnimation = bossFrame.sheet === loadBossSprites(bossId)?.defeat;
-              if (isDefeatAnimation) {
-                // Preserve the generated artwork, dissolving only the last tenth of the sequence.
-                ctx.globalAlpha = Math.min(1, Math.max(0, climax.remainingSec / (climax.totalSec * 0.1)));
-              } else {
-                // A failed or not-yet-loaded sheet keeps the existing victory fade as fallback.
-                ctx.filter = 'brightness(2.35) contrast(1.25)';
-                ctx.globalAlpha = Math.max(0, climax.remainingSec / climax.totalSec);
-              }
-            } else if (this.bossHitFlashSec > 0) {
-              ctx.filter = 'brightness(1.75) contrast(1.15)';
+        if (bossFrame.sheet) {
+          ctx.save();
+          let additiveBoostAlpha = 0;
+          if (climax?.victory) {
+            const isDefeatAnimation = bossFrame.sheet === loadBossSprites(bossId)?.defeat;
+            if (isDefeatAnimation) {
+              // Preserve the generated artwork, dissolving only the last tenth of the sequence.
+              ctx.globalAlpha = Math.min(1, Math.max(0, climax.remainingSec / (climax.totalSec * 0.1)));
+            } else {
+              // A failed or not-yet-loaded sheet keeps the existing victory fade as fallback.
+              const fade = Math.max(0, climax.remainingSec / climax.totalSec);
+              ctx.globalAlpha = fade;
+              additiveBoostAlpha = fade * 0.75;
             }
+          } else if (this.bossHitFlashSec > 0) {
+            additiveBoostAlpha = 0.55;
+          }
+          ctx.drawImage(
+            bossFrame.sheet,
+            bossFrame.frame * BOSS_SRC_W,
+            0,
+            BOSS_SRC_W,
+            BOSS_SRC_H,
+            bossFrame.drawLeft,
+            bossFrame.drawTop,
+            bossFrame.drawW,
+            bossFrame.drawH
+          );
+          if (additiveBoostAlpha > 0) {
+            // Hardware-accelerated additive pass brightens only opaque sprite pixels without a full-canvas software filter
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.globalAlpha = additiveBoostAlpha;
             ctx.drawImage(
               bossFrame.sheet,
               bossFrame.frame * BOSS_SRC_W,
@@ -2332,15 +2388,10 @@ export class BossBattleModal {
               bossFrame.drawW,
               bossFrame.drawH
             );
-            ctx.restore();
           }
-        },
-      });
-    }
-
-    drawList.sort((a, b) => a.y - b.y);
-    for (const item of drawList) {
-      item.draw();
+          ctx.restore();
+        }
+      }
     }
 
     // 5. ~1.5s Climax Overlay on the World Stage (Victory Dissolution Beams or Defeat Sphere Fracture)

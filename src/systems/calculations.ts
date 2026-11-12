@@ -26,10 +26,14 @@ export function calculateFervorUpgradeCost(upg: FervorUpgrade, costMultiplier: n
 const MAX_ACHIEVEMENT_COST_DISCOUNT = 0.5;
 
 function sumAchievementBuffs(achievements: Achievement[], type: BuffType): number {
-  return achievements.reduce(
-    (acc, ach) => (ach.unlocked && ach.buffType === type ? acc + ach.buffVal : acc),
-    0
-  );
+  let acc = 0;
+  for (let i = 0; i < achievements.length; i++) {
+    const ach = achievements[i];
+    if (ach.unlocked && ach.buffType === type) {
+      acc += ach.buffVal;
+    }
+  }
+  return acc;
 }
 
 export function calculateClickBuffMultiplier(achievements: Achievement[]): number {
@@ -92,9 +96,12 @@ export function calculateFaithPerSecond(
   relicFaithMult: number = 1.0,
   incarnationBoostMult: number = 1.0
 ): number {
-  const followersOutput = followers.reduce((acc, curr) => acc + curr.count * curr.baseEffect, 0)
-    * fervorFollowersMult
-    * incarnationFollowerMult;
+  let rawFollowersOutput = 0;
+  for (let i = 0; i < followers.length; i++) {
+    const curr = followers[i];
+    rawFollowersOutput += curr.count * curr.baseEffect;
+  }
+  const followersOutput = rawFollowersOutput * fervorFollowersMult * incarnationFollowerMult;
   return followersOutput * passiveBuffMult * globalBuffMult * fervorFaithBonus * relicFaithMult * incarnationBoostMult;
 }
 

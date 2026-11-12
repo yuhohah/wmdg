@@ -38,14 +38,14 @@ export class FormulaTooltip {
     document.body.appendChild(this.el);
 
     document.addEventListener('pointermove', e => {
-      if (e.pointerType === 'touch') return;
+      if (!this.game.nerdsEnabled || e.pointerType === 'touch') return;
       this.target = e.target instanceof HTMLElement ? e.target : e.target instanceof Element ? e.target.parentElement : null;
       this.x = e.clientX;
       this.y = e.clientY;
       this.update();
     });
     document.addEventListener('focusin', e => {
-      if (!(e.target instanceof HTMLElement)) return;
+      if (!this.game.nerdsEnabled || !(e.target instanceof HTMLElement)) return;
       this.target = e.target;
       const rect = e.target.getBoundingClientRect();
       this.x = rect.left;
@@ -68,7 +68,7 @@ export class FormulaTooltip {
   }
 
   public hide(): void {
-    this.el.hidden = true;
+    if (!this.el.hidden) this.el.hidden = true;
     this.target = null;
   }
 

@@ -2,9 +2,18 @@
 
 Histórico de mudanças de *Cult of the Sphere*, em ordem da versão mais recente para a mais antiga.
 
-A versão atual é **0.11.0**. A numeração anterior foi atribuída retrospectivamente aos últimos dez commits: o mais antigo corresponde à 0.7.0, os oito seguintes vão de 0.7.1 a 0.7.8 e o mais recente inicia a 0.8.0. As datas anteriores são as dos commits de referência, não datas de publicação. A 0.8.0 também reúne as mudanças locais mais recentes.
+A versão atual é **0.12.0**. A numeração anterior foi atribuída retrospectivamente aos últimos dez commits: o mais antigo corresponde à 0.7.0, os oito seguintes vão de 0.7.1 a 0.7.8 e o mais recente inicia a 0.8.0. As datas anteriores são as dos commits de referência, não datas de publicação. A 0.8.0 também reúne as mudanças locais mais recentes.
 
 Para as próximas versões, usamos `MAJOR.MINOR.PATCH`: novidades e mudanças relevantes de jogabilidade avançam o número do meio; correções e ajustes menores avançam o último. Enquanto o jogo estiver em desenvolvimento, o primeiro número permanece em zero. Cada nova versão deve atualizar este arquivo, `package.json` e a versão do projeto em `package-lock.json`.
+
+## 0.12.0 — 2026-11-12
+
+- A renderização da Esfera reutiliza buffers e cálculos dos anéis, reduzindo alocações de memória e trabalho por quadro. A animação pausa durante batalhas e o encerramento da campanha.
+- A simulação e a verificação de conquistas reutilizam estruturas e reduzem alocações temporárias. As condições das conquistas recebem todos os dados atualizados, independentemente do nome de seus IDs.
+- As batalhas carregam apenas a animação de caminhada do estágio atual da Encarnação, compartilham suas imagens estáticas e reutilizam a lista de desenho dos personagens. O cálculo dos limites dos Guardiões foi reduzido e os flashes de dano usam composição aditiva no lugar de filtros de brilho.
+- O altar da Encarnação pausa suas animações quando está fora da tela ou com a página oculta. O Pátio dos Fiéis evita partículas fora da tela, reutiliza a ordenação dos personagens e reduz a frequência de atualização quando pausado ou durante batalhas.
+- Reduzido o uso de filtros de desfoque nos cards selados e removida a atualização duplicada das fórmulas Nerds. Os eventos de movimento e foco dessas fórmulas ignoram o trabalho quando o modo está desativado.
+- O build exclui artes legadas sem uso, preservando as quatro imagens ativas da Esfera, a imagem do satélite de autoclique e o fundo do altar da Encarnação.
 
 ## 0.11.0 — 2026-11-12
 

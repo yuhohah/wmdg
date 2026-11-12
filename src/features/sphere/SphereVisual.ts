@@ -81,8 +81,12 @@ export class SphereVisual {
     this.frame = undefined;
     const elapsed = this.clock.tick(time);
     if (elapsed !== null) {
-      this.motion.advance(Math.min(0.1, elapsed));
-      this.draw();
+      const bodyClass = document.body?.classList;
+      const occludedByScene = bodyClass?.contains('is-boss-battle-active') || bodyClass?.contains('is-campaign-ending');
+      if (!occludedByScene) {
+        this.motion.advance(Math.min(0.1, elapsed));
+        this.draw();
+      }
     }
     this.frame = requestAnimationFrame(this.tick);
   };

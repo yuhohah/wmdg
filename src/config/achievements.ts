@@ -526,7 +526,14 @@ export const initialAchievements: Achievement[] = [
   // --- Completed Gnose tiers ---
   ...([1, 2, 3, 4] as const).map((tier): Achievement => {
     const upgrades = GNOSE_UPGRADES.filter((upgrade) => upgrade.tier === tier);
-    const ownedCount = (ids: string[] = []) => upgrades.filter((upgrade) => ids.includes(upgrade.id)).length;
+    const ownedCount = (ids: string[] = []) => {
+      if (ids.length === 0) return 0;
+      let count = 0;
+      for (let i = 0; i < upgrades.length; i++) {
+        if (ids.includes(upgrades[i].id)) count++;
+      }
+      return count;
+    };
     return {
       id: `ach_gnose_tier_${tier}`,
       name: ['Despertar Completo', 'Persistência Completa', 'Poder do Culto Completo', 'Apoteose Completa'][tier - 1],

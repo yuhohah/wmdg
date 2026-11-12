@@ -199,24 +199,37 @@ export class GameStateManager {
 
   // --- Multipliers & Rates ---
   public getTotalFollowersCount(): number {
-    return this.followers.reduce((acc, curr) => acc + curr.count, 0);
+    let total = 0;
+    for (let i = 0; i < this.followers.length; i++) {
+      total += this.followers[i].count;
+    }
+    return total;
+  }
+
+  private isSealUnlockedById(id: string, expectedIndex: number): boolean {
+    const fast = this.unlocks[expectedIndex];
+    if (fast && fast.id === id) return fast.unlocked;
+    for (let i = 0; i < this.unlocks.length; i++) {
+      if (this.unlocks[i].id === id) return this.unlocks[i].unlocked;
+    }
+    return false;
   }
 
   public isIncarnationUnlocked(): boolean {
-    return this.unlocks.find((u) => u.id === 'unlock_incarnation')?.unlocked ?? false;
+    return this.isSealUnlockedById('unlock_incarnation', 0);
   }
 
   public isFervorUpgradesUnlocked(): boolean {
-    return this.unlocks.find((u) => u.id === 'unlock_fervor_upgrades')?.unlocked ?? false;
+    return this.isSealUnlockedById('unlock_fervor_upgrades', 1);
   }
 
   public isRelicsUnlocked(): boolean {
-    return this.unlocks.find((u) => u.id === 'unlock_relics')?.unlocked ?? false;
+    return this.isSealUnlockedById('unlock_relics', 2);
   }
 
   public isGnoseUnlocked(): boolean {
     return (
-      (this.unlocks.find((u) => u.id === 'unlock_gnose')?.unlocked ?? false) ||
+      this.isSealUnlockedById('unlock_gnose', 3) ||
       this.gnoseResets > 0 ||
       this.totalGnoseEarned > 0
     );
@@ -682,12 +695,20 @@ export class GameStateManager {
     return false;
   }
 
+  private hasUnlockedAchievementBuff(buffType: Achievement['buffType']): boolean {
+    for (let i = 0; i < this.achievements.length; i++) {
+      const ach = this.achievements[i];
+      if (ach.unlocked && ach.buffType === buffType) return true;
+    }
+    return false;
+  }
+
   public areMiraclesUnlocked(): boolean {
-    return this.achievements.some((ach) => ach.unlocked && ach.buffType === 'miracles_unlock');
+    return this.hasUnlockedAchievementBuff('miracles_unlock');
   }
 
   public areMiraclesAutoCollected(): boolean {
-    return this.achievements.some((ach) => ach.unlocked && ach.buffType === 'miracles_auto');
+    return this.hasUnlockedAchievementBuff('miracles_auto');
   }
 
   public spawnBossMiracle(preferredSlot?: number): void {
@@ -1061,6 +1082,8 @@ export class GameStateManager {
   }
 
   public isPhoenixRelicUnlocked(): boolean {
+    const fast = this.relicUpgrades[2];
+    if (fast && fast.id === 'relic_phoenix') return fast.level >= 1;
     return (this.relicUpgrades.find((r) => r.id === 'relic_phoenix')?.level ?? 0) >= 1;
   }
 
@@ -1101,7 +1124,8 @@ export class GameStateManager {
   }
 
   public getRelicsBonusMultiplier(): number {
-    const fuRelics = this.fervorUpgrades.find((u) => u.id === 'fu_relics');
+    const fast = this.fervorUpgrades[5];
+    const fuRelics = fast && fast.id === 'fu_relics' ? fast : this.fervorUpgrades.find((u) => u.id === 'fu_relics');
     let mult = 1.0;
     if (fuRelics && fuRelics.level > 0) {
       mult = this.getFervorUpgradeEffect(fuRelics);
@@ -1114,6 +1138,8 @@ export class GameStateManager {
   }
 
   public getIncarnationStageMultiplier(): number {
+    const fast = INCARNATION_STAGES[this.incarnationStage - 1];
+    if (fast && fast.stage === this.incarnationStage) return fast.multiplier;
     const st = INCARNATION_STAGES.find((s) => s.stage === this.incarnationStage);
     return st ? st.multiplier : 1;
   }
@@ -1142,9 +1168,13 @@ export class GameStateManager {
     const fervorEffectMult = this.getFervorUpgradeEffect(this.fervorUpgrades[1]);
     const fervorFaithBonus = calculateFervorFaithBonus(Math.max(this.fervorPoints, this.fervorPeakThisRun), fervorEffectMult) * this.getFervorResonanceMultiplier();
 
-    const base = 1 + this.achievements.reduce(
-      (sum, ach) => sum + (ach.unlocked && ach.buffType === 'fpc_base' ? ach.buffVal : 0), 0
-    );
+    let base = 1;
+    for (let i = 0; i < this.achievements.length; i++) {
+      const ach = this.achievements[i];
+      if (ach.unlocked && ach.buffType === 'fpc_base') {
+        base += ach.buffVal;
+      }
+    }
     return calculateFaithPerClick(clickBuff, globalBuff, fervorClickMult, fervorFaithBonus, base);
   }
 
@@ -1162,7 +1192,10 @@ export class GameStateManager {
   }
 
   private getFaithPerSecondForFollowers(followers: BuyableItem[]): number {
-    const followersCount = followers.reduce((total, item) => total + item.count, 0);
+    let followersCount = 0;
+    for (let i = 0; i < followers.length; i++) {
+      followersCount += followers[i].count;
+    }
     const fervorFollowersMult = this.getFervorUpgradeEffect(this.fervorUpgrades[3], followersCount);
     const incFollowerMult = this.getEffectiveIncarnationFollowerMultiplier();
     const passiveBuff = calculatePassiveBuffMultiplier(this.achievements);
@@ -1200,7 +1233,11 @@ export class GameStateManager {
     }
 
     let prodMult = this.getFervorUpgradeEffect(this.fervorUpgrades[0]);
-    const torchMult = 1 + ((this.relicUpgrades.find((r) => r.id === 'relic_torch')?.level ?? 0) * 0.20);
+    const fastTorch = this.relicUpgrades[1];
+    const torchLevel = fastTorch && fastTorch.id === 'relic_torch'
+      ? fastTorch.level
+      : (this.relicUpgrades.find((r) => r.id === 'relic_torch')?.level ?? 0);
+    const torchMult = 1 + (torchLevel * 0.20);
     prodMult *= torchMult;
     prodMult *= this.getIncarnationStageMultiplier();
     prodMult *= this.getGnoseReconstructionMultiplier();
@@ -1251,26 +1288,30 @@ export class GameStateManager {
   }
 
   public getSphereAutoclickProgress(): number | null {
-    return this.achievements.some((ach) => ach.unlocked && ach.buffType === 'sphere_autoclick')
+    return this.hasUnlockedAchievementBuff('sphere_autoclick')
       ? this.sphereAutoAccumulatorSec : null;
   }
 
   // --- Game Loop Tick Logic ---
   public tick(deltaSec: number): { faithGained: number; fervorGained: number; relicGained: number } {
     if (!Number.isFinite(deltaSec) || deltaSec < 0) throw new RangeError('Intervalo de simulação inválido.');
-    const gains = { faithGained: 0, fervorGained: 0, relicGained: 0 };
+    let faithGained = 0;
+    let fervorGained = 0;
+    let relicGained = 0;
     // All systems share the same substeps, including buffs, combat and automation.
     let remaining = deltaSec;
     while (remaining > 1e-8) {
       const step = Math.min(0.1, remaining);
       const result = this.advanceTick(step);
-      gains.faithGained += result.faithGained;
-      gains.fervorGained += result.fervorGained;
-      gains.relicGained += result.relicGained;
+      faithGained += result.faithGained;
+      fervorGained += result.fervorGained;
+      relicGained += result.relicGained;
       remaining -= step;
     }
-    return gains;
+    return { faithGained, fervorGained, relicGained };
   }
+
+  private readonly tickResult = { faithGained: 0, fervorGained: 0, relicGained: 0 };
 
   private advanceTick(deltaSec: number): { faithGained: number; fervorGained: number; relicGained: number } {
     if (this.bossCurseTimerSec > 0) {
@@ -1314,7 +1355,7 @@ export class GameStateManager {
     }
 
     // Automatic Sphere clicks use the same rewards, criticals and lifetime counter as manual clicks.
-    if (this.achievements.some((ach) => ach.unlocked && ach.buffType === 'sphere_autoclick')) {
+    if (this.hasUnlockedAchievementBuff('sphere_autoclick')) {
       this.sphereAutoAccumulatorSec += deltaSec;
       if (this.sphereAutoAccumulatorSec + 1e-8 >= 1) {
         this.sphereAutoAccumulatorSec = Math.max(0, this.sphereAutoAccumulatorSec - 1);
@@ -1331,7 +1372,10 @@ export class GameStateManager {
       this.runGnoseAutomation();
     }
 
-    return { faithGained, fervorGained, relicGained };
+    this.tickResult.faithGained = faithGained;
+    this.tickResult.fervorGained = fervorGained;
+    this.tickResult.relicGained = relicGained;
+    return this.tickResult;
   }
 
   private tickBossBattle(deltaSec: number): void {
@@ -1802,14 +1846,75 @@ export class GameStateManager {
     return { gained: toGet, success: true };
   }
 
+  private readonly achSnapshot: GameStateSnapshot = {
+    faith: 0,
+    totalFaith: 0,
+    clicks: 0,
+    followers: 0,
+    fps: 0,
+    fervor: 0,
+    relics: 0,
+    totalRelics: 0,
+    gnosePoints: 0,
+    totalGnoseEarned: 0,
+    gnoseResets: 0,
+    gnoseUpgradeIds: [],
+    defeatedBossesCount: 0,
+    defeatedBossIds: [],
+    tiamatDefeated: false
+  };
+  private readonly emptyAchievements: Achievement[] = [];
+
   public checkAchievements(): Achievement[] {
-    const snapshot = this.getSnapshot();
-    const newlyUnlocked: Achievement[] = [];
-    for (const ach of this.achievements) {
-      if (!ach.unlocked && ach.check(snapshot)) {
+    let hasLocked = false;
+    for (let i = 0; i < this.achievements.length; i++) {
+      const ach = this.achievements[i];
+      if (!ach.unlocked) {
+        hasLocked = true;
+        break;
+      }
+    }
+    if (!hasLocked) {
+      this.emptyAchievements.length = 0;
+      return this.emptyAchievements;
+    }
+
+    // Refresh every field: achievement conditions must not depend on ID naming.
+    // Reuse the snapshot and its arrays to avoid per-tick allocation.
+    const snap = this.achSnapshot;
+    snap.faith = this.faithPoints;
+    snap.totalFaith = this.totalFaithAccumulated;
+    snap.clicks = this.totalClicks;
+    snap.followers = this.getTotalFollowersCount();
+    snap.fps = this.getFaithPerSecond();
+    snap.fervor = this.fervorPoints;
+    snap.relics = this.relicPoints;
+    snap.totalRelics = this.bestRelicsToGet;
+    snap.gnosePoints = this.gnosePoints;
+    snap.totalGnoseEarned = this.totalGnoseEarned;
+    snap.gnoseResets = this.gnoseResets;
+    snap.defeatedBossesCount = this.defeatedBosses.size;
+    snap.tiamatDefeated = this.defeatedBosses.has('boss_tiamat');
+
+    const gnoseArr = snap.gnoseUpgradeIds!;
+    gnoseArr.length = 0;
+    for (const id of this.unlockedGnoseUpgrades) gnoseArr.push(id);
+    const bossArr = snap.defeatedBossIds!;
+    bossArr.length = 0;
+    for (const id of this.defeatedBosses) bossArr.push(id);
+
+    let newlyUnlocked: Achievement[] | null = null;
+    for (let i = 0; i < this.achievements.length; i++) {
+      const ach = this.achievements[i];
+      if (!ach.unlocked && ach.check(snap)) {
         ach.unlocked = true;
+        if (!newlyUnlocked) newlyUnlocked = [];
         newlyUnlocked.push(ach);
       }
+    }
+    if (!newlyUnlocked) {
+      this.emptyAchievements.length = 0;
+      return this.emptyAchievements;
     }
     return newlyUnlocked;
   }

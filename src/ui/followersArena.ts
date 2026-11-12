@@ -301,6 +301,7 @@ export class FollowersArena {
   }
 
   private spawnPrayerParticles(w: Walker, count: number): void {
+    if (!this.isOnScreen) return;
     for (let i = 0; i < count; i++) {
       w.prayParticles.push({
         x: w.x + (Math.random() - 0.5) * 14,
@@ -335,7 +336,10 @@ export class FollowersArena {
         p.y += p.vy * speedScale;
         p.alpha -= 0.02 * speedScale;
         if (p.alpha <= 0) {
-          w.prayParticles.splice(i, 1);
+          const last = w.prayParticles.pop()!;
+          if (i < w.prayParticles.length) {
+            w.prayParticles[i] = last;
+          }
         }
       }
 
@@ -405,7 +409,13 @@ export class FollowersArena {
 
     // Periodically spawn a miracle plea
     if (this.walkers.length > 0 && this.miraclesUnlocked()) {
-      const hasActiveMiracle = this.walkers.some((w) => w.isMiraclePlea);
+      let hasActiveMiracle = false;
+      for (let i = 0; i < this.walkers.length; i++) {
+        if (this.walkers[i].isMiraclePlea) {
+          hasActiveMiracle = true;
+          break;
+        }
+      }
       if (!hasActiveMiracle) {
         this.miracleSpawnCooldown -= elapsedSec * this.speedMultiplier;
         if (this.miracleSpawnCooldown <= 0) {
@@ -416,18 +426,31 @@ export class FollowersArena {
     }
   }
 
+  private readonly sortedWalkers: Walker[] = [];
+  private wasClearedForBossBattle = false;
+
   private draw(): void {
     const ctx = this.ctx;
-    ctx.clearRect(0, 0, this.width, this.height);
     if (typeof document !== 'undefined' && document.body.classList.contains('is-boss-battle-active')) {
+      if (!this.wasClearedForBossBattle) {
+        ctx.clearRect(0, 0, this.width, this.height);
+        this.wasClearedForBossBattle = true;
+      }
       return;
     }
+    this.wasClearedForBossBattle = false;
+    ctx.clearRect(0, 0, this.width, this.height);
 
-    // Sort walkers by Y position for proper isometric depth rendering
-    const sorted = [...this.walkers].sort((a, b) => a.y - b.y);
+    // Sort walkers by Y position for proper isometric depth rendering without allocating a new array
+    const count = this.walkers.length;
+    this.sortedWalkers.length = count;
+    for (let i = 0; i < count; i++) {
+      this.sortedWalkers[i] = this.walkers[i];
+    }
+    this.sortedWalkers.sort((a, b) => a.y - b.y);
 
-    for (const w of sorted) {
-      this.drawWalker(w);
+    for (let i = 0; i < count; i++) {
+      this.drawWalker(this.sortedWalkers[i]);
     }
   }
 
@@ -522,12 +545,14 @@ export class FollowersArena {
   private startLoop(): void {
     const clock = new VisualFrameClock();
     const loop = (nowMs: number) => {
+      const isBossBattleActive =
+        typeof document !== 'undefined' && document.body.classList.contains('is-boss-battle-active');
       const elapsedSec = clock.tick(nowMs);
       if (elapsedSec !== null && !this.isPaused) {
         this.update(elapsedSec);
         if (this.isOnScreen && document.visibilityState !== 'hidden') this.draw();
       }
-      this.cancelFrame = scheduleVisualFrame(this.isOnScreen, loop);
+      this.cancelFrame = scheduleVisualFrame(this.isOnScreen && !this.isPaused && !isBossBattleActive, loop);
     };
     this.cancelFrame = scheduleVisualFrame(this.isOnScreen, loop);
   }

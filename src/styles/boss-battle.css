@@ -89,8 +89,7 @@
 
 .gnose-tier-sealed .gnose-tier-grid {
   min-height: 230px;
-  filter: blur(7px);
-  opacity: 0.22;
+  opacity: 0.14;
   pointer-events: none;
   user-select: none;
 }
