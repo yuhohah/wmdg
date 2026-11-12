@@ -541,7 +541,7 @@
     </aside>
 
     <div id="achievements-modal" class="modal-overlay">
-      <div class="modal-slide-card" style="max-width: 560px;">
+      <div class="modal-slide-card achievement-modal-card" style="max-width: 800px;">
         <div class="modal-header">
           <div>
             <h3 class="modal-title">Grimório de Conquistas</h3>
@@ -556,7 +556,12 @@
         </div>
 
         <div id="tab-achievements" class="tab-pane active" style="display: block; max-height: 60vh; overflow-y: auto; padding-right: 4px;">
-          <div class="card-list" id="achievements-list"></div>
+          <p class="achievement-intro">Cada selo registra um feito eterno. Selecione uma conquista para conhecer sua recompensa.</p>
+          <progress id="achievement-completion" value="0" max="20" aria-label="Total de conquistas desbloqueadas"></progress>
+          <div class="achievement-collection">
+            <div id="achievements-list"></div>
+            <aside id="achievement-detail" class="achievement-detail" aria-label="Detalhes da conquista"></aside>
+          </div>
         </div>
 
         <div style="display: flex; justify-content: flex-end; margin-top: 20px;">

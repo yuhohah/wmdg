@@ -74,9 +74,9 @@ export function calculateFaithPerClick(
   clickBuffMult: number,
   globalBuffMult: number,
   fervorClickMult: number,
-  fervorFaithBonus: number
+  fervorFaithBonus: number,
+  base: number = 1
 ): number {
-  const base = 1;
   const fpc = base * clickBuffMult * globalBuffMult * fervorClickMult * fervorFaithBonus;
   // Sem arredondar para baixo: senão bônus pequenos (+10%, +20%) sumiriam no início do jogo
   return Math.max(1, fpc);

@@ -1,5 +1,20 @@
 import type { GameStateManager } from '../core/GameState.js';
+import { events, GameEvents } from '../core/EventBus.js';
 import { getPurchaseFormulas } from '../systems/purchaseFormulas.js';
+
+const TOOLTIP_SELECTOR = [
+  '#btn-convert-one',
+  '#btn-convert-max',
+  '#btn-upgrade-incarnation',
+  '#btn-unlock-single',
+  '#btn-convert-relics',
+  '#btn-gnose-reset',
+  '#incarnation-altar-container',
+  '#incarnation-blessing-panel',
+  '.fervor-upgrade-card',
+  '.relic-action-card',
+  '.gnose-tree-node',
+].join(', ');
 
 /** One delegated hover surface for purchases, including cards rebuilt during play. */
 export class FormulaTooltip {
@@ -38,13 +53,18 @@ export class FormulaTooltip {
       this.update();
     });
     document.addEventListener('focusout', () => this.hide());
-    document.addEventListener('pointerdown', () => this.hide());
     document.addEventListener('pointerleave', () => this.hide());
     document.addEventListener('keydown', e => { if (e.key === 'Escape') this.hide(); });
     window.addEventListener('blur', () => this.hide());
     window.addEventListener('resize', () => this.hide());
     window.addEventListener('scroll', () => this.hide(), true);
     document.addEventListener('wheel', () => this.hide(), { passive: true });
+
+    const refreshIfOpen = () => {
+      if (!this.el.hidden) this.update();
+    };
+    events.on(GameEvents.STATE_CHANGED, refreshIfOpen);
+    events.on(GameEvents.GAME_TICK, refreshIfOpen);
   }
 
   public hide(): void {
@@ -53,19 +73,28 @@ export class FormulaTooltip {
   }
 
   public update(): void {
-    if (!this.game.nerdsEnabled || !this.target?.isConnected) {
+    if (!this.game.nerdsEnabled) {
       this.hide();
       return;
     }
-    const target = this.target.closest<HTMLElement>(
-      '#btn-convert-one, #btn-convert-max, #btn-upgrade-incarnation, #btn-unlock-single, .fervor-upgrade-card, .relic-action-card, .gnose-tree-node'
-    );
+    if (!this.target?.isConnected && typeof document.elementFromPoint === 'function') {
+      const hovered = document.elementFromPoint(this.x, this.y);
+      this.target = hovered instanceof HTMLElement ? hovered : hovered?.parentElement ?? null;
+    }
+    if (!this.target?.isConnected) {
+      this.hide();
+      return;
+    }
+    const target = this.target.closest<HTMLElement>(TOOLTIP_SELECTOR);
     if (!target || target.closest('[inert], [aria-hidden="true"]')) {
       this.hide();
       return;
     }
     const id = target.id === 'btn-convert-one' || target.id === 'btn-convert-max' ? 'f_devotee'
       : target.id === 'btn-upgrade-incarnation' ? 'incarnation'
+      : target.id === 'btn-convert-relics' ? 'transmute_relics'
+      : target.id === 'btn-gnose-reset' ? 'gnose_reset'
+      : target.id === 'incarnation-altar-container' || target.id === 'incarnation-blessing-panel' ? 'blessing'
       : target.id === 'btn-unlock-single' ? this.game.unlocks.find(u => !u.unlocked &&
         (!u.prerequisiteId || this.game.unlocks.some(p => p.id === u.prerequisiteId && p.unlocked)))?.id
       : target.id.replace(/^card-/, '');

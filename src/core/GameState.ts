@@ -102,6 +102,8 @@ export class GameStateManager {
   public autoFervorEnabled: boolean = true;
   public autoRelicsEnabled: boolean = true;
   private gnoseAutoAccumulatorSec: number = 0;
+  private sphereAutoAccumulatorSec: number = 0;
+  private lastSphereAutoclick: { fpc: number; isCrit: boolean } | null = null;
   public autoRelicUpgradesEnabled: boolean = true;
 
   // Onboarding & Intro Sequence
@@ -163,6 +165,8 @@ export class GameStateManager {
     this.autoFervorEnabled = true;
     this.autoRelicsEnabled = true;
     this.gnoseAutoAccumulatorSec = 0;
+    this.sphereAutoAccumulatorSec = 0;
+    this.lastSphereAutoclick = null;
     this.autoRelicUpgradesEnabled = true;
 
     this.followers = initialFollowers.map((item) => ({ ...item }));
@@ -186,7 +190,9 @@ export class GameStateManager {
       gnosePoints: this.gnosePoints,
       totalGnoseEarned: this.totalGnoseEarned,
       gnoseResets: this.gnoseResets,
+      gnoseUpgradeIds: [...this.unlockedGnoseUpgrades],
       defeatedBossesCount: this.defeatedBosses.size,
+      defeatedBossIds: [...this.defeatedBosses],
       tiamatDefeated: this.defeatedBosses.has('boss_tiamat')
     };
   }
@@ -676,9 +682,18 @@ export class GameStateManager {
     return false;
   }
 
+  public areMiraclesUnlocked(): boolean {
+    return this.achievements.some((ach) => ach.unlocked && ach.buffType === 'miracles_unlock');
+  }
+
+  public areMiraclesAutoCollected(): boolean {
+    return this.achievements.some((ach) => ach.unlocked && ach.buffType === 'miracles_auto');
+  }
+
   public spawnBossMiracle(preferredSlot?: number): void {
     const battle = this.activeBossBattle;
     if (!battle) return;
+    if (!this.areMiraclesUnlocked()) return;
     this.miracleIdCounter += 1;
     const totalSlots = Math.max(1, Math.min(34, Math.max(1, this.getTotalFollowersCount())));
     const slot =
@@ -692,6 +707,7 @@ export class GameStateManager {
       maxSec: 1.5
     };
     battle.miracleSpawnTimerSec = 10 + ((this.miracleIdCounter * 3) % 5);
+    if (this.areMiraclesAutoCollected()) this.clickBossMiracle();
   }
 
   public clickBossMiracle(): { healed: number; triggered: boolean; integrityAfter: number } {
@@ -1126,7 +1142,10 @@ export class GameStateManager {
     const fervorEffectMult = this.getFervorUpgradeEffect(this.fervorUpgrades[1]);
     const fervorFaithBonus = calculateFervorFaithBonus(Math.max(this.fervorPoints, this.fervorPeakThisRun), fervorEffectMult) * this.getFervorResonanceMultiplier();
 
-    return calculateFaithPerClick(clickBuff, globalBuff, fervorClickMult, fervorFaithBonus);
+    const base = 1 + this.achievements.reduce(
+      (sum, ach) => sum + (ach.unlocked && ach.buffType === 'fpc_base' ? ach.buffVal : 0), 0
+    );
+    return calculateFaithPerClick(clickBuff, globalBuff, fervorClickMult, fervorFaithBonus, base);
   }
 
   public getFaithPerSecond(): number {
@@ -1227,6 +1246,15 @@ export class GameStateManager {
     this.relicPeakThisRun = Math.max(this.relicPeakThisRun, this.relicPoints);
   }
 
+  public getLastSphereAutoclick(): Readonly<{ fpc: number; isCrit: boolean }> | null {
+    return this.lastSphereAutoclick;
+  }
+
+  public getSphereAutoclickProgress(): number | null {
+    return this.achievements.some((ach) => ach.unlocked && ach.buffType === 'sphere_autoclick')
+      ? this.sphereAutoAccumulatorSec : null;
+  }
+
   // --- Game Loop Tick Logic ---
   public tick(deltaSec: number): { faithGained: number; fervorGained: number; relicGained: number } {
     if (!Number.isFinite(deltaSec) || deltaSec < 0) throw new RangeError('Intervalo de simulação inválido.');
@@ -1283,6 +1311,17 @@ export class GameStateManager {
     // Active Boss Battle tick (no countdown timer; Altar Integrity vs Boss HP)
     if (this.activeBossBattle) {
       this.tickBossBattle(deltaSec);
+    }
+
+    // Automatic Sphere clicks use the same rewards, criticals and lifetime counter as manual clicks.
+    if (this.achievements.some((ach) => ach.unlocked && ach.buffType === 'sphere_autoclick')) {
+      this.sphereAutoAccumulatorSec += deltaSec;
+      if (this.sphereAutoAccumulatorSec + 1e-8 >= 1) {
+        this.sphereAutoAccumulatorSec = Math.max(0, this.sphereAutoAccumulatorSec - 1);
+        const result = this.addClick();
+        this.lastSphereAutoclick = { fpc: result.fpc, isCrit: result.isCrit };
+        faithGained += result.fpc;
+      }
     }
 
     // Gnose autobuyers (runs once per second; paid until Olho do Infinito)
@@ -1482,14 +1521,15 @@ export class GameStateManager {
 
   // --- Click & Actions ---
   public getSphereCriticalChance(): number {
-    if (this.totalClicks >= SPHERE_CRITICAL.improvedClicks) return SPHERE_CRITICAL.improvedChance;
-    return this.totalClicks >= SPHERE_CRITICAL.unlockClicks ? SPHERE_CRITICAL.baseChance : 0;
+    return SPHERE_CRITICAL.chanceMilestones.filter((clicks) => this.totalClicks >= clicks).length
+      * SPHERE_CRITICAL.chancePerMilestone;
   }
 
-  public addClick(random: () => number = Math.random): { fpc: number; bossClickDamage: number; isCrit: boolean } {
+  public addClick(random: () => number = Math.random): { fpc: number; bossClickDamage: number; isCrit: boolean; bossIsCrit: boolean } {
     let fpc = this.getFaithPerClick();
     // The completed lifetime click milestones apply starting with the next click.
     const isCrit = random() < this.getSphereCriticalChance();
+    const bossIsCrit = isCrit && this.totalClicks >= SPHERE_CRITICAL.bossUnlockClicks;
     if (isCrit) {
       fpc *= SPHERE_CRITICAL.multiplier;
     }
@@ -1509,7 +1549,7 @@ export class GameStateManager {
       // Charge the Divine Sphere (+8% per Boss click)
       battle.sphereCharge = Math.min(100, (battle.sphereCharge ?? 0) + 8);
       const breakdown = this.getBossCombatBreakdown(battle.bossId);
-      bossClickDamage = breakdown.clickDamage * (isCrit ? SPHERE_CRITICAL.multiplier : 1);
+      bossClickDamage = breakdown.clickDamage * (bossIsCrit ? SPHERE_CRITICAL.multiplier : 1);
       battle.bossHp = Math.max(0, battle.bossHp - bossClickDamage);
       battle.phase = this.getBossPhase();
       if (battle.bossHp <= 0) {
@@ -1519,7 +1559,7 @@ export class GameStateManager {
       }
     }
 
-    return { fpc, bossClickDamage, isCrit };
+    return { fpc, bossClickDamage, isCrit, bossIsCrit };
   }
 
   public addIncarnationBoost(seconds: number): void {
@@ -1831,6 +1871,7 @@ export class GameStateManager {
         bestBossTimesSec: { ...this.bestBossTimesSec },
         bossCurseTimerSec: this.bossCurseTimerSec,
         automationAccumulatorSec: this.gnoseAutoAccumulatorSec,
+        sphereAutoAccumulatorSec: this.sphereAutoAccumulatorSec,
         confirmReset: this.confirmGnoseReset,
         autoFollowersEnabled: this.autoFollowersEnabled,
         autoFervorEnabled: this.autoFervorEnabled,
@@ -1850,6 +1891,8 @@ export class GameStateManager {
     this.riftIdCounter = 0;
     this.miracleIdCounter = 0;
     this.gnoseAutoAccumulatorSec = 0;
+    this.sphereAutoAccumulatorSec = 0;
+    this.lastSphereAutoclick = null;
 
     this.faithPoints = typeof save.stats.faithPoints === 'number' ? Math.max(0, save.stats.faithPoints) : 0;
     this.totalFaithAccumulated = typeof save.stats.totalFaithAccumulated === 'number' ? Math.max(0, save.stats.totalFaithAccumulated) : 0;
@@ -1911,7 +1954,9 @@ export class GameStateManager {
 
     if (Array.isArray(save.achievements)) {
       this.achievements.forEach((a) => {
-        a.unlocked = save.achievements.includes(a.id);
+        a.unlocked = a.id.startsWith('ach_click_')
+          ? a.check(this.getSnapshot())
+          : save.achievements.includes(a.id) || (a.id.startsWith('ach_f_') && a.check(this.getSnapshot()));
       });
     }
 
@@ -1948,6 +1993,7 @@ export class GameStateManager {
       this.migrateGnoseUpgrades();
       this.bossCurseTimerSec =
         typeof save.gnose.bossCurseTimerSec === 'number' ? Math.max(0, save.gnose.bossCurseTimerSec) : 0;
+      this.sphereAutoAccumulatorSec = Number.isFinite(save.gnose.sphereAutoAccumulatorSec) ? Math.max(0, Math.min(1, save.gnose.sphereAutoAccumulatorSec!)) : 0;
       this.gnoseAutoAccumulatorSec = Number.isFinite(save.gnose.automationAccumulatorSec) ? Math.max(0, Math.min(1, save.gnose.automationAccumulatorSec!)) : 0;
       this.confirmGnoseReset = typeof save.gnose.confirmReset === 'boolean' ? save.gnose.confirmReset : true;
       this.autoFollowersEnabled =

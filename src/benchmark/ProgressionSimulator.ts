@@ -188,7 +188,7 @@ class Simulation {
   }
 
   private updateMiracle(dt: number): void {
-    if (this.game.getTotalFollowersCount() === 0) { this.miracle = null; return; }
+    if (!this.game.areMiraclesUnlocked() || this.game.getTotalFollowersCount() === 0) { this.miracle = null; return; }
     if (this.miracle) {
       if (this.time + EPSILON >= this.miracle.expires) {
         this.miracle = null;
@@ -202,6 +202,14 @@ class Simulation {
       this.miracleCooldown = 35 + this.randomMiracles() * 30;
       this.miraclesSpawned++;
       this.emit('miracle_spawn');
+      if (this.game.areMiraclesAutoCollected()) {
+        const reward = calculateMiracleReward(this.game.faithPoints, this.game.getFaithPerClick(), this.game.getFaithPerSecond());
+        this.metrics.miracleFaith += reward;
+        this.game.faithPoints += reward;
+        this.game.totalFaithAccumulated += reward;
+        this.miracle = null;
+        this.miraclesCaught++;
+      }
     }
   }
 

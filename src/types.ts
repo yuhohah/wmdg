@@ -1,6 +1,13 @@
 export type EffectType = 'fps' | 'fpc';
 
 export type BuffType =
+  | 'miracles_unlock'
+  | 'miracles_auto'
+  | 'sphere_autoclick'
+  | 'none'
+  | 'fpc_base'
+  | 'critical_chance'
+  | 'boss_critical'
   | 'fpc_mult'
   | 'fps_mult'
   | 'global_mult'
@@ -44,7 +51,9 @@ export interface GameState {
   gnosePoints?: number;
   totalGnoseEarned?: number;
   gnoseResets?: number;
+  gnoseUpgradeIds?: string[];
   defeatedBossesCount?: number;
+  defeatedBossIds?: string[];
   tiamatDefeated?: boolean;
 }
 
@@ -253,6 +262,7 @@ export interface BossCombatBreakdown {
 
 export interface GnoseSaveData {
   automationAccumulatorSec?: number;
+  sphereAutoAccumulatorSec?: number;
   gnosePoints: number;
   totalGnoseEarned: number;
   gnoseResets: number;

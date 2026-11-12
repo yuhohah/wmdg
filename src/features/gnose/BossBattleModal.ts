@@ -862,11 +862,11 @@ export class BossBattleModal {
     this.attackBtnEl?.addEventListener('click', (e: MouseEvent) => {
       const battle = this.options.gameState.activeBossBattle;
       if (!battle || battle.combatStarted === false) return;
-      const { fpc, bossClickDamage, isCrit } = this.options.gameState.addClick();
+      const { fpc, bossClickDamage, bossIsCrit } = this.options.gameState.addClick();
       const rect = this.attackBtnEl!.getBoundingClientRect();
       const x = e.detail === 0 ? rect.x + rect.width / 2 : e.clientX;
       const y = e.detail === 0 ? rect.y + rect.height / 2 : e.clientY;
-      this.onPlayerAttackHit(fpc, bossClickDamage, isCrit, x, y);
+      this.onPlayerAttackHit(fpc, bossClickDamage, bossIsCrit, x, y);
     });
 
     this.fulgorBtnEl?.addEventListener('click', (e: MouseEvent) => {

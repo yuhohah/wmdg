@@ -1,3 +1,4 @@
+import { achievementIcon } from '../ui/achievementIcons.js';
 import type { Achievement } from '../types.js';
 import { DISPLAY_CONFIG } from '../config/display.js';
 import { icon as renderIcon, iconOrText } from '../ui/icons.js';
@@ -28,19 +29,6 @@ export class NotificationManager {
     // Normalize dynamic numbers so repeated notifications with changing amounts (e.g. transmute) count as the same notification
     const normalizedDesc = cleanDesc.replace(/[0-9.,kmbqt+]+/gi, "#");
     return `${cleanBadge}::${cleanTitle}::${normalizedDesc}`;
-  }
-
-  private getAchievementFallbackIcon(ach: Achievement): string {
-    if (ach.icon && ach.icon.trim().length > 0) {
-      return ach.icon;
-    }
-    if (ach.id.startsWith('ach_click')) return 'sphere';
-    if (ach.id.startsWith('ach_f_')) return 'followers';
-    if (ach.id.startsWith('ach_faith')) return 'orb';
-    if (ach.id.startsWith('ach_fps')) return 'bolt';
-    if (ach.id.startsWith('ach_fervor')) return 'fervor';
-    if (ach.id.startsWith('ach_relic')) return 'gem';
-    return 'laurel';
   }
 
   private getCustomFallbackIcon(title: string, badge: string): string {
@@ -75,13 +63,7 @@ export class NotificationManager {
     const popup = document.createElement('div');
     popup.className = 'ach-popup-toast ach-popup-toast-achievement ach-popup-square';
 
-    const icon = DISPLAY_CONFIG.showEmojisAndSymbols
-      ? this.getAchievementFallbackIcon(ach)
-      : '';
-
-    const iconHtml = icon
-      ? `<div class="ach-popup-icon-box"><span class="ach-popup-icon">${iconOrText(icon)}</span></div>`
-      : '';
+    const iconHtml = `<div class="ach-popup-icon-box">${achievementIcon(ach.id)}</div>`;
 
     const buffHtml = ach.buffText
       ? `<div class="ach-popup-buff">

@@ -49,6 +49,10 @@ export class FollowersTab {
     const canvas = document.getElementById('followers-walk-canvas') as HTMLCanvasElement | null;
     if (canvas) {
       this.arena = new FollowersArena('followers-walk-canvas');
+      this.arena.setMiraclePolicy(
+        () => this.options.gameState.areMiraclesUnlocked(),
+        () => this.options.gameState.areMiraclesAutoCollected()
+      );
       this.arena.setOnClickCallback((_clientX, _clientY) => {
         this.options.audio.init();
         this.options.triggerHaptic(6);

@@ -1,8 +1,9 @@
+import { achievementIcon } from '../../ui/achievementIcons.js';
 import type { Achievement } from '../../types.js';
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { NotificationManager } from '../../systems/notifications.js';
-import { DISPLAY_CONFIG } from '../../config/display.js';
+
 import { events, GameEvents } from '../../core/EventBus.js';
 
 export interface AchievementsTabOptions {
@@ -23,6 +24,8 @@ export class AchievementsTab {
   private hudBtnEl: HTMLButtonElement | null = null;
   private closeBtnEl: HTMLButtonElement | null = null;
   private closeFooterBtnEl: HTMLButtonElement | null = null;
+  private selectedId = '';
+  private detailEl: HTMLElement | null = null;
   private progressEl: HTMLElement | null = null;
 
   constructor(options: AchievementsTabOptions) {
@@ -41,6 +44,7 @@ export class AchievementsTab {
     this.hudBtnEl = document.getElementById('achievements-hud-btn') as HTMLButtonElement | null;
     this.closeBtnEl = document.getElementById('close-achievements-btn') as HTMLButtonElement | null;
     this.closeFooterBtnEl = document.getElementById('close-achievements-footer-btn') as HTMLButtonElement | null;
+    this.detailEl = document.getElementById('achievement-detail');
     this.progressEl = document.getElementById('achievements-modal-progress');
   }
 
@@ -91,91 +95,76 @@ export class AchievementsTab {
 
   public renderList(): void {
     if (!this.isModalOpen() || !this.achievementsListEl) return;
-    this.achievementsListEl.innerHTML = '';
-    const state = this.gameState.getSnapshot();
-
-    this.gameState.achievements.forEach((ach) => {
-      const progress = ach.getProgress(state);
-
-      const card = document.createElement('div');
-      card.className = `cult-action-card ach-card ${ach.unlocked ? 'unlocked' : 'unaffordable'}`;
-      card.id = `ach-card-${ach.id}`;
-
-      const symbolHtml = DISPLAY_CONFIG.showEmojisAndSymbols
-        ? `<span class="card-symbol">${ach.icon}</span>`
-        : '';
-
-      card.innerHTML = `
-        <div class="card-header-row">
-          <div class="card-title-group">
-            ${symbolHtml}
-            <span class="card-name">${ach.name}</span>
-          </div>
-          <span class="card-count-badge" id="ach-badge-${ach.id}">
-            ${ach.unlocked ? 'DESBLOQUEADO' : 'BLOQUEADO'}
-          </span>
-        </div>
-        <div class="card-desc">${ach.desc}</div>
-        <div class="ach-buff-chip">${ach.buffText}</div>
-        ${!ach.unlocked ? `
-          <div class="ach-progress-info" id="ach-prog-info-${ach.id}">
-            <span class="ach-progress-label">${progress.label}</span>
-            <span class="ach-progress-pct">${Math.round(progress.percent)}%</span>
-          </div>
-          <div class="ach-progress-container" id="ach-prog-bar-wrap-${ach.id}">
-            <div class="ach-progress-bar" id="ach-prog-bar-${ach.id}" style="width: ${progress.percent}%;"></div>
-          </div>
-        ` : ''}
-      `;
-
-      this.achievementsListEl!.appendChild(card);
-    });
-
-    this.updateHeaderCount();
+    this.achievementsListEl.replaceChildren();
+    const groups = [
+      { prefix: 'ach_click_', name: 'Canalização' },
+      { prefix: 'ach_f_', name: 'Congregação' },
+      { prefix: 'ach_faith_', name: 'Fé acumulada' },
+      { prefix: 'ach_fps_', name: 'Produção' },
+      { prefix: 'ach_gnose_', name: 'Gnose' },
+      { prefix: 'ach_boss_', name: 'Guardiões' },
+    ];
+    for (const group of groups) {
+      const achievements = this.gameState.achievements.filter((ach) => ach.id.startsWith(group.prefix));
+      if (!achievements.length) continue;
+      const section = document.createElement('section');
+      section.className = 'achievement-family';
+      const heading = document.createElement('h4');
+      heading.textContent = `${group.name} · ${achievements.filter((ach) => ach.unlocked).length}/${achievements.length}`;
+      section.appendChild(heading);
+      const grid = document.createElement('div');
+      grid.className = 'achievement-grid';
+      achievements.forEach((ach, index) => {
+        const tile = document.createElement('button');
+        tile.type = 'button';
+        tile.className = 'achievement-tile';
+        tile.id = `ach-card-${ach.id}`;
+        tile.innerHTML = `${achievementIcon(ach.id)}<span class="achievement-rank" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>`;
+        tile.addEventListener('click', () => {
+          this.selectedId = ach.id;
+          this.updateRealtime();
+        });
+        grid.appendChild(tile);
+      });
+      section.appendChild(grid);
+      this.achievementsListEl.appendChild(section);
+    }
+    if (!this.selectedId) this.selectedId = this.gameState.achievements[0]?.id ?? '';
+    this.updateRealtime();
   }
 
   public updateRealtime(): void {
-    // Closed grimoire: nothing to show, and openModal() re-renders the list fresh
     if (!this.isModalOpen()) return;
     const state = this.gameState.getSnapshot();
-
     for (const ach of this.gameState.achievements) {
-      const card = document.getElementById(`ach-card-${ach.id}`);
-      if (!card) continue;
-
-      const progress = ach.getProgress(state);
-
-      if (ach.unlocked) {
-        if (!card.classList.contains('unlocked')) {
-          card.classList.add('unlocked');
-          card.classList.remove('unaffordable');
-          const badge = document.getElementById(`ach-badge-${ach.id}`);
-          if (badge) {
-            badge.textContent = 'DESBLOQUEADO';
-            badge.style.color = '#ffffff';
-            badge.style.borderColor = '#ffffff';
-          }
-          const progInfo = document.getElementById(`ach-prog-info-${ach.id}`);
-          if (progInfo) progInfo.remove();
-          const progWrap = document.getElementById(`ach-prog-bar-wrap-${ach.id}`);
-          if (progWrap) progWrap.remove();
-        }
-      } else {
-        const progInfo = document.getElementById(`ach-prog-info-${ach.id}`);
-        if (progInfo) {
-          const labelEl = progInfo.querySelector('.ach-progress-label');
-          if (labelEl) labelEl.textContent = progress.label;
-          const pctEl = progInfo.querySelector('.ach-progress-pct');
-          if (pctEl) pctEl.textContent = `${Math.round(progress.percent)}%`;
-        }
-        const bar = document.getElementById(`ach-prog-bar-${ach.id}`);
-        if (bar) {
-          bar.style.width = `${progress.percent}%`;
-        }
-      }
+      const tile = document.getElementById(`ach-card-${ach.id}`);
+      if (!tile) continue;
+      tile.classList.toggle('unlocked', ach.unlocked);
+      tile.classList.toggle('selected', ach.id === this.selectedId);
+      tile.setAttribute('aria-pressed', String(ach.id === this.selectedId));
+      tile.setAttribute('aria-label', `${ach.name}: ${ach.unlocked ? 'desbloqueada' : 'bloqueada'}`);
+      tile.title = `${ach.name} — ${ach.buffText}`;
     }
-
+    const selected = this.gameState.achievements.find((ach) => ach.id === this.selectedId);
+    if (selected && this.detailEl) {
+      const progress = selected.getProgress(state);
+      const percent = selected.unlocked ? 100 : Math.max(0, Math.min(100, progress.percent));
+      this.detailEl.innerHTML = `
+        <div class="achievement-detail-icon">${achievementIcon(selected.id)}</div>
+        <span class="achievement-status">${selected.unlocked ? 'Conquista desbloqueada' : 'Conquista bloqueada'}</span>
+        <h4>${selected.name}</h4>
+        <p>${selected.desc}</p>
+        <div class="ach-buff-chip">${selected.buffText}</div>
+        <p class="achievement-progress-label">${selected.unlocked ? (selected.buffType === 'none' ? 'Concluída' : 'Concluída · bônus ativo') : `${progress.label} · ${Math.floor(percent)}%`}</p>
+        <div class="ach-progress-container" role="progressbar" aria-label="Progresso da conquista" aria-valuenow="${Math.floor(percent)}" aria-valuemin="0" aria-valuemax="100"><div class="ach-progress-bar" style="width:${percent}%"></div></div>
+        <p class="achievement-lore">${selected.lore}</p>`;
+    }
     this.updateHeaderCount();
+    const meter = document.getElementById('achievement-completion');
+    if (meter instanceof HTMLProgressElement) {
+      meter.max = Math.max(1, this.gameState.achievements.length);
+      meter.value = this.gameState.achievements.filter((ach) => ach.unlocked).length;
+    }
   }
 
   public checkAchievements(): Achievement[] {

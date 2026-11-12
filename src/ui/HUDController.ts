@@ -121,20 +121,28 @@ export class HUDController {
   }
 
   public getCurrencyTooltipData(currency: CurrencyId): CurrencyTooltipData {
+    const nerds = this.gameState.nerdsEnabled;
     switch (currency) {
       case 'faith': {
         const faith = Math.floor(this.gameState.faithPoints);
         const fps = this.gameState.getFaithPerSecond();
         const fpc = this.gameState.getFaithPerClick();
         const isBoosted = this.gameState.incarnationBoostTimer > 0;
+        const stats = [
+          `Saldo: ${formatNumber(faith)} Fé`,
+          `Produção: +${formatNumber(fps)}/s${isBoosted ? ' (2×)' : ''} · +${formatNumber(fpc)}/clique`,
+        ];
+        if (nerds) {
+          stats.push(
+            'Fé/s = Fiéis × Rito_Fiéis × Avatar × Fervor × Conquistas × Relíquias × Gnose × Bênção',
+            'Clique = base × Rito_Clique × Fervor × Conquistas × Gnose'
+          );
+        }
         return {
           title: 'Fé',
           description:
             'Devoção arrancada das mentes mortais. Usada para converter Fiéis, romper Selos e ser transmutada em Fragmentos.',
-          stats: [
-            `Saldo: ${formatNumber(faith)} Fé`,
-            `Produção: +${formatNumber(fps)}/s${isBoosted ? ' (2×)' : ''} · +${formatNumber(fpc)}/clique`,
-          ],
+          stats,
         };
       }
       case 'followers': {
@@ -142,42 +150,61 @@ export class HUDController {
         const devotee = this.gameState.followers[0];
         const nextCost = devotee ? this.gameState.getItemCost(devotee) : 20;
         const nextGain = this.gameState.getFollowerPurchaseFaithGain(1);
+        const stats = [
+          `Congregação: ${formatNumber(count)} Fiéis`,
+          `Próximo Fiel: ${formatNumber(nextCost)} Fé (+${formatNumber(nextGain)} Fé/s)`,
+        ];
+        if (nerds) {
+          const scale = formatNumber(this.gameState.getDevoteeBaseMultiplier(), 12);
+          stats.push(`Custo(N) = ⌊20 × (${scale})^N × desconto⌋ Fé`);
+        }
         return {
           title: 'Fiéis',
           description:
             'Almas devotadas que entoam cânticos no Pátio dos Fiéis para gerar Fé continuamente.',
-          stats: [
-            `Congregação: ${formatNumber(count)} Fiéis`,
-            `Próximo Fiel: ${formatNumber(nextCost)} Fé (+${formatNumber(nextGain)} Fé/s)`,
-          ],
+          stats,
         };
       }
       case 'fervor': {
         const fervor = Math.floor(this.gameState.fervorPoints);
         const fervorRate = this.gameState.getFervorRatePerSecond();
         const followerMult = this.gameState.getEffectiveIncarnationFollowerMultiplier();
+        const stats = [
+          `Saldo: ${formatNumber(fervor)} Fervor (+${formatNumber(fervorRate)}/s)`,
+          `Multiplicador dos Fiéis: ×${formatNumber(followerMult)}`,
+        ];
+        if (nerds) {
+          stats.push(
+            'Fervor/s = 1 × Rito_Prod × Tocha × Avatar × Sinergia_Fé × Fênix × Gnose',
+            'Bônus na Fé = (2 × log10(pico / 10 + 1) + 1) × Rito_Efeito × Ressonância'
+          );
+        }
         return {
           title: 'Fervor',
           description:
             'Chama extática canalizada pelo Altar da Encarnação. Alimenta Ritos de Fervor e amplifica a geração de Fé.',
-          stats: [
-            `Saldo: ${formatNumber(fervor)} Fervor (+${formatNumber(fervorRate)}/s)`,
-            `Multiplicador dos Fiéis: ×${formatNumber(followerMult)}`,
-          ],
+          stats,
         };
       }
       case 'relics': {
         const relics = Math.floor(this.gameState.relicPoints);
         const relicRate = this.gameState.getRelicsRatePerSecond();
         const pending = this.gameState.getRelicsToGet();
+        const stats = [
+          `Saldo: ${formatNumber(relics)} Fragmentos (+${formatNumber(relicRate)}/s)`,
+          `Ao transmutar agora: +${formatNumber(pending)} Fragmentos`,
+        ];
+        if (nerds) {
+          stats.push(
+            'Transmutação = ⌊log2(Fé + 1) × M_Transmutação⌋',
+            'Fragmentos/s = (max(1, ⌊melhor / 10⌋) + auto) × 4^nós'
+          );
+        }
         return {
           title: 'Fragmentos',
           description:
             'Restos de deuses caídos, obtidos ao transmutar Fé. Restauram as Relíquias Divinas do ciclo atual.',
-          stats: [
-            `Saldo: ${formatNumber(relics)} Fragmentos (+${formatNumber(relicRate)}/s)`,
-            `Ao transmutar agora: +${formatNumber(pending)} Fragmentos`,
-          ],
+          stats,
         };
       }
       case 'gnose': {
@@ -185,14 +212,21 @@ export class HUDController {
         const totalGnose = Math.floor(this.gameState.totalGnoseEarned);
         const gnoseMult = this.gameState.getTotalGnosePassiveMultiplier();
         const nodes = this.gameState.unlockedGnoseUpgrades.size;
+        const stats = [
+          `Saldo: ${formatNumber(gnose)} Gnose (Total: ${formatNumber(totalGnose)})`,
+          `Multiplicador Passivo: ×${formatNumber(gnoseMult)} · Nós: ${nodes}`,
+        ];
+        if (nerds) {
+          const exp = formatNumber(this.gameState.getGnoseGainExponent(), 12);
+          stats.push(
+            `Ascensão = ⌊(Fé / 1e15)^${exp}⌋ · Passivo = 1 + 1,5 × Total^0,35 · Nós = 4^${nodes}`
+          );
+        }
         return {
           title: 'Gnose',
           description:
             'Sabedoria transcendental obtida ao ascender na Câmara da Gnose. Concede bônus permanentes entre ciclos.',
-          stats: [
-            `Saldo: ${formatNumber(gnose)} Gnose (Total: ${formatNumber(totalGnose)})`,
-            `Multiplicador Passivo: ×${formatNumber(gnoseMult)} · Nós: ${nodes}`,
-          ],
+          stats,
         };
       }
     }

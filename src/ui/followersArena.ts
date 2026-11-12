@@ -37,6 +37,8 @@ export class FollowersArena {
   private dpr: number = 1;
   private onFollowerClickCallback?: (x: number, y: number) => void;
   private onMiracleClickCallback?: (clientX: number, clientY: number, walker: Walker) => void;
+  private miraclesUnlocked: () => boolean = () => false;
+  private miraclesAutoCollected: () => boolean = () => false;
   private miracleSpawnCooldown: number = 5; // ~5s after start
   private isPaused: boolean = false;
   private speedMultiplier: number = 1.0;
@@ -73,7 +75,13 @@ export class FollowersArena {
     this.onMiracleClickCallback = cb;
   }
 
+  public setMiraclePolicy(unlocked: () => boolean, autoCollected: () => boolean): void {
+    this.miraclesUnlocked = unlocked;
+    this.miraclesAutoCollected = autoCollected;
+  }
+
   public triggerMiraclePlea(targetWalker?: Walker): void {
+    if (!this.miraclesUnlocked()) return;
     const available = this.walkers.filter((w) => w.state !== 'pray');
     const w = targetWalker || (available.length > 0 ? available[Math.floor(Math.random() * available.length)] : null);
     if (!w) return;
@@ -83,6 +91,7 @@ export class FollowersArena {
     w.prayCycle = 0;
     w.stateTimer = 900;
     this.spawnPrayerParticles(w, 10);
+    if (this.miraclesAutoCollected()) this.collectAvailableMiracle();
   }
 
   public collectAvailableMiracle(): boolean {
@@ -395,7 +404,7 @@ export class FollowersArena {
     }
 
     // Periodically spawn a miracle plea
-    if (this.walkers.length > 0) {
+    if (this.walkers.length > 0 && this.miraclesUnlocked()) {
       const hasActiveMiracle = this.walkers.some((w) => w.isMiraclePlea);
       if (!hasActiveMiracle) {
         this.miracleSpawnCooldown -= elapsedSec * this.speedMultiplier;
