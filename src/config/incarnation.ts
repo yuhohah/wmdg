@@ -14,7 +14,7 @@ export const BLESSING_MAX_SECONDS = 60;
 
 /**
  * Progressão da Encarnação alinhada com o Dragão de DodecaDragons:
- * - Desbloqueio: 200 Fé (unlock_incarnation) -> Estágio I: Avatar Neófito (Baby Dragon), 2x Fervor
+ * - Desbloqueio: 200 Fé (unlock_incarnation) -> Estágio I: Avatar Neófito (Baby Dragon), 1x Fervor
  * - Estágio II: 2.500.000 Fé (2.5e6) -> Avatar Consagrado (Adult Dragon), 100x Fervor
  * - Estágio III: 1.000.000.000.000 Fé (1e12) -> Avatar Ancestral (Elder Dragon), 10.000x Fervor
  * - Estágio IV: 1.0e25 Fé (1e25) -> Avatar do Eclipse (Dark Dragon), 100.000.000x Fervor (1e8)
@@ -25,10 +25,10 @@ export const INCARNATION_STAGES: IncarnationStage[] = [
     stage: 1,
     name: 'Avatar Neófito',
     title: 'A Centelha Primordial',
-    desc: 'Manifestação primordial da divindade. Canaliza a chama inicial de Fervor no altar sagrado (2e0x Fervor/s).',
+    desc: 'Manifestação primordial da divindade. Canaliza a chama inicial de Fervor no altar sagrado (1e0x Fervor/s).',
     lore: 'Seus primeiros fiéis pensaram em você com tanta força que você ganhou um corpo. Ainda é frágil, mas já arde.',
     cost: 0,
-    multiplier: 2
+    multiplier: 1
   },
   {
     stage: 2,

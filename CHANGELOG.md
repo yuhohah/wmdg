@@ -31,7 +31,6 @@ Para as próximas versões, usamos `MAJOR.MINOR.PATCH`: novidades e mudanças re
 
 - Os números agora seguem o padrão brasileiro: abaixo de mil aparecem por extenso e depois viram K, M, B e T (por exemplo, `1,5K` e `2,02B`). A notação científica fica só a partir de `1e15`. Decimais, tempos e percentuais usam vírgula.
 - A Pena Solar de Fênix aparece logo depois da Cornucópia e agora diz que revela o Rito que multiplica os Fragmentos de cada Transmutação.
-- O Avatar Neófito produz o dobro de Fervor, deixando o começo da Encarnação menos arrastado.
 - Os Ritos de Fervor mostram o efeito atual e o do próximo nível.
 - A tela inicial mostra a forma final da Esfera.
 - Textos revisados: explicações corrigidas no Altar da Encarnação, nas dicas de Fé e Fragmentos e na Gnosis Suprema; nova lore dos Avatares; tutoriais da Encarnação e dos Guardiões divididos por tema; a Esfera é sempre "clicada".
