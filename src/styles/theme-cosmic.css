@@ -187,6 +187,9 @@ body {
 
 .dodeca-card {
   background: var(--plate);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  contain: layout style;
   border: 1px solid var(--line);
   border-radius: 2px;
   box-shadow:

@@ -81,9 +81,8 @@ export class SphereVisual {
     this.frame = undefined;
     const elapsed = this.clock.tick(time);
     if (elapsed !== null) {
-      const bodyClass = document.body?.classList;
-      const occludedByScene = bodyClass?.contains('is-boss-battle-active') || bodyClass?.contains('is-campaign-ending');
-      if (!occludedByScene) {
+      // The Sphere stays visible in combat; only the ending covers it with its own scene.
+      if (!document.body?.classList.contains('is-campaign-ending')) {
         this.motion.advance(Math.min(0.1, elapsed));
         this.draw();
       }

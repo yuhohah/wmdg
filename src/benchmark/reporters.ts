@@ -30,10 +30,17 @@ const MILESTONES = [
 ];
 
 const METRICS: Array<[string, (result: ArchetypeBenchmarkResult) => string]> = [
+  ...[1, 2, 3, 4].map((tier): [string, (result: ArchetypeBenchmarkResult) => string] => [
+    `Tier ${tier}: intervalo / Ascensões`, r => {
+      const cadence = r.progression.gnoseTiers?.find(t => t.tier === tier);
+      if (!cadence || cadence.durationSec === null) return 'Incompleto';
+      return `${formatDuration(cadence.durationSec)} / ${cadence.ascensions} · ${cadence.timeInTarget && cadence.ascensionsInTarget ? 'na meta' : 'fora da meta'}`;
+    },
+  ]),
   ['Maior intervalo permanente após Gnose', r => formatDuration(r.progression.maxPermanentGapSec)],
   ['Maior intervalo relevante', r => formatDuration(r.progression.maxRelevantGapSec)],
   ['Quedas após compras de produção', r => String(r.progression.productionDrops.length)],
-  ['Fé de milagres (%)', r => { const v = r.progression.income; return (100 * v.miracles / Math.max(1, v.passive + v.clicks + v.miracles)).toFixed(1); }],
+  ['Fé de milagres / ciclo (%)', r => r.progression.miracleShareMeanPct.toFixed(1)],
   ['Situação', r => r.completed ? 'Concluído' : r.status === 'blocked' ? 'Bloqueado' : 'Incompleto (limite)'],
   ['Tempo decorrido', r => r.formattedTotalTime],
   ['Tempo presente', r => formatDuration(r.presentTimeSec)],
@@ -62,13 +69,19 @@ function rows(report: BenchmarkReport): string[][] {
   ];
 }
 
+function absenceHypothesis(absenceMode?: 'visible' | 'hidden' | 'save'): string {
+  if (absenceMode === 'hidden') return 'Hipótese: aba oculta durante ausências (crédito de tempo com teto de 24 h; combates recuam e ações manuais ocorrem só nas visitas).';
+  if (absenceMode === 'save') return 'Hipótese: jogo fechado entre sessões via save offline (crédito de tempo com teto de 24 h; combates recuam e ações manuais ocorrem só nas visitas).';
+  return 'Hipótese: jogo aberto e visível. Ausência do jogador mantém produção; combates recuam e ações manuais ocorrem só durante visitas.';
+}
+
 export function formatTerminalReport(report: BenchmarkReport): string {
   const first = report.results.reference;
   const line = '─'.repeat(112);
   const lines = [
     '\nSIMULAÇÃO DE PROGRESSÃO POR SESSÕES — CULT OF THE SPHERE',
-    `Seed: ${first.seed} | passo máximo: ${first.stepSec}s | limite: ${formatDuration(first.maxDurationSec)}`,
-    'Hipótese: jogo aberto e visível. Ausência do jogador mantém produção; ações manuais só durante visitas.',
+    `Seed: ${first.seed} | passo máximo: ${first.stepSec}s | limite: ${formatDuration(first.maxDurationSec)} | ausência: ${first.absenceMode ?? 'visible'}`,
+    absenceHypothesis(first.absenceMode),
     ...(['reference', 'active', 'casual', 'afk'] as const).map(describeBehavior),
     line,
     ['Marco / Métrica', 'Referência', 'Ativo intenso', 'Casual', 'AFK'].map((s, i) => s.padEnd(i === 0 ? 35 : 23)).join(' | '),
@@ -92,16 +105,20 @@ function escapeHtml(value: string): string {
 export function formatHtmlReport(report: BenchmarkReport): string {
   const first = report.results.reference;
   const cell = 'padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.15);text-align:left';
+  const deadZoneNotes = Object.values(report.results).flatMap(r =>
+    r.deadZones.map(z => `<p><strong>${escapeHtml(r.archetypeName)} — zona morta (${escapeHtml(z.phase)}):</strong> ${escapeHtml(z.formattedDuration)} presente sem progresso desde ${escapeHtml(formatDuration(z.startTimeSec))}.</p>`)
+  ).join('');
   return `<div style="font:13px monospace;color:#f8fafc;line-height:1.5">
     <h3>Simulação de progressão por sessões</h3>
-    <p>Seed ${first.seed} · passo máximo ${first.stepSec}s · limite ${formatDuration(first.maxDurationSec)}.</p>
-    <p>Jogo aberto e visível. Hipóteses de comportamento, não telemetria.</p>
+    <p>Seed ${first.seed} · passo máximo ${first.stepSec}s · limite ${formatDuration(first.maxDurationSec)} · ausência ${escapeHtml(first.absenceMode ?? 'visible')}.</p>
+    <p>${escapeHtml(absenceHypothesis(first.absenceMode))} Hipóteses de comportamento, não telemetria.</p>
     ${(['reference', 'active', 'casual', 'afk'] as const).map(profile => `<p>${escapeHtml(describeBehavior(profile))}</p>`).join('')}
     <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">
       <thead><tr>${['Marco / Métrica', 'Referência', 'Ativo intenso', 'Casual', 'AFK'].map(name => `<th style="${cell}">${name}</th>`).join('')}</tr></thead>
       <tbody>${rows(report).map(row => `<tr>${row.map(value => `<td style="${cell}">${escapeHtml(value)}</td>`).join('')}</tr>`).join('')}</tbody>
     </table></div>
     ${Object.values(report.results).filter(r => r.blockedReason).map(r => `<p><strong>${escapeHtml(r.archetypeName)} — bloqueado:</strong> ${escapeHtml(r.blockedReason!)}</p>`).join('')}
+    ${deadZoneNotes}
     <p>Incompleto = limite ou bloqueio, sem previsão de tempo até Caos Primordial. Ausências programadas não entram nas zonas mortas enquanto presente. A avaliação de ritmo é heurística.</p>
   </div>`;
 }

@@ -22,7 +22,8 @@ export class CampaignEnding {
   }
 
   public update(): void {
-    this.launcher.hidden = this.gs.campaignEnding === 'pending' || !this.canPresent();
+    const shouldHide = this.gs.campaignEnding === 'pending' || !this.canPresent();
+    if (this.launcher.hidden !== shouldHide) this.launcher.hidden = shouldHide;
     if (this.dialog || !this.canPresent() || document.querySelector('dialog[open], .modal-overlay.open')) return;
     if (this.gs.campaignEnding === 'pending' && this.gs.isCampaignComplete()) this.open(true);
   }

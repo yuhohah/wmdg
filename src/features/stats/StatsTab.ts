@@ -77,32 +77,17 @@ export class StatsTab {
     const fervorRate = this.gameState.getFervorRatePerSecond();
     const isBoosted = this.gameState.incarnationBoostTimer > 0;
 
-    if (this.statTotalFaithEl) {
-      this.statTotalFaithEl.textContent = formatNumber(Math.floor(totalFaith));
-    }
-    if (this.statClickFaithEl) {
-      this.statClickFaithEl.textContent = `+${formatNumber(fpc)}`;
-    }
-    if (this.statPassiveFaithEl) {
-      this.statPassiveFaithEl.textContent = `+${formatNumber(fps)} Fé/s${isBoosted ? ' (2× Bênção)' : ''}`;
-    }
-    if (this.statTotalFollowersEl) {
-      this.statTotalFollowersEl.textContent = formatNumber(followers);
-    }
-    if (this.statTotalClicksEl) {
-      this.statTotalClicksEl.textContent = formatNumber(clicks);
-    }
-    if (this.statFervorAccumEl) {
-      this.statFervorAccumEl.textContent = formatNumber(Math.floor(fervor));
-    }
-    if (this.statFervorRateEl) {
-      this.statFervorRateEl.textContent = `+${formatNumber(fervorRate)} Fervor/s`;
-    }
+    setText(this.statTotalFaithEl, formatNumber(Math.floor(totalFaith)));
+    setText(this.statClickFaithEl, `+${formatNumber(fpc)}`);
+    setText(this.statPassiveFaithEl, `+${formatNumber(fps)} Fé/s${isBoosted ? ' (2× Bênção)' : ''}`);
+    setText(this.statTotalFollowersEl, formatNumber(followers));
+    setText(this.statTotalClicksEl, formatNumber(clicks));
+    setText(this.statFervorAccumEl, formatNumber(Math.floor(fervor)));
+    setText(this.statFervorRateEl, `+${formatNumber(fervorRate)} Fervor/s`);
 
     if (this.statAchievementsCountEl) {
       const unlockedCount = this.gameState.achievements.filter((a) => a.unlocked).length;
-      this.statAchievementsCountEl.textContent = `${unlockedCount} / ${this.gameState.achievements.length}`;
+      setText(this.statAchievementsCountEl, `${unlockedCount} / ${this.gameState.achievements.length}`);
     }
-
   }
 }

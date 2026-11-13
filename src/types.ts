@@ -115,7 +115,6 @@ export interface GnoseUpgrade {
   icon: string;
   tier: 1 | 2 | 3 | 4;
   cost: number;
-  prerequisites: string[];
   effectText: string;
 }
 
@@ -125,7 +124,7 @@ export interface GnoseBoss {
   title: string;
   mythology: string;
   symbol: string;
-  unlocksTier: 2 | 3 | 4 | 'endgame';
+  unlocksTier: 1 | 2 | 3 | 4;
   maxHp: number;
   riftDamagePercent: number;
   riftIntervalSec: number;
@@ -133,18 +132,8 @@ export interface GnoseBoss {
   altarDamageOnMiss: number;
   /** Ambient altar integrity erosion (% per second) before cult mitigation */
   altarPressurePerSec?: number;
-  /** Target resource readiness benchmarks for this boss */
-  requirements?: {
-    faithLog: number;
-    followers: number;
-    fervorLog: number;
-    fervorLevels: number;
-    relicsLog: number;
-    relicLevels: number;
-    incarnationStage: number;
-    gnoseLog: number;
-    gnoseNodes: number;
-  };
+  /** Lifetime Gnose at which readiness reaches 100%. */
+  readinessGnose: number;
   rewardName: string;
   rewardDesc: string;
   lore: string;
@@ -179,14 +168,6 @@ export interface ActiveBossMiracle {
   maxSec: number;
 }
 
-export type CultPillarId = 'faith' | 'followers' | 'fervor' | 'relics' | 'incarnation' | 'gnose';
-
-export interface CultPillarStatus {
-  id: CultPillarId;
-  label: string;
-  readiness: number;
-}
-
 export interface ActiveBossBattle {
   bossId: string;
   bossHp: number;
@@ -204,8 +185,6 @@ export interface ActiveBossBattle {
   phase?: 1 | 2 | 3;
   /** Consecutive rifts shattered without missing any */
   comboStreak?: number;
-  /** Astral charge of the Divine Sphere (0..100). At 100%, clicking the Sphere fires FULGOR DIVINO */
-  sphereCharge?: number;
   /** Active miracle plea on one of the Faithful in the circle (1.5s window, heals +10% Integrity) */
   activeMiracle?: ActiveBossMiracle | null;
   /** Countdown until the next Faithful miracle spawns on the circle (~10..14s) */
@@ -229,27 +208,21 @@ export interface BossCombatBreakdown {
   gnoseBonus: number;
   achievementsBonus: number;
   totalResourceMultiplier: number;
-  /** Geometric mean of all six pillars vs Boss benchmarks (0 to 2). */
+  /** Lifetime Gnose relative to the Guardian (0 to 2; Anubis starts at 0.6). */
   cultReadiness: number;
   /** All damage sources are blocked below the attack readiness threshold. */
   canDamageBoss: boolean;
-  /** Below the defense threshold, missed attacks are lethal and pressure breaks the Sphere rapidly. */
+  /** Below the defense threshold, any missed attack is lethal. */
   canWithstandBoss: boolean;
-  /** Per-pillar readiness (0.0 to 2.0) for pre-fight indicator and post-defeat diagnosis */
-  pillarReadiness: Record<CultPillarId, number>;
-  /** Weakest pillars (< 1.0 readiness) sorted ascending */
-  weakPillars: CultPillarStatus[];
-  /** Lowest 2 pillars sorted ascending (always 2 entries for post-defeat diagnosis) */
-  lowestTwoPillars: [CultPillarStatus, CultPillarStatus];
+  /** Lifetime Gnose used by readiness, independent of spendable balance. */
+  totalGnoseEarned: number;
+  readinessGnose: number;
   passiveHpFractionPerSec: number;
   passiveDps: number;
   clickHpFraction: number;
   clickDamage: number;
   riftHpFraction: number;
   riftDamage: number;
-  /** Damage inflicted by FULGOR DIVINO (100% Sphere Charge discharge) */
-  fulgorHpFraction: number;
-  fulgorDamage: number;
   altarDamageOnMiss: number;
   altarHealOnRift: number;
   /** Continuous Altar Integrity drain per second after defense mitigation */

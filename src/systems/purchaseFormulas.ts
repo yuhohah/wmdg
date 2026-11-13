@@ -1,6 +1,6 @@
 import { ETERNAL_RELIC_IDS, ETERNAL_RELIC_COST_GROWTH, ETERNAL_RELIC_FIXED_LEVELS } from '../config/relics.js';
 import type { GameStateManager } from '../core/GameState.js';
-import { GNOSE_UPGRADES, GNOSE_FORMULAS, PROGRESSION_BALANCE } from '../config/gnose.js';
+import { GNOSE_UPGRADES, GNOSE_FORMULAS, PROGRESSION_BALANCE, GNOSE_PASSIVE_FORMULA } from '../config/gnose.js';
 import { INCARNATION_STAGES, BLESSING_SECONDS_PER_PRESS, BLESSING_MAX_SECONDS } from '../config/incarnation.js';
 import {
   calculateCostDiscountMultiplier,
@@ -27,7 +27,7 @@ function followerBonusFormula(game: GameStateManager, bulk: boolean): string {
   const sampleProduction = count > 0 ? game.getFaithPerSecond() : game.getFollowerPurchaseFaithGain(1);
   const ritual = game.fervorUpgrades.find(upg => upg.id === 'fu_followers')!;
   const ritualEffect = game.getFervorUpgradeEffect(ritual, sampleCount);
-  const synergyEffect = game.getGnoseFollowersSynergyMultiplier(sampleCount) / game.getGnoseReconstructionMultiplier();
+  const synergyEffect = game.getGnoseFollowersSynergyMultiplier(sampleCount);
   const constant = sampleProduction / (sampleCount * ritualEffect * synergyEffect);
 
   const hasSynergy = game.hasGnoseUpgrade('gn_followers_syn') || game.hasGnoseUpgrade('gn_init_faith');
@@ -119,12 +119,12 @@ const gnoseBonuses: Record<string, string> = {
   ].join('\n'),
   gn_omniscience: [
     '• Auto-Fiéis e Auto-Ritos não consomem Fé/Fervor (exigem saldo ≥ Custo)',
-    '• Auto-Transmutação: ΔFragmentos/s = +100% × Transmutação(Fé) × 4^nós',
+    '• Auto-Transmutação: ΔFragmentos/s = +100% × Transmutação(Fé)',
   ].join('\n'),
   gn_apotheosis: [
     `• Escala de custo de todos os Ritos: escala′ = escala − ${coefficient(GNOSE_FORMULAS.ritualCostStep)}`,
     `• Custo do Avatar do Eclipse (Estágio 4): 1e25 → 1e20 Fé`,
-    `• Libera o Avatar Solar (Estágio 5): C_Solar = ${formatNumber(PROGRESSION_BALANCE.solarCost)} Fé`,
+    `• Avatar Solar (Estágio 5): C_Solar = ${formatNumber(PROGRESSION_BALANCE.solarCost)} Fé (não exige este nó)`,
   ].join('\n'),
   gn_empyrean_fire: [
     `• Rito Produção de Fervor: M(L) = base^(L^0,6), base 2,35 → ${coefficient(GNOSE_FORMULAS.empyreanProductionBase)}`,
@@ -241,7 +241,7 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
       + (game.hasGnoseUpgrade('gn_followers_economy') ? GNOSE_FORMULAS.followerEconomyStep : 0);
     const scaleAt = (lvl: number) => Math.max(1.05, 1.10 - 0.005 * lvl - gnoseFollowerDisc);
     const peakRelics = Math.max(game.relicPoints, game.relicPeakThisRun);
-    const draupnirRate = 0.05 * game.getRelicsToGet() * game.getGnoseReconstructionMultiplier();
+    const draupnirRate = 0.05 * game.getRelicsToGet();
 
     const relicBonuses: Record<string, string> = {
       relic_cornucopia: [
@@ -261,7 +261,7 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
         `Nível ${L}${isMax ? '' : ` → ${nextL}`}: escala ${coefficient(scaleAt(L))}${isMax ? '' : ` → ${coefficient(scaleAt(nextL))}`} (piso 1,05)`,
       ].join('\n'),
       relic_draupnir: [
-        `ΔFragmentos/s = 0,05 × Transmutação(Fé) × 4^nós`,
+        `ΔFragmentos/s = 0,05 × Transmutação(Fé)`,
         `Atual: +${formatNumber(draupnirRate)} Fragmentos/s (sem consumir Fé)`,
       ].join('\n'),
       relic_ark: [
@@ -291,16 +291,15 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
 
   const gnose = GNOSE_UPGRADES.find(upg => upg.id === id);
   if (gnose) {
-    const nodes = game.unlockedGnoseUpgrades.size;
     const owned = game.hasGnoseUpgrade(gnose.id);
-    const multNow = PROGRESSION_BALANCE.nodeProductionMultiplier ** nodes;
-    const multNext = PROGRESSION_BALANCE.nodeProductionMultiplier ** (nodes + 1);
+    const productionMultiplier = game.getTotalGnosePassiveMultiplier();
+    const productionPercent = (productionMultiplier - 1) * 100;
     return {
       cost: `C = ${formatNumber(gnose.cost)} Gnose${owned ? ' (já assimilado)' : ''}`,
       bonus: [
-        owned
-          ? `Ressonância global: M_produção = 4^nós (atual: 4^${nodes} = ×${formatNumber(multNow)})`
-          : `Ressonância global: M_produção = 4^nós (4^${nodes} = ×${formatNumber(multNow)} → 4^${nodes + 1} = ×${formatNumber(multNext)})`,
+        `Bônus atual por Gnose total: ×${formatNumber(productionMultiplier)} (+${formatNumber(productionPercent)}%) na Fé por clique, Fé/s e Fervor/s`,
+        `M = ${GNOSE_PASSIVE_FORMULA}; Gnose total obtida: ${formatNumber(game.totalGnoseEarned)}`,
+        'Gastar Gnose não reduz este bônus.',
         gnoseBonuses[id],
       ].join('\n'),
     };
@@ -321,11 +320,11 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
       ].join('\n'),
       unlock_relics: [
         'Fragmentos_Transmutação = ⌊log2(Fé + 1) × M_Transmutação⌋',
-        'Fragmentos/s passivo = max(1, ⌊melhor_Transmutação / 10⌋) × 4^nós',
+        'Fragmentos/s passivo = max(1, ⌊melhor_Transmutação / 10⌋)',
       ].join('\n'),
       unlock_gnose: [
         `Gnose ao ascender = ⌊(Fé / 1e15)^${exp}⌋ (para Fé ≥ 1e15)`,
-        'M_Gnose passivo = 1 + 1,5 × (Gnose_total)^0,35',
+        `M_Gnose passivo = ${GNOSE_PASSIVE_FORMULA}`,
       ].join('\n'),
     };
     return {
@@ -358,13 +357,13 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
     const relicMult = game.getRelicsBonusMultiplier();
     const toGet = game.getRelicsToGet();
     const bestAfter = Math.max(game.bestRelicsToGet, toGet);
-    const passiveBase = calculateExtraRelicsPerSecond(bestAfter) * game.getGnoseReconstructionMultiplier();
+    const passiveBase = calculateExtraRelicsPerSecond(bestAfter);
     return {
       cost: `Consome 100% da Fé atual (${formatNumber(faith)} Fé) · recarga manual: 3s`,
       bonus: [
         `Fragmentos = ⌊log2(Fé + 1) × M_Transmutação⌋`,
         `Com Fé = ${formatNumber(faith)} e M_Transmutação = ×${formatNumber(relicMult)}: +${formatNumber(toGet)} Fragmentos`,
-        `Base passiva: max(1, ⌊melhor_Transmutação / 10⌋) × 4^nós = +${formatNumber(passiveBase)} Fragmentos/s`,
+        `Base passiva: max(1, ⌊melhor_Transmutação / 10⌋) = +${formatNumber(passiveBase)} Fragmentos/s`,
       ].join('\n'),
     };
   }
@@ -382,7 +381,7 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
       ].join('\n'),
       bonus: [
         `Gnose = ⌊(Fé / 1e15)^${coefficient(exp)}⌋ = +${formatNumber(toGet)} Gnose`,
-        `M_Gnose passivo = 1 + 1,5 × (Gnose_total)^0,35`,
+        `M_Gnose passivo = ${GNOSE_PASSIVE_FORMULA}`,
         `Com Ascensão: ×${formatNumber(curPassive)} → ×${formatNumber(nextPassive)} em Fé e Fervor`,
       ].join('\n'),
     };

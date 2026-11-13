@@ -1,6 +1,6 @@
 export type PlayerArchetype = 'reference' | 'active' | 'casual' | 'afk';
 
-export type ManualAction = 'sphere' | 'blessing' | 'miracle' | 'rift' | 'fulgor' | 'boss_miracle' | 'follower'
+export type ManualAction = 'sphere' | 'blessing' | 'miracle' | 'rift' | 'boss_miracle' | 'follower'
   | 'fervor' | 'relic' | 'unlock' | 'incarnation' | 'transmutation' | 'gnose' | 'gnose_confirm' | 'gnose_upgrade' | 'challenge' | 'automation_toggle';
 
 export interface BenchmarkEvent {
@@ -48,6 +48,7 @@ export interface DeadZone {
 
 export interface ArchetypeBenchmarkResult {
   progression: import('./CampaignMetrics.js').CampaignMetricsResult;
+  absenceMode?: 'visible' | 'hidden' | 'save';
   status: 'completed' | 'time_limit' | 'blocked';
   blockedReason?: string;
   completed: boolean;

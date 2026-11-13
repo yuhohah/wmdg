@@ -392,7 +392,10 @@ export class BoardManager {
       this.promptScale = promptScale;
       this.worldEl.style.setProperty('--boss-prompt-scale', String(promptScale));
     }
-    this.worldEl.style.setProperty('transform', `translate3d(${this.panX}px, ${this.panY}px, 0) scale(${this.zoom})`, 'important');
+    const transform = `translate3d(${this.panX.toFixed(2)}px, ${this.panY.toFixed(2)}px, 0) scale(${this.zoom.toFixed(4)})`;
+    if (this.worldEl.style.transform !== transform) {
+      this.worldEl.style.setProperty('transform', transform, 'important');
+    }
   }
 
   private updateZoomIndicator(): void {
@@ -432,9 +435,23 @@ export class BoardManager {
     const panX = width / 2 - target.x * zoom;
     const panY = top + (height - top - bottom) / 2 - target.y * zoom;
     const blend = elapsedSec <= 0 ? 1 : 1 - Math.exp(-6 * Math.min(0.1, elapsedSec));
-    this.panX += (panX - this.panX) * blend;
-    this.panY += (panY - this.panY) * blend;
-    this.zoom += (zoom - this.zoom) * blend;
+    let nextPanX = this.panX + (panX - this.panX) * blend;
+    let nextPanY = this.panY + (panY - this.panY) * blend;
+    let nextZoom = this.zoom + (zoom - this.zoom) * blend;
+    if (Math.abs(zoom - nextZoom) < 0.002) nextZoom = zoom;
+    if (Math.abs(panX - nextPanX) < 0.5) nextPanX = panX;
+    if (Math.abs(panY - nextPanY) < 0.5) nextPanY = panY;
+    if (
+      elapsedSec > 0 &&
+      Math.abs(nextPanX - this.panX) < 0.05 &&
+      Math.abs(nextPanY - this.panY) < 0.05 &&
+      Math.abs(nextZoom - this.zoom) < 0.0002
+    ) {
+      return;
+    }
+    this.panX = nextPanX;
+    this.panY = nextPanY;
+    this.zoom = nextZoom;
     this.applyTransform(measure);
     this.updateZoomIndicator();
   }

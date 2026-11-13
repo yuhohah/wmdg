@@ -2,7 +2,7 @@
 
 Modelos escolhidos: Iniciado, Hierofante e Pontífice da Esfera.
 Arte gerada no PixelLab a partir das sprites conceituais aprovadas.
-As folhas de sprites estão integradas ao pátio em `src/ui/followersArena.ts`.
+As folhas de sprites estão integradas ao pátio em `src/features/followers/FollowersArena.ts`.
 A representação visual agrupa 20 Iniciados em um Hierofante a partir de 40
 fiéis, e 20 Hierofantes em um Pontífice (400 fiéis). As sobras permanecem
 visíveis; o limite de 60 personagens reduz apenas a exibição dos Pontífices

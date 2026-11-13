@@ -1,0 +1,25 @@
+/* Preserve the compact layout; only stabilize changing numeric text. */
+:is(.fervor-mult-tag, .relic-level-badge, .cost-tag, .relic-cost-tag,
+    .card-click-hint, .card-status-badge, .btn-action-cost) {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* The former 120px cap split scientific notation onto another line whenever
+   the mantissa gained a digit. Reserve horizontal space, not extra rows. */
+#card-followers .followers-production-summary {
+  width: 11rem;
+  max-width: none;
+}
+#card-followers .followers-rate-badge {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* Autobuyers change affordability continuously. Keep hover geometry steady. */
+html :is(.fervor-upgrade-card, .relic-action-card):is(:hover, :active) {
+  transform: none;
+}
+:is(.fervor-upgrade-card, .relic-action-card) {
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}

@@ -1,5 +1,13 @@
 import type { GameStateManager } from '../core/GameState.js';
 
+export const CARD_NAV_SHORTCUTS = [
+  { key: '1', cardId: 'card-altar-sphere', label: 'Esfera' },
+  { key: '2', cardId: 'card-followers', label: 'Fiéis' },
+  { key: '3', cardId: 'card-incarnation', label: 'Encarnação' },
+  { key: '4', cardId: 'card-fervor', label: 'Fervor' },
+  { key: '5', cardId: 'card-relics', label: 'Relíquias' },
+  { key: '6', cardId: 'card-gnose', label: 'Gnose' },
+] as const;
 export const FERVOR_SHORTCUTS = ['q', 'w', 'e', 'r', 't', 'y'] as const;
 export const RELIC_SHORTCUTS = ['a', 's', 'd', 'f', 'g', 'h'] as const;
 
@@ -15,6 +23,7 @@ export function canUseGameplayShortcut(event: KeyboardEvent, options: { allowedC
 
 interface ShortcutActions {
   gameState: GameStateManager;
+  focusCard?: (cardId: string) => void;
   buyFollower: () => void;
   buyMaxFollowers: () => void;
   buyFervor: (index: number) => void;
@@ -28,6 +37,13 @@ interface ShortcutActions {
 export function createGameplayShortcutActions(actions: ShortcutActions): Record<string, () => void> {
   const game = actions.gameState;
   const outsideCombat = (action: () => void) => () => { if (!game.activeBossBattle) action(); };
+  const isCardUnlocked = (cardId: string): boolean => {
+    if (cardId === 'card-incarnation') return game.isIncarnationUnlocked();
+    if (cardId === 'card-fervor') return game.isFervorUpgradesUnlocked();
+    if (cardId === 'card-relics') return game.isRelicsUnlocked();
+    if (cardId === 'card-gnose') return game.isGnoseUnlocked();
+    return true;
+  };
   const bindings: Record<string, () => void> = {
     z: outsideCombat(actions.buyFollower),
     x: outsideCombat(() => { if (game.isConvertMaxUnlocked()) actions.buyMaxFollowers(); }),
@@ -36,6 +52,11 @@ export function createGameplayShortcutActions(actions: ShortcutActions): Record<
     i: outsideCombat(() => { if (game.isIncarnationUnlocked()) actions.boostIncarnation(); }),
     u: outsideCombat(() => { if (game.isIncarnationUnlocked()) actions.evolveIncarnation(); }),
   };
+  CARD_NAV_SHORTCUTS.forEach(({ key, cardId }) => {
+    bindings[key] = outsideCombat(() => {
+      if (isCardUnlocked(cardId)) actions.focusCard?.(cardId);
+    });
+  });
   FERVOR_SHORTCUTS.forEach((key, index) => {
     bindings[key] = outsideCombat(() => {
       if (game.isFervorUpgradesUnlocked() && game.fervorUpgrades[index]) actions.buyFervor(index);

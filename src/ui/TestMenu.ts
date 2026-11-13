@@ -1,12 +1,125 @@
 import { formatNumber } from '../systems/numberFormat.js';
 import { INCARNATION_STAGES } from '../config/incarnation.js';
 import { GNOSE_BOSSES } from '../config/bosses.js';
+import { PROGRESSION_REVISION } from '../config/gnose.js';
 import type { BenchmarkWorkerMessage } from '../benchmark/types.js';
 import { formatHtmlReport } from '../benchmark/reporters.js';
-import { SaveSystem } from '../systems/saveSystem.js';
+import { SaveSystem, isValidSaveData, type SaveData } from '../systems/saveSystem.js';
 import { icon } from './icons.js';
 
 export type TestResourceKey = 'faith' | 'fervor' | 'relics' | 'gnose' | 'followers';
+
+export interface DevSaveProfile {
+  id: string;
+  label: string;
+  description: string;
+  buildSave: (nowMs?: number) => SaveData;
+}
+
+export const DEV_SAVE_PROFILES: readonly DevSaveProfile[] = [
+  {
+    id: 'gnose-unlocked',
+    label: 'Gnose Recém-Liberada',
+    description: 'Selo da Gnose recém-aberto · 1,4e15 Fé · 0 Ascensões · +1 Gnose ao ascender',
+    buildSave: (nowMs: number = Date.now()): SaveData => ({
+      version: SaveSystem.CURRENT_VERSION,
+      progressionRevision: PROGRESSION_REVISION,
+      timestamp: nowMs,
+      stats: {
+        campaignEnding: 'pending',
+        faithPoints: 1.4e15,
+        totalFaithAccumulated: 2.8e15,
+        totalClicks: 10150,
+        gameStartedAtMs: Math.max(1, nowMs - 3600 * 1000),
+        fervorPoints: 1.45e12,
+        fervorPeakThisRun: 1.55e12,
+        relicPeakThisRun: 16200,
+        totalFervorGenerated: 1.55e13,
+        incarnationStage: 3,
+        relicPoints: 3850,
+        totalRelicsGenerated: 58000,
+        bestRelicsToGet: 1558,
+        incarnationBoostTimer: 0,
+        hasSeenIntro: true,
+        seenCardTutorials: [
+          'guidance-settings',
+          'card-unlocks',
+          'card-incarnation',
+          'card-fervor',
+          'card-relics',
+          'card-gnose'
+        ],
+        hideGuidance: false,
+        showHotkeys: true,
+        bulkFervorEnabled: false,
+        bulkRelicsEnabled: false,
+        nerdsEnabled: false
+      },
+      followers: [{ id: 'f_devotee', count: 388 }],
+      fervorUpgrades: [
+        { id: 'fu_prod', level: 42 },
+        { id: 'fu_effect', level: 34 },
+        { id: 'fu_click', level: 70 },
+        { id: 'fu_followers', level: 54 },
+        { id: 'fu_synergy', level: 24 },
+        { id: 'fu_relics', level: 7 }
+      ],
+      relicUpgrades: [
+        { id: 'relic_cornucopia', level: 20 },
+        { id: 'relic_torch', level: 20 },
+        { id: 'relic_phoenix', level: 1 },
+        { id: 'relic_caduceus', level: 5 },
+        { id: 'relic_draupnir', level: 1 },
+        { id: 'relic_ark', level: 2 }
+      ],
+      unlocks: [
+        'unlock_incarnation',
+        'unlock_fervor_upgrades',
+        'unlock_relics',
+        'unlock_gnose'
+      ],
+      achievements: [
+        'ach_click_1',
+        'ach_click_25',
+        'ach_click_250',
+        'ach_click_1000',
+        'ach_click_5000',
+        'ach_click_10000',
+        'ach_f_1',
+        'ach_f_10',
+        'ach_f_100',
+        'ach_faith_77',
+        'ach_faith_7777',
+        'ach_faith_777777',
+        'ach_faith_7m',
+        'ach_faith_7b',
+        'ach_faith_7t',
+        'ach_fps_77',
+        'ach_fps_7777',
+        'ach_fps_777777',
+        'ach_fps_7m',
+        'ach_fps_7b',
+        'ach_fps_7t'
+      ],
+      gnose: {
+        gnosePoints: 0,
+        totalGnoseEarned: 0,
+        gnoseResets: 0,
+        unlockedUpgrades: [],
+        defeatedBosses: [],
+        bestBossTimesSec: {},
+        bossCurseTimerSec: 0,
+        automationAccumulatorSec: 0,
+        sphereAutoAccumulatorSec: 0,
+        confirmReset: true,
+        autoFollowersEnabled: true,
+        autoFervorEnabled: true,
+        autoRelicsEnabled: true,
+        autoRelicUpgradesEnabled: true
+      }
+    })
+  }
+];
 
 export function parseResourceInput(raw: string): number {
   const cleaned = raw.trim().replace(/\s+/g, '');
@@ -217,6 +330,22 @@ export class TestMenu {
             </div>
           </div>
 
+          <!-- SEÇÃO 4: PERFIS DE SAVE -->
+          <div class="test-section">
+            <div class="test-section-header">
+              <span class="test-section-title">${icon('scroll')} PERFIS DE SAVE</span>
+              <span class="test-section-subtitle">Substitui o save atual por um estado pronto para teste.</span>
+            </div>
+            <div class="test-profile-list">
+              ${DEV_SAVE_PROFILES.map(profile => `
+                <button type="button" class="test-btn test-action-btn test-highlight test-profile-btn" data-action="profile-${profile.id}">
+                  <span class="test-profile-name">${icon('gnose')} ${profile.label}</span>
+                  <span class="test-profile-desc">${profile.description}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
           <!-- SEÇÃO 4: BENCHMARK ANALÍTICO DEFINITIVO -->
           <div class="test-section">
             <div class="test-section-header">
@@ -232,11 +361,11 @@ export class TestMenu {
 
           <div class="test-section">
             <div class="test-section-header">
-              <span class="test-section-title">${icon('chart')} SIMULAÇÃO DE PROGRESSÃO POR SESSÕES</span>
+              <span class="test-section-title">${icon('chart')} SIMULAÇÃO DE PROGRESSÃO</span>
             </div>
             <div class="test-grid">
               <button id="run-benchmark-btn" class="test-btn test-action-btn test-highlight" data-action="run-progression-benchmark" style="grid-column: 1 / -1; background: linear-gradient(135deg, #b45309, #d97706); color: #fff; font-weight: bold; padding: 10px;">
-                ${icon('bolt')} Simular Curva de Progressão (Referência vs Ativo intenso vs Casual vs AFK)
+                ${icon('bolt')} Simular progressão
               </button>
             </div>
             <div id="benchmark-results-container" style="display: none; margin-top: 10px; max-height: 280px; overflow-y: auto; background: rgba(0,0,0,0.5); padding: 10px; border: 1px solid #d97706; border-radius: 6px;"></div>
@@ -434,9 +563,46 @@ export class TestMenu {
     });
   }
 
+  private applySaveProfile(profile: DevSaveProfile): void {
+    const gs = this.game.gameState;
+    if (!gs) return;
+
+    const save = profile.buildSave();
+    if (!isValidSaveData(save)) {
+      throw new Error(`Perfil de save inválido: ${profile.id}`);
+    }
+
+    gs.applySaveData(save);
+    gs.checkAchievements();
+    SaveSystem.save(gs.buildSaveData());
+
+    this.game.followersTab?.syncFollowerCount(gs.getTotalFollowersCount());
+    this.game.sphere?.syncProgress();
+    this.game.refreshAllUI?.();
+
+    if (document.body.classList.contains('is-playing')) {
+      this.game.board?.setCardCollapsed('card-gnose', false);
+      this.game.board?.centerOnCard('card-gnose', true);
+    }
+
+    this.game.notifications?.showCustomPopup(
+      'Perfil de Save Aplicado',
+      `${profile.label}: ${profile.description}`,
+      'gnose',
+      'MENU DEV'
+    );
+    this.close();
+  }
+
   private executeAction(action: string): void {
     const gs = this.game.gameState;
     if (!gs) return;
+
+    const profile = DEV_SAVE_PROFILES.find(p => action === `profile-${p.id}`);
+    if (profile) {
+      this.applySaveProfile(profile);
+      return;
+    }
 
     const boss = GNOSE_BOSSES.find(boss => action === `defeat-${boss.id}`);
     if (boss) {
@@ -451,7 +617,7 @@ export class TestMenu {
         const btn = this.overlayEl?.querySelector<HTMLButtonElement>('#run-benchmark-btn');
         if (container) {
           container.style.display = 'block';
-          container.innerHTML = `<div style="color: #fbbf24; text-align: center; padding: 12px;">${icon('hourglass')} Preparando simulação por sessões (Referência, Ativo intenso, Casual, AFK)...</div>`;
+          container.innerHTML = `<div style="color: #fbbf24; text-align: center; padding: 12px;">${icon('hourglass')} Preparando simulação...</div>`;
           if (btn) btn.disabled = true;
 
           try {
@@ -465,7 +631,7 @@ export class TestMenu {
               const message = event.data;
               if (message.kind === 'progress') {
                 const names = { reference: 'Ativo de referência', active: 'Ativo', casual: 'Casual', afk: 'AFK' };
-                container.textContent = `Simulando ${names[message.profile]} com visitas e passos de 0,1 s...`;
+                container.textContent = `Simulando ${names[message.profile]}...`;
               } else {
                 if (message.kind === 'done') container.innerHTML = formatHtmlReport(message.report);
                 else container.textContent = `Erro ao rodar benchmark: ${message.message}`;

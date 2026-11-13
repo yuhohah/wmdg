@@ -1,12 +1,12 @@
 import { ShortcutsHelp } from './ui/ShortcutsHelp.js';
 import { GameplayShortcuts, createGameplayShortcutActions } from './ui/GameplayShortcuts.js';
 /// <reference types="vite/client" />
-import { recoverOfflineProgress } from './systems/offlineRecovery.js';
 // --- App Manager for Cult of the Sphere (Modular Orchestrator) ---
 
 import { AudioManager } from './systems/audio.js';
 import { NotificationManager } from './systems/notifications.js';
-import { SaveSystem, type SaveData } from './systems/saveSystem.js';
+import { SaveSystem } from './systems/saveSystem.js';
+import { SessionPersistenceController } from './systems/sessionPersistence.js';
 import { SettingsModal } from './ui/SettingsModal.js';
 import { ChangelogModal } from './ui/ChangelogModal.js';
 import { GAME_VERSION } from './config/changelog.js';
@@ -25,12 +25,12 @@ import { UnlocksTab } from './features/unlocks/UnlocksTab.js';
 import { AchievementsTab } from './features/achievements/AchievementsTab.js';
 import { StatsTab } from './features/stats/StatsTab.js';
 import { SphereController } from './features/sphere/SphereController.js';
-import { SphereVisual } from './features/sphere/SphereVisual.js';
 import { OnboardingGuide } from './ui/OnboardingGuide.js';
 import { FormulaTooltip } from './ui/FormulaTooltip.js';
 import { BoardManager } from './ui/BoardManager.js';
 import { hydrateIcons } from './ui/icons.js';
 import { cultDialog } from './ui/CultDialog.js';
+import { bindStartScreen } from './ui/StartScreenController.js';
 import { CampaignEnding } from './features/ending/CampaignEnding.js';
 import { TestMenu } from './ui/TestMenu.js';
 
@@ -53,6 +53,7 @@ class AppManager {
   public notifications: NotificationManager;
   public gameState: GameStateManager = new GameStateManager();
   public gameLoop: GameLoop = new GameLoop(10);
+  public persistence: SessionPersistenceController;
 
   // UI Controllers
   public hud: HUDController;
@@ -77,14 +78,8 @@ class AppManager {
   private cardUpdates: VisibleCardUpdates;
 
   // Save & System State
-  private lastSaveTime: number = Date.now();
   public isResetting: boolean = false;
   private isHapticsEnabled: boolean = true;
-  private hiddenSinceMs: number | undefined;
-  private pendingOfflineNotice?: { title: string; desc: string };
-  private offlineRecovery?: Promise<boolean>;
-  private offlineCheckpoint?: SaveData;
-  private offlineCreditedThroughMs = 0;
 
   constructor() {
     // 0. Fill static [data-icon] placeholders with the game's engraved icon set
@@ -178,6 +173,27 @@ class AppManager {
       gameState: this.gameState
     });
 
+    this.persistence = new SessionPersistenceController({
+      gameState: this.gameState,
+      gameLoop: this.gameLoop,
+      audio: this.audio,
+      notifications: this.notifications,
+      getIsResetting: () => this.isResetting,
+      setIsResetting: (resetting) => {
+        this.isResetting = resetting;
+      },
+      onSaveStatusUpdated: () => this.settingsModal?.updateSaveStatus(),
+      onSyncAfterLoadOrOffline: () => {
+        this.sphere.syncProgress();
+        this.followersTab?.syncFollowerCount(this.gameState.getTotalFollowersCount());
+        if (this.board && this.cardUpdates) {
+          this.refreshAllUI();
+        }
+      },
+      pauseFollowers: () => this.followersTab.pause(),
+      resumeFollowers: () => this.followersTab.resume(),
+    });
+
     // 4. Instantiate Modals
     this.saveDataModal = new SaveDataModal({
       onExport: () => SaveSystem.exportSave(this.gameState.buildSaveData()),
@@ -192,11 +208,11 @@ class AppManager {
           'Cancelar'
         );
         if (ok) {
-          const restored = await this.processOfflineGains(imported.timestamp, imported);
+          const restored = await this.persistence.processOfflineGains(imported.timestamp, imported);
           if (!restored) return false;
           this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
           this.refreshAllUI();
-          this.showPendingOfflineNotice();
+          this.persistence.showPendingOfflineNotice();
           return true;
         }
         return null;
@@ -216,11 +232,11 @@ class AppManager {
     this.settingsModal = new SettingsModal({
       audio: this.audio,
       onShowChangelog: () => { void changelogModal.open(); },
-      getLastSaveTime: () => this.lastSaveTime,
-      onManualSave: () => this.manualSave(),
+      getLastSaveTime: () => this.persistence.lastSaveTime,
+      onManualSave: () => this.persistence.manualSave(),
       onExportSave: () => this.saveDataModal.openExport(),
       onImportSave: () => this.saveDataModal.openImport(),
-      onResetSave: () => this.confirmHardReset(),
+      onResetSave: () => this.persistence.confirmHardReset(),
       onToggleHaptics: (enabled) => {
         this.isHapticsEnabled = enabled;
       },
@@ -229,13 +245,19 @@ class AppManager {
       onReplayTutorials: () => {
         this.onboardingGuide.restart();
         this.refreshAllUI();
-        this.saveProgress();
+        this.persistence.saveProgress();
       },
       onToggleHideGuidance: hidden => {
         this.gameState.hideGuidance = hidden;
         if (!hidden) this.onboardingGuide.restart();
         this.refreshAllUI();
-        this.saveProgress();
+        this.persistence.saveProgress();
+      },
+      isShowHotkeysEnabled: () => this.gameState.showHotkeys,
+      onToggleShowHotkeys: enabled => {
+        this.gameState.showHotkeys = enabled;
+        this.updateUnlockedTabsVisibility();
+        this.persistence.saveProgress();
       },
       isNerdsEnabled: () => this.gameState.nerdsEnabled,
       onToggleNerds: enabled => {
@@ -248,6 +270,7 @@ class AppManager {
     new ShortcutsHelp();
     new GameplayShortcuts(createGameplayShortcutActions({
       gameState: this.gameState,
+      focusCard: cardId => this.board?.centerOnCard(cardId),
       buyFollower: () => this.followersTab.buyOneFollower(),
       buyMaxFollowers: () => this.followersTab.buyMaxFollowers(),
       buyFervor: index => this.fervorTab.buyUpgrade(this.gameState.fervorUpgrades[index]),
@@ -262,7 +285,7 @@ class AppManager {
     }));
 
     // 5. Load Progress & Sync Views
-    this.loadProgress();
+    this.persistence.loadProgress();
     this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
 
     // 6. Setup Listeners, Initial Renders & Loops
@@ -271,15 +294,32 @@ class AppManager {
     this.onboardingGuide.setOnFocusCard((cardId, immediate, targetSelector) => {
       this.board.centerOnCard(cardId, immediate, targetSelector);
     });
-    this.campaignEnding = new CampaignEnding(this.gameState, () => this.saveProgress(),
-      () => document.body.classList.contains('is-playing') && !this.gnoseTab.bossBattleModal.isOpen(), this.audio);
-    this.bindStartScreen();
+    this.campaignEnding = new CampaignEnding(
+      this.gameState,
+      () => this.persistence.saveProgress(),
+      () => document.body.classList.contains('is-playing') && !this.gnoseTab.bossBattleModal.isOpen(),
+      this.audio
+    );
+    bindStartScreen({
+      gameState: this.gameState,
+      audio: this.audio,
+      onStartPlay: () => {
+        this.persistence.saveProgress();
+      },
+      onStartFrameReady: () => {
+        this.board.centerOnCard('card-altar-sphere', true);
+        this.followersTab.resize();
+        this.incarnationTab.altar?.resize();
+        this.onboardingGuide.update();
+        this.persistence.showPendingOfflineNotice();
+      },
+    });
     this.setupReactiveListeners();
-    this.setupSystemEvents();
+    this.persistence.bindSystemEvents(() => this.refreshAllUI());
     this.renderAllLists();
     this.updateUnlockedTabsVisibility();
     this.startPassiveFaithLoop();
-    this.startAutoSaveLoop();
+    this.persistence.startAutoSaveLoop();
     this.hud.update();
     this.onboardingGuide.update();
 
@@ -289,40 +329,6 @@ class AppManager {
     }
     this.registerGlobalHelpers();
     void changelogModal.showIfUpdated();
-  }
-
-  private bindStartScreen(): void {
-    const playBtn = document.getElementById('play-btn');
-    const startScreen = document.getElementById('start-screen');
-    const gameplayScreen = document.getElementById('gameplay-screen');
-    const startSphereHost = document.getElementById('start-sphere');
-    const startSphere = startSphereHost ? new SphereVisual(startSphereHost) : null;
-    const syncStartSphere = () => startSphere?.setProgress(
-      this.gameState.isIncarnationUnlocked(), this.gameState.incarnationStage,
-    );
-    syncStartSphere();
-    const stopSyncStartSphere = events.on(GameEvents.STATE_CHANGED, syncStartSphere);
-
-    playBtn?.addEventListener('click', () => {
-      stopSyncStartSphere();
-      startSphere?.destroy();
-      this.gameState.startGameClock();
-      this.saveProgress();
-      this.audio.init();
-      this.audio.playMusic();
-      this.audio.playTone(440, 'sine', 0.1);
-      startScreen?.classList.remove('active');
-      gameplayScreen?.classList.add('active');
-      // Cheap hook for play-time styles (a body:has() selector re-ran style recalcs on every DOM change)
-      document.body.classList.add('is-playing');
-      requestAnimationFrame(() => {
-        this.board.centerOnCard('card-altar-sphere', true);
-        this.followersTab.resize();
-        this.incarnationTab.altar?.resize();
-        this.onboardingGuide.update();
-        this.showPendingOfflineNotice();
-      });
-    });
   }
 
   private setupReactiveListeners(): void {
@@ -350,37 +356,6 @@ class AppManager {
     });
   }
 
-  private setupSystemEvents(): void {
-    window.addEventListener('beforeunload', () => {
-      if (!this.isResetting) {
-        this.saveProgress();
-      }
-    });
-
-    document.addEventListener('visibilitychange', async () => {
-      if (document.visibilityState === 'hidden') {
-        this.hiddenSinceMs ??= Date.now();
-        if (!this.isResetting) {
-          this.saveProgress();
-        }
-        this.gameLoop.pause();
-        this.followersTab.pause();
-      } else {
-        const hiddenSince = this.hiddenSinceMs;
-        this.hiddenSinceMs = undefined;
-        if (hiddenSince !== undefined) {
-          await this.processOfflineGains(hiddenSince);
-          this.refreshAllUI();
-          this.showPendingOfflineNotice();
-        }
-        if (document.visibilityState === 'visible' && !this.offlineRecovery) {
-          this.gameLoop.resume();
-          this.followersTab.resume();
-        }
-      }
-    });
-  }
-
   public refreshAllUI(): void {
     this.updateUnlockedTabsVisibility();
     this.renderAllLists();
@@ -392,6 +367,7 @@ class AppManager {
   public updateUnlockedTabsVisibility(): void {
     const tips = document.querySelector<HTMLElement>('.start-game-tips');
     if (tips) tips.hidden = this.gameState.hideGuidance;
+    document.body.classList.toggle('hide-hotkeys', !this.gameState.showHotkeys);
     const inc = this.gameState.isIncarnationUnlocked();
     const ferv = this.gameState.isFervorUpgradesUnlocked();
     const rel = this.gameState.isRelicsUnlocked();
@@ -475,143 +451,6 @@ class AppManager {
         // Ignored
       }
     }
-  }
-
-  // --- Save / Load & Persistence ---
-
-  private applySaveData(save: SaveData): void {
-    this.gameState.applySaveData(save);
-    if (document.body.classList.contains('is-playing')) this.gameState.startGameClock();
-    this.sphere.syncProgress();
-  }
-
-  private saveProgress(): boolean {
-    if (this.isResetting) return false;
-    const data = this.offlineCheckpoint ?? this.gameState.buildSaveData();
-    if (!this.offlineCheckpoint && this.hiddenSinceMs !== undefined) data.timestamp = this.hiddenSinceMs;
-    const success = SaveSystem.save(data);
-    if (success) {
-      this.lastSaveTime = Date.now();
-      this.settingsModal.updateSaveStatus();
-    }
-    return success;
-  }
-
-  private loadProgress(): boolean {
-    const data = SaveSystem.load();
-    if (data) {
-      this.applySaveData(data);
-      this.lastSaveTime = data.timestamp || Date.now();
-      if (data.timestamp) {
-        // The constructor finishes creating the board and controls before recovery yields.
-        queueMicrotask(() => { void this.processOfflineGains(data.timestamp); });
-      }
-      return true;
-    }
-    return false;
-  }
-
-  private showPendingOfflineNotice(): void {
-    if (!this.pendingOfflineNotice || !document.body.classList.contains('is-playing')) return;
-    const notice = this.pendingOfflineNotice;
-    this.pendingOfflineNotice = undefined;
-    this.notifications.showCustomPopup(notice.title, notice.desc, 'hourglass', '');
-  }
-
-  private async processOfflineGains(lastTimestamp: number, imported?: SaveData): Promise<boolean> {
-    // Serialize visibility changes and imports, then account only for uncredited time.
-    while (this.offlineRecovery) await this.offlineRecovery;
-    const now = Date.now();
-    const from = imported ? lastTimestamp : Math.max(lastTimestamp, this.offlineCreditedThroughMs);
-    const source = imported ?? this.gameState.buildSaveData();
-    source.timestamp = from;
-    const wasRunning = this.gameLoop.isRunning();
-    this.gameLoop.pause();
-    this.followersTab.pause();
-    this.offlineCheckpoint = this.gameState.buildSaveData();
-    if (!imported) this.offlineCheckpoint.timestamp = from;
-
-    const dialog = document.createElement('dialog');
-    dialog.className = 'cult-dialog';
-    dialog.setAttribute('aria-label', 'Atualizando o culto');
-    dialog.innerHTML = '<h2 tabindex="-1">Reunindo a Fé acumulada</h2><p role="status">Seu progresso está sendo atualizado. Aguarde um instante.</p>';
-    dialog.addEventListener('cancel', event => event.preventDefault());
-    document.body.append(dialog);
-    dialog.showModal();
-    this.gameState.retreatBossBattle();
-    const recovery = (async () => {
-      try {
-        const result = await recoverOfflineProgress(source, now);
-        // Commit the fully calculated, validated candidate before changing the live state.
-        if (!SaveSystem.save(result.save)) throw new Error('Não foi possível salvar o progresso recuperado.');
-        this.applySaveData(result.save);
-        this.gameState.relicConvertCooldown = 0;
-        this.offlineCreditedThroughMs = now;
-        this.pendingOfflineNotice = result.notice;
-        this.lastSaveTime = now;
-        this.settingsModal.updateSaveStatus();
-        return true;
-      } catch (error) {
-        console.error('Falha ao recuperar o progresso:', error);
-        this.notifications.showCustomPopup('Não foi possível atualizar o culto', 'Seu progresso anterior foi preservado. Verifique o armazenamento do navegador e tente novamente.', 'warning', 'REGISTRO SAGRADO');
-        return false;
-      }
-    })();
-    this.offlineRecovery = recovery;
-    try {
-      return await recovery;
-    } finally {
-      this.offlineRecovery = undefined;
-      this.offlineCheckpoint = undefined;
-      dialog.close();
-      dialog.remove();
-      this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
-      this.refreshAllUI();
-      if (wasRunning && document.visibilityState === 'visible') this.gameLoop.resume();
-      if (document.visibilityState === 'visible') this.followersTab.resume();
-    }
-  }
-
-  private manualSave(): void {
-    const success = this.saveProgress();
-    if (success) {
-      this.audio.playTone(660, 'sine', 0.1);
-      this.notifications.showCustomPopup(
-        'Culto Salvo',
-        'Seu progresso sagrado foi gravado com sucesso.',
-        'codex',
-        'REGISTRO SAGRADO'
-      );
-      this.settingsModal.updateSaveStatus();
-    } else {
-      this.notifications.showCustomPopup(
-        'Erro ao Salvar',
-        'Não foi possível gravar no armazenamento do navegador.',
-        'warning',
-        'ALERTA'
-      );
-    }
-  }
-
-  private async confirmHardReset(): Promise<void> {
-    const ok = await cultDialog(
-      'Reiniciar o culto',
-      'Deseja realmente reiniciar o culto do zero? Todo o progresso sagrado, fiéis e relíquias serão perdidos permanentemente.',
-      'Reiniciar',
-      'Cancelar'
-    );
-    if (ok) {
-      this.isResetting = true;
-      SaveSystem.resetSave();
-      this.audio.playTone(220, 'sawtooth', 0.3);
-      window.location.reload();
-    }
-  }
-
-  private startAutoSaveLoop(): void {
-    window.setInterval(() => {
-      this.saveProgress();
-    }, 20000);
   }
 
   private registerGlobalHelpers(): void {

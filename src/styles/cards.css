@@ -2,6 +2,16 @@
    ACTION CARDS & FEATURE TABS STYLING
    =================================================== */
 
+.tab-pane {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tab-pane.active {
+  display: flex;
+}
+
 /* Card Lists & Action Cards */
 .card-list {
   display: flex;
@@ -1214,8 +1224,8 @@
 }
 
 @keyframes start-orb-pulse {
-  0% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 10px rgba(184, 135, 69, 0.3)); }
-  100% { transform: scale(1.04); filter: brightness(1.15) drop-shadow(0 0 24px rgba(220, 180, 110, 0.6)); }
+  0% { transform: scale(1); }
+  100% { transform: scale(1.04); }
 }
 
 .relic-monument-banner {

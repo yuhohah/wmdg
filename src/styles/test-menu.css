@@ -97,8 +97,7 @@
   visibility: visible;
   pointer-events: auto;
   transition-delay: 0s;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  /* The animated board stays live beneath this overlay; full-screen blur stalls compositing. */
 }
 
 /* Modal Window */
@@ -392,6 +391,36 @@
   background: #3b1414;
   border-color: #ef4444;
   color: #fff;
+}
+
+/* Save Profiles */
+.test-profile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.test-profile-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  text-align: left;
+  padding: 10px 12px;
+}
+
+.test-profile-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.test-profile-desc {
+  font-size: 11px;
+  font-weight: 400;
+  color: #a89f91;
 }
 
 /* Footer */

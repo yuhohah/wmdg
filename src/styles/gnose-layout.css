@@ -17,10 +17,6 @@
   gap: 6px;
 }
 
-#card-gnose :is([data-tier='3'], [data-tier='4']) .gnose-tier-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
 #card-gnose .gnose-tree-node {
   min-height: 0;
   padding: 8px 10px;

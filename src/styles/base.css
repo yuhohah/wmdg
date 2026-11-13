@@ -5,10 +5,10 @@
   --gold-glow: #ffffff;
   --gold-border: #3f3f46;
   --gold-light: #f4f4f5;
-  
+
   --red-accent: #b91c1c;
   --red-glow: #52525b;
-  
+
   --border-dark: #18181b;
   --border-muted: #27272a;
   --border-mid: #52525b;
@@ -18,20 +18,14 @@
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --text-gold: #fbbf24;
-  
-  --font-heading: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+
+  --font-heading: Georgia, 'Times New Roman', serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'Source Code Pro', Menlo, Consolas, monospace;
 
   /* Dimensionamento Fluido e Responsivo da Esfera Divina & Órbita */
   --sphere-size: clamp(140px, 36vw, 190px);
   --ring-1-size: clamp(180px, 48vw, 250px);
   --ring-2-size: clamp(210px, 56vw, 290px);
-  --satellites-orbit-size: clamp(230px, 60vw, 320px);
-  --satellite-node-size: clamp(38px, 9.5vw, 46px);
-  /* Distância entre a borda da Esfera e a borda dos satélites */
-  --satellite-gap: 14px;
-  /* Raio da órbita derivado da Esfera: nunca invade a imagem, em qualquer tela */
-  --satellite-offset: calc(-1 * (var(--sphere-size) / 2 + var(--satellite-node-size) / 2 + var(--satellite-gap)));
 }
 
 * {
@@ -49,7 +43,7 @@ html, body {
   height: 100%;
   overflow: hidden;
   background-color: var(--bg-dark);
-  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Ubuntu, Cantarell, sans-serif;
   color: var(--text-main);
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -121,12 +115,6 @@ html, body {
   overflow: hidden;
 }
 
-/* Mobile Navigation Bar: hidden on desktop by default */
-.mobile-bottom-nav {
-  display: none;
-}
-
-
 /* Slide Style Main Card */
 .slide-card {
   background: var(--bg-panel);
@@ -156,36 +144,6 @@ html, body {
   line-height: 1.1;
   margin-bottom: 12px;
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.9);
-}
-
-.gold-divider {
-  width: 160px;
-  height: 3px;
-  background: var(--border-mid);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-  margin-bottom: 20px;
-}
-
-.slide-subtitle {
-  font-size: 20px;
-  font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 12px;
-}
-
-.slide-tagline {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-
-.slide-author {
-  font-size: 14px;
-  color: var(--gold-accent);
-  margin-bottom: 28px;
 }
 
 /* Slide Play Button */
@@ -221,42 +179,6 @@ html, body {
 
 .btn-slide-play:active {
   transform: translateY(1px);
-}
-
-/* Procession Walking Character Layer at Bottom */
-.procession-path {
-  display: none;
-}
-
-.cultist-sprite {
-  display: none;
-}
-
-/* Slide Style Footer Bar */
-.bottom-footer-bar {
-  width: 100%;
-  background: rgba(8, 10, 15, 0.95);
-  border-top: 1.5px solid var(--border-dark);
-  padding: 14px 36px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  z-index: 20;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
-
-.footer-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--gold-accent);
-}
-
-.footer-right {
-  color: var(--text-muted);
 }
 
 .start-game-tips {

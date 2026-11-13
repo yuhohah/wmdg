@@ -22,6 +22,11 @@ export class SphereController {
   private unsubscribeState?: () => void;
   private unsubscribeTick?: () => void;
   private satellite: HTMLElement | null = null;
+  private satelliteOrb: HTMLElement | null = null;
+  private wrapperWidth = 400;
+  private wrapperHeight = 400;
+  private wrapperObserver?: ResizeObserver;
+  private lastSatelliteTransform = '';
   private lastAutoClick: ReturnType<GameStateManager['getLastSphereAutoclick']> = null;
   private satelliteAngle = 0;
   private sphereGlobe: HTMLElement | null = null;
@@ -49,6 +54,18 @@ export class SphereController {
     this.sphereAnimation = new SphereVisual(this.sphereGlobe);
     const wrapper = this.divineSphereBtn.parentElement;
     if (wrapper) {
+      this.wrapperWidth = wrapper.clientWidth || 400;
+      this.wrapperHeight = wrapper.clientHeight || 400;
+      if (typeof ResizeObserver !== 'undefined') {
+        this.wrapperObserver = new ResizeObserver((entries) => {
+          const rect = entries[entries.length - 1]?.contentRect;
+          if (rect && rect.width > 0 && rect.height > 0) {
+            this.wrapperWidth = rect.width;
+            this.wrapperHeight = rect.height;
+          }
+        });
+        this.wrapperObserver.observe(wrapper);
+      }
       this.satellite = document.createElement('span');
       this.satellite.className = 'sphere-autoclick-satellite';
       this.satellite.hidden = true;
@@ -56,6 +73,7 @@ export class SphereController {
       this.satellite.setAttribute('aria-label', 'Satélite da Gnose: 1 clique automático por segundo');
       this.satellite.title = 'Satélite da Gnose · 1 clique por segundo';
       this.satellite.innerHTML = '<span class="autoclick-orb"></span>';
+      this.satelliteOrb = this.satellite.firstElementChild as HTMLElement | null;
       wrapper.appendChild(this.satellite);
     }
     this.syncProgress();
@@ -112,7 +130,8 @@ export class SphereController {
     this.sphereAnimation?.setProgress(this.gameState.isIncarnationUnlocked(), this.gameState.incarnationStage);
     if (!this.satellite) return;
     const phase = this.gameState.getSphereAutoclickProgress();
-    this.satellite.hidden = phase === null;
+    const shouldHide = phase === null;
+    if (this.satellite.hidden !== shouldHide) this.satellite.hidden = shouldHide;
     const autoClick = this.gameState.getLastSphereAutoclick();
     const clicked = autoClick !== null && autoClick !== this.lastAutoClick;
     this.lastAutoClick = autoClick;
@@ -123,8 +142,13 @@ export class SphereController {
       : phase < 0.55 ? 1 : Math.cos(((phase - 0.55) / 0.45) * Math.PI / 2);
     const radius = this.reducedMotion.matches ? 40 : 26 + distance * 17;
     const angle = this.reducedMotion.matches ? -Math.PI / 4 : this.satelliteAngle;
-    this.satellite.style.left = `${50 + Math.cos(angle) * radius}%`;
-    this.satellite.style.top = `${50 + Math.sin(angle) * radius}%`;
+    const dx = Math.cos(angle) * (radius / 100) * this.wrapperWidth;
+    const dy = Math.sin(angle) * (radius / 100) * this.wrapperHeight;
+    const transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0)`;
+    if (transform !== this.lastSatelliteTransform) {
+      this.lastSatelliteTransform = transform;
+      this.satellite.style.transform = transform;
+    }
     if (clicked && autoClick
       && document.visibilityState !== 'hidden' && this.divineSphereBtn?.getClientRects().length) {
       this.sphereAnimation?.reactToClick();
@@ -137,16 +161,17 @@ export class SphereController {
         ? `✦ CRÍTICO! +${formatNumber(autoClick.fpc)} FÉ`
         : `+${formatNumber(autoClick.fpc)} FÉ`;
       this.spawnFloatingText(x, y, label, true);
-      if (!this.reducedMotion.matches) this.satellite.animate(
-        [{ transform: 'translate(-50%, -50%) scale(0.8)' },
-          { transform: 'translate(-50%, -50%) scale(1.18)', offset: 0.4 },
-          { transform: 'translate(-50%, -50%) scale(1)' }],
+      if (!this.reducedMotion.matches && this.satelliteOrb) this.satelliteOrb.animate(
+        [{ transform: 'scale(0.8)' },
+          { transform: 'scale(1.18)', offset: 0.4 },
+          { transform: 'scale(1)' }],
         { duration: 280, easing: effectEasing(280) }
       );
     }
   };
 
   public destroy(): void {
+    this.wrapperObserver?.disconnect();
     this.unsubscribeState?.();
     this.unsubscribeTick?.();
     this.divineSphereBtn?.removeEventListener('click', this.handleClick);
@@ -171,8 +196,9 @@ export class SphereController {
       this.audio.playTone(580 + Math.random() * 180, 'sine', 0.08);
     }
 
-    let x = window.innerWidth / 2;
-    let y = window.innerHeight / 2;
+    const sphereRect = this.divineSphereBtn?.getBoundingClientRect();
+    let x = sphereRect ? sphereRect.left + sphereRect.width / 2 : window.innerWidth / 2;
+    let y = sphereRect ? sphereRect.top + 8 : window.innerHeight / 2;
     if (e && e.clientX && e.clientY) {
       x = e.clientX;
       y = e.clientY;

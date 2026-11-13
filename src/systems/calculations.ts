@@ -1,3 +1,4 @@
+import { PROGRESSION_BALANCE } from '../config/gnose.js';
 import type { BuyableItem, FervorUpgrade, Achievement, BuffType } from '../types.js';
 
 export function calculateMiracleReward(_faith: number, faithPerClick: number, faithPerSecond: number): number {
@@ -17,8 +18,51 @@ export function calculateItemCost(
   return Math.max(1, cost);
 }
 
-export function calculateFervorUpgradeCost(upg: FervorUpgrade, costMultiplier: number = upg.costMultiplier): number {
-  return Math.floor(upg.baseCost * Math.pow(costMultiplier, upg.level));
+export function calculateFervorUpgradeCost(
+  upg: FervorUpgrade,
+  costMultiplier: number = upg.costMultiplier,
+  level: number = upg.level
+): number {
+  return Math.floor(upg.baseCost * Math.pow(costMultiplier, level));
+}
+
+export function getFervorUpgradeMultiplier(
+  upg: FervorUpgrade,
+  followersCount: number = 0,
+  faithPoints: number = 0,
+  productionBase: number = 2,
+  relicBase: number = 3,
+  level: number = upg.level
+): number {
+  if (level <= 0) return 1.0;
+
+  switch (upg.id) {
+    case 'fu_prod':
+      return Math.pow(productionBase, Math.pow(level, 0.6));
+
+    case 'fu_effect':
+      // DodecaDragons FU2: 1.25 ^ (level ^ 0.8)
+      return Math.pow(1.25, Math.pow(level, 0.8));
+
+    case 'fu_click':
+      // DodecaDragons FU3: (level ^ 2.6) * 4 + 1
+      return Math.pow(level, 2.6) * 4 + 1;
+
+    case 'fu_followers':
+      // DodecaDragons FU4: ((level ^ 1.5) * miners / 50) + 1
+      return (Math.pow(level, 1.5) * followersCount / 50) + 1;
+
+    case 'fu_synergy':
+      // DodecaDragons FU5: ((level ^ 1.5) * log10(gold + 1) / 5) + 1
+      return (Math.pow(level, 1.5) * Math.log10(Math.max(0, faithPoints) + 1) / 5) + 1;
+
+    case 'fu_relics':
+      // DodecaDragons FU6: 3 ^ (level ^ 0.6)
+      return Math.pow(relicBase, Math.pow(level, 0.6));
+
+    default:
+      return 1.0;
+  }
 }
 
 // Bônus de conquistas somam dentro da mesma categoria (ex: +10% e +20% de clique = +30%),
@@ -169,7 +213,13 @@ export function calculateFaithForNextGnose(faith: number, gainExponent: number =
 
 export function calculateTotalGnoseMultiplier(totalGnoseEarned: number): number {
   if (totalGnoseEarned <= 0) return 1.0;
-  return 1 + Math.pow(totalGnoseEarned, 0.35) * 1.5;
+  const {
+    gnoseProductionScale: scale, gnoseProductionExponent: exponent,
+    gnoseProductionEarlyScale: earlyScale, gnoseProductionRamp: ramp,
+  } = PROGRESSION_BALANCE;
+  const campaignWeight = totalGnoseEarned / (totalGnoseEarned + ramp);
+  return 1 + earlyScale * Math.sqrt(totalGnoseEarned)
+    + scale * Math.pow(totalGnoseEarned, exponent) * campaignWeight ** 2;
 }
 
 export function calculateGnoseFollowersSynergyMultiplier(

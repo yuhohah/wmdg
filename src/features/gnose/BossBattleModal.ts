@@ -5,18 +5,66 @@ import { GNOSE_BOSSES, BOSS_DAMAGE_READINESS_THRESHOLD } from '../../config/boss
 import { formatNumber } from '../../systems/calculations.js';
 import { formatFixed } from '../../systems/numberFormat.js';
 import { events, GameEvents } from '../../core/EventBus.js';
-import type { ActiveBossMiracle, BossRift, CultPillarStatus, GnoseBoss } from '../../types.js';
+import type { ActiveBossMiracle, BossRift, GnoseBoss } from '../../types.js';
 import { icon } from '../../ui/icons.js';
 import { effectEasing, visualFrameScale, VisualFrameClock } from '../../ui/visualTiming.js';
+import { loadFollowerSprites } from '../followers/followerVisuals.js';
+import { incarnationStageIndex } from '../incarnation/incarnationSprites.js';
 import {
-  FOLLOWER_FRAME_SIZE,
-  followerAnimationFrame,
-  loadFollowerSprites,
-  visibleFollowerTiers,
-  type FollowerTier,
-} from '../../ui/followerVisuals.js';
-import { FollowersArena } from '../../ui/followersArena.js';
-import { INCARNATION_FRAME_SIZE, incarnationStageIndex, loadIncarnationSprites } from '../../ui/incarnationSprites.js';
+  BOSS_SPRITE_FOLDERS,
+  bossSheetFrameCount,
+  loadBossSprites,
+  loadIncarnationProcessionSprite,
+  onBossSpriteLoaded,
+  resolveBossRenderFrame,
+  type BossRenderFrame,
+} from './battle/BossSprites.js';
+import {
+  BOSS_COMBAT_SPOT,
+  BOSS_DESCENT_SPEED,
+  BOSS_DISTANT_SPAWN,
+  BOSS_SPHERE_CENTER,
+  bossHpLabel,
+  buildPolyline,
+  CLIMAX_DURATION_SEC,
+  computeProcessionRoutes,
+  FOLLOWERS_FALLBACK_BOX,
+  getElementWorldBox,
+  INCARNATION_FALLBACK_SPAWN,
+  INCARNATION_OUTBOUND_SPEED,
+  PARRY_RECOVERY_SEC,
+  parryCardPosition,
+  polylineLength,
+  PROCESSION_QUEUE_SPEED,
+  resolveMiracleFollowerActor,
+  RIFT_TELEGRAPH_BEFORE_ATTACK_SEC,
+  SACRED_CIRCLE_RADIUS,
+  samplePolylineAt,
+  stepDamageTrail,
+  syncBattleFollowerCohort,
+  type BattleCameraTarget,
+  type BattleFollowerActor,
+  type BattleFollowerSnapshot,
+  type DamageTrail,
+  type PathSample,
+  type PendingBattleClimax,
+} from './battle/BattleChoreography.js';
+import {
+  battleCanvasScale,
+  renderBattleWorldScene,
+  type DrawOrderEntry,
+} from './battle/BattleWorldRenderer.js';
+
+export {
+  battleCanvasScale,
+  bossHpLabel,
+  loadBossSprites,
+  parryCardPosition,
+  stepDamageTrail,
+  type BattleCameraTarget,
+  type BattleFollowerSnapshot,
+  type DamageTrail,
+};
 
 export interface BossBattleModalOptions {
   gameState: GameStateManager;
@@ -25,411 +73,6 @@ export interface BossBattleModalOptions {
   spawnFloatingText: (x: number, y: number, text: string, small?: boolean) => void;
   onBattleEnded?: (boss: GnoseBoss, victory: boolean) => void;
   onCameraFrame?: (target: BattleCameraTarget, elapsedSec: number) => void;
-}
-
-export interface BattleCameraTarget {
-  phase: 'incarnation' | 'boss' | 'combat';
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-interface BossLateralSprites {
-  idle: HTMLImageElement;
-  walk: HTMLImageElement;
-  attacks: HTMLImageElement[];
-  defeat: HTMLImageElement;
-}
-
-interface IncarnationWalkSprite {
-  still: HTMLImageElement;
-  walk: HTMLImageElement;
-}
-
-interface SpriteFrameBounds {
-  minX: number;
-  minY: number;
-  maxX: number;
-  maxY: number;
-}
-
-interface BossRenderFrame {
-  lx: number;
-  ly: number;
-  drawLeft: number;
-  drawTop: number;
-  drawW: number;
-  drawH: number;
-  sheet: HTMLImageElement | null;
-  frame: number;
-  hitLeft: number;
-  hitTop: number;
-  hitWidth: number;
-  hitHeight: number;
-}
-
-interface PathSample {
-  x: number;
-  y: number;
-  s: number;
-}
-
-export interface BattleFollowerSnapshot {
-  id: number;
-  x: number;
-  y: number;
-  state: 'waiting_in_patio' | 'following_in_line' | 'encircling' | 'returning_to_patio';
-  trailS: number;
-  stopS: number;
-}
-
-interface BattleFollowerActor {
-  id: number;
-  queueIndex: number;
-  tier: FollowerTier;
-  startX: number;
-  startY: number;
-  x: number;
-  y: number;
-  trailS: number;
-  stopS: number;
-  state: 'waiting_in_patio' | 'following_in_line' | 'encircling' | 'returning_to_patio';
-  walkCycle: number;
-  prayCycle: number;
-  facing: 1 | -1;
-}
-
-interface PendingBattleClimax {
-  boss: GnoseBoss;
-  victory: boolean;
-  isRematch: boolean;
-  durationSec: number;
-  remainingSec: number;
-  totalSec: number;
-  cultReadiness: number;
-  lowestTwoPillars: [CultPillarStatus, CultPillarStatus];
-}
-
-const BOSS_SPHERE_CENTER = { x: 1740, y: 854 };
-// Concentric with the grand Hermetic engraving band (r = 494..582) on celestial-chart.svg,
-// enclosing BOTH the Boss (x = 1415, y = 865) AND the Divine Sphere (x = 1740, y = 854).
-const SACRED_CIRCLE_RADIUS = 535;
-const SPHERE_CIRCLE_RX = SACRED_CIRCLE_RADIUS;
-const SPHERE_CIRCLE_RY = SACRED_CIRCLE_RADIUS;
-
-const BOSS_DISTANT_SPAWN = { x: 180, y: 854 };
-const BOSS_COMBAT_SPOT = { x: 1415, y: 865 };
-
-const INCARNATION_OUTBOUND_SPEED = 520;
-const PROCESSION_QUEUE_SPEED = 460;
-const BOSS_DESCENT_SPEED = 220;
-const MAX_PROCESSION_FOLLOWERS = 34;
-
-const BOSS_SRC_W = 256;
-const BOSS_SRC_H = 192;
-const HITBOX_PAD_PX = 6;
-
-// Lead time (in seconds) that the "APARAR" rift is visible BEFORE the Boss swings his attack
-const RIFT_TELEGRAPH_BEFORE_ATTACK_SEC = 0.65;
-const PARRY_RECOVERY_SEC = 0.6;
-const CLIMAX_DURATION_SEC = 1.5;
-
-const INCARNATION_FALLBACK_SPAWN = { x: 490, y: 728 };
-const FOLLOWERS_FALLBACK_BOX = { x: 2024, y: 1030, w: 512, h: 240 };
-
-interface BossSpriteConfig {
-  folder: string;
-  attacks: [string, string];
-  walkFrameSec?: number;
-  attackFrameSec?: number;
-  animateIdle?: boolean;
-  drawOffsetX?: number;
-}
-
-const BOSS_SPRITE_FOLDERS: Record<string, BossSpriteConfig> = {
-  boss_anubis: { folder: 'lateral/01-anubis', attacks: ['ataque-bastao', 'ataque-balanca'] },
-  boss_cronos: { folder: 'lateral/02-hades', attacks: ['ataque-duplo', 'ataque-correntes'] },
-  boss_odin: { folder: 'lateral/03-odin', attacks: ['ataque-lanca', 'ataque-corvo'] },
-  boss_tiamat: {
-    folder: 'caos-referencia-v2',
-    attacks: ['ataque-esferas', 'ataque-circulos'],
-    walkFrameSec: 0.09,
-    attackFrameSec: 0.09,
-    animateIdle: true,
-    // The reference core is at x=96; the right of the canvas is projectile space.
-    drawOffsetX: -120,
-  },
-};
-
-// Exact idle/frame-0 opaque pixel bounds (alpha > 30) in 256x192 source space for instant sync before decode
-const BOSS_DEFAULT_BOUNDS: Record<string, SpriteFrameBounds> = {
-  boss_anubis: { minX: 28, minY: 7, maxX: 145, maxY: 183 },
-  boss_cronos: { minX: 84, minY: 7, maxX: 164, maxY: 187 },
-  boss_odin: { minX: 71, minY: 4, maxX: 189, maxY: 187 },
-  boss_tiamat: { minX: 23, minY: 3, maxX: 166, maxY: 180 },
-};
-
-const INCARNATION_FILES = ['01-neofito', '02-consagrado', '03-ancestral', '04-eclipse', '05-solar'] as const;
-
-const cachedBossSprites = new Map<string, BossLateralSprites>();
-const cachedIncarnationWalkSprites = new Map<number, IncarnationWalkSprite>();
-const spriteFrameBoundsCache = new WeakMap<HTMLImageElement, Map<number, SpriteFrameBounds>>();
-let boundsProbeCanvas: HTMLCanvasElement | null = null;
-let boundsProbeCtx: CanvasRenderingContext2D | null | undefined;
-const bossSpriteLoadListeners = new Set<() => void>();
-
-function notifyBossSpriteLoaded(): void {
-  bossSpriteLoadListeners.forEach((cb) => cb());
-}
-
-function buildPolyline(points: Array<{ x: number; y: number }>): PathSample[] {
-  if (points.length === 0) return [];
-  const samples: PathSample[] = [{ x: points[0].x, y: points[0].y, s: 0 }];
-  let total = 0;
-  for (let i = 1; i < points.length; i++) {
-    const prev = samples[samples.length - 1];
-    const cur = points[i];
-    const seg = Math.hypot(cur.x - prev.x, cur.y - prev.y);
-    if (seg < 0.01) continue;
-    total += seg;
-    samples.push({ x: cur.x, y: cur.y, s: total });
-  }
-  return samples;
-}
-
-function polylineLength(samples: PathSample[]): number {
-  return samples.length > 0 ? samples[samples.length - 1].s : 0;
-}
-
-function samplePolylineAt(
-  samples: PathSample[],
-  s: number
-): { x: number; y: number; dx: number; dy: number } {
-  if (samples.length === 0) return { x: 0, y: 0, dx: 1, dy: 0 };
-  if (samples.length === 1) return { x: samples[0].x, y: samples[0].y, dx: 1, dy: 0 };
-  if (s <= 0) {
-    return {
-      x: samples[0].x,
-      y: samples[0].y,
-      dx: samples[1].x - samples[0].x,
-      dy: samples[1].y - samples[0].y,
-    };
-  }
-  const last = samples[samples.length - 1];
-  if (s >= last.s) {
-    const prev = samples[samples.length - 2];
-    return {
-      x: last.x,
-      y: last.y,
-      dx: last.x - prev.x,
-      dy: last.y - prev.y,
-    };
-  }
-  let lo = 0;
-  let hi = samples.length - 1;
-  while (lo + 1 < hi) {
-    const mid = (lo + hi) >> 1;
-    if (samples[mid].s <= s) lo = mid;
-    else hi = mid;
-  }
-  const a = samples[lo];
-  const b = samples[hi];
-  const span = Math.max(1e-6, b.s - a.s);
-  const t = (s - a.s) / span;
-  return {
-    x: a.x + (b.x - a.x) * t,
-    y: a.y + (b.y - a.y) * t,
-    dx: b.x - a.x,
-    dy: b.y - a.y,
-  };
-}
-
-function getBossFrameBounds(
-  sheet: HTMLImageElement | null,
-  frame: number,
-  bossId: string
-): SpriteFrameBounds {
-  const fallback = BOSS_DEFAULT_BOUNDS[bossId] ?? BOSS_DEFAULT_BOUNDS.boss_anubis;
-  if (!sheet || !sheet.complete || sheet.naturalWidth < BOSS_SRC_W || sheet.naturalHeight < BOSS_SRC_H) {
-    return fallback;
-  }
-
-  let perSheet = spriteFrameBoundsCache.get(sheet);
-  if (!perSheet) {
-    perSheet = new Map<number, SpriteFrameBounds>();
-    spriteFrameBoundsCache.set(sheet, perSheet);
-  }
-  const existing = perSheet.get(frame);
-  if (existing) return existing;
-
-  if (boundsProbeCtx === undefined && typeof document !== 'undefined') {
-    boundsProbeCanvas = document.createElement('canvas');
-    boundsProbeCanvas.width = BOSS_SRC_W;
-    boundsProbeCanvas.height = BOSS_SRC_H;
-    try {
-      boundsProbeCtx = boundsProbeCanvas.getContext('2d', { willReadFrequently: true });
-    } catch {
-      boundsProbeCtx = null;
-    }
-  }
-
-  if (!boundsProbeCtx) {
-    return fallback;
-  }
-
-  try {
-    boundsProbeCtx.clearRect(0, 0, BOSS_SRC_W, BOSS_SRC_H);
-    boundsProbeCtx.drawImage(
-      sheet,
-      frame * BOSS_SRC_W,
-      0,
-      BOSS_SRC_W,
-      BOSS_SRC_H,
-      0,
-      0,
-      BOSS_SRC_W,
-      BOSS_SRC_H
-    );
-    const data = boundsProbeCtx.getImageData(0, 0, BOSS_SRC_W, BOSS_SRC_H).data;
-    let minX = BOSS_SRC_W;
-    let minY = BOSS_SRC_H;
-    let maxX = -1;
-    let maxY = -1;
-
-    // 2px stride cuts pixel scan cost by 4x while staying well within HITBOX_PAD_PX (6px)
-    for (let y = 0; y < BOSS_SRC_H; y += 2) {
-      const rowOffset = y * BOSS_SRC_W * 4;
-      for (let x = 0; x < BOSS_SRC_W; x += 2) {
-        if (data[rowOffset + x * 4 + 3] > 24) {
-          if (x < minX) minX = x;
-          if (x > maxX) maxX = x;
-          if (y < minY) minY = y;
-          if (y > maxY) maxY = y;
-        }
-      }
-    }
-
-    const measured = maxX >= minX && maxY >= minY ? { minX, minY, maxX, maxY } : fallback;
-    perSheet.set(frame, measured);
-    return measured;
-  } catch {
-    return fallback;
-  }
-}
-
-export function loadBossSprites(bossId: string): BossLateralSprites | undefined {
-  const cached = cachedBossSprites.get(bossId);
-  if (cached) return cached;
-  const cfg = BOSS_SPRITE_FOLDERS[bossId];
-  if (!cfg) return undefined;
-  const base = `${import.meta.env.BASE_URL}assets/sprites/bosses/`;
-  const load = (rel: string) => {
-    const img = new Image();
-    img.addEventListener('load', notifyBossSpriteLoaded, { once: true });
-    img.src = `${base}${cfg.folder}/${rel}`;
-    return img;
-  };
-  const sprites: BossLateralSprites = {
-    idle: load('idle.png'),
-    walk: load('andar/spritesheet.png'),
-    defeat: load('derrota/spritesheet.png'),
-    attacks: [
-      load(`${cfg.attacks[0]}/spritesheet.png`),
-      load(`${cfg.attacks[1]}/spritesheet.png`),
-    ],
-  };
-  cachedBossSprites.set(bossId, sprites);
-  return sprites;
-}
-
-const PHONE_MAX_WIDTH = 860;
-
-/** The stage spans thousands of world pixels; phones show it zoomed out, so they draw fewer. */
-export function battleCanvasScale(viewportWidth: number, worldWidth = 1, worldHeight = 1): number {
-  const phone = viewportWidth <= PHONE_MAX_WIDTH;
-  const pixelBudget = phone ? 2_000_000 : 4_000_000;
-  return Math.min(phone ? 0.6 : 1, Math.sqrt(pixelBudget / worldWidth / worldHeight), 4096 / worldWidth, 4096 / worldHeight);
-}
-
-function bossSheetFrameCount(sheet: HTMLImageElement | undefined): number {
-  return sheet && sheet.naturalWidth >= BOSS_SRC_W
-    ? Math.max(1, Math.floor(sheet.naturalWidth / BOSS_SRC_W))
-    : 17;
-}
-
-function loadIncarnationProcessionSprite(stageIndex: number): IncarnationWalkSprite | undefined {
-  const clamped = Math.max(0, Math.min(INCARNATION_FILES.length - 1, stageIndex));
-  const cached = cachedIncarnationWalkSprites.get(clamped);
-  if (cached) return cached;
-  const file = INCARNATION_FILES[clamped];
-  const base = `${import.meta.env.BASE_URL}assets/`;
-  const sharedStill = loadIncarnationSprites()[clamped]?.still;
-  const still = sharedStill ?? (() => {
-    const img = new Image();
-    img.src = `${base}concepts/encarnacao/${file}.png`;
-    return img;
-  })();
-  const walk = new Image();
-  walk.src = `${base}sprites/encarnacao/${file}/andar/spritesheet.png`;
-  const entry = { still, walk };
-  cachedIncarnationWalkSprites.set(clamped, entry);
-  return entry;
-}
-
-export function bossHpLabel(phase: number, hpPercent: number, passiveVictorySec: number): string {
-  const phaseTag = phase === 3 ? 'Fase III' : phase === 2 ? 'Fase II' : 'Fase I';
-  // Rounded up so a living Guardian never reads 0%
-  const label = `${phaseTag} · ${Math.ceil(hpPercent)}%`;
-  return Number.isFinite(passiveVictorySec) ? `${label} · ~${passiveVictorySec}s` : label;
-}
-
-// Cards sit on an arc around the Sphere, on the side away from the Guardian (degrees, 0 = right, -90 = up).
-// The arc stops short of the Guardian on one end and the Sphere's health plate on the other.
-const PARRY_ARC_START_DEG = -105;
-const PARRY_ARC_SPAN_DEG = 113;
-
-export function parryCardPosition(
-  rift: Pick<BossRift, 'kind' | 'slotIndex' | 'xPercent' | 'yPercent'>,
-  sphere: { x: number; y: number },
-  elapsedSec: number,
-  scale: number
-): { x: number; y: number } {
-  const slot = rift.slotIndex ?? 0;
-  let degrees: number;
-  if (rift.kind === 'anubis_scales' || rift.kind === 'hades_chains') {
-    degrees = slot === 0 ? -80 : -5;
-  } else if (rift.kind === 'odin_raven') {
-    degrees = -45;
-  } else if (rift.kind === 'chaos_orbit') {
-    degrees = [-100, -45, 5][slot] + Math.sin(elapsedSec * 0.55) * 3;
-  } else {
-    const turn = (Math.atan2(rift.yPercent - 50, rift.xPercent - 50) + Math.PI) / (Math.PI * 2);
-    degrees = PARRY_ARC_START_DEG + turn * PARRY_ARC_SPAN_DEG;
-  }
-  // Cards grow as the camera zooms out, so the arc widens with them
-  const radius = 120 + 110 * scale;
-  const radians = (degrees * Math.PI) / 180;
-  return {
-    x: Math.round(sphere.x + Math.cos(radians) * radius),
-    y: Math.round(sphere.y + Math.sin(radians) * radius),
-  };
-}
-
-const TRAIL_HOLD_SEC = 0.35;
-const TRAIL_SHRINK_PERCENT_PER_SEC = 40;
-
-export interface DamageTrail {
-  value: number;
-  holdSec: number;
-}
-
-// The pause only re-arms once the trail catches up, so rapid hits cannot freeze it.
-export function stepDamageTrail(trail: DamageTrail, currentPercent: number, elapsedSec: number): DamageTrail {
-  if (currentPercent >= trail.value) return { value: currentPercent, holdSec: TRAIL_HOLD_SEC };
-  if (trail.holdSec > 0) return { value: trail.value, holdSec: Math.max(0, trail.holdSec - elapsedSec) };
-  const value = trail.value - TRAIL_SHRINK_PERCENT_PER_SEC * elapsedSec;
-  return value <= currentPercent ? { value: currentPercent, holdSec: TRAIL_HOLD_SEC } : { value, holdSec: 0 };
 }
 
 export class BossBattleModal {
@@ -446,6 +89,11 @@ export class BossBattleModal {
   private altarTrailEl: HTMLElement | null = null;
   private bossTrail: DamageTrail = { value: 100, holdSec: 0 };
   private altarTrail: DamageTrail = { value: 100, holdSec: 0 };
+  private lastBossTrailWidth = '';
+  private lastAltarTrailWidth = '';
+  private lastBossAriaNow = '';
+  private lastAltarAriaNow = '';
+  private lastAttackDisabled = '';
   private bossHpValEl: HTMLElement | null = null;
 
   private sphereHpPlateEl: HTMLElement | null = null;
@@ -456,7 +104,6 @@ export class BossBattleModal {
   private combatFeedbackEl: HTMLElement | null = null;
   private riftsLayerEl: HTMLElement | null = null;
   private attackBtnEl: HTMLButtonElement | null = null;
-  private fulgorBtnEl: HTMLButtonElement | null = null;
   private miracleBtnEl: HTMLButtonElement | null = null;
   private phaseBannerEl: HTMLElement | null = null;
   private combatStatsEl: HTMLElement | null = null;
@@ -513,7 +160,6 @@ export class BossBattleModal {
   private spherePulseAlpha = 0;
   private phaseShockwaveAlpha = 0;
   private phaseBannerTimerSec = 0;
-  private fulgorBeamAlpha = 0;
   private miracleBeam: { fromX: number; fromY: number; alpha: number } | null = null;
   private climaxState: PendingBattleClimax | null = null;
 
@@ -523,11 +169,13 @@ export class BossBattleModal {
   private stageOriginX = 80;
   private stageOriginY = 0;
 
+  private readonly drawOrderPool: DrawOrderEntry[] = [];
+
   constructor(options: BossBattleModalOptions) {
     this.options = options;
     this.initDOM();
     this.bindEvents();
-    bossSpriteLoadListeners.add(() => {
+    onBossSpriteLoaded(() => {
       if (this.isOpen()) {
         this.drawWorldScene();
       }
@@ -583,73 +231,6 @@ export class BossBattleModal {
       })),
       climaxRemainingSec: this.climaxState?.remainingSec ?? 0,
     };
-  }
-
-  private measureSingleElementBox(
-    el: HTMLElement | null,
-    worldEl: HTMLElement | null
-  ): { x: number; y: number; w: number; h: number } | null {
-    if (!el || !worldEl) return null;
-
-    // 1. Sum offsetLeft / offsetTop up to #dodeca-board-world (immune to pan/zoom transforms)
-    let x = 0;
-    let y = 0;
-    let cur: HTMLElement | null = el;
-    let reachedWorld = false;
-    while (cur && cur !== document.body) {
-      if (cur === worldEl) {
-        reachedWorld = true;
-        break;
-      }
-      x += cur.offsetLeft || 0;
-      y += cur.offsetTop || 0;
-      cur = cur.offsetParent as HTMLElement | null;
-    }
-    const w = el.offsetWidth || el.clientWidth || 0;
-    const h = el.offsetHeight || el.clientHeight || 0;
-    if (reachedWorld && w > 20 && h > 20) {
-      return { x, y, w, h };
-    }
-
-    // 2. Fallback to getBoundingClientRect ratio
-    const worldRect = worldEl.getBoundingClientRect();
-    const elRect = el.getBoundingClientRect();
-    const worldW = worldEl.offsetWidth || 6880;
-    if (worldRect.width > 0 && elRect.width > 20 && elRect.height > 20) {
-      const zoom = worldRect.width / worldW;
-      return {
-        x: (elRect.left - worldRect.left) / zoom,
-        y: (elRect.top - worldRect.top) / zoom,
-        w: el.offsetWidth || elRect.width / zoom,
-        h: el.offsetHeight || elRect.height / zoom,
-      };
-    }
-
-    return null;
-  }
-
-  private getElementWorldBox(
-    elId: string,
-    fallback: { x: number; y: number; w: number; h: number },
-    fallbackCardId?: string
-  ): { x: number; y: number; w: number; h: number } {
-    const worldEl = document.getElementById('dodeca-board-world');
-    const primary = this.measureSingleElementBox(document.getElementById(elId), worldEl);
-    if (primary) return primary;
-
-    if (fallbackCardId) {
-      const cardBox = this.measureSingleElementBox(document.getElementById(fallbackCardId), worldEl);
-      if (cardBox) {
-        return {
-          x: cardBox.x + 16,
-          y: cardBox.y + 44,
-          w: Math.max(fallback.w, cardBox.w - 32),
-          h: Math.max(fallback.h, cardBox.h > 80 ? cardBox.h - 56 : fallback.h),
-        };
-      }
-    }
-
-    return fallback;
   }
 
   private ensureStageBounds(
@@ -728,10 +309,6 @@ export class BossBattleModal {
       this.sphereHpPlateEl.style.left = `${sphereLocalX}px`;
       this.sphereHpPlateEl.style.top = `${sphereLocalY + 206}px`;
     }
-    if (this.fulgorBtnEl) {
-      this.fulgorBtnEl.style.left = `${sphereLocalX}px`;
-      this.fulgorBtnEl.style.top = `${sphereLocalY - 148}px`;
-    }
     if (this.phaseBannerEl) {
       this.phaseBannerEl.style.left = `${sphereLocalX - 160}px`;
       this.phaseBannerEl.style.top = `${sphereLocalY - 265}px`;
@@ -802,18 +379,6 @@ export class BossBattleModal {
       </div>
     `;
 
-    // Create Fulgor Divino button and Phase Banner dynamically so they also work in unit test MockElement harnesses
-    const fulgorBtn = document.createElement('button');
-    fulgorBtn.id = 'boss-sphere-fulgor-btn';
-    fulgorBtn.type = 'button';
-    fulgorBtn.className = 'boss-sphere-fulgor-btn';
-    fulgorBtn.style.display = 'none';
-    fulgorBtn.style.left = `${sphereLocalX}px`;
-    fulgorBtn.style.top = `${sphereLocalY - 148}px`;
-    fulgorBtn.setAttribute('aria-label', 'Disparar Fulgor Divino da Esfera');
-    stage.appendChild(fulgorBtn);
-    this.fulgorBtnEl = fulgorBtn;
-
     const phaseBanner = document.createElement('div');
     phaseBanner.id = 'boss-phase-banner';
     phaseBanner.className = 'boss-phase-banner';
@@ -856,7 +421,6 @@ export class BossBattleModal {
     this.attackDamageEl = stage.querySelector('#boss-attack-damage');
     this.riftsLayerEl = stage.querySelector('#boss-rifts-layer');
     this.attackBtnEl = stage.querySelector('#boss-arena-attack-btn');
-
   }
 
   private bindEvents(): void {
@@ -876,31 +440,19 @@ export class BossBattleModal {
       this.onPlayerAttackHit(fpc, bossClickDamage, bossIsCrit, x, y);
     });
 
-    this.fulgorBtnEl?.addEventListener('click', (e: MouseEvent) => {
-      e.stopPropagation();
-      this.activateSphereFulgor(e.clientX || window.innerWidth / 2, e.clientY || window.innerHeight / 2);
-    });
-
-    // Clicking the central Divine Sphere during active boss combat triggers Fulgor Divino if at 100%, or normal Sphere pulse feedback
+    // Clicking the central Divine Sphere during combat shows normal attack feedback.
     const sphereBtn = document.getElementById('divine-sphere-btn');
     sphereBtn?.addEventListener('click', (e: MouseEvent) => {
       const battle = this.options.gameState.activeBossBattle;
       if (!battle || !this.isOpen() || battle.combatStarted === false) return;
-      if ((battle.sphereCharge ?? 0) >= 100 - 1e-6) {
-        this.activateSphereFulgor(
-          e.clientX || window.innerWidth / 2,
-          (e.clientY || window.innerHeight / 2) - 28
-        );
-        return;
-      }
       this.bossHitFlashSec = 0.18;
       const breakdown = this.options.gameState.getBossCombatBreakdown(battle.bossId);
-      this.showHitFeedback(`−${formatFixed(breakdown.clickHpFraction * 100, 2)}%`);
+      this.showHitFeedback(`\u2212${formatFixed(breakdown.clickHpFraction * 100, 2)}%`);
       if (e.clientX && e.clientY) {
         this.options.spawnFloatingText(
           e.clientX,
           e.clientY - 28,
-          `−${formatFixed(breakdown.clickHpFraction * 100, 2)}%`,
+          `\u2212${formatFixed(breakdown.clickHpFraction * 100, 2)}%`,
           true
         );
       }
@@ -925,29 +477,6 @@ export class BossBattleModal {
     }, true);
   }
 
-  private activateSphereFulgor(x: number, y: number): boolean {
-    const battle = this.options.gameState.activeBossBattle;
-    if (!battle || battle.combatStarted === false) return false;
-    const maxHp = battle.bossMaxHp;
-    const res = this.options.gameState.triggerSphereFulgor();
-    if (!res.triggered) return false;
-
-    this.fulgorBeamAlpha = 1.0;
-    this.bossHitFlashSec = 0.35;
-    this.options.audio.playTone(960, 'triangle', 0.24);
-    const pct = ((res.damage / Math.max(1, maxHp)) * 100).toFixed(0);
-    this.showHitFeedback(`Fulgor Divino! −${pct}%`);
-    this.options.spawnFloatingText(
-      x,
-      y,
-      `✦ FULGOR DIVINO! −${pct}%`
-    );
-    this.updateUI();
-    this.drawWorldScene();
-    events.emit(GameEvents.STATE_CHANGED);
-    return true;
-  }
-
   private onPlayerAttackHit(
     fpc: number,
     bossClickDamage: number,
@@ -961,11 +490,11 @@ export class BossBattleModal {
       this.bossHitFlashSec = 0.18;
       this.options.audio.playTone(640 + Math.random() * 140, 'sine', 0.08);
       const pct = formatFixed((bossClickDamage / battle.bossMaxHp) * 100, 2);
-      this.showHitFeedback(`${isCrit ? 'Crítico! ' : ''}−${pct}%`);
+      this.showHitFeedback(`${isCrit ? 'Crítico! ' : ''}\u2212${pct}%`);
       this.options.spawnFloatingText(
         x,
         y,
-        isCrit ? `✦ CRÍTICO! −${pct}%` : `−${pct}%`,
+        isCrit ? `\u2726 CRÍTICO! \u2212${pct}%` : `\u2212${pct}%`,
         true
       );
     } else {
@@ -1023,9 +552,13 @@ export class BossBattleModal {
     this.lastPhase = 1;
     this.bossTrail = { value: 100, holdSec: 0 };
     this.altarTrail = { value: 100, holdSec: 0 };
+    this.lastBossTrailWidth = '';
+    this.lastAltarTrailWidth = '';
+    this.lastBossAriaNow = '';
+    this.lastAltarAriaNow = '';
+    this.lastAttackDisabled = '';
     this.isBattleActive = true;
     this.climaxState = null;
-    this.fulgorBeamAlpha = 0;
     this.miracleBeam = null;
     this.phaseShockwaveAlpha = 0;
     this.phaseBannerTimerSec = 0;
@@ -1090,9 +623,6 @@ export class BossBattleModal {
     if (this.riftsLayerEl) {
       this.riftsLayerEl.innerHTML = '';
     }
-    if (this.fulgorBtnEl) {
-      this.fulgorBtnEl.style.display = 'none';
-    }
     if (this.phaseBannerEl) {
       this.phaseBannerEl.style.display = 'none';
     }
@@ -1119,124 +649,14 @@ export class BossBattleModal {
     incStart: { x: number; y: number },
     fBox: { x: number; y: number; w: number; h: number }
   ): void {
-    const cx = BOSS_SPHERE_CENTER.x;
-    const cy = BOSS_SPHERE_CENTER.y;
-
-    // Gathering point inside Pátio dos Fiéis (#followers-walk-canvas), oriented slightly toward the Sphere
-    const fCenterX = fBox.x + fBox.w * 0.5;
-    const fCenterY = fBox.y + fBox.h * 0.5;
-    const toSphereX = cx - fCenterX;
-    const toSphereY = cy - fCenterY;
-    const toSphereDist = Math.max(1, Math.hypot(toSphereX, toSphereY));
-    const gatherSpot = {
-      x: fCenterX + (toSphereX / toSphereDist) * Math.min(fBox.w * 0.22, 95),
-      y: fBox.y + fBox.h * 0.56 + (toSphereY / toSphereDist) * Math.min(fBox.h * 0.16, 42),
-    };
-    this.patioGatherSpot = gatherSpot;
-
-    // 1. Outbound path: Altar da Encarnação -> Pátio dos Fiéis
-    //    Uses taut-string exterior tangent skirting around the Divine Sphere (skirtR = 330)
-    //    whenever the straight line segment comes within 310px of the Sphere center.
-    const segDx = gatherSpot.x - incStart.x;
-    const segDy = gatherSpot.y - incStart.y;
-    const segLenSq = segDx * segDx + segDy * segDy;
-    const projT =
-      segLenSq > 1
-        ? Math.max(
-            0,
-            Math.min(1, ((cx - incStart.x) * segDx + (cy - incStart.y) * segDy) / segLenSq)
-          )
-        : 0;
-    const distToSphere = Math.hypot(
-      incStart.x + segDx * projT - cx,
-      incStart.y + segDy * projT - cy
-    );
-
-    const outboundWaypoints: Array<{ x: number; y: number }> = [incStart];
-    const skirtR = 330;
-    const d0 = Math.hypot(incStart.x - cx, incStart.y - cy);
-    const d1 = Math.hypot(gatherSpot.x - cx, gatherSpot.y - cy);
-
-    if (distToSphere < 310 && d0 > 220 && d1 > 220) {
-      const a0 = Math.atan2(incStart.y - cy, incStart.x - cx);
-      const a1 = Math.atan2(gatherSpot.y - cy, gatherSpot.x - cx);
-      let deltaA = Math.atan2(Math.sin(a1 - a0), Math.cos(a1 - a0));
-      // If nearly 180° opposite across the Sphere, prefer skirting south (y > cy)
-      if (Math.abs(deltaA) > Math.PI - 0.12) {
-        const southSign = Math.cos(a0) >= 0 ? 1 : -1;
-        deltaA = southSign * Math.abs(deltaA);
-      }
-      const dir = deltaA >= 0 ? 1 : -1;
-      const a1Unwrapped = a0 + deltaA;
-      const alpha0 = Math.acos(Math.min(1, skirtR / Math.max(skirtR, d0)));
-      const alpha1 = Math.acos(Math.min(1, skirtR / Math.max(skirtR, d1)));
-      const hasTautArc = Math.abs(deltaA) > alpha0 + alpha1;
-      const arcStart = hasTautArc ? a0 + dir * alpha0 : a0 + deltaA * 0.35;
-      const arcEnd = hasTautArc ? a1Unwrapped - dir * alpha1 : a0 + deltaA * 0.65;
-      const arcSteps = 18;
-      for (let k = 0; k <= arcSteps; k++) {
-        const theta = arcStart + ((arcEnd - arcStart) * k) / arcSteps;
-        outboundWaypoints.push({
-          x: cx + Math.cos(theta) * skirtR,
-          y: cy + Math.sin(theta) * skirtR,
-        });
-      }
-    }
-    outboundWaypoints.push(gatherSpot);
-    this.outboundPath = buildPolyline(outboundWaypoints);
+    const routes = computeProcessionRoutes(incStart, fBox);
+    this.patioGatherSpot = routes.patioGatherSpot;
+    this.outboundPath = routes.outboundPath;
     this.incOutboundS = 0;
-
-    // 2. Return single-file procession path:
-    //    Pátio dos Fiéis -> exterior clockwise C1-tangent curve onto the grand R = 535 circle
-    //    -> full 360° clockwise lap around BOTH Boss and Sphere, ending at the Incarnation's circle station.
-    const phiG = Math.atan2(gatherSpot.y - cy, gatherSpot.x - cx);
-    const distG = Math.hypot(gatherSpot.x - cx, gatherSpot.y - cy);
-    const alpha =
-      distG > SACRED_CIRCLE_RADIUS + 8
-        ? Math.max(0.28, Math.acos(Math.min(1, SACRED_CIRCLE_RADIUS / distG)))
-        : 0.38;
-    const entryAngle = phiG + alpha;
-
-    const entryPt = {
-      x: cx + Math.cos(entryAngle) * SPHERE_CIRCLE_RX,
-      y: cy + Math.sin(entryAngle) * SPHERE_CIRCLE_RY,
-    };
-    this.incGuardSpot = { ...entryPt };
-
-    const chordDist = Math.hypot(entryPt.x - gatherSpot.x, entryPt.y - gatherSpot.y);
-    const handleLen = Math.min(220, chordDist * 0.45);
-    const ctrlPt = {
-      x: entryPt.x + Math.sin(entryAngle) * handleLen,
-      y: entryPt.y - Math.cos(entryAngle) * handleLen,
-    };
-
-    const leadInPts: Array<{ x: number; y: number }> = [];
-    const approachSteps = 20;
-    for (let k = 0; k <= approachSteps; k++) {
-      const t = k / approachSteps;
-      const omt = 1 - t;
-      leadInPts.push({
-        x: omt * omt * gatherSpot.x + 2 * omt * t * ctrlPt.x + t * t * entryPt.x,
-        y: omt * omt * gatherSpot.y + 2 * omt * t * ctrlPt.y + t * t * entryPt.y,
-      });
-    }
-
-    const leadInSamples = buildPolyline(leadInPts);
-    this.circleStartS = polylineLength(leadInSamples);
-
-    const processionPts: Array<{ x: number; y: number }> = [...leadInPts];
-    const circleSteps = 120;
-    for (let k = 1; k <= circleSteps; k++) {
-      const theta = entryAngle + (k / circleSteps) * Math.PI * 2;
-      processionPts.push({
-        x: cx + Math.cos(theta) * SPHERE_CIRCLE_RX,
-        y: cy + Math.sin(theta) * SPHERE_CIRCLE_RY,
-      });
-    }
-
-    this.processionPath = buildPolyline(processionPts);
-    const totalLen = polylineLength(this.processionPath);
-    this.circleLength = Math.max(1, totalLen - this.circleStartS);
+    this.incGuardSpot = routes.incGuardSpot;
+    this.circleStartS = routes.circleStartS;
+    this.processionPath = routes.processionPath;
+    this.circleLength = routes.circleLength;
     this.incProcessionS = 0;
   }
 
@@ -1254,12 +674,12 @@ export class BossBattleModal {
     this.attackedRiftIds.clear();
 
     // 2. Incarnation starts from her stone pedestal in #incarnation-altar-canvas and heads to the Pátio dos Fiéis
-    const incBox = this.getElementWorldBox(
+    const incBox = getElementWorldBox(
       'incarnation-altar-canvas',
       { x: 280, y: 530, w: 420, h: 210 },
       'card-incarnation'
     );
-    const fBox = this.getElementWorldBox(
+    const fBox = getElementWorldBox(
       'followers-walk-canvas',
       FOLLOWERS_FALLBACK_BOX,
       'card-followers'
@@ -1286,112 +706,23 @@ export class BossBattleModal {
     this.followerActors = [];
     this.syncBattleFollowers(this.options.gameState.getTotalFollowersCount(), true);
     const bossId = this.options.gameState.activeBossBattle?.bossId ?? this.activeBossIdForScene;
-    this.syncAttackHitbox(this.resolveBossRenderFrame(bossId));
-  }
-
-  private assignQueueSlots(): void {
-    const count = this.followerActors.length;
-    if (count === 0) return;
-    const slotStep = this.circleLength / (count + 1);
-    this.queueSpacing = Math.min(56, slotStep);
-    for (let i = 0; i < count; i++) {
-      const actor = this.followerActors[i];
-      actor.queueIndex = i;
-      actor.stopS = this.circleStartS + (count - i) * slotStep;
-    }
+    this.syncAttackHitbox(this.getBossRenderFrame(bossId));
   }
 
   private syncBattleFollowers(totalCount: number, initialSpawn = false): void {
     if (totalCount === this.syncedFollowerTotal && !initialSpawn) return;
     this.syncedFollowerTotal = totalCount;
 
-    const fBox = this.getElementWorldBox(
-      'followers-walk-canvas',
-      FOLLOWERS_FALLBACK_BOX,
-      'card-followers'
+    const synced = syncBattleFollowerCohort(
+      this.followerActors,
+      totalCount,
+      initialSpawn,
+      this.patioGatherSpot,
+      this.circleStartS,
+      this.circleLength
     );
-    const liveArena = FollowersArena.latestInstance;
-    const liveWalkers = liveArena?.walkers ?? [];
-    const arenaDims = liveArena?.getArenaDimensions() ?? { width: 400, height: 220 };
-
-    const effectiveTotal = Math.max(1, Math.floor(totalCount));
-    const repTiers = visibleFollowerTiers(effectiveTotal);
-    const desiredCount = Math.min(
-      MAX_PROCESSION_FOLLOWERS,
-      Math.max(repTiers.length, Math.min(effectiveTotal, 28))
-    );
-
-    const sortedTiers: FollowerTier[] = [...repTiers].sort((a, b) => b - a);
-    while (sortedTiers.length < desiredCount) {
-      sortedTiers.push(0);
-    }
-
-    if (!initialSpawn && this.followerActors.length === desiredCount) {
-      for (let i = 0; i < desiredCount; i++) {
-        this.followerActors[i].tier = sortedTiers[i] ?? 0;
-      }
-      return;
-    }
-
-    const rawActors: BattleFollowerActor[] = [];
-    for (let i = 0; i < desiredCount; i++) {
-      const existing = !initialSpawn ? this.followerActors[i] : undefined;
-      if (existing) {
-        existing.tier = sortedTiers[i] ?? existing.tier;
-        rawActors.push(existing);
-        continue;
-      }
-
-      let startX: number;
-      let startY: number;
-      const liveW = liveWalkers[i];
-      if (liveW && arenaDims.width > 0 && arenaDims.height > 0) {
-        startX = fBox.x + (liveW.x / arenaDims.width) * fBox.w;
-        startY = fBox.y + (liveW.y / arenaDims.height) * fBox.h;
-      } else {
-        const cols = 7;
-        const row = Math.floor(i / cols);
-        const col = i % cols;
-        startX =
-          fBox.x +
-          fBox.w * 0.16 +
-          col * ((fBox.w * 0.68) / Math.max(1, cols - 1)) +
-          ((i * 17) % 11) -
-          5;
-        startY = fBox.y + fBox.h * 0.34 + (row % 4) * 32 + ((i * 13) % 9) - 4;
-      }
-
-      rawActors.push({
-        id: i + 1,
-        queueIndex: i,
-        tier: sortedTiers[i] ?? 0,
-        startX,
-        startY,
-        x: startX,
-        y: startY,
-        trailS: 0,
-        stopS: 0,
-        state: 'waiting_in_patio',
-        walkCycle: liveW ? liveW.walkCycle : (i * 0.7) % 8,
-        prayCycle: liveW ? liveW.prayCycle : (i * 0.35) % 2,
-        facing: -1,
-      });
-    }
-
-    if (initialSpawn) {
-      rawActors.sort((a, b) => {
-        const da = Math.hypot(a.startX - this.patioGatherSpot.x, a.startY - this.patioGatherSpot.y);
-        const db = Math.hypot(b.startX - this.patioGatherSpot.x, b.startY - this.patioGatherSpot.y);
-        return da - db;
-      });
-      for (let i = 0; i < rawActors.length; i++) {
-        rawActors[i].tier = sortedTiers[i] ?? 0;
-        rawActors[i].id = i + 1;
-      }
-    }
-
-    this.followerActors = rawActors;
-    this.assignQueueSlots();
+    this.followerActors = synced.actors;
+    this.queueSpacing = synced.queueSpacing;
   }
 
   private startWorldLoop(): void {
@@ -1425,8 +756,20 @@ export class BossBattleModal {
     if (!battle) return;
     this.bossTrail = stepDamageTrail(this.bossTrail, (battle.bossHp / battle.bossMaxHp) * 100, elapsedSec);
     this.altarTrail = stepDamageTrail(this.altarTrail, (battle.altarIntegrity / battle.maxAltarIntegrity) * 100, elapsedSec);
-    if (this.bossHpTrailEl) this.bossHpTrailEl.style.width = `${this.bossTrail.value.toFixed(2)}%`;
-    if (this.altarTrailEl) this.altarTrailEl.style.width = `${this.altarTrail.value.toFixed(2)}%`;
+    if (this.bossHpTrailEl) {
+      const next = `${this.bossTrail.value.toFixed(2)}%`;
+      if (next !== this.lastBossTrailWidth) {
+        this.lastBossTrailWidth = next;
+        this.bossHpTrailEl.style.width = next;
+      }
+    }
+    if (this.altarTrailEl) {
+      const next = `${this.altarTrail.value.toFixed(2)}%`;
+      if (next !== this.lastAltarTrailWidth) {
+        this.lastAltarTrailWidth = next;
+        this.altarTrailEl.style.width = next;
+      }
+    }
   }
 
   private allocateWorldCanvas(): void {
@@ -1476,90 +819,21 @@ export class BossBattleModal {
     this.options.onCameraFrame?.(target, revealBoss ? 0 : elapsedSec);
   }
 
-  private resolveBossRenderFrame(bossId: string): BossRenderFrame {
-    const lx = Math.round(this.bossX - this.stageOriginX);
-    const ly = Math.round(this.bossY - this.stageOriginY);
-    const drawW = 320;
-    const drawH = 240;
-    const config = BOSS_SPRITE_FOLDERS[bossId];
-    const drawOffsetX = config?.drawOffsetX ?? (bossId === 'boss_anubis' ? -108 : -158);
-    const drawOffsetY = -215;
-    const drawLeft = lx + drawOffsetX;
-    const drawTop = ly + drawOffsetY;
-
-    const bossSprites = loadBossSprites(bossId);
-    let candidateSheet: HTMLImageElement | null = null;
-    let frame = 0;
-
-    if (bossSprites) {
-      const climax = this.climaxState;
-      if (climax?.victory && bossSprites.defeat.complete && bossSprites.defeat.naturalWidth > 0) {
-        candidateSheet = bossSprites.defeat;
-        const progress = 1 - climax.remainingSec / climax.totalSec;
-        const totalFrames = bossSheetFrameCount(candidateSheet);
-        // Play once across the existing victory interval, never wrap to the standing pose.
-        frame = Math.min(totalFrames - 1, Math.max(0, Math.floor(progress * totalFrames)));
-      } else if (this.bossState === 'walking' || (this.bossState === 'idle' && config?.animateIdle)) {
-        candidateSheet = bossSprites.walk;
-        const totalFrames = bossSheetFrameCount(candidateSheet);
-        frame = Math.floor(this.bossWalkTimeSec / (config?.walkFrameSec ?? 0.16)) % totalFrames;
-      } else if (this.bossState === 'attacking') {
-        candidateSheet = bossSprites.attacks[this.bossAttackIndex] ?? bossSprites.attacks[0];
-        const totalFrames = bossSheetFrameCount(candidateSheet);
-        frame = Math.min(totalFrames - 1, Math.floor(this.bossAttackFrameTimeSec / (config?.attackFrameSec ?? 0.115)));
-      } else {
-        candidateSheet = bossSprites.walk;
-        frame = 0;
-      }
-
-      if (
-        !(candidateSheet && candidateSheet.complete && candidateSheet.naturalWidth > 0) &&
-        bossSprites.idle.complete &&
-        bossSprites.idle.naturalWidth > 0
-      ) {
-        candidateSheet = bossSprites.idle;
-        frame = 0;
-      }
-    }
-
-    const activeSheet =
-      candidateSheet && candidateSheet.complete && candidateSheet.naturalWidth > 0
-        ? candidateSheet
-        : null;
-    // Hitboxes are inactive during climax and pre-combat procession/walk; avoid scanning every frame.
-    const skipDynamicBoundsScan =
-      Boolean(this.climaxState?.victory) ||
-      this.bossState === 'awaiting_ritual' ||
-      this.bossState === 'walking' ||
-      (bossId === 'boss_tiamat' && this.bossState === 'attacking');
-    const bounds = skipDynamicBoundsScan
-      ? getBossFrameBounds(bossSprites?.idle ?? null, 0, bossId)
-      : getBossFrameBounds(activeSheet, frame, bossId);
-
-    const spriteLeft = drawLeft + (bounds.minX / BOSS_SRC_W) * drawW;
-    const spriteRight = drawLeft + ((bounds.maxX + 1) / BOSS_SRC_W) * drawW;
-    const spriteTop = drawTop + (bounds.minY / BOSS_SRC_H) * drawH;
-    const spriteBottom = drawTop + ((bounds.maxY + 1) / BOSS_SRC_H) * drawH;
-
-    const hitLeft = Math.floor(spriteLeft - HITBOX_PAD_PX);
-    const hitTop = Math.floor(spriteTop - HITBOX_PAD_PX);
-    const hitRight = Math.ceil(spriteRight + HITBOX_PAD_PX);
-    const hitBottom = Math.ceil(spriteBottom + HITBOX_PAD_PX);
-
-    return {
-      lx,
-      ly,
-      drawLeft,
-      drawTop,
-      drawW,
-      drawH,
-      sheet: activeSheet,
-      frame,
-      hitLeft,
-      hitTop,
-      hitWidth: Math.max(88, hitRight - hitLeft),
-      hitHeight: Math.max(110, hitBottom - hitTop),
-    };
+  private getBossRenderFrame(bossId: string): BossRenderFrame {
+    return resolveBossRenderFrame({
+      bossId,
+      bossX: this.bossX,
+      bossY: this.bossY,
+      stageOriginX: this.stageOriginX,
+      stageOriginY: this.stageOriginY,
+      bossState: this.bossState,
+      bossWalkTimeSec: this.bossWalkTimeSec,
+      bossAttackIndex: this.bossAttackIndex,
+      bossAttackFrameTimeSec: this.bossAttackFrameTimeSec,
+      climaxVictory: this.climaxState?.victory,
+      climaxRemainingSec: this.climaxState?.remainingSec,
+      climaxTotalSec: this.climaxState?.totalSec,
+    });
   }
 
   private syncAttackHitbox(renderFrame: BossRenderFrame): void {
@@ -1707,9 +981,6 @@ export class BossBattleModal {
     }
     if (this.phaseShockwaveAlpha > 0) {
       this.phaseShockwaveAlpha = Math.max(0, this.phaseShockwaveAlpha - elapsedSec * 0.9);
-    }
-    if (this.fulgorBeamAlpha > 0) {
-      this.fulgorBeamAlpha = Math.max(0, this.fulgorBeamAlpha - elapsedSec * 1.8);
     }
     if (this.miracleBeam) {
       this.miracleBeam.alpha = Math.max(0, this.miracleBeam.alpha - elapsedSec * 1.6);
@@ -1943,513 +1214,56 @@ export class BossBattleModal {
     this.updateBattleCamera(elapsedSec);
   }
 
-  private resolveMiracleFollowerActor(miracle: ActiveBossMiracle | null | undefined): BattleFollowerActor | null {
-    const total = this.followerActors.length;
-    if (!miracle || total === 0) return null;
-    let encirclingCount = 0;
-    for (let i = 0; i < total; i++) {
-      if (this.followerActors[i].state === 'encircling') encirclingCount++;
-    }
-    if (encirclingCount === 0) {
-      return this.followerActors[miracle.followerSlot % total] ?? null;
-    }
-    let target = miracle.followerSlot % encirclingCount;
-    for (let i = 0; i < total; i++) {
-      const actor = this.followerActors[i];
-      if (actor.state === 'encircling') {
-        if (target === 0) return actor;
-        target--;
-      }
-    }
-    return this.followerActors[0] ?? null;
-  }
-
-  private readonly drawOrderPool: Array<{ kind: 0 | 1 | 2; index: number; y: number }> = [];
-
-  private pushDrawOrder(count: number, kind: 0 | 1 | 2, index: number, y: number): number {
-    let slot = this.drawOrderPool[count];
-    if (!slot) {
-      slot = { kind, index, y };
-      this.drawOrderPool[count] = slot;
-    } else {
-      slot.kind = kind;
-      slot.index = index;
-      slot.y = y;
-    }
-    return count + 1;
-  }
-
-  // Pixel speech bubble (3px grid) with a twinkling star matching FollowersArena.drawMiracleSpeechBubble
-  private drawFollowerMiracleBubble(
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    cycleTimer: number
-  ): void {
-    const px = 3;
-    const bob = Math.sin(cycleTimer * 4) > 0 ? px : 0;
-    const blink = Math.sin(cycleTimer * 6) > 0;
-
-    const cols = 11;
-    const rows = 8;
-    const left = Math.round(x - (cols * px) / 2);
-    const top = Math.round(y - 98 - bob);
-
-    // Gold frame, dark plate, tail pointing at the devotee
-    ctx.fillStyle = blink ? '#f6dc9a' : '#c99a4e';
-    ctx.fillRect(left + px, top, (cols - 2) * px, rows * px);
-    ctx.fillRect(left, top + px, cols * px, (rows - 2) * px);
-    ctx.fillRect(left + 4 * px, top + rows * px, 3 * px, px);
-    ctx.fillRect(left + 5 * px, top + (rows + 1) * px, px, px);
-    ctx.fillStyle = '#0f0c0a';
-    ctx.fillRect(left + px, top + px, (cols - 2) * px, (rows - 2) * px);
-    ctx.fillRect(left + 5 * px, top + rows * px, px, px);
-
-    // Four-point star
-    const cx = left + 5 * px;
-    const cy = top + 3 * px;
-    ctx.fillStyle = '#f6dc9a';
-    ctx.fillRect(cx, cy - px, px, 4 * px);
-    ctx.fillRect(cx - px, cy, 3 * px, 2 * px);
-    if (blink) {
-      ctx.fillRect(cx - 2 * px, cy + px / 2, px, px);
-      ctx.fillRect(cx + 2 * px, cy + px / 2, px, px);
-    }
-  }
-
   private drawWorldScene(): void {
     const battle = this.options.gameState.activeBossBattle;
     const climax = this.climaxState;
     if (!battle && !climax) return;
 
     const bossId = battle?.bossId ?? climax?.boss.id ?? this.activeBossIdForScene;
-    const phase = battle?.phase ?? this.lastPhase ?? 1;
+    const phase = (battle?.phase ?? this.lastPhase ?? 1) as 1 | 2 | 3;
 
     // Synchronize the attack hitbox with the exact rendered Boss sprite frame (hidden while awaiting ritual or in climax)
-    const bossFrame = this.resolveBossRenderFrame(bossId);
+    const bossFrame = this.getBossRenderFrame(bossId);
     this.syncAttackHitbox(bossFrame);
 
     const ctx = this.worldCtx;
     if (!ctx) return;
 
-    ctx.setTransform(this.worldCanvasScale, 0, 0, this.worldCanvasScale, 0, 0);
-    ctx.clearRect(0, 0, this.stageWidth, this.stageHeight);
-    ctx.imageSmoothingEnabled = false;
-
-    const sphereLocalX = BOSS_SPHERE_CENTER.x - this.stageOriginX;
-    const sphereLocalY = BOSS_SPHERE_CENTER.y - this.stageOriginY;
-
-    // 1. Grand Sacred Protective Circle etched on the cathedral floor around BOTH Boss and Divine Sphere
-    //    Intensifies visually in Phase II (gold/amber) and Phase III (crimson/solar fury)
-    ctx.save();
-    ctx.strokeStyle =
-      phase >= 3
-        ? 'rgba(232, 93, 93, 0.82)'
-        : phase === 2
-          ? 'rgba(246, 205, 110, 0.68)'
-          : 'rgba(201, 154, 78, 0.42)';
-    ctx.lineWidth = phase >= 3 ? 3 : phase === 2 ? 2.5 : 2;
-    ctx.setLineDash([12, 9]);
-    ctx.beginPath();
-    ctx.ellipse(sphereLocalX, sphereLocalY, SPHERE_CIRCLE_RX, SPHERE_CIRCLE_RY, 0, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.strokeStyle =
-      phase >= 3
-        ? 'rgba(246, 220, 154, 0.58)'
-        : phase === 2
-          ? 'rgba(224, 138, 82, 0.42)'
-          : 'rgba(169, 155, 224, 0.24)';
-    ctx.lineWidth = phase >= 2 ? 2 : 1.5;
-    ctx.setLineDash([]);
-    ctx.beginPath();
-    ctx.ellipse(
-      sphereLocalX,
-      sphereLocalY,
-      SPHERE_CIRCLE_RX + 28,
-      SPHERE_CIRCLE_RY + 28,
-      0,
-      0,
-      Math.PI * 2
-    );
-    ctx.stroke();
-    ctx.restore();
-
-    // 2. Divine Sphere Astral Charge Ring (FULGOR DIVINO: 0%..100%)
-    const sphereCharge = battle?.sphereCharge ?? 0;
-    if (battle && battle.combatStarted !== false) {
-      ctx.save();
-      const ringRadius = 136;
-      ctx.strokeStyle = 'rgba(201, 154, 78, 0.24)';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.arc(sphereLocalX, sphereLocalY, ringRadius, 0, Math.PI * 2);
-      ctx.stroke();
-
-      if (sphereCharge > 0) {
-        const chargeRatio = Math.max(0, Math.min(1, sphereCharge / 100));
-        const startAngle = -Math.PI / 2;
-        const endAngle = startAngle + chargeRatio * Math.PI * 2;
-        ctx.strokeStyle = chargeRatio >= 1 ? '#fff3c4' : '#f6dc9a';
-        ctx.lineWidth = chargeRatio >= 1 ? 6 : 4.5;
-        ctx.beginPath();
-        ctx.arc(sphereLocalX, sphereLocalY, ringRadius, startAngle, endAngle);
-        ctx.stroke();
-
-        if (chargeRatio >= 1) {
-          ctx.strokeStyle = 'rgba(246, 220, 154, 0.55)';
-          ctx.lineWidth = 2;
-          ctx.setLineDash([8, 6]);
-          ctx.beginPath();
-          ctx.arc(sphereLocalX, sphereLocalY, ringRadius + 14, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-      }
-      ctx.restore();
-    }
-
-    // 2b. Special Attack 2 Canvas Overlays (Hades Chains & Anubis Balance Beam)
-    if (battle && battle.activeRifts.some((r) => r.kind === 'hades_chains')) {
-      ctx.save();
-      ctx.strokeStyle = 'rgba(220, 62, 62, 0.85)';
-      ctx.lineWidth = 3.5;
-      ctx.setLineDash([6, 4]);
-      ctx.beginPath();
-      ctx.moveTo(sphereLocalX - 120, sphereLocalY - 75);
-      ctx.lineTo(sphereLocalX + 120, sphereLocalY + 75);
-      ctx.moveTo(sphereLocalX - 120, sphereLocalY + 75);
-      ctx.lineTo(sphereLocalX + 120, sphereLocalY - 75);
-      ctx.stroke();
-      ctx.restore();
-    }
-    if (battle && battle.activeRifts.some((r) => r.kind === 'anubis_scales')) {
-      ctx.save();
-      ctx.strokeStyle = 'rgba(246, 220, 154, 0.72)';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.moveTo(sphereLocalX - 185, sphereLocalY - 10);
-      ctx.lineTo(sphereLocalX + 185, sphereLocalY - 10);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // 2c. Incarnation Call Wave inside the Pátio dos Fiéis (when summoning the queue)
-    if (this.incCallRingProgress > 0) {
-      const incLocalX = this.incX - this.stageOriginX;
-      const incLocalY = this.incY - this.stageOriginY - 40;
-      const radius = 24 + this.incCallRingProgress * 280;
-      const alpha = Math.max(0, (1 - this.incCallRingProgress) * 0.72);
-      ctx.save();
-      ctx.strokeStyle = `rgba(246, 220, 154, ${alpha})`;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(incLocalX, incLocalY, radius, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // 3. Impact Shockwave on the Sphere when the Boss strikes, plus Phase II / III Shockwave
-    if (this.spherePulseAlpha > 0) {
-      ctx.save();
-      const radius = 140 + (1 - this.spherePulseAlpha) * 110;
-      ctx.strokeStyle = `rgba(224, 138, 82, ${this.spherePulseAlpha * 0.75})`;
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.arc(sphereLocalX, sphereLocalY, radius, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    }
-    if (this.phaseShockwaveAlpha > 0) {
-      ctx.save();
-      const radius = 90 + (1 - this.phaseShockwaveAlpha) * 440;
-      ctx.strokeStyle =
-        phase >= 3
-          ? `rgba(232, 93, 93, ${this.phaseShockwaveAlpha * 0.85})`
-          : `rgba(246, 205, 110, ${this.phaseShockwaveAlpha * 0.85})`;
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      ctx.arc(bossFrame.lx, bossFrame.ly - 70, radius, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // 3b. Fulgor Divino Beam (Sphere -> Boss) & Miracle Healing Beam (Faithful -> Sphere)
-    if (this.fulgorBeamAlpha > 0) {
-      ctx.save();
-      ctx.strokeStyle = `rgba(255, 243, 196, ${this.fulgorBeamAlpha})`;
-      ctx.lineWidth = 10;
-      ctx.beginPath();
-      ctx.moveTo(sphereLocalX, sphereLocalY);
-      ctx.lineTo(bossFrame.lx, bossFrame.ly - 84);
-      ctx.stroke();
-      ctx.restore();
-    }
-    if (this.miracleBeam && this.miracleBeam.alpha > 0) {
-      ctx.save();
-      ctx.strokeStyle = `rgba(246, 220, 154, ${this.miracleBeam.alpha})`;
-      ctx.lineWidth = 6;
-      ctx.beginPath();
-      ctx.moveTo(this.miracleBeam.fromX, this.miracleBeam.fromY);
-      ctx.lineTo(sphereLocalX, sphereLocalY);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // 4. Depth-sorted rendering of Followers, Incarnation, and Boss (zero per-frame closures)
-    const miracleActor = this.resolveMiracleFollowerActor(battle?.activeMiracle);
-    const followerSheets = loadFollowerSprites();
-    const incStageIdx = incarnationStageIndex(this.options.gameState.incarnationStage);
-    const incSprites = loadIncarnationProcessionSprite(incStageIdx);
-
-    let orderCount = 0;
-    for (let i = 0; i < this.followerActors.length; i++) {
-      orderCount = this.pushDrawOrder(orderCount, 0, i, this.followerActors[i].y);
-    }
-    orderCount = this.pushDrawOrder(orderCount, 1, 0, this.incY);
-    if (this.bossState !== 'awaiting_ritual' && !(climax?.victory && climax.remainingSec <= 0)) {
-      orderCount = this.pushDrawOrder(orderCount, 2, 0, this.bossY);
-    }
-    this.drawOrderPool.length = orderCount;
-    this.drawOrderPool.sort((a, b) => a.y - b.y);
-
-    for (let i = 0; i < orderCount; i++) {
-      const entry = this.drawOrderPool[i];
-      if (entry.kind === 0) {
-        const f = this.followerActors[entry.index];
-        const isMiracleBearer = miracleActor?.id === f.id;
-        const lx = Math.round(f.x - this.stageOriginX);
-        const ly = Math.round(f.y - this.stageOriginY);
-
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-        ctx.fillRect(lx - 12, ly - 2, 24, 4);
-
-        if (isMiracleBearer) {
-          ctx.save();
-          ctx.fillStyle = 'rgba(246, 220, 154, 0.32)';
-          ctx.beginPath();
-          ctx.ellipse(lx, ly - 2, 28, 10, 0, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.strokeStyle = '#f6dc9a';
-          ctx.lineWidth = 2.5;
-          ctx.beginPath();
-          ctx.arc(lx, ly - 38, 42, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.restore();
-        }
-
-        const animState =
-          f.state === 'encircling'
-            ? 'pray'
-            : (f.state === 'following_in_line' || f.state === 'returning_to_patio')
-              ? 'walk'
-              : 'idle';
-        const { action, frame } = followerAnimationFrame(animState, f.walkCycle, f.prayCycle, false);
-        const sheet = followerSheets[f.tier]?.[action];
-        if (sheet && sheet.complete && sheet.naturalWidth > 0) {
-          ctx.save();
-          ctx.translate(lx, ly);
-          ctx.scale(f.facing, 1);
-          ctx.drawImage(
-            sheet,
-            frame * FOLLOWER_FRAME_SIZE,
-            0,
-            FOLLOWER_FRAME_SIZE,
-            FOLLOWER_FRAME_SIZE,
-            -40,
-            -74,
-            80,
-            80
-          );
-          ctx.restore();
-        }
-
-        if (isMiracleBearer) {
-          this.drawFollowerMiracleBubble(ctx, lx, ly, f.prayCycle);
-        }
-      } else if (entry.kind === 1) {
-        const lx = Math.round(this.incX - this.stageOriginX);
-        const ly = Math.round(this.incY - this.stageOriginY);
-
-        ctx.fillStyle = 'rgba(246, 220, 154, 0.24)';
-        ctx.beginPath();
-        ctx.ellipse(lx, ly - 2, 34, 11, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        if (this.incState === 'guarding') {
-          ctx.save();
-          ctx.strokeStyle = 'rgba(246, 220, 154, 0.45)';
-          ctx.lineWidth = 2.5;
-          ctx.setLineDash([6, 6]);
-          ctx.beginPath();
-          ctx.moveTo(lx, ly - 64);
-          ctx.lineTo(sphereLocalX, sphereLocalY);
-          ctx.stroke();
-          ctx.restore();
-        }
-
-        if (incSprites) {
-          const isWalking =
-            this.incState === 'walking_to_patio' ||
-            this.incState === 'returning_to_altar' ||
-            (this.incState === 'leading_return' && this.returnS < polylineLength(this.returnPath)) ||
-            (this.incState === 'leading_procession' &&
-              Math.hypot(
-                this.incX - this.incGuardSpot.x,
-                this.incY - this.incGuardSpot.y
-              ) > 4);
-          const sheet =
-            isWalking && incSprites.walk.complete && incSprites.walk.naturalWidth > 0
-              ? incSprites.walk
-              : incSprites.still;
-          const frame = sheet === incSprites.walk ? Math.floor(this.incWalkCycle) % 8 : 0;
-          if (sheet.complete && sheet.naturalWidth > 0) {
-            ctx.save();
-            ctx.translate(lx, ly);
-            ctx.scale(this.incFacing, 1);
-            ctx.drawImage(
-              sheet,
-              frame * INCARNATION_FRAME_SIZE,
-              0,
-              INCARNATION_FRAME_SIZE,
-              INCARNATION_FRAME_SIZE,
-              -64,
-              -128,
-              128,
-              128
-            );
-            ctx.restore();
-          }
-        }
-
-        if (this.incState !== 'guarding') {
-          const caption =
-            this.incState === 'leading_return'
-              ? '\u2726 DE VOLTA AO PÁTIO \u2726'
-              : this.incState === 'returning_to_altar'
-                ? '\u2726 RETORNANDO AO ALTAR \u2726'
-                : this.incState === 'walking_to_patio'
-                  ? '\u2726 BUSCANDO OS FIÉIS \u2726'
-                  : this.incState === 'gathering_at_patio'
-                    ? '\u2726 CONVOCANDO A FILA \u2726'
-                    : '\u2726 FORMANDO A RODA SAGRADA \u2726';
-          ctx.save();
-          ctx.font = '700 13px VT323, monospace';
-          ctx.textAlign = 'center';
-          ctx.fillStyle = '#f6dc9a';
-          ctx.fillText(caption, lx, ly - 134);
-          ctx.restore();
-        }
-      } else {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
-        ctx.beginPath();
-        ctx.ellipse(bossFrame.lx, bossFrame.ly + 14, 82, 22, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        if (bossFrame.sheet) {
-          ctx.save();
-          let additiveBoostAlpha = 0;
-          if (climax?.victory) {
-            const isDefeatAnimation = bossFrame.sheet === loadBossSprites(bossId)?.defeat;
-            if (isDefeatAnimation) {
-              // Preserve the generated artwork, dissolving only the last tenth of the sequence.
-              ctx.globalAlpha = Math.min(1, Math.max(0, climax.remainingSec / (climax.totalSec * 0.1)));
-            } else {
-              // A failed or not-yet-loaded sheet keeps the existing victory fade as fallback.
-              const fade = Math.max(0, climax.remainingSec / climax.totalSec);
-              ctx.globalAlpha = fade;
-              additiveBoostAlpha = fade * 0.75;
-            }
-          } else if (this.bossHitFlashSec > 0) {
-            additiveBoostAlpha = 0.55;
-          }
-          ctx.drawImage(
-            bossFrame.sheet,
-            bossFrame.frame * BOSS_SRC_W,
-            0,
-            BOSS_SRC_W,
-            BOSS_SRC_H,
-            bossFrame.drawLeft,
-            bossFrame.drawTop,
-            bossFrame.drawW,
-            bossFrame.drawH
-          );
-          if (additiveBoostAlpha > 0) {
-            // Hardware-accelerated additive pass brightens only opaque sprite pixels without a full-canvas software filter
-            ctx.globalCompositeOperation = 'lighter';
-            ctx.globalAlpha = additiveBoostAlpha;
-            ctx.drawImage(
-              bossFrame.sheet,
-              bossFrame.frame * BOSS_SRC_W,
-              0,
-              BOSS_SRC_W,
-              BOSS_SRC_H,
-              bossFrame.drawLeft,
-              bossFrame.drawTop,
-              bossFrame.drawW,
-              bossFrame.drawH
-            );
-          }
-          ctx.restore();
-        }
-      }
-    }
-
-    // 5. ~1.5s Climax Overlay on the World Stage (Victory Dissolution Beams or Defeat Sphere Fracture)
-    if (climax && climax.remainingSec > 0) {
-      const progress = 1 - climax.remainingSec / Math.max(0.1, climax.totalSec);
-      ctx.save();
-      if (climax.victory) {
-        ctx.fillStyle = '#fff3c4';
-        ctx.font = '700 32px VT323, monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('VITÓRIA', sphereLocalX, sphereLocalY - 240 - progress * 20);
-        ctx.globalAlpha = Math.max(0, 1 - progress * 3);
-        ctx.strokeStyle = 'rgba(255, 240, 187, 0.72)';
-        ctx.lineWidth = 2.5;
-        for (const f of this.followerActors) {
-          const lx = Math.round(f.x - this.stageOriginX);
-          const ly = Math.round(f.y - this.stageOriginY - 40);
-          ctx.beginPath();
-          ctx.moveTo(lx, ly);
-          ctx.lineTo(bossFrame.lx, bossFrame.ly - 84);
-          ctx.stroke();
-        }
-        const incLx = Math.round(this.incX - this.stageOriginX);
-        const incLy = Math.round(this.incY - this.stageOriginY - 64);
-        ctx.lineWidth = 5;
-        ctx.beginPath();
-        ctx.moveTo(incLx, incLy);
-        ctx.lineTo(bossFrame.lx, bossFrame.ly - 84);
-        ctx.stroke();
-
-        ctx.strokeStyle = '#fff3c4';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(bossFrame.lx, bossFrame.ly - 84, 30 + progress * 160, 0, Math.PI * 2);
-        ctx.stroke();
-      } else {
-        ctx.strokeStyle = 'rgba(232, 82, 82, 0.9)';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(sphereLocalX, sphereLocalY, 90 + progress * 140, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(sphereLocalX - 95, sphereLocalY - 80);
-        ctx.lineTo(sphereLocalX - 18, sphereLocalY - 12);
-        ctx.lineTo(sphereLocalX + 24, sphereLocalY + 18);
-        ctx.lineTo(sphereLocalX + 98, sphereLocalY + 86);
-        ctx.moveTo(sphereLocalX + 82, sphereLocalY - 76);
-        ctx.lineTo(sphereLocalX + 10, sphereLocalY - 6);
-        ctx.lineTo(sphereLocalX - 88, sphereLocalY + 78);
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
+    renderBattleWorldScene({
+      ctx,
+      worldCanvasScale: this.worldCanvasScale,
+      stageWidth: this.stageWidth,
+      stageHeight: this.stageHeight,
+      stageOriginX: this.stageOriginX,
+      stageOriginY: this.stageOriginY,
+      battle,
+      climax,
+      bossId,
+      phase,
+      bossFrame,
+      bossState: this.bossState,
+      bossY: this.bossY,
+      bossHitFlashSec: this.bossHitFlashSec,
+      incarnationStage: this.options.gameState.incarnationStage,
+      incX: this.incX,
+      incY: this.incY,
+      incFacing: this.incFacing,
+      incState: this.incState,
+      incWalkCycle: this.incWalkCycle,
+      incCallRingProgress: this.incCallRingProgress,
+      incGuardSpot: this.incGuardSpot,
+      returnPath: this.returnPath,
+      returnS: this.returnS,
+      followerActors: this.followerActors,
+      spherePulseAlpha: this.spherePulseAlpha,
+      phaseShockwaveAlpha: this.phaseShockwaveAlpha,
+      miracleBeam: this.miracleBeam,
+      drawOrderPool: this.drawOrderPool,
+    });
   }
 
   private presentBattleResultPopup(result: PendingBattleClimax): void {
-    const { boss, victory, isRematch, durationSec, cultReadiness, lowestTwoPillars } = result;
+    const { boss, victory, isRematch, durationSec, cultReadiness } = result;
     if (victory) {
       this.options.audio.playChime();
       if (isRematch) {
@@ -2470,8 +1284,7 @@ export class BossBattleModal {
       }
     } else {
       this.options.audio.playTone(150, 'sawtooth', 0.35);
-      const [p1, p2] = lowestTwoPillars;
-      const diagnosis = `Prontidão ${(cultReadiness * 100).toFixed(0)}%: fortaleça ${p1.label} e ${p2.label}.`;
+      const diagnosis = `Prontidão ${(cultReadiness * 100).toFixed(0)}%: acumule Gnose total para aumentar a proteção e apare os ataques.`;
       const cursePrefix = isRematch
         ? 'Revanche sem Maldição.'
         : 'Maldição: -25% de Fé/s e Fervor/s por 20s.';
@@ -2502,7 +1315,6 @@ export class BossBattleModal {
       remainingSec: CLIMAX_DURATION_SEC,
       totalSec: CLIMAX_DURATION_SEC,
       cultReadiness: breakdown.cultReadiness,
-      lowestTwoPillars: breakdown.lowestTwoPillars,
     };
 
     // If the scene is still in 'awaiting_ritual' (e.g. synchronous unit test skipping choreography), close immediately
@@ -2516,9 +1328,6 @@ export class BossBattleModal {
     this.climaxState = pending;
     if (this.riftsLayerEl) {
       this.riftsLayerEl.innerHTML = '';
-    }
-    if (this.fulgorBtnEl) {
-      this.fulgorBtnEl.style.display = 'none';
     }
     this.miracleBtnEl = null;
     if (victory) {
@@ -2579,9 +1388,13 @@ export class BossBattleModal {
 
     const hpPercent = Math.max(0, Math.min(100, (battle.bossHp / battle.bossMaxHp) * 100));
     if (this.bossHpFillEl) {
-      const width = `${hpPercent.toFixed(1)}%`;
+      const hpFixed = hpPercent.toFixed(1);
+      const width = `${hpFixed}%`;
       if (this.bossHpFillEl.style.width !== width) this.bossHpFillEl.style.width = width;
-      this.bossHpFillEl.parentElement?.setAttribute('aria-valuenow', hpPercent.toFixed(1));
+      if (this.lastBossAriaNow !== hpFixed) {
+        this.lastBossAriaNow = hpFixed;
+        this.bossHpFillEl.parentElement?.setAttribute('aria-valuenow', hpFixed);
+      }
     }
     const remainingPassiveSec =
       breakdown.passiveDps > 0 ? Math.ceil(battle.bossHp / breakdown.passiveDps) : Infinity;
@@ -2595,27 +1408,10 @@ export class BossBattleModal {
 
     if (this.attackBtnEl) {
       const cooling = battle.sphereCooldownSec > 1e-8 || battle.combatStarted === false || !breakdown.canDamageBoss;
-      this.attackBtnEl.setAttribute('aria-disabled', String(cooling));
-    }
-
-    // Update Fulgor Divino button on the Sphere
-    if (this.fulgorBtnEl) {
-      if (battle.combatStarted === false) {
-        this.fulgorBtnEl.style.display = 'none';
-      } else {
-        this.fulgorBtnEl.style.display = 'inline-flex';
-        const charge = Math.floor(battle.sphereCharge ?? 0);
-        const ready = (battle.sphereCharge ?? 0) >= 100 - 1e-6 && breakdown.canDamageBoss;
-        this.fulgorBtnEl.classList.toggle('is-ready', ready);
-        this.fulgorBtnEl.setAttribute('aria-disabled', String(!ready));
-        this.setText(
-          this.fulgorBtnEl,
-          !breakdown.canDamageBoss
-            ? 'FULGOR BLOQUEADO'
-            : ready
-            ? `\u2726 FULGOR DIVINO! (\u2212${(breakdown.fulgorHpFraction * 100).toFixed(0)}%)`
-            : `FULGOR ${charge}%`
-        );
+      const disabledStr = String(cooling);
+      if (this.lastAttackDisabled !== disabledStr) {
+        this.lastAttackDisabled = disabledStr;
+        this.attackBtnEl.setAttribute('aria-disabled', disabledStr);
       }
     }
 
@@ -2624,10 +1420,17 @@ export class BossBattleModal {
       Math.min(100, (battle.altarIntegrity / battle.maxAltarIntegrity) * 100)
     );
     if (this.altarIntegrityFillEl) {
-      const width = `${altarPercent.toFixed(0)}%`;
+      const altarFixed = altarPercent.toFixed(0);
+      const width = `${altarFixed}%`;
       if (this.altarIntegrityFillEl.style.width !== width) this.altarIntegrityFillEl.style.width = width;
-      this.altarIntegrityFillEl.parentElement?.setAttribute('aria-valuenow', altarPercent.toFixed(0));
-      this.altarIntegrityFillEl.parentElement?.classList.toggle('is-critical', altarPercent <= 25);
+      if (this.lastAltarAriaNow !== altarFixed) {
+        this.lastAltarAriaNow = altarFixed;
+        this.altarIntegrityFillEl.parentElement?.setAttribute('aria-valuenow', altarFixed);
+        const isCritical = altarPercent <= 25;
+        if (this.altarIntegrityFillEl.parentElement?.classList.contains('is-critical') !== isCritical) {
+          this.altarIntegrityFillEl.parentElement?.classList.toggle('is-critical', isCritical);
+        }
+      }
     }
     if (this.altarIntegrityValEl) {
       this.setText(this.altarIntegrityValEl, `${altarPercent <= 25 ? 'EM RISCO \u00b7 ' : ''}${altarPercent.toFixed(0)}%`);
@@ -2649,7 +1452,6 @@ export class BossBattleModal {
 
     this.syncRiftsDOM(battle.activeRifts);
     this.syncMiracleDOM(battle.activeMiracle ?? null);
-    this.syncAttackHitbox(this.resolveBossRenderFrame(battle.bossId));
   }
 
   private syncMiracleDOM(miracle: ActiveBossMiracle | null): void {
@@ -2663,7 +1465,7 @@ export class BossBattleModal {
       return;
     }
 
-    const actor = this.resolveMiracleFollowerActor(miracle);
+    const actor = resolveMiracleFollowerActor(this.followerActors, miracle);
     const lx = actor
       ? Math.round(actor.x - this.stageOriginX)
       : Math.round(BOSS_SPHERE_CENTER.x - this.stageOriginX + SACRED_CIRCLE_RADIUS * 0.7);
@@ -2751,7 +1553,7 @@ export class BossBattleModal {
               ? 'Apare para atrasar o ataque'
               : kind === 'chaos_orbit'
                 ? 'Apare os três selos'
-                : '+25% de Fulgor';
+                : 'Ataque aparado';
 
       let riftEl = this.riftsLayerEl!.querySelector<HTMLButtonElement>(
         `[data-rift-id="${rift.id}"]`
@@ -2805,7 +1607,7 @@ export class BossBattleModal {
             const comboTag = (res.comboStreak ?? 1) > 1 ? ` Combo ×${formatNumber(res.comboStreak ?? 1)} ·` : '';
             let specialMsg = res.kind === 'anubis_scales'
               ? 'Não clique no peso menor.'
-              : '+25% de Fulgor';
+              : 'Ataque aparado';
             if (res.specialBonusTriggered) {
               if (res.kind === 'hades_chains') {
                 specialMsg = 'Grilhões quebrados! Cliques normais de novo.';

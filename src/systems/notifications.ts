@@ -1,4 +1,4 @@
-import { achievementIcon } from '../ui/achievementIcons.js';
+import { achievementIcon } from '../features/achievements/achievementIcons.js';
 import type { Achievement } from '../types.js';
 import { DISPLAY_CONFIG } from '../config/display.js';
 import { icon as renderIcon, iconOrText } from '../ui/icons.js';

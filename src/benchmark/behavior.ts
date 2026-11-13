@@ -36,7 +36,8 @@ const INTENSE_BEHAVIOR: Readonly<PlayerBehavior> = {
 /** Hypothesis for the campaign acceptance suite; intense active remains unchanged. */
 export const REFERENCE_BEHAVIOR: Readonly<PlayerBehavior> = {
   ...INTENSE_BEHAVIOR, name: 'Ativo de referência', initialClickCps: 2,
-  routineClickCps: 2, routineBurstEverySec: 60, routineBurstDurationSec: 10,
+  routineClickCps: 2, combatClickCps: 2, maxInteractionCps: 3,
+  routineBurstEverySec: 60, routineBurstDurationSec: 10,
   miracleCatchChance: 0.7,
 };
 
@@ -45,17 +46,17 @@ export const PLAYER_BEHAVIORS: Record<PlayerArchetype, Readonly<PlayerBehavior>>
   active: INTENSE_BEHAVIOR,
   casual: {
     name: 'Casual (8 min de jogo a cada 20 min)', initialClickCps: 2, routineClickCps: 1,
-    combatClickCps: 3.5, maxInteractionCps: 3.5, decisionDelaySec: 5,
+    combatClickCps: 2, maxInteractionCps: 2.5, decisionDelaySec: 5,
     miracleCatchChance: 0.4, miracleResponseSec: 3, riftResponseSec: 0.8,
-    blessingTargetSec: 6, blessingMode: 'maintain', sphereManualUntilSec: Infinity, postGnoseRecoveryClicks: false, blessingManualUntilSec: Infinity,
+    blessingTargetSec: 12, blessingMode: 'after_purchase', sphereManualUntilSec: Infinity, postGnoseRecoveryClicks: false, blessingManualUntilSec: Infinity,
     routineBurstEverySec: Infinity, routineBurstDurationSec: Infinity,
     // Sessions start at 0, 20, 40… minutes: 8 minutes present, then 12 away.
     initialVisitDurationSec: 480, visitDurationSec: 480, absenceMinSec: 720, absenceMaxSec: 720,
   },
   afk: {
     name: 'AFK (10 min ativos, recuperação e aparadas)', initialClickCps: 2, routineClickCps: 1,
-    combatClickCps: 1, maxInteractionCps: 2, decisionDelaySec: 2,
-    miracleCatchChance: 0, miracleResponseSec: 0, riftResponseSec: 0.3,
+    combatClickCps: 0, maxInteractionCps: 2, decisionDelaySec: 10,
+    miracleCatchChance: 0, miracleResponseSec: 0, riftResponseSec: 0.6,
     blessingTargetSec: 60, blessingMode: 'maintain', sphereManualUntilSec: 600, postGnoseRecoveryClicks: true, blessingManualUntilSec: 600,
     routineBurstEverySec: Infinity, routineBurstDurationSec: Infinity,
     initialVisitDurationSec: Infinity, visitDurationSec: Infinity, absenceMinSec: 0, absenceMaxSec: 0,
@@ -71,15 +72,18 @@ export function manualBlessingAllowed(behavior: Readonly<PlayerBehavior>, nowSec
 }
 
 export function routineClicksAvailable(behavior: Readonly<PlayerBehavior>, nowSec: number, visitStartedAt: number): boolean {
+  if (!manualSphereAllowed(behavior, nowSec)) return false;
+  if (!Number.isFinite(behavior.routineBurstEverySec)) return behavior.routineBurstDurationSec > 0;
+  if (behavior.routineBurstEverySec <= 0) return false;
   const phase = (nowSec - visitStartedAt + 1e-8) % behavior.routineBurstEverySec;
-  return manualSphereAllowed(behavior, nowSec) && phase < behavior.routineBurstDurationSec;
+  return phase < behavior.routineBurstDurationSec;
 }
 
 export function describeBehavior(profile: PlayerArchetype): string {
-  if (profile === 'reference') return 'Referência: 2 cliques/s em rajadas de 10 s por minuto, 70% dos milagres e orçamento compartilhado de compras, Bênção, APARAR, Fulgor e milagres de combate.';
-  if (profile === 'active') return 'Ativo: presença contínua, cliques rotineiros, manutenção manual do 2×, APARAR, Fulgor e milagres nos combates.';
-  if (profile === 'casual') return 'Casual: sessões de 8 min a cada 20 min (12 min ausente); cliques contínuos a 1/s durante a presença, compras/prestígios, manutenção manual do 2× até 6 s de carga e APARAR/Fulgor/milagres nos combates durante as visitas.';
-  return 'AFK: compras e prestígios contínuos; cliques na Esfera e ativação manual do 2× antes dos 10 min de tempo total; após Gnose, permite apenas cliques de recuperação até haver Fé para o primeiro fiel, sem reativar o 2× manual. Nos combates, usa APARAR com reação de 0,3 s e orçamento compartilhado de 2 interações/s, inclusive após os 10 min.';
+  if (profile === 'reference') return 'Referência: 2 cliques/s em rajadas de 10 s por minuto e nos combates (teto de 3 interações/s), 70% dos milagres, Bênção, APARAR e milagres de combate.';
+  if (profile === 'active') return 'Ativo: presença contínua, cliques rotineiros, manutenção manual do 2×, APARAR e milagres nos combates.';
+  if (profile === 'casual') return 'Casual: sessões de 8 min a cada 20 min (12 min ausente); cliques contínuos a 1/s durante a presença, compras/prestígios, Bênção 2× após compras até 12 s e APARAR/milagres nos combates (2 cliques/s) durante as visitas.';
+  return 'AFK: compras e prestígios contínuos (atraso de 10 s); cliques na Esfera e ativação manual do 2× antes dos 10 min de tempo total; após Gnose, permite apenas cliques de recuperação até haver Fé para o primeiro fiel, sem reativar o 2× manual. Nos combates, usa apenas APARAR com reação de 0,6 s e orçamento compartilhado de 2 interações/s.';
 }
 
 /** Separate random streams keep scheduling independent from critical-click draws. */

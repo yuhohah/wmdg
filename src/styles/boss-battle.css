@@ -420,39 +420,6 @@ html .btn-boss-retreat.btn-world-retreat:active {
   z-index: 25;
 }
 
-/* Botão de Fulgor Divino sobre a Esfera Divina */
-.boss-sphere-fulgor-btn {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  align-items: center;
-  justify-content: center;
-  padding: 4px 12px;
-  font-family: var(--font-game);
-  font-size: 12.5px;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  background: rgba(14, 11, 9, 0.88);
-  color: #9e8a63;
-  border: 1px solid rgba(201, 154, 78, 0.45);
-  pointer-events: none;
-  z-index: 24;
-  white-space: nowrap;
-}
-
-.boss-sphere-fulgor-btn.is-ready {
-  pointer-events: auto;
-  cursor: pointer;
-  background: linear-gradient(180deg, #6b4c1b 0%, #2f2009 100%);
-  color: #fff3c4;
-  border: 1.5px solid #f6dc9a;
-  box-shadow: 0 0 18px rgba(246, 220, 154, 0.65);
-}
-
-.boss-sphere-fulgor-btn.is-ready:hover {
-  background: linear-gradient(180deg, #876022 0%, #422d0c 100%);
-  border-color: #ffffff;
-}
-
 /* Milagre dos Fiéis na Roda Sagrada (janela de 1,5s, +10% Integridade) */
 .boss-miracle-target {
   position: absolute;
@@ -517,7 +484,7 @@ body.is-boss-battle-active .board-quicknav-bar {
 }
 
 /* O Pátio some aos poucos quando a procissão parte, depois de os Fiéis se reunirem nele */
-/* !important e dois IDs: board-layout.css fixa a transição dos cards arrastáveis com !important */
+/* !important e dois IDs: board.css fixa a transição dos cards arrastáveis com !important */
 body.is-boss-battle-active #dodeca-board-world #card-followers {
   transition: opacity 1.2s ease, visibility 1.2s !important;
 }

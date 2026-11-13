@@ -1,8 +1,5 @@
 import type { GnoseBoss } from '../types.js';
 
-/** Minimum assimilated nodes before the first campaign duel. */
-export const ANUBIS_MIN_GNOSE_UPGRADES = 3;
-
 /** Duration (in seconds) of the mild -25% Faith/s & Fervor/s penalty when Altar Integrity reaches 0% */
 export const BOSS_CURSE_DURATION_SEC = 20;
 
@@ -18,11 +15,9 @@ export const BOSS_MAX_CLICK_HP_FRACTION = 0.0045;
 export const BOSS_MAX_RIFT_HP_FRACTION = 0.085;
 export const BOSS_SPHERE_COOLDOWN_SEC = 0.2;
 
-/** Readiness uses all six cult pillars relative to each Guardian's requirements. */
+/** Readiness depends only on lifetime Gnose, relative to each Guardian. */
 export const BOSS_DAMAGE_READINESS_THRESHOLD = 0.6;
 export const BOSS_DEFENSE_READINESS_THRESHOLD = 0.8;
-/** An unprepared Sphere collapses within four seconds, even with perfect parries. */
-export const BOSS_UNPREPARED_PRESSURE_PER_SEC = BOSS_MAX_ALTAR_INTEGRITY / 4;
 
 export const GNOSE_BOSSES: GnoseBoss[] = [
   {
@@ -31,26 +26,16 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
     title: 'O Pesador de Almas',
     mythology: 'Mitologia Egípcia',
     symbol: 'scales',
-    unlocksTier: 2,
+    unlocksTier: 1,
     maxHp: 1e18,
     riftDamagePercent: 0.04,
     riftIntervalSec: 3.6,
     riftWindowSec: 2.2,
     altarDamageOnMiss: 32,
-    altarPressurePerSec: 0.65,
-    requirements: {
-      faithLog: 15,
-      followers: 120,
-      fervorLog: 7,
-      fervorLevels: 35,
-      relicsLog: 2.5,
-      relicLevels: 6,
-      incarnationStage: 2,
-      gnoseLog: 0,
-      gnoseNodes: 1
-    },
+    altarPressurePerSec: 0.08,
+    readinessGnose: 4,
     rewardName: 'Balança de Maat',
-    rewardDesc: 'Rompe o Selo do Tier II da Gnose e concede +50% (1,5×) de Fé/s e Fervor/s permanentes.',
+    rewardDesc: 'Rompe o Selo do Tier I da Gnose e concede +50% (1,5×) de Fé/s e Fervor/s permanentes.',
     lore: 'No Salão das Duas Verdades, o chacal ancestral ergue a balança dourada para pesar o coração do seu culto contra a Pluma do Cosmos.',
     faithFervorMult: 1.5
   },
@@ -61,26 +46,16 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
     title: 'O Senhor do Submundo',
     mythology: 'Mitologia Grega',
     symbol: 'crown',
-    unlocksTier: 3,
+    unlocksTier: 2,
     maxHp: 5e28,
     riftDamagePercent: 0.038,
     riftIntervalSec: 3.3,
     riftWindowSec: 2.0,
     altarDamageOnMiss: 36,
     altarPressurePerSec: 0.95,
-    requirements: {
-      faithLog: 22,
-      followers: 240,
-      fervorLog: 11,
-      fervorLevels: 80,
-      relicsLog: 3.5,
-      relicLevels: 18,
-      incarnationStage: 3,
-      gnoseLog: 1.2,
-      gnoseNodes: 5
-    },
+    readinessGnose: 30,
     rewardName: 'Bidente do Submundo',
-    rewardDesc: 'Rompe o Selo do Tier III da Gnose e concede +50% (1,5×) de Fé/s e Fervor/s permanentes.',
+    rewardDesc: 'Rompe o Selo do Tier II da Gnose e concede +50% (1,5×) de Fé/s e Fervor/s permanentes.',
     lore: 'Do trono nas profundezas do Submundo, Hades ergue seu bidente para aprisionar as almas do culto e impedir que a luz da Esfera atravesse os portões dos mortos.',
     faithFervorMult: 1.5
   },
@@ -90,26 +65,16 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
     title: 'O Pai de Todos da Árvore Cósmica',
     mythology: 'Mitologia Nórdica',
     symbol: 'eye',
-    unlocksTier: 4,
+    unlocksTier: 3,
     maxHp: 1e38,
     riftDamagePercent: 0.036,
     riftIntervalSec: 3.0,
     riftWindowSec: 1.8,
     altarDamageOnMiss: 40,
     altarPressurePerSec: 1.25,
-    requirements: {
-      faithLog: 30,
-      followers: 400,
-      fervorLog: 15,
-      fervorLevels: 150,
-      relicsLog: 4.5,
-      relicLevels: 35,
-      incarnationStage: 4,
-      gnoseLog: 2.4,
-      gnoseNodes: 10
-    },
+    readinessGnose: 450,
     rewardName: 'Runas de Yggdrasil',
-    rewardDesc: 'Rompe o Selo do Tier IV da Gnose e concede +50% (1,5×) de Fé/s e Fervor/s permanentes.',
+    rewardDesc: 'Rompe o Selo do Tier III da Gnose e concede +50% (1,5×) de Fé/s e Fervor/s permanentes.',
     lore: 'Pendurado nos ramos do Freixo do Mundo, o deus caolho brande Gungnir para impedir que a Esfera tome para si os segredos da automação divina.',
     faithFervorMult: 1.5
   },
@@ -120,26 +85,16 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
     title: 'O Vazio Antes da Criação',
     mythology: 'Cosmogonia Primordial',
     symbol: 'ouroboros',
-    unlocksTier: 'endgame',
+    unlocksTier: 4,
     maxHp: 1e42,
     riftDamagePercent: 0.035,
     riftIntervalSec: 2.7,
     riftWindowSec: 1.65,
     altarDamageOnMiss: 46,
     altarPressurePerSec: 1.65,
-    requirements: {
-      faithLog: 38,
-      followers: 600,
-      fervorLog: 20,
-      fervorLevels: 250,
-      relicsLog: 5.5,
-      relicLevels: 50,
-      incarnationStage: 5,
-      gnoseLog: 3.5,
-      gnoseNodes: 17
-    },
+    readinessGnose: 500000,
     rewardName: 'Selo da Criação (Apoteose)',
-    rewardDesc: 'Domina o Caos Primordial, concede o título Crepúsculo dos Deuses e multiplica toda a Fé e Fervor por 10×.',
+    rewardDesc: 'Rompe o Selo do Tier IV da Gnose, concede o título Crepúsculo dos Deuses e multiplica toda a Fé e Fervor por 10×.',
     lore: 'Antes dos deuses, das órbitas e da própria matéria, havia apenas o Caos. O vazio primordial desperta para dissolver a criação. Toda a força reunida pelo culto será posta à prova para que a Esfera imponha ordem ao infinito.',
     faithFervorMult: 10.0
   }

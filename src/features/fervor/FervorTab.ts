@@ -1,6 +1,6 @@
 import { FERVOR_SHORTCUTS } from '../../ui/GameplayShortcuts.js';
 import { AutomationToggle } from '../../ui/AutomationToggle.js';
-import { setText } from '../../ui/dom.js';
+import { setHudSectionVisibility, setText } from '../../ui/dom.js';
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
 import { FervorUpgrade } from '../../types.js';
@@ -16,6 +16,7 @@ export interface FervorTabOptions {
 
 export class FervorTab {
   private options: FervorTabOptions;
+  private renderedStructure = '';
   private automation: AutomationToggle;
   private bulkToggle: AutomationToggle;
 
@@ -63,6 +64,16 @@ export class FervorTab {
   public renderList(): void {
     this.bulkToggle.update();
     if (!this.listEl) return;
+    const structure = JSON.stringify([
+      DISPLAY_CONFIG.showEmojisAndSymbols,
+      this.options.gameState.fervorUpgrades.filter(upg => upg.id !== 'fu_relics'
+        || this.options.gameState.isPhoenixRelicUnlocked() || upg.level > 0).map(upg => upg.id),
+    ]);
+    if (structure === this.renderedStructure) {
+      this.updateButtonStates();
+      return;
+    }
+    this.renderedStructure = structure;
     this.listEl.innerHTML = '';
 
     const fervor = this.options.gameState.fervorPoints;
@@ -84,12 +95,16 @@ export class FervorTab {
       const symbolHtml = DISPLAY_CONFIG.showEmojisAndSymbols
         ? `<span class="card-symbol">${upg.icon}</span>`
         : '';
+      const hotkeyHtml = FERVOR_SHORTCUTS[index]
+        ? `<kbd class="hotkey-badge">${FERVOR_SHORTCUTS[index].toUpperCase()}</kbd>`
+        : '';
 
       card.innerHTML = `
         <div class="card-header-row">
           <div class="card-title-group">
             ${symbolHtml}
             <span class="card-name">${upg.name}</span>
+            ${hotkeyHtml}
           </div>
           <span class="fervor-mult-tag">${this.multText(upg)}</span>
         </div>
@@ -105,7 +120,8 @@ export class FervorTab {
       `;
 
       card.addEventListener('click', () => {
-        this.buyUpgrade(upg);
+        const current = this.options.gameState.fervorUpgrades.find(item => item.id === upg.id);
+        if (current) this.buyUpgrade(current);
       });
 
       this.listEl!.appendChild(card);
@@ -117,7 +133,8 @@ export class FervorTab {
     if (resonance) {
       // Only Gnose nodes make this bonus exceed ×1; before that the line would just be noise.
       const mult = this.options.gameState.getFervorResonanceMultiplier();
-      resonance.hidden = mult <= 1;
+      const shouldHide = mult <= 1;
+      if (resonance.hidden !== shouldHide) resonance.hidden = shouldHide;
       setText(resonance, `Ressonância da Gnose: seu pico de Fervor rende ×${formatNumber(mult)} Fé`);
     }
     this.automation.update();
@@ -133,10 +150,9 @@ export class FervorTab {
       const card = document.getElementById(`card-${upg.id}`);
       if (card) {
         setText(card.querySelector('.card-click-hint'), this.purchaseHint(count));
-        if (fervor >= cost && (!this.isBulkEnabled() || count > 0)) {
-          card.classList.remove('unaffordable');
-        } else {
-          card.classList.add('unaffordable');
+        const affordable = fervor >= cost && (!this.isBulkEnabled() || count > 0);
+        if (card.classList.contains('unaffordable') === affordable) {
+          card.classList.toggle('unaffordable', !affordable);
         }
         const multTagEl = card.querySelector('.fervor-mult-tag');
         if (multTagEl) {
@@ -177,11 +193,6 @@ export class FervorTab {
   }
 
   public setHudVisibility(unlocked: boolean): void {
-    if (this.hudDividerEl) {
-      this.hudDividerEl.style.display = unlocked ? 'block' : 'none';
-    }
-    if (this.hudItemEl) {
-      this.hudItemEl.style.display = unlocked ? '' : 'none';
-    }
+    setHudSectionVisibility(this.hudDividerEl, this.hudItemEl, unlocked);
   }
 }

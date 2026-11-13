@@ -33,7 +33,7 @@ export const CARD_TUTORIALS = [
   {
     cardId: 'card-gnose', seenKey: 'guardians', unlockId: 'unlock_gnose', requiresBoss: 'boss_anubis', targetSelector: '.gnose-tier-section[data-tier="2"] .gnose-tier-seal', icon: 'swords', title: 'Os Guardiões dos panteões',
     lore: 'Os Guardiões ainda reinam sobre os panteões e temem o que a Esfera começa a lembrar. Para retomar o que é seu, será preciso enfrentá-los.',
-    basics: 'Prontidão: abaixo de 60% você não causa dano; abaixo de 80%, um golpe não aparado destrói a Esfera. Na luta: clique no Guardião para atacar, nas fendas para aparar e nos Milagres para curar; atacar e aparar carregam o Fulgor Divino.',
+    basics: 'Prontidão: abaixo de 60% você não causa dano; abaixo de 80%, um golpe não aparado destrói a Esfera. Na luta: clique no Guardião para atacar, nas fendas para aparar e nos Milagres para curar.',
   },
 ] as const;
 

@@ -65,40 +65,5 @@ export const initialFervorUpgrades: FervorUpgrade[] = [
   }
 ];
 
-export function getFervorUpgradeMultiplier(
-  upg: FervorUpgrade,
-  followersCount: number = 0,
-  faithPoints: number = 0,
-  productionBase: number = 2,
-  relicBase: number = 3
-): number {
-  if (upg.level <= 0) return 1.0;
+export { getFervorUpgradeMultiplier } from '../systems/calculations.js';
 
-  switch (upg.id) {
-    case 'fu_prod':
-      return Math.pow(productionBase, Math.pow(upg.level, 0.6));
-
-    case 'fu_effect':
-      // DodecaDragons FU2: 1.25 ^ (level ^ 0.8)
-      return Math.pow(1.25, Math.pow(upg.level, 0.8));
-
-    case 'fu_click':
-      // DodecaDragons FU3: (level ^ 2.6) * 4 + 1
-      return Math.pow(upg.level, 2.6) * 4 + 1;
-
-    case 'fu_followers':
-      // DodecaDragons FU4: ((level ^ 1.5) * miners / 50) + 1
-      return (Math.pow(upg.level, 1.5) * followersCount / 50) + 1;
-
-    case 'fu_synergy':
-      // DodecaDragons FU5: ((level ^ 1.5) * log10(gold + 1) / 5) + 1
-      return (Math.pow(upg.level, 1.5) * Math.log10(Math.max(0, faithPoints) + 1) / 5) + 1;
-
-    case 'fu_relics':
-      // DodecaDragons FU6: 3 ^ (level ^ 0.6)
-      return Math.pow(relicBase, Math.pow(upg.level, 0.6));
-
-    default:
-      return 1.0;
-  }
-}

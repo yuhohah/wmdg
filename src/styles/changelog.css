@@ -60,3 +60,9 @@
 .changelog-history li + li {
   margin-top: 10px;
 }
+
+.changelog-history h4 {
+  margin: 16px 0 6px;
+  color: var(--text-main, #f4deb3);
+  font-size: 0.95rem;
+}

@@ -6,14 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Cult of the Sphere</title>
   <link rel="icon" type="image/png" href="/assets/sprites/esfera/layers/still.png" />
-
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap"
-    rel="stylesheet">
-
   <link rel="stylesheet" href="/src/style.css">
 </head>
 
@@ -209,7 +201,7 @@
                     <!-- Buy 1 Button -->
                     <button id="btn-convert-one" aria-keyshortcuts="Z" class="btn-follower-action btn-convert-primary">
                       <div class="btn-action-main">
-                        <span class="btn-action-title">CONVERTER FIEL</span>
+                        <span class="btn-action-title">CONVERTER FIEL <kbd class="hotkey-badge">Z</kbd></span>
                         <span class="btn-action-benefit" id="convert-one-benefit">+1 Fé/s</span>
                       </div>
                       <div class="btn-action-cost">
@@ -221,7 +213,7 @@
                     <!-- Buy Max Button (Future Unlock at 25 followers) -->
                     <button id="btn-convert-max" aria-keyshortcuts="X" class="btn-follower-action btn-convert-max locked" disabled>
                       <div class="btn-action-main">
-                        <span class="btn-action-title" id="convert-max-title">CONVERTER MÁXIMO</span>
+                        <span class="btn-action-title"><span id="convert-max-title">CONVERTER MÁXIMO</span> <kbd class="hotkey-badge">X</kbd></span>
                         <span class="btn-action-benefit" id="convert-max-sub">Desbloqueia com 25 Fiéis</span>
                       </div>
                       <div class="btn-action-cost" id="convert-max-cost">
@@ -319,7 +311,7 @@
                   <!-- Bênção 2x Fé da Encarnação (Preenche ao Clicar no Altar) -->
                   <div class="incarnation-blessing-panel" id="incarnation-blessing-panel">
                     <div class="incarnation-blessing-header">
-                      <span class="incarnation-blessing-title">✦ BÊNÇÃO</span>
+                      <span class="incarnation-blessing-title">✦ BÊNÇÃO <kbd class="hotkey-badge">I</kbd></span>
                       <span class="incarnation-blessing-status" id="incarnation-blessing-status">Inativa</span>
                     </div>
                     <div class="incarnation-blessing-track">
@@ -330,7 +322,7 @@
                   <div class="incarnation-controls">
                     <button id="btn-upgrade-incarnation" aria-keyshortcuts="U" class="btn-follower-action btn-incarnation-upgrade">
                       <div class="btn-action-main">
-                        <span class="btn-action-title" id="incarnation-upgrade-title">EVOLUIR</span>
+                        <span class="btn-action-title"><span id="incarnation-upgrade-title">EVOLUIR</span> <kbd class="hotkey-badge">U</kbd></span>
                         <span class="btn-action-benefit" id="incarnation-upgrade-benefit">100x Fervor/s</span>
                       </div>
                       <div class="btn-action-cost" id="incarnation-upgrade-cost-group">
@@ -366,10 +358,10 @@
                   </label>
                   <!-- Conversion Section -->
                   <div class="relics-convert-section">
-                    <button id="btn-convert-relics" class="btn-convert-relics" disabled>
-                      Transmutar toda a Fé → +<span id="relics-to-get">0</span> Fragmentos
+                    <button id="btn-convert-relics" aria-keyshortcuts="CapsLock" class="btn-convert-relics" disabled>
+                      Transmutar toda a Fé → +<span id="relics-to-get">0</span> Fragmentos <kbd class="hotkey-badge">Caps</kbd>
                     </button>
-                    <div class="relics-extra-rate-text" id="relics-cooldown-line" style="display: none;">
+                    <div class="relics-extra-rate-text" id="relics-cooldown-line" style="visibility: hidden;">
                       Transmutação disponível em <span id="relics-convert-cooldown">0</span>s
                     </div>
                   </div>
@@ -422,7 +414,7 @@
                       </div>
                     </div>
 
-                    <p class="gnose-req-hint">Cada nó também multiplica sua produção por 4.</p>
+                    <p id="gnose-production-hint" class="gnose-req-hint">A Gnose total obtida aumenta a Fé por clique, a Fé/s e o Fervor/s.</p>
                     <div class="gnose-controls-row">
                       <span class="gnose-req-hint" id="gnose-req-hint">Ascensão com 1e15 de Fé</span>
                       <div class="gnose-toggles-group">
@@ -451,13 +443,13 @@
 
           <!-- FLOATING QUICK NAVIGATION RIBBON (TOP CENTER) -->
           <nav class="board-quicknav-bar" id="board-quicknav-bar" aria-label="Navegação do Culto">
-            <button class="quicknav-btn active" data-target="card-altar-sphere"><span class="quicknav-ico" data-icon="sphere"></span> <span>Esfera</span></button>
-            <button class="quicknav-btn" data-target="card-followers"><span class="quicknav-ico" data-icon="followers"></span> <span>Fiéis</span></button>
+            <button class="quicknav-btn active" data-target="card-altar-sphere" aria-keyshortcuts="1"><span class="quicknav-ico" data-icon="sphere"></span> <span>Esfera</span><kbd class="hotkey-badge">1</kbd></button>
+            <button class="quicknav-btn" data-target="card-followers" aria-keyshortcuts="2"><span class="quicknav-ico" data-icon="followers"></span> <span>Fiéis</span><kbd class="hotkey-badge">2</kbd></button>
             <button class="quicknav-btn" data-target="card-unlocks"><span class="quicknav-ico" data-icon="unlock"></span> <span>Desbloqueio</span></button>
-            <button class="quicknav-btn" data-target="card-fervor" id="quicknav-fervor" style="display: none;"><span class="quicknav-ico" data-icon="fervor"></span> <span>Fervor</span></button>
-            <button class="quicknav-btn" data-target="card-incarnation" id="quicknav-incarnation" style="display: none;"><span class="quicknav-ico" data-icon="incarnation"></span> <span>Encarnação</span></button>
-            <button class="quicknav-btn" data-target="card-relics" id="quicknav-relics" style="display: none;"><span class="quicknav-ico" data-icon="gem"></span> <span>Relíquias</span></button>
-            <button class="quicknav-btn" data-target="card-gnose" id="quicknav-gnose" style="display: none;"><span class="quicknav-ico" data-icon="gnose"></span> <span>Gnose</span></button>
+            <button class="quicknav-btn" data-target="card-incarnation" id="quicknav-incarnation" aria-keyshortcuts="3" style="display: none;"><span class="quicknav-ico" data-icon="incarnation"></span> <span>Encarnação</span><kbd class="hotkey-badge">3</kbd></button>
+            <button class="quicknav-btn" data-target="card-fervor" id="quicknav-fervor" aria-keyshortcuts="4" style="display: none;"><span class="quicknav-ico" data-icon="fervor"></span> <span>Fervor</span><kbd class="hotkey-badge">4</kbd></button>
+            <button class="quicknav-btn" data-target="card-relics" id="quicknav-relics" aria-keyshortcuts="5" style="display: none;"><span class="quicknav-ico" data-icon="gem"></span> <span>Relíquias</span><kbd class="hotkey-badge">5</kbd></button>
+            <button class="quicknav-btn" data-target="card-gnose" id="quicknav-gnose" aria-keyshortcuts="6" style="display: none;"><span class="quicknav-ico" data-icon="gnose"></span> <span>Gnose</span><kbd class="hotkey-badge">6</kbd></button>
           </nav>
 
           <!-- FLOATING ZOOM CONTROLS (BOTTOM RIGHT) -->
@@ -706,6 +698,13 @@
             </div>
             <button type="button" id="btn-replay-tutorials" class="btn-setting-action">Rever</button>
           </div>
+          <label class="setting-item" for="show-hotkeys-toggle">
+            <div>
+              <div class="setting-name">Exibir atalhos nos botões</div>
+              <div class="setting-desc">Mostrar as teclas de atalho (1–6 e ações) diretamente nos botões e na barra inferior.</div>
+            </div>
+            <input type="checkbox" id="show-hotkeys-toggle" checked />
+          </label>
           <label class="setting-item" for="nerds-toggle">
             <div>
               <div class="setting-name">Nerds</div>

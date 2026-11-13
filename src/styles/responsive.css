@@ -2,216 +2,16 @@
    RESPONSIVE DESIGN & MOBILE LAYOUT BREAKPOINTS
    =================================================== */
 
-/* Breakpoint para telas médias (Tablets / Laptops compactos) */
-@media (max-width: 1100px) {
-  .side-panel,
-  .side-panel-unified {
-    min-width: 320px;
-  }
-}
-
-/* Breakpoint Mobile Primário: Layout com Bottom Navigation Bar */
 @media (max-width: 860px) {
-  #gameplay-screen.active ~ .mobile-bottom-nav {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 62px;
-    background: rgba(8, 12, 22, 0.97);
-    border-top: 1.5px solid var(--border-mid);
-    backdrop-filter: blur(20px);
-    z-index: 50;
-    align-items: center;
-    justify-content: space-around;
-    padding: 4px 10px calc(4px + env(safe-area-inset-bottom, 0px));
-    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.8);
-  }
-
-  .mobile-nav-btn {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    position: relative;
-    padding: 6px 0;
-    min-height: 48px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    touch-action: manipulation;
-  }
-
-  .mobile-nav-btn:active {
-    transform: scale(0.93);
-  }
-
-  .mobile-nav-btn.active {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.08);
-  }
-
-  .mobile-nav-btn.active .mobile-nav-icon {
-    color: var(--gold-accent);
-    filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.65));
-  }
-
-  .mobile-nav-label {
-    font-family: var(--font-heading);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-
-  .mobile-nav-badge {
-    position: absolute;
-    top: 6px;
-    right: calc(50% - 16px);
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--gold-accent);
-    box-shadow: 0 0 10px rgba(245, 158, 11, 0.95);
-    animation: badgePulse 1.5s infinite;
-  }
-
-  @keyframes badgePulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.35); opacity: 0.7; }
-  }
-
-  /* Ocultar faixas laterais de expansão de desktop */
-  .panel-expand-strip {
-    display: none !important;
-  }
-
   .main-content {
     padding: 8px 10px calc(76px + env(safe-area-inset-bottom, 0px)) 10px;
   }
 
-  /* Especificidade explícita para o #gameplay-screen no Mobile para não ser cortado pela bottom bar */
   #gameplay-screen {
     padding: 6px 10px calc(78px + env(safe-area-inset-bottom, 0px)) 10px !important;
     height: 100% !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
-  }
-
-  .gameplay-split-container,
-  .gameplay-3frame-container {
-    gap: 0;
-    width: 100%;
-    height: 100%;
-    position: relative;
-    flex-direction: column;
-  }
-
-  /* Estado 1: Visualização da Esfera e Pátio (Padrão no Mobile) */
-  .gameplay-split-container[data-mobile-view="sphere"] .gameplay-world-column,
-  .gameplay-3frame-container[data-mobile-view="sphere"] .gameplay-world-column {
-    display: flex !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    height: 100% !important;
-    flex: 1 1 100% !important;
-  }
-  .gameplay-split-container[data-mobile-view="sphere"] .center-frame,
-  .gameplay-3frame-container[data-mobile-view="sphere"] .center-frame {
-    display: flex !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-  }
-  .gameplay-split-container[data-mobile-view="sphere"] .side-panel-unified,
-  .gameplay-split-container[data-mobile-view="sphere"] .side-panel,
-  .gameplay-3frame-container[data-mobile-view="sphere"] .side-panel-unified,
-  .gameplay-3frame-container[data-mobile-view="sphere"] .side-panel {
-    display: none !important;
-  }
-
-  /* Estado 2: Visualização de Melhorias (Painel Unificado Full) */
-  .gameplay-split-container[data-mobile-view="right"] .gameplay-world-column,
-  .gameplay-split-container[data-mobile-view="left"] .gameplay-world-column,
-  .gameplay-3frame-container[data-mobile-view="right"] .gameplay-world-column,
-  .gameplay-3frame-container[data-mobile-view="left"] .gameplay-world-column {
-    display: none !important;
-  }
-  .gameplay-split-container[data-mobile-view="right"] .center-frame,
-  .gameplay-split-container[data-mobile-view="left"] .center-frame,
-  .gameplay-3frame-container[data-mobile-view="right"] .center-frame,
-  .gameplay-3frame-container[data-mobile-view="left"] .center-frame {
-    display: none !important;
-  }
-  .gameplay-split-container[data-mobile-view="right"] .side-panel-unified,
-  .gameplay-split-container[data-mobile-view="left"] .side-panel-unified,
-  .gameplay-split-container[data-mobile-view="right"] .side-panel-right,
-  .gameplay-split-container[data-mobile-view="left"] .side-panel-left,
-  .gameplay-3frame-container[data-mobile-view="right"] .side-panel-unified,
-  .gameplay-3frame-container[data-mobile-view="left"] .side-panel-unified,
-  .gameplay-3frame-container[data-mobile-view="right"] .side-panel-right,
-  .gameplay-3frame-container[data-mobile-view="left"] .side-panel-left {
-    display: flex !important;
-    position: relative !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    height: 100% !important;
-    border-radius: 8px !important;
-    margin: 0 !important;
-    transform: none !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-  }
-
-  /* Botão de fechar painel no cabeçalho visível no mobile */
-  .panel-header .panel-toggle-btn {
-    display: flex !important;
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    min-height: 36px;
-    border-radius: 50%;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid var(--border-mid);
-    color: var(--text-main);
-    touch-action: manipulation;
-  }
-  .panel-header .panel-toggle-btn:active {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(0.92);
-  }
-
-  /* Abas do painel com alvos de toque generosos */
-  .panel-tabs-bar {
-    padding: 6px 8px;
-    gap: 6px;
-    flex-shrink: 0;
-  }
-
-  .panel-tab-btn {
-    min-height: 44px;
-    font-size: 13px;
-    padding: 8px 12px;
-    touch-action: manipulation;
-  }
-
-  /* Scroll do painel com margem segura para o último item nunca ficar cortado */
-  .panel-body {
-    padding: 10px 12px calc(30px + env(safe-area-inset-bottom, 0px)) 12px !important;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    flex: 1;
-    min-height: 0;
   }
 
   /* Tabs de conteúdo Fiéis e Encarnação: preenchem 100% da altura disponível no painel */
@@ -223,16 +23,6 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-  }
-
-  /* Arenas no layout tablet e mobile fluido: ocupam o espaço vertical de forma expansiva e natural */
-  .followers-arena-wrapper {
-    position: relative;
-    width: 100%;
-    flex: 1 1 0 !important;
-    min-height: 220px !important;
-    max-height: none !important;
-    height: auto !important;
   }
 
   .followers-walk-canvas {

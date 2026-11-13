@@ -2,7 +2,7 @@ import {
   FOLLOWER_FRAME_SIZE, PRAYER_DURATION, PRAYER_SEQUENCE_DURATION, followerAnimationFrame,
   loadFollowerSprites, visibleFollowerTiers, type FollowerTier,
 } from './followerVisuals.js';
-import { scheduleVisualFrame, VisualFrameClock, visualFrameScale } from './visualTiming.js';
+import { scheduleVisualFrame, VisualFrameClock, visualFrameScale } from '../../ui/visualTiming.js';
 
 export interface Walker {
   id: number;
@@ -92,6 +92,13 @@ export class FollowersArena {
     w.stateTimer = 900;
     this.spawnPrayerParticles(w, 10);
     if (this.miraclesAutoCollected()) this.collectAvailableMiracle();
+    this.syncMiracleHighlight();
+  }
+
+  private syncMiracleHighlight(): void {
+    this.canvas.closest('#card-followers')?.classList.toggle(
+      'has-miracle', this.walkers.some(w => w.isMiraclePlea && (w.miracleTimer ?? 0) > 0)
+    );
   }
 
   public collectAvailableMiracle(): boolean {
@@ -106,6 +113,7 @@ export class FollowersArena {
   private acceptMiracle(w: Walker, clientX: number, clientY: number): void {
     w.isMiraclePlea = false;
     w.miracleTimer = 0;
+    this.syncMiracleHighlight();
     w.state = 'pray';
     // The plea already played the kneeling animation; start its blessing now.
     w.prayCycle = PRAYER_DURATION;
@@ -256,6 +264,7 @@ export class FollowersArena {
       if (index >= 0) return available.splice(index, 1)[0];
       return this.addWalker(atEdge, tier);
     });
+    this.syncMiracleHighlight();
   }
 
   public onFollowersAdded(addedCount: number): void {
@@ -397,6 +406,7 @@ export class FollowersArena {
         }
         if (w.miracleTimer <= 0) {
           w.isMiraclePlea = false;
+          this.syncMiracleHighlight();
           w.state = 'idle';
           w.stateTimer = 60;
         }

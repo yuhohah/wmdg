@@ -25,6 +25,10 @@ export function isShippedAsset(path: string): boolean {
   if (path.startsWith('assets/sphere/progression/')) {
     return /^assets\/sphere\/progression\/(nucleo|engraved-globe|meridian-globe|hollow-globe)\.png$/.test(path);
   }
+  // These concept portraits are also the live icons for guardian achievements.
+  if (path.startsWith('assets/concepts/bosses/')) {
+    return /^assets\/concepts\/bosses\/(01-anubis|02-hades-gow-v2|03-odin|04-caos-primordial)\.png$/.test(path);
+  }
   if (path.startsWith('assets/concepts/')) return /^assets\/concepts\/encarnacao\/[^/]+\.png$/.test(path);
   if (path.startsWith('assets/sprites/')) return SPRITES_IN_USE.some(pattern => pattern.test(path));
   return true;

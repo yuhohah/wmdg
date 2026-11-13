@@ -211,10 +211,9 @@ export class OnboardingGuide {
 
     // Toggle glowing pulse on the convert button when in step 2
     const convertBtn = document.getElementById('btn-convert-one');
-    if (this.currentStep === 'buy_follower') {
-      convertBtn?.classList.add('pulse-guide');
-    } else {
-      convertBtn?.classList.remove('pulse-guide');
+    const shouldPulse = this.currentStep === 'buy_follower';
+    if (convertBtn && convertBtn.classList.contains('pulse-guide') !== shouldPulse) {
+      convertBtn.classList.toggle('pulse-guide', shouldPulse);
     }
 
     // If step just transitioned to buy_follower, pan the board camera to card-followers!
@@ -226,48 +225,49 @@ export class OnboardingGuide {
 
     this.renderStepContent(faith, targetFaith);
     this.applyPositionSync();
-    this.updatePosition();
+  }
+
+  private setTextIfChanged(el: HTMLElement | null, value: string): void {
+    if (el && el.textContent !== value) el.textContent = value;
+  }
+
+  private setIconIfChanged(iconKey: Parameters<typeof icon>[0]): void {
+    if (!this.iconEl || this.iconEl.dataset.iconKey === iconKey) return;
+    this.iconEl.dataset.iconKey = iconKey;
+    this.iconEl.innerHTML = icon(iconKey);
+  }
+
+  private setStyleIfChanged(el: HTMLElement | null, prop: 'top' | 'left' | 'width' | 'height' | 'display' | 'opacity' | 'borderRadius' | 'background', value: string): void {
+    if (el && el.style[prop] !== value) el.style[prop] = value;
   }
 
   private renderStepContent(faith: number, targetFaith: number): void {
-    if (this.skipBtn) this.skipBtn.textContent = 'Pular';
+    this.setTextIfChanged(this.skipBtn, 'Pular');
     const tracker = document.getElementById('spotlight-balloon-tracker');
-    if (tracker) tracker.style.display = '';
+    this.setStyleIfChanged(tracker, 'display', '');
     if (this.currentStep === 'sphere') {
       const percent = Math.min(100, Math.floor((faith / targetFaith) * 100));
 
-      if (this.iconEl) this.iconEl.innerHTML = icon('orb');
-      if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 1/2 • O DESPERTAR';
-      if (this.titleEl) this.titleEl.textContent = 'Clique na Esfera';
-      if (this.descEl) {
-        this.descEl.textContent = 'Você é a Esfera, selada há eras. Cada clique seu arranca Fé das mentes mortais.';
-      }
-      if (this.trackerMetaEl) this.trackerMetaEl.textContent = `Meta inicial: ${formatNumber(targetFaith)} Fé`;
-      if (this.trackerValEl) this.trackerValEl.textContent = `${formatNumber(faith)} / ${formatNumber(targetFaith)} Fé (${percent}%)`;
-      if (this.trackerFillEl) {
-        this.trackerFillEl.style.width = `${percent}%`;
-        this.trackerFillEl.style.background = 'linear-gradient(90deg, #f59e0b, #fef08a)';
-      }
-      if (this.actionTipEl) {
-        this.actionTipEl.textContent = `Clique na Esfera até juntar Fé suficiente.`;
-      }
+      this.setIconIfChanged('orb');
+      this.setTextIfChanged(this.badgeEl, 'ETAPA 1/2 • O DESPERTAR');
+      this.setTextIfChanged(this.titleEl, 'Clique na Esfera');
+      this.setTextIfChanged(this.descEl, 'Você é a Esfera, selada há eras. Cada clique seu arranca Fé das mentes mortais.');
+      this.setTextIfChanged(this.trackerMetaEl, `Meta inicial: ${formatNumber(targetFaith)} Fé`);
+      this.setTextIfChanged(this.trackerValEl, `${formatNumber(faith)} / ${formatNumber(targetFaith)} Fé (${percent}%)`);
+      this.setStyleIfChanged(this.trackerFillEl, 'width', `${percent}%`);
+      this.setStyleIfChanged(this.trackerFillEl, 'background', 'linear-gradient(90deg, #f59e0b, #fef08a)');
+      this.setTextIfChanged(this.actionTipEl, 'Clique na Esfera até juntar Fé suficiente.');
     } else {
       // Step 2: Buy follower
-      if (this.iconEl) this.iconEl.innerHTML = icon('temple');
-      if (this.badgeEl) this.badgeEl.textContent = 'ETAPA 2/2 • CONVERTA FIÉIS';
-      if (this.titleEl) this.titleEl.textContent = 'Converta seu primeiro fiel';
-      if (this.descEl) {
-        this.descEl.textContent = 'Um mortal ouviu o chamado da Esfera. Converta-o para o Pátio dos Fiéis para gerar Fé. Atenda aos pedidos dos fiéis oferecendo Milagres para ganhar Fé extra.';
-      }
-      if (this.trackerMetaEl) this.trackerMetaEl.textContent = `Custo: ${formatNumber(targetFaith)} Fé`;
-      if (this.trackerValEl) this.trackerValEl.textContent = 'Pronto para converter!';
-      if (this.trackerFillEl) {
-        this.trackerFillEl.style.width = '100%';
-        this.trackerFillEl.style.background = 'linear-gradient(90deg, #22c55e, #86efac)';
-      }
-      if (this.actionTipEl) {
-        this.actionTipEl.textContent = 'Clique em “CONVERTER FIEL” para iniciar a produção de Fé.';
-      }
+      this.setIconIfChanged('temple');
+      this.setTextIfChanged(this.badgeEl, 'ETAPA 2/2 • CONVERTA FIÉIS');
+      this.setTextIfChanged(this.titleEl, 'Converta seu primeiro fiel');
+      this.setTextIfChanged(this.descEl, 'Um mortal ouviu o chamado da Esfera. Converta-o para o Pátio dos Fiéis para gerar Fé. Atenda aos pedidos dos fiéis oferecendo Milagres para ganhar Fé extra.');
+      this.setTextIfChanged(this.trackerMetaEl, `Custo: ${formatNumber(targetFaith)} Fé`);
+      this.setTextIfChanged(this.trackerValEl, 'Pronto para converter!');
+      this.setStyleIfChanged(this.trackerFillEl, 'width', '100%');
+      this.setStyleIfChanged(this.trackerFillEl, 'background', 'linear-gradient(90deg, #22c55e, #86efac)');
+      this.setTextIfChanged(this.actionTipEl, 'Clique em “CONVERTER FIEL” para iniciar a produção de Fé.');
     }
   }
 
@@ -300,17 +300,19 @@ export class OnboardingGuide {
       if ('targetSelector' in tutorial) this.onFocusCard?.(tutorial.cardId, true, tutorial.targetSelector);
       else this.onFocusCard?.(tutorial.cardId, true);
     }
-    if (this.iconEl) this.iconEl.innerHTML = icon(tutorial.icon);
-    if (this.badgeEl) this.badgeEl.textContent = 'CONHEÇA A MECÂNICA';
-    if (this.titleEl) this.titleEl.textContent = tutorial.title;
-    if (this.descEl) this.descEl.textContent = tutorial.lore;
-    if (this.actionTipEl) this.actionTipEl.textContent = tutorial.basics;
-    if (this.skipBtn) this.skipBtn.textContent = 'Entendi';
+    this.setIconIfChanged(tutorial.icon);
+    this.setTextIfChanged(this.badgeEl, 'CONHEÇA A MECÂNICA');
+    this.setTextIfChanged(this.titleEl, tutorial.title);
+    this.setTextIfChanged(this.descEl, tutorial.lore);
+    this.setTextIfChanged(this.actionTipEl, tutorial.basics);
+    this.setTextIfChanged(this.skipBtn, 'Entendi');
     const tracker = document.getElementById('spotlight-balloon-tracker');
-    if (tracker) tracker.style.display = 'none';
+    this.setStyleIfChanged(tracker, 'display', 'none');
     this.applyPositionSync();
-    this.updatePosition();
-    if (entering) this.skipBtn?.focus({ preventScroll: true });
+    if (entering) {
+      this.updatePosition();
+      this.skipBtn?.focus({ preventScroll: true });
+    }
   }
 
   private applyPositionSync(): void {
@@ -346,53 +348,53 @@ export class OnboardingGuide {
       rect = targetEl.getBoundingClientRect();
     }
 
-    this.overlayEl.style.display = 'block';
-    this.overlayEl.style.opacity = '1';
+    this.setStyleIfChanged(this.overlayEl, 'display', 'block');
+    this.setStyleIfChanged(this.overlayEl, 'opacity', '1');
 
     const pad = this.currentStep === 'sphere' ? 10 : 6;
-    const spotTop = Math.max(0, rect.top - pad);
-    const spotLeft = Math.max(0, rect.left - pad);
-    const spotWidth = Math.min(vw - spotLeft, rect.width + pad * 2);
-    const spotHeight = Math.min(vh - spotTop, rect.height + pad * 2);
+    const spotTop = Math.max(0, Math.round(rect.top - pad));
+    const spotLeft = Math.max(0, Math.round(rect.left - pad));
+    const spotWidth = Math.round(Math.min(vw - spotLeft, rect.width + pad * 2));
+    const spotHeight = Math.round(Math.min(vh - spotTop, rect.height + pad * 2));
     const spotBottom = spotTop + spotHeight;
     const spotRight = spotLeft + spotWidth;
 
     if (this.panelTop) {
-      this.panelTop.style.top = '0px';
-      this.panelTop.style.left = '0px';
-      this.panelTop.style.width = '100vw';
-      this.panelTop.style.height = `${spotTop}px`;
+      this.setStyleIfChanged(this.panelTop, 'top', '0px');
+      this.setStyleIfChanged(this.panelTop, 'left', '0px');
+      this.setStyleIfChanged(this.panelTop, 'width', '100vw');
+      this.setStyleIfChanged(this.panelTop, 'height', `${spotTop}px`);
     }
     if (this.panelBottom) {
-      this.panelBottom.style.top = `${spotBottom}px`;
-      this.panelBottom.style.left = '0px';
-      this.panelBottom.style.width = '100vw';
-      this.panelBottom.style.height = `${Math.max(0, vh - spotBottom)}px`;
+      this.setStyleIfChanged(this.panelBottom, 'top', `${spotBottom}px`);
+      this.setStyleIfChanged(this.panelBottom, 'left', '0px');
+      this.setStyleIfChanged(this.panelBottom, 'width', '100vw');
+      this.setStyleIfChanged(this.panelBottom, 'height', `${Math.max(0, vh - spotBottom)}px`);
     }
     if (this.panelLeft) {
-      this.panelLeft.style.top = `${spotTop}px`;
-      this.panelLeft.style.left = '0px';
-      this.panelLeft.style.width = `${spotLeft}px`;
-      this.panelLeft.style.height = `${spotHeight}px`;
+      this.setStyleIfChanged(this.panelLeft, 'top', `${spotTop}px`);
+      this.setStyleIfChanged(this.panelLeft, 'left', '0px');
+      this.setStyleIfChanged(this.panelLeft, 'width', `${spotLeft}px`);
+      this.setStyleIfChanged(this.panelLeft, 'height', `${spotHeight}px`);
     }
     if (this.panelRight) {
-      this.panelRight.style.top = `${spotTop}px`;
-      this.panelRight.style.left = `${spotRight}px`;
-      this.panelRight.style.width = `${Math.max(0, vw - spotRight)}px`;
-      this.panelRight.style.height = `${spotHeight}px`;
+      this.setStyleIfChanged(this.panelRight, 'top', `${spotTop}px`);
+      this.setStyleIfChanged(this.panelRight, 'left', `${spotRight}px`);
+      this.setStyleIfChanged(this.panelRight, 'width', `${Math.max(0, vw - spotRight)}px`);
+      this.setStyleIfChanged(this.panelRight, 'height', `${spotHeight}px`);
     }
 
     if (this.focusRing) {
-      this.focusRing.style.top = `${spotTop}px`;
-      this.focusRing.style.left = `${spotLeft}px`;
-      this.focusRing.style.width = `${spotWidth}px`;
-      this.focusRing.style.height = `${spotHeight}px`;
-      this.focusRing.style.borderRadius = !this.cardTutorial && this.currentStep === 'sphere' ? '50%' : '2px';
+      this.setStyleIfChanged(this.focusRing, 'top', `${spotTop}px`);
+      this.setStyleIfChanged(this.focusRing, 'left', `${spotLeft}px`);
+      this.setStyleIfChanged(this.focusRing, 'width', `${spotWidth}px`);
+      this.setStyleIfChanged(this.focusRing, 'height', `${spotHeight}px`);
+      this.setStyleIfChanged(this.focusRing, 'borderRadius', !this.cardTutorial && this.currentStep === 'sphere' ? '50%' : '2px');
     }
 
     if (this.balloonEl) {
       const balloonW = Math.min(356, vw - 20);
-      this.balloonEl.style.width = `${balloonW}px`;
+      this.setStyleIfChanged(this.balloonEl, 'width', `${balloonW}px`);
 
       const bRect = this.balloonEl.getBoundingClientRect();
       const balloonH = bRect.height || 185;
@@ -435,21 +437,23 @@ export class OnboardingGuide {
         bLeft = Math.max(10, Math.min(vw - balloonW - 10, targetCenterX - balloonW / 2));
       }
 
-      bTop = Math.max(8, Math.min(vh - balloonH - 8, bTop));
+      bTop = Math.max(8, Math.min(vh - balloonH - 8, Math.round(bTop)));
+      bLeft = Math.round(bLeft);
 
-      this.balloonEl.style.top = `${bTop}px`;
-      this.balloonEl.style.left = `${bLeft}px`;
+      this.setStyleIfChanged(this.balloonEl, 'top', `${bTop}px`);
+      this.setStyleIfChanged(this.balloonEl, 'left', `${bLeft}px`);
 
       if (this.arrowEl) {
-        this.arrowEl.className = `spotlight-balloon-arrow ${arrowDir}`;
+        const nextArrowClass = `spotlight-balloon-arrow ${arrowDir}`;
+        if (this.arrowEl.className !== nextArrowClass) this.arrowEl.className = nextArrowClass;
         if (arrowDir === 'arrow-bottom' || arrowDir === 'arrow-top') {
-          const relX = Math.max(20, Math.min(balloonW - 20, targetCenterX - bLeft));
-          this.arrowEl.style.left = `${relX}px`;
-          this.arrowEl.style.top = '';
+          const relX = Math.round(Math.max(20, Math.min(balloonW - 20, targetCenterX - bLeft)));
+          this.setStyleIfChanged(this.arrowEl, 'left', `${relX}px`);
+          this.setStyleIfChanged(this.arrowEl, 'top', '');
         } else {
-          const relY = Math.max(20, Math.min(balloonH - 20, targetCenterY - bTop));
-          this.arrowEl.style.top = `${relY}px`;
-          this.arrowEl.style.left = '';
+          const relY = Math.round(Math.max(20, Math.min(balloonH - 20, targetCenterY - bTop)));
+          this.setStyleIfChanged(this.arrowEl, 'top', `${relY}px`);
+          this.setStyleIfChanged(this.arrowEl, 'left', '');
         }
       }
     }

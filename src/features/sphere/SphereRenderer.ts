@@ -38,16 +38,20 @@ function drawSegmentBatch(ctx: CanvasRenderingContext2D, count: number, frontPas
   ctx.strokeStyle = '#dedccd';
   ctx.lineWidth = 2;
   ctx.lineJoin = 'round';
+  ctx.beginPath();
+  let drew = false;
   for (let s = 0; s < count; s++) {
     const isFront = segDepth[s] >= 0;
     if (isFront !== frontPass) continue;
+    drew = true;
     const base = s * 8;
-    ctx.beginPath();
     ctx.moveTo(segCoords[base], segCoords[base + 1]);
     ctx.lineTo(segCoords[base + 2], segCoords[base + 3]);
     ctx.lineTo(segCoords[base + 4], segCoords[base + 5]);
     ctx.lineTo(segCoords[base + 6], segCoords[base + 7]);
     ctx.closePath();
+  }
+  if (drew) {
     ctx.fill();
     ctx.stroke();
   }

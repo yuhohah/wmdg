@@ -12,7 +12,7 @@ essas sequências de batalha serão necessárias novas artes direcionais.
 Não há auréola nos estágios 1–2; ela aparece no 3; o círculo posterior aparece no 4–5.
 A aparência não altera custos, produção ou bênçãos.
 
-Integração: `src/ui/incarnationSprites.ts` e `src/ui/incarnationAltar.ts`.
+Integração: `src/features/incarnation/incarnationSprites.ts` e `src/features/incarnation/IncarnationAltar.ts`.
 
 No estágio Solar, os quadros finais foram selecionados para preservar o círculo.
 A correspondência com a geração original consta em `sheet_source_indices`.

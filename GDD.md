@@ -98,7 +98,7 @@ Históricos permanentes participam do combate. Os bônus econômicos de Fervor e
 
 ![Árvore Hermética](docs/screenshots/gnose.png)
 
-São **20 nós em quatro tiers (6 / 6 / 4 / 4)**. Cada nó é comprado uma vez, exige seus pré-requisitos e permanece após Ascensões. Além do efeito próprio, cada assimilação multiplica Fé, Fervor e Fragmentos por ressonância de 4×. O total de Gnose obtido também concede um multiplicador permanente; gastar a moeda não o reduz.
+São **20 nós em quatro tiers (6 / 6 / 4 / 4)**. Cada nó é comprado uma vez, exige seus pré-requisitos e permanece após Ascensões. Assimilar um nó concede apenas seu efeito próprio, sem multiplicador genérico de produção. O total de Gnose obtido concede o multiplicador permanente de Fé e Fervor; gastar a moeda não o reduz. A ressonância de Fervor depende do recurso, sem depender da quantidade de nós.
 
 | Tier | Identidade | Abertura |
 | --- | --- | --- |
@@ -107,7 +107,11 @@ São **20 nós em quatro tiers (6 / 6 / 4 / 4)**. Cada nó é comprado uma vez, 
 | III — Poder do Culto | Coro, ganho de Gnose e refinamentos herméticos. | Vitória sobre Hades. |
 | IV — Apoteose | Olho do Infinito, Gnosis Suprema, Fogo Empíreo e Opus Perfeito. | Vitória sobre Odin. |
 
-Cada nó exibe nome e efeito em linguagem simples; os valores exatos ficam na opção **Nerds** das configurações. Os nós da Gnose aparecem em cada tier por custo crescente e com os pré-requisitos antes dos dependentes. Os preços iniciais e intermediários foram suavizados para antecipar as automações. A revisão 2 devolve uma única vez a diferença dos nós já comprados nos saves da revisão 1, sem aumentar a Gnose total acumulada. Os preços acima de 1.000 Gnose usam dois algarismos significativos para manter as metas legíveis. O catálogo completo, custos e pré-requisitos estão em [FormulasJogo.md](FormulasJogo.md#8-gnose-e-todos-os-upgrades) e [src/config/gnose.ts](src/config/gnose.ts).
+Cada nó exibe nome e efeito em linguagem simples; os valores exatos ficam na opção **Nerds** das configurações. Os nós aparecem por tier e custo crescente. A revisão 5 busca 20–40 minutos de jogo ativo e 4–12 Ascensões por tier: conclua todos os nós do tier antes de desafiar o próximo Guardião. O Tier I começa na primeira Ascensão; o prólogo até a Gnose é separado. Essas faixas são metas medidas, não tempos de espera nem uma quantidade obrigatória de reinícios.
+
+O bônus permanente pela Gnose total usa `1 + 0,5 × √total + 7000 × total^0,35 × (total/(total+1000))²`, começando em aproximadamente 2,18× com 4 Gnose e introduzindo gradualmente a aceleração de campanha, e a ressonância de Fervor usa expoente `0,1` para conter a aceleração final. Não há multiplicador genérico por nó. No Tier IV, Gnosis Suprema precede Fogo Empíreo e Opus Perfeito; Olho do Infinito exige os dois e conclui a árvore com as automações gratuitas. As escolhas de investimento permanecem. Os custos, pré-requisitos e fórmulas estão em [FormulasJogo.md](FormulasJogo.md#8-gnose-e-todos-os-upgrades).
+
+A migração preserva Gnose total, upgrades, vitórias e saldos acumulados. Devolve uma vez as reduções de preço; aumentos não são cobrados retroativamente. Saves avançados preservados podem atravessar os tiers mais rápido que as metas para partidas novas.
 
 A Cripta Eterna torna permanentes os níveis de todas as Relíquias e libera níveis ilimitados para a Cornucópia de Amalteia e a Tocha de Prometeu. As outras Relíquias mantêm seus limites de compra. Cornucópia e Tocha mantêm o preço inicial nos primeiros 20 níveis; os níveis seguintes ficam 15% mais caros a cada compra, preservando o ganho linear de produção.
 
@@ -123,31 +127,32 @@ Auto-Fiéis compra com toda a Fé disponível; por isso o controle permite paus�
 
 | Guardião | Liberação do desafio | Vitória |
 | --- | --- | --- |
-| Anúbis — O Pesador de Almas | Acesso à Gnose e pelo menos 3 nós assimilados. | Tier II e 1,5× Fé/Fervor. |
-| Hades — O Senhor do Submundo | Tier II aberto e dois nós desse tier. | Tier III e mais 1,5× Fé/Fervor. |
-| Odin — O Pai de Todos da Árvore Cósmica | Tier III aberto e dois nós desse tier. | Tier IV e mais 1,5× Fé/Fervor. |
+| Anúbis — O Pesador de Almas | Acesso à Gnose e os 6 nós do Tier I. | Tier II e 1,5× Fé/Fervor. |
+| Hades — O Senhor do Submundo | Tier II completo, com 6 nós. | Tier III e mais 1,5× Fé/Fervor. |
+| Odin — O Pai de Todos da Árvore Cósmica | Tier III completo, com 4 nós. | Tier IV e mais 1,5× Fé/Fervor. |
 | Caos Primordial — O Vazio Antes da Criação | Árvore completa, com 20 nós. | Mais 10× Fé/Fervor e conquista Crepúsculo dos Deuses. |
 
 Os multiplicadores de vitória se acumulam e também afetam Fé por clique. IDs antigos de Hades e Caos são mantidos no save por compatibilidade.
 
 ### Preparação e prontidão
 
-Cada Guardião tem metas próprias de Fé, Fiéis, Fervor e Ritos, Fragmentos e Relíquias, estágio do Avatar e Gnose/nós. A prontidão é a **média geométrica dos seis pilares**, cada um limitado a 200%. Um pilar zerado zera a prontidão; acumular apenas outro recurso não substitui sua ausência. Conquistas aumentam o poder de ataque e a defesa.
+A prontidão e a proteção dependem apenas da **Gnose total adquirida**, sem queda ao gastar pontos ou ascender. Cada Guardião tem uma referência de 100%: Anúbis 4, Hades 30, Odin 450 e Caos Primordial 500.000. A curva é logarítmica e limitada a 200%; Anúbis começa em 60% com zero Gnose, os demais em zero. Recursos e conquistas continuam contribuindo para o dano, mas não para a prontidão ou a mitigação.
 
-- **Menos de 60%:** nenhum dano ao boss, incluindo passivo, crítico, aparos, Fulgor e bônus de ataques especiais.
-- **De 60% até menos de 80%:** ataques causam dano, mas a proteção é insuficiente. A pressão drena pelo menos 25 pontos de integridade por segundo e qualquer erro de aparo é fatal.
-- **A partir de 80%:** a proteção usa mitigação de todos os sistemas do culto. Dano e resistência continuam escalando com o desenvolvimento, até seus limites.
+- **Menos de 60%:** nenhum dano ao boss.
+- **De 60% até menos de 80%:** ataques causam dano, mas qualquer erro de aparo é fatal. A pressão é finita e permite vencer com execução perfeita.
+- **A partir de 80%:** Gnose total mitiga o dano dos ataques e a pressão contínua.
 
-A Câmara da Gnose mostra a prontidão e os pilares a fortalecer do Guardião que já pode ser desafiado; os demais mostram só o requisito que falta. A arena avisa sobre dano bloqueado e colapso da proteção. As metas numéricas e coeficientes estão na [referência de combate](FormulasJogo.md#11-bosses-e-combate).
+Anúbis com zero Gnose é um desafio sem margem para erros: perder um ataque, escolher o menor peso ou clicar nos dois pesos encerra a luta. A pressão base é 0,08 ponto/s, sem o colapso automático anterior. As transições de fase continuam causando 15 e 30 pontos de dano; milagres continuam curando. A duração depende do poder ofensivo e do ritmo de cliques.
+
+A Câmara da Gnose mostra prontidão, total adquirido e referência do Guardião. A derrota recomenda acumular Gnose e aparar corretamente. As fórmulas estão na [referência de combate](FormulasJogo.md#11-bosses-e-combate).
 
 ### Preparação cênica e ações
 
 A Encarnação vai ao Pátio, reúne os Fiéis e conduz a procissão ao círculo. O Guardião chega depois. Não há dano, pressão ou novas fendas durante a preparação; a luta começa quando ele alcança o ponto de combate.
 
 1. **Atacar o Guardião:** até cinco pulsos de dano por segundo simulado, com cooldown de 0,2 s. O crítico dobrado usa os marcos de cliques da Esfera: 5% após 250 cliques e 10% após 1.000. Cliques continuam gerando Fé.
-2. **Aparar:** clicar nos cartões antes de expirarem bloqueia o golpe e dá 25 pontos de carga. O aparo não causa dano ao Guardião nem cura a Esfera. O combo conta os aparos seguidos e zera ao errar; é apenas informativo.
-3. **Fulgor Divino:** com carga 100, o botão sobre a Esfera dispara um ataque e esvazia a carga. Cliques de combate acrescentam 8 pontos. O disparo exige prontidão de ataque e não cura.
-4. **Milagre dos Fiéis na roda:** pedido de 1,5 segundo que recupera até 10 pontos de integridade. É a fonte de cura do combate.
+2. **Aparar:** clicar nos cartões antes de expirarem bloqueia o golpe. O aparo não causa dano ao Guardião nem cura a Esfera. O combo conta os aparos seguidos e zera ao errar; é apenas informativo.
+3. **Milagre dos Fiéis na roda:** pedido de 1,5 segundo que recupera até 10 pontos de integridade. É a fonte de cura do combate.
 
 A Esfera começa com 100 de integridade e sofre pressão contínua, além das perdas por golpes não aparados. Não há contagem regressiva de duelo.
 
@@ -155,7 +160,7 @@ A Esfera começa com 100 de integridade e sofre pressão contínua, além das pe
 
 Durante o duelo, os menus, as linhas que os ligam à Esfera e a barra de navegação inferior ficam ocultos; voltam ao fim da luta. O Pátio dos Fiéis é a exceção: continua visível enquanto a Encarnação reúne os Fiéis, some aos poucos quando a procissão parte e reaparece no início do retorno após a vitória. Os cartões de aparar surgem em um arco ao redor da Esfera, do lado oposto ao Guardião, sem cobrir o alvo dos cliques nem as barras de vida. Essas barras e os cartões acompanham o zoom para continuar legíveis com a câmera afastada.
 
-As barras do Guardião e da Esfera mantêm um rastro do dano recente, que encolhe depois de um instante. A barra do Guardião mostra a fase, a vida e o tempo estimado de vitória só com dano passivo. Os números de dano por golpe são discretos; aparo, Fulgor e milagre têm destaque maior.
+As barras do Guardião e da Esfera mantêm um rastro do dano recente, que encolhe depois de um instante. A barra do Guardião mostra a fase, a vida e o tempo estimado de vitória só com dano passivo. Os números de dano por golpe são discretos; aparo e milagre têm destaque maior.
 
 ### Fases e assinaturas
 
@@ -170,11 +175,11 @@ Nas fases avançadas, ataques comuns alternam com a assinatura do Guardião:
 | Odin | Corvo com janela de resposta menor; um aparo cedo adia em 1,4 s o ataque seguinte. |
 | Caos Primordial | Três selos em arco ao redor da Esfera; cada selo não aparado causa 40% do dano de um erro. |
 
-Com proteção insuficiente, qualquer erro é fatal, sem essas reduções. O dano passivo é limitado a 1,8% do HP máximo/s e o clique normal a 0,45% antes do crítico; o Fulgor causa de cerca de 5% a 12%, conforme a prontidão. Todos respeitam o limiar mínimo de ataque.
+Com proteção insuficiente, qualquer erro é fatal, sem essas reduções. O dano passivo é limitado a 1,8% do HP máximo/s e o clique normal a 0,45% antes do crítico. Todos respeitam o limiar mínimo de ataque.
 
 ### Resultado e revanche
 
-HP do boss em zero concede vitória e recompensa permanente. Integridade da Esfera em zero encerra em derrota; na campanha aplica maldição de 20 segundos, reduzindo Fé/s e Fervor/s em 25%. Recuar não aplica maldição. A interface mostra um breve clímax visual. Na vitória, a Encarnação conduz os Fiéis de volta ao Pátio antes de retornar ao altar; na derrota, um aviso indica a prontidão e os dois pilares mais fracos.
+HP do boss em zero concede vitória e recompensa permanente. Integridade da Esfera em zero encerra em derrota; na campanha aplica maldição de 20 segundos, reduzindo Fé/s e Fervor/s em 25%. Recuar não aplica maldição. A interface mostra um breve clímax visual. Na vitória, a Encarnação conduz os Fiéis de volta ao Pátio antes de retornar ao altar; na derrota, um aviso indica a prontidão e recomenda acumular Gnose total para aumentar a proteção.
 
 **Relembrar Duelo** repete Guardiões já subjugados, sem recompensas duplicadas nem maldição por derrota. Vitórias registram o melhor tempo. A conclusão de campanha usada pelo benchmark exige os vinte nós e o Caos Primordial derrotado. Não há sistema de New Game+ implementado.
 

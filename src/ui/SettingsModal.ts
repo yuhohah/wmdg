@@ -14,6 +14,8 @@ export interface SettingsModalOptions {
   isHapticsEnabled?: () => boolean;
   isGuidanceHidden?: () => boolean;
   onToggleHideGuidance?: (hidden: boolean) => void;
+  isShowHotkeysEnabled?: () => boolean;
+  onToggleShowHotkeys?: (enabled: boolean) => void;
   isNerdsEnabled?: () => boolean;
   onToggleNerds?: (enabled: boolean) => void;
   onTriggerHaptic?: (pattern: number | number[]) => void;
@@ -39,6 +41,7 @@ export class SettingsModal {
   // Haptics & Preferences Controls
   private hapticsToggleEl: HTMLInputElement | null = null;
   private hideGuidanceEl: HTMLInputElement | null = null;
+  private showHotkeysToggleEl: HTMLInputElement | null = null;
   private nerdsToggleEl: HTMLInputElement | null = null;
 
   // Save Progress Controls
@@ -76,6 +79,7 @@ export class SettingsModal {
 
     this.hapticsToggleEl = document.getElementById('haptics-toggle') as HTMLInputElement | null;
     this.hideGuidanceEl = document.getElementById('hide-guidance-toggle') as HTMLInputElement | null;
+    this.showHotkeysToggleEl = document.getElementById('show-hotkeys-toggle') as HTMLInputElement | null;
     this.nerdsToggleEl = document.getElementById('nerds-toggle') as HTMLInputElement | null;
 
     this.saveStatusTextEl = document.getElementById('save-status-text');
@@ -94,6 +98,12 @@ export class SettingsModal {
       this.close();
       this.options.onShowChangelog?.();
     });
+    if (this.showHotkeysToggleEl) {
+      this.showHotkeysToggleEl.checked = this.options.isShowHotkeysEnabled?.() ?? true;
+      this.showHotkeysToggleEl.addEventListener('change', () => {
+        this.options.onToggleShowHotkeys?.(this.showHotkeysToggleEl!.checked);
+      });
+    }
     if (this.nerdsToggleEl) {
       this.nerdsToggleEl.checked = this.options.isNerdsEnabled?.() ?? false;
       this.nerdsToggleEl.addEventListener('change', () => {
@@ -225,6 +235,7 @@ export class SettingsModal {
 
   public open(): void {
     if (this.hideGuidanceEl) this.hideGuidanceEl.checked = this.options.isGuidanceHidden?.() ?? false;
+    if (this.showHotkeysToggleEl) this.showHotkeysToggleEl.checked = this.options.isShowHotkeysEnabled?.() ?? true;
     if (this.nerdsToggleEl) this.nerdsToggleEl.checked = this.options.isNerdsEnabled?.() ?? false;
     this.modalEl?.classList.add('open');
     this.updateSaveStatus();

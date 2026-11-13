@@ -46,11 +46,11 @@ O que se perde e o que permanece está descrito no [GDD](GDD.md#ascensão-e-perm
 
 ![Duelo contra Anúbis, com a Esfera e o círculo de Fiéis](docs/screenshots/duelo-anubis.png)
 
-A Encarnação reúne os Fiéis em um círculo antes da chegada do Guardião. O combate começa quando ele alcança a arena: ataque o boss, **apare** os golpes, carregue o **Fulgor Divino** e responda aos milagres que recuperam a integridade da Esfera.
+A Encarnação reúne os Fiéis em um círculo antes da chegada do Guardião. O combate começa quando ele alcança a arena: ataque o boss, **apare** os golpes e responda aos milagres que recuperam a integridade da Esfera.
 
 A força do culto depende de **Fé, Fiéis, Fervor, Relíquias, Encarnação e Gnose**, com bônus de conquistas. A prontidão combina os seis pilares pela média geométrica, em relação às metas de cada Guardião.
 
-- **Abaixo de 60%:** cliques, dano passivo, fendas e Fulgor não causam dano.
+- **Abaixo de 60%:** cliques, dano passivo, fendas não causam dano.
 - **Abaixo de 80%:** um golpe não aparado destrói a proteção; a pressão contínua também leva a Esfera ao colapso em poucos segundos.
 - **Com o culto preparado:** os recursos ampliam o dano e reduzem as perdas de integridade, respeitando os limites do combate.
 

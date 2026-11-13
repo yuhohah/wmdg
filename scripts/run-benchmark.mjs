@@ -5,13 +5,15 @@ const args = new Map(process.argv.slice(2).map(arg => {
   return [key, value.join('=')];
 }));
 for (const key of args.keys()) {
-  if (!['seed', 'seeds', 'hours', 'json'].includes(key)) throw new Error(`Argumento desconhecido: --${key}`);
+  if (!['seed', 'seeds', 'hours', 'json', 'absence'].includes(key)) throw new Error(`Argumento desconhecido: --${key}`);
 }
-for (const key of ['seed', 'seeds', 'hours']) {
+for (const key of ['seed', 'seeds', 'hours', 'absence']) {
   if (args.has(key) && !args.get(key)) throw new Error(`Informe um valor para --${key}.`);
 }
 const seeds = args.has('seeds') ? args.get('seeds').split(',').map(Number) : [Number(args.get('seed') ?? 0xc0172)];
 const hours = Number(args.get('hours') ?? 72);
+const absenceMode = args.get('absence') ?? 'visible';
+if (!['visible', 'hidden', 'save'].includes(absenceMode)) throw new Error(`Modo de ausência inválido: ${absenceMode}`);
 if (!seeds.length || seeds.some(seed => !Number.isInteger(seed) || !Number.isFinite(seed))) throw new Error('Seeds inválidas.');
 if (!Number.isFinite(hours) || hours < 0) throw new Error('Limite de horas inválido.');
 const server = await createServer({ server: { middlewareMode: true, hmr: false }, appType: 'custom' });
@@ -20,7 +22,7 @@ try {
   const { formatTerminalReport, formatDuration } = await server.ssrLoadModule('/src/benchmark/reporters.ts');
   const reports = [];
   for (const seed of seeds) {
-    const report = ProgressionSimulator.runFullBenchmark({ seed, maxDurationSec: hours * 3600 });
+    const report = ProgressionSimulator.runFullBenchmark({ seed, maxDurationSec: hours * 3600, absenceMode });
     reports.push(report);
     if (!args.has('json')) console.log(formatTerminalReport(report));
   }

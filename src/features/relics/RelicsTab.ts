@@ -1,7 +1,7 @@
 import { getRelicUpgradeBulkCost } from '../../systems/relicCosts.js';
 import { RELIC_SHORTCUTS } from '../../ui/GameplayShortcuts.js';
 import { ETERNAL_RELIC_COST_GROWTH, ETERNAL_RELIC_FIXED_LEVELS } from '../../config/relics.js';
-import { setText } from '../../ui/dom.js';
+import { setHudSectionVisibility, setText } from '../../ui/dom.js';
 import { AutomationToggle } from '../../ui/AutomationToggle.js';
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
@@ -19,7 +19,7 @@ export interface RelicsTabOptions {
 
 export class RelicsTab {
   private options: RelicsTabOptions;
-  private renderedLevels: string = '';
+  private renderedStructure: string = '';
   private bulkToggle: AutomationToggle;
   private relicAutomation: AutomationToggle;
   private transmutationAutomation: AutomationToggle;
@@ -103,7 +103,16 @@ export class RelicsTab {
   public renderList(): void {
     this.bulkToggle.update();
     if (!this.relicUpgradesListEl) return;
-    this.renderedLevels = this.options.gameState.relicUpgrades.map(r => `${r.level}/${this.options.gameState.getRelicMaxLevel(r)}`).join(',');
+    const structure = JSON.stringify([
+      DISPLAY_CONFIG.showEmojisAndSymbols,
+      this.options.gameState.hasGnoseUpgrade('gn_keep_relics'),
+      this.options.gameState.relicUpgrades.map(r => [r.id, this.options.gameState.getRelicMaxLevel(r)]),
+    ]);
+    if (structure === this.renderedStructure) {
+      this.updateButtonStates();
+      return;
+    }
+    this.renderedStructure = structure;
     const finiteRelicsOpen = this.relicUpgradesListEl.querySelector<HTMLDetailsElement>('.finite-relics')?.open ?? false;
     this.relicUpgradesListEl.innerHTML = '';
 
@@ -135,6 +144,9 @@ export class RelicsTab {
       const symbolHtml = DISPLAY_CONFIG.showEmojisAndSymbols
         ? `<span class="card-symbol">${relic.icon}</span>`
         : '';
+      const hotkeyHtml = RELIC_SHORTCUTS[index]
+        ? `<kbd class="hotkey-badge">${RELIC_SHORTCUTS[index].toUpperCase()}</kbd>`
+        : '';
 
       const promptHtml = isMax
         ? `<div class="card-click-prompt">
@@ -149,6 +161,7 @@ export class RelicsTab {
           <div class="card-title-group">
             ${symbolHtml}
             <span class="card-name">${relic.name}</span>
+            ${hotkeyHtml}
           </div>
           <span class="relic-level-badge ${isMax ? 'maxed' : ''}">(${formatNumber(relic.level)}/${Number.isFinite(maxLevel) ? maxLevel : '∞'})</span>
         </div>
@@ -166,7 +179,8 @@ export class RelicsTab {
       `;
 
       card.addEventListener('click', () => {
-        this.buyRelicUpgrade(relic);
+        const current = this.options.gameState.relicUpgrades.find(item => item.id === relic.id);
+        if (current) this.buyRelicUpgrade(current);
       });
 
       const container = finiteRelics && Number.isFinite(maxLevel) ? finiteRelics : this.relicUpgradesListEl!;
@@ -179,27 +193,25 @@ export class RelicsTab {
     this.bulkToggle.update();
     this.relicAutomation.update();
     this.transmutationAutomation.update();
-    if (this.renderedLevels !== this.options.gameState.relicUpgrades.map(r => `${r.level}/${this.options.gameState.getRelicMaxLevel(r)}`).join(',')) {
-      this.renderList();
-    }
+    this.renderList();
     const toGet = this.options.gameState.getRelicsToGet();
-    if (this.relicsToGetEl) {
-      this.relicsToGetEl.textContent = formatNumber(toGet);
-    }
+    setText(this.relicsToGetEl, formatNumber(toGet));
     const cooldown = this.options.gameState.relicConvertCooldown;
-    if (this.relicsConvertCooldownEl) {
-      this.relicsConvertCooldownEl.textContent = `${Math.ceil(cooldown)}`;
-    }
+    setText(this.relicsConvertCooldownEl, `${Math.ceil(cooldown)}`);
     if (this.relicsCooldownLineEl) {
-      this.relicsCooldownLineEl.style.display = cooldown > 0 ? 'block' : 'none';
+      const visibility = cooldown > 0 ? 'visible' : 'hidden';
+      if (this.relicsCooldownLineEl.style.visibility !== visibility) {
+        this.relicsCooldownLineEl.style.visibility = visibility;
+      }
     }
 
     if (this.btnConvertRelicsEl) {
       const canConvert = this.options.gameState.relicConvertCooldown <= 0 && toGet > 0;
-      this.btnConvertRelicsEl.disabled = !canConvert;
+      if (this.btnConvertRelicsEl.disabled !== !canConvert) {
+        this.btnConvertRelicsEl.disabled = !canConvert;
+      }
     }
 
-    this.updateButtonStates();
   }
 
   public updateButtonStates(): void {
@@ -210,20 +222,27 @@ export class RelicsTab {
       const canAfford = relicPoints >= cost && (!this.isBulkEnabled() || count > 0);
       const card = document.getElementById(`card-${relic.id}`);
       if (card) {
-        setText(card.querySelector('.relic-hint'), this.purchaseHint(count));
+        const maxLevel = this.options.gameState.getRelicMaxLevel(relic);
+        const badge = card.querySelector('.relic-level-badge');
+        setText(badge, `(${formatNumber(relic.level)}/${Number.isFinite(maxLevel) ? maxLevel : '∞'})`);
+        badge?.classList.toggle('maxed', isMax);
+        const prompt = card.querySelector('.card-click-prompt span');
+        setText(prompt, isMax ? 'NÍVEL MÁXIMO' : this.purchaseHint(count));
+        const promptClass = isMax ? 'card-status-badge maxed-badge' : 'card-click-hint relic-hint';
+        if (prompt && prompt.className !== promptClass) prompt.className = promptClass;
+        card.classList.toggle('maxed', isMax);
         const costEl = card.querySelector('.relic-cost-tag span:last-child');
         setText(costEl, isMax ? 'CONCLUÍDO' : `${Number.isFinite(cost) ? formatNumber(cost) : '∞'} Fragmentos`);
         if (isMax) {
-          card.classList.remove('unaffordable');
-          card.classList.add('maxed');
+          if (card.classList.contains('unaffordable')) card.classList.remove('unaffordable');
         } else if (canAfford) {
-          card.classList.remove('unaffordable');
+          if (card.classList.contains('unaffordable')) card.classList.remove('unaffordable');
         } else {
-          card.classList.add('unaffordable');
+          if (!card.classList.contains('unaffordable')) card.classList.add('unaffordable');
         }
         const benefitEl = card.querySelector('.relic-benefit-text');
-        if (benefitEl && relic.id === 'relic_ark') {
-          benefitEl.textContent = relic.effectText(relic.level, Math.max(relicPoints, this.options.gameState.relicPeakThisRun));
+        if (benefitEl) {
+          setText(benefitEl, relic.effectText(relic.level, Math.max(relicPoints, this.options.gameState.relicPeakThisRun), maxLevel));
         }
       }
     });
@@ -244,11 +263,6 @@ export class RelicsTab {
   }
 
   public setHudVisibility(unlocked: boolean): void {
-    if (this.hudDividerEl) {
-      this.hudDividerEl.style.display = unlocked ? 'block' : 'none';
-    }
-    if (this.hudItemEl) {
-      this.hudItemEl.style.display = unlocked ? '' : 'none';
-    }
+    setHudSectionVisibility(this.hudDividerEl, this.hudItemEl, unlocked);
   }
 }

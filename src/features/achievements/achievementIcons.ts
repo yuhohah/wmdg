@@ -1,4 +1,4 @@
-import { initialAchievements } from '../config/achievements.js';
+import { initialAchievements } from '../../config/achievements.js';
 
 const BASE = import.meta.env.BASE_URL;
 const BOSSES: Record<string, { file: string; crop: string }> = {

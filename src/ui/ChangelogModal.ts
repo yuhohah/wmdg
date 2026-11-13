@@ -43,13 +43,18 @@ export class ChangelogModal {
       const date = document.createElement('time');
       date.dateTime = release.date;
       date.textContent = release.date.split('-').reverse().join('/');
-      const changes = document.createElement('ul');
-      for (const change of release.changes) {
-        const item = document.createElement('li');
-        item.textContent = change;
-        changes.append(item);
+      section.append(heading, date);
+      for (const category of release.categories) {
+        const categoryHeading = document.createElement('h4');
+        categoryHeading.textContent = category.title;
+        const changes = document.createElement('ul');
+        for (const change of category.changes) {
+          const item = document.createElement('li');
+          item.textContent = change;
+          changes.append(item);
+        }
+        section.append(categoryHeading, changes);
       }
-      section.append(heading, date, changes);
       history.append(section);
     }
 

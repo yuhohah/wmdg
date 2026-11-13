@@ -1,3 +1,4 @@
+import { GNOSE_PASSIVE_FORMULA } from '../config/gnose.js';
 import { setText } from './dom.js';
 import { GameStateManager } from '../core/GameState.js';
 import { formatNumber } from '../systems/calculations.js';
@@ -197,7 +198,7 @@ export class HUDController {
         if (nerds) {
           stats.push(
             'Transmutação = ⌊log2(Fé + 1) × M_Transmutação⌋',
-            'Fragmentos/s = (max(1, ⌊melhor / 10⌋) + auto) × 4^nós'
+            'Fragmentos/s = max(1, ⌊melhor / 10⌋) + auto'
           );
         }
         return {
@@ -219,7 +220,7 @@ export class HUDController {
         if (nerds) {
           const exp = formatNumber(this.gameState.getGnoseGainExponent(), 12);
           stats.push(
-            `Ascensão = ⌊(Fé / 1e15)^${exp}⌋ · Passivo = 1 + 1,5 × Total^0,35 · Nós = 4^${nodes}`
+            `Ascensão = ⌊(Fé / 1e15)^${exp}⌋ · Passivo = ${GNOSE_PASSIVE_FORMULA}`
           );
         }
         return {

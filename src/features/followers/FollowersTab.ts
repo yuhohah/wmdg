@@ -2,7 +2,7 @@ import { AutomationToggle } from '../../ui/AutomationToggle.js';
 import { setText } from '../../ui/dom.js';
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
-import { FollowersArena } from '../../ui/followersArena.js';
+import { FollowersArena } from './FollowersArena.js';
 import {
   formatNumber,
   calculateCostDiscountMultiplier,
@@ -147,7 +147,8 @@ export class FollowersTab {
       setText(this.convertOneCostValEl, `${formatNumber(costOne)} Fé`);
     }
     if (this.btnConvertOneEl) {
-      this.btnConvertOneEl.disabled = this.options.gameState.faithPoints < costOne;
+      const disableOne = this.options.gameState.faithPoints < costOne;
+      if (this.btnConvertOneEl.disabled !== disableOne) this.btnConvertOneEl.disabled = disableOne;
     }
 
     // Max Button Unlock (At 25 faithful or Memória Hermética Gnose upgrade)
@@ -159,14 +160,14 @@ export class FollowersTab {
       this.convertMaxCostValEl
     ) {
       if (!this.options.gameState.isConvertMaxUnlocked()) {
-        this.btnConvertMaxEl.classList.add('locked');
-        this.btnConvertMaxEl.disabled = true;
+        if (!this.btnConvertMaxEl.classList.contains('locked')) this.btnConvertMaxEl.classList.add('locked');
+        if (!this.btnConvertMaxEl.disabled) this.btnConvertMaxEl.disabled = true;
         setText(this.convertMaxTitleEl, 'CONVERTER MÁXIMO (0)');
         setText(this.convertMaxSubEl, `${formatNumber(totalCount)} de 25 Fiéis para desbloquear`);
         setText(this.convertMaxCostLabelEl, 'BLOQUEADO');
         setText(this.convertMaxCostValEl, '');
       } else {
-        this.btnConvertMaxEl.classList.remove('locked');
+        if (this.btnConvertMaxEl.classList.contains('locked')) this.btnConvertMaxEl.classList.remove('locked');
         const discount = calculateCostDiscountMultiplier(this.options.gameState.achievements);
         const mult = this.options.gameState.getDevoteeBaseMultiplier();
         const { count: maxCount, totalCost } = calculateMaxAffordableFollowers(
@@ -178,13 +179,13 @@ export class FollowersTab {
         const extraRate = this.options.gameState.getFollowerPurchaseFaithGain(maxCount);
 
         if (maxCount > 0) {
-          this.btnConvertMaxEl.disabled = false;
+          if (this.btnConvertMaxEl.disabled) this.btnConvertMaxEl.disabled = false;
           setText(this.convertMaxTitleEl, `CONVERTER MÁXIMO (${formatNumber(maxCount)})`);
           setText(this.convertMaxSubEl, `+${formatNumber(extraRate)} Fé/s`);
           setText(this.convertMaxCostLabelEl, 'CUSTO:');
           setText(this.convertMaxCostValEl, `${formatNumber(totalCost)} Fé`);
         } else {
-          this.btnConvertMaxEl.disabled = true;
+          if (!this.btnConvertMaxEl.disabled) this.btnConvertMaxEl.disabled = true;
           setText(this.convertMaxTitleEl, 'CONVERTER MÁXIMO (0)');
           setText(this.convertMaxSubEl, '+0 Fé/s');
           setText(this.convertMaxCostLabelEl, 'CUSTO:');

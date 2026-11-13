@@ -62,3 +62,42 @@ body.is-playing #test-menu-launcher { left: auto; right: 18px; bottom: 70px; }
 .shortcuts-help-group details { margin-top: 6px; }
 .shortcuts-help-group summary { cursor: pointer; color: #b8ae95; }
 .shortcuts-help-group details dl { margin-top: 6px; }
+
+.hotkey-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 4px;
+  border: 1px solid rgba(231, 207, 142, 0.45);
+  background: rgba(16, 14, 9, 0.82);
+  color: #e7cf8e;
+  font: 700 11px/1 var(--font-mono, monospace);
+  letter-spacing: 0;
+  vertical-align: middle;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+body.hide-hotkeys .hotkey-badge {
+  visibility: hidden;
+}
+
+@media (max-width: 860px) {
+  .quicknav-btn {
+    position: relative;
+  }
+  .quicknav-btn .hotkey-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 14px;
+    height: 14px;
+    padding: 0 3px;
+    margin-left: 0;
+    font-size: 9px;
+  }
+}

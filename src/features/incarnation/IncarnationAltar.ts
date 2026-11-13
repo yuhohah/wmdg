@@ -1,9 +1,9 @@
-import { INCARNATION_STAGES, IncarnationStage } from '../config/incarnation.js';
+import { INCARNATION_STAGES, IncarnationStage } from '../../config/incarnation.js';
 import {
   INCARNATION_FRAME_SIZE, incarnationStageIndex, incarnationParticleColors,
   loadIncarnationSprites, type IncarnationSprite,
 } from './incarnationSprites.js';
-import { scheduleVisualFrame, VisualFrameClock, visualFrameScale } from './visualTiming.js';
+import { scheduleVisualFrame, VisualFrameClock, visualFrameScale } from '../../ui/visualTiming.js';
 
 export interface IncarnationAltarOptions {
   onAltarClick?: (e?: MouseEvent) => void;

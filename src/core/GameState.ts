@@ -1,4 +1,3 @@
-import { ANUBIS_MIN_GNOSE_UPGRADES } from '../config/bosses.js';
 import { getRelicUpgradeCost, getRelicUpgradeBulkCost, getMaxAffordableRelicLevels } from '../systems/relicCosts.js';
 import type {
   BuyableItem,
@@ -12,31 +11,22 @@ import type {
   ActiveBossBattle,
   BossCombatBreakdown,
   BossRiftKind,
-  CultPillarId,
-  CultPillarStatus
 } from '../types.js';
 import { initialFollowers } from '../config/followers.js';
-import { initialFervorUpgrades, BASE_FERVOR_RATE, getFervorUpgradeMultiplier } from '../config/fervor.js';
+import { initialFervorUpgrades, BASE_FERVOR_RATE } from '../config/fervor.js';
 import { initialAchievements, SPHERE_CRITICAL } from '../config/achievements.js';
 import { initialUnlocks } from '../config/unlocks.js';
 import { initialRelicUpgrades, ETERNAL_RELIC_IDS } from '../config/relics.js';
 import { INCARNATION_STAGES, BLESSING_MAX_SECONDS, type IncarnationStage } from '../config/incarnation.js';
-import { PROGRESSION_BALANCE, PROGRESSION_OLD_PRICES, PROGRESSION_REVISION, PROGRESSION_REVISION_1_PRICES, GNOSE_UPGRADES, GNOSE_AUTOMATION, GNOSE_SEAL_UPGRADES, LEGACY_GNOSE_SEAL_AUTOMATIONS, GNOSE_FORMULAS, GNOSE_APOTHEOSIS_COSTS, RETIRED_GNOSE_UPGRADES, LEGACY_GNOSE_AUTOMATIONS } from '../config/gnose.js';
+import { PROGRESSION_BALANCE, GNOSE_UPGRADES, GNOSE_AUTOMATION, GNOSE_SEAL_UPGRADES, GNOSE_FORMULAS, GNOSE_APOTHEOSIS_COSTS } from '../config/gnose.js';
 import {
   GNOSE_BOSSES,
-  BOSS_CURSE_DURATION_SEC,
-  BOSS_CURSE_MULTIPLIER,
-  BOSS_MAX_ALTAR_INTEGRITY,
-  BOSS_MAX_PASSIVE_HP_PER_SEC,
-  BOSS_MAX_CLICK_HP_FRACTION,
   BOSS_SPHERE_COOLDOWN_SEC,
-  BOSS_DAMAGE_READINESS_THRESHOLD,
-  BOSS_DEFENSE_READINESS_THRESHOLD,
-  BOSS_UNPREPARED_PRESSURE_PER_SEC
 } from '../config/bosses.js';
 import {
   calculateItemCost,
   calculateFervorUpgradeCost,
+  getFervorUpgradeMultiplier,
   calculateClickBuffMultiplier,
   calculatePassiveBuffMultiplier,
   calculateGlobalBuffMultiplier,
@@ -54,7 +44,33 @@ import {
   calculateTotalGnoseMultiplier,
   calculateGnoseFollowersSynergyMultiplier
 } from '../systems/calculations.js';
-import { SaveSystem, isValidSaveData, type SaveData } from '../systems/saveSystem.js';
+import {
+  applySaveDataToState,
+  buildSaveDataFromState,
+  type SaveData,
+} from '../systems/saveSystem.js';
+import {
+  beginBossCombat,
+  calculateBossCombatBreakdown,
+  canChallengeBoss,
+  checkAndApplyBossPhaseTransitions,
+  clickBossMiracle,
+  clickBossRift,
+  completeBossBattle,
+  defeatBossForTesting,
+  getBossBestTimeSec,
+  getBossCurseMultiplier,
+  getBossForTier,
+  getBossPhase,
+  getBossRewardsMultiplier,
+  isBossDefeated,
+  isGnoseTierUnlocked,
+  retreatBossBattle,
+  spawnBossMiracle,
+  spawnBossRift,
+  startBossBattle,
+  tickBossBattle,
+} from '../systems/bossCombat.js';
 
 export class GameStateManager {
   // Numeric Resources & Stats
@@ -94,15 +110,15 @@ export class GameStateManager {
   public bestBossTimesSec: Record<string, number> = {};
   public bossCurseTimerSec: number = 0;
   public activeBossBattle: ActiveBossBattle | null = null;
-  private riftIdCounter: number = 0;
-  private miracleIdCounter: number = 0;
+  public riftIdCounter: number = 0;
+  public miracleIdCounter: number = 0;
 
   public confirmGnoseReset: boolean = true;
   public autoFollowersEnabled: boolean = true;
   public autoFervorEnabled: boolean = true;
   public autoRelicsEnabled: boolean = true;
-  private gnoseAutoAccumulatorSec: number = 0;
-  private sphereAutoAccumulatorSec: number = 0;
+  public gnoseAutoAccumulatorSec: number = 0;
+  public sphereAutoAccumulatorSec: number = 0;
   private lastSphereAutoclick: { fpc: number; isCrit: boolean } | null = null;
   public autoRelicUpgradesEnabled: boolean = true;
 
@@ -111,6 +127,8 @@ export class GameStateManager {
   public seenCardTutorials: Set<string> = new Set();
   public nerdsEnabled: boolean = false;
   public hideGuidance: boolean = false;
+  public showHotkeys: boolean = true;
+  public convertMaxUnlocked: boolean = false;
   public bulkFervorEnabled: boolean = false;
   public bulkRelicsEnabled: boolean = false;
 
@@ -146,6 +164,8 @@ export class GameStateManager {
     this.seenCardTutorials.clear();
     this.nerdsEnabled = false;
     this.hideGuidance = false;
+    this.showHotkeys = true;
+    this.convertMaxUnlocked = false;
     this.bulkFervorEnabled = false;
     this.bulkRelicsEnabled = false;
 
@@ -241,458 +261,50 @@ export class GameStateManager {
 
   // --- Gnose Boss & Tier Gate Logic ---
   public isBossDefeated(bossId: string): boolean {
-    return this.defeatedBosses.has(bossId);
+    return isBossDefeated(this, bossId);
   }
 
   public getBossBestTimeSec(bossId: string): number | undefined {
-    const val = this.bestBossTimesSec[bossId];
-    return typeof val === 'number' && Number.isFinite(val) && val > 0 ? val : undefined;
+    return getBossBestTimeSec(this, bossId);
   }
 
-  public getBossForTier(tier: 2 | 3 | 4 | 'endgame'): GnoseBoss | undefined {
-    return GNOSE_BOSSES.find((b) => b.unlocksTier === tier);
+  public getBossForTier(tier: 1 | 2 | 3 | 4): GnoseBoss | undefined {
+    return getBossForTier(tier);
   }
 
   public isGnoseTierUnlocked(tier: 1 | 2 | 3 | 4): boolean {
-    if (tier === 1) return true;
-    const boss = GNOSE_BOSSES.find((b) => b.unlocksTier === tier);
-    if (!boss) return true;
-    if (this.defeatedBosses.has(boss.id)) return true;
-    // Backward compatibility: if player already owns an upgrade in this tier, consider it unlocked
-    const hasUpgradeInTier = GNOSE_UPGRADES.some(
-      (u) => u.tier === tier && this.unlockedGnoseUpgrades.has(u.id)
-    );
-    return hasUpgradeInTier;
+    return isGnoseTierUnlocked(this, tier);
   }
 
   public canChallengeBoss(bossId: string, options?: { isRematch?: boolean }): boolean {
-    const boss = GNOSE_BOSSES.find((b) => b.id === bossId);
-    if (!boss) return false;
-    if (options?.isRematch) {
-      return this.defeatedBosses.has(boss.id);
-    }
-    if (this.defeatedBosses.has(boss.id)) return false;
-
-    if (boss.unlocksTier === 2) {
-      const owned = GNOSE_UPGRADES.filter(upgrade => this.hasGnoseUpgrade(upgrade.id)).length;
-      return this.isGnoseUnlocked() && owned >= ANUBIS_MIN_GNOSE_UPGRADES;
-    }
-    if (boss.unlocksTier === 3) {
-      const tier2Owned = GNOSE_UPGRADES.filter(
-        (u) => u.tier === 2 && this.unlockedGnoseUpgrades.has(u.id)
-      ).length;
-      return this.isGnoseTierUnlocked(2) && tier2Owned >= 2;
-    }
-    if (boss.unlocksTier === 4) {
-      const tier3Owned = GNOSE_UPGRADES.filter(
-        (u) => u.tier === 3 && this.unlockedGnoseUpgrades.has(u.id)
-      ).length;
-      return this.isGnoseTierUnlocked(3) && tier3Owned >= 2;
-    }
-    if (boss.unlocksTier === 'endgame') {
-      return GNOSE_UPGRADES.every((u) => this.unlockedGnoseUpgrades.has(u.id));
-    }
-    return false;
+    return canChallengeBoss(this, bossId, options);
   }
 
   public getBossRewardsMultiplier(): number {
-    let mult = 1.0;
-    for (const boss of GNOSE_BOSSES) {
-      if (this.defeatedBosses.has(boss.id)) {
-        mult *= boss.faithFervorMult;
-      }
-    }
-    return mult;
+    return getBossRewardsMultiplier(this);
   }
 
   public getBossCurseMultiplier(): number {
-    return this.bossCurseTimerSec > 0 ? BOSS_CURSE_MULTIPLIER : 1.0;
+    return getBossCurseMultiplier(this);
   }
 
-  /**
-   * Computes how all Cult Systems (Fé, Fiéis, Fervor, Relíquias, Encarnação, Gnose, Conquistas)
-   * synergize to drive Boss Battle DPS, Sphere Click damage, Rift critical damage,
-   * Altar Integrity protection, and combat duration.
-   */
   public getBossCombatBreakdown(bossId?: string): BossCombatBreakdown {
-    const targetBossId = bossId ?? this.activeBossBattle?.bossId ?? 'boss_anubis';
-    const boss = GNOSE_BOSSES.find((b) => b.id === targetBossId) ?? GNOSE_BOSSES[0];
-    const bossMaxHp =
-      this.activeBossBattle && this.activeBossBattle.bossId === boss.id
-        ? this.activeBossBattle.bossMaxHp
-        : boss.maxHp;
-
-    const difficultyScale =
-      boss.id === 'boss_anubis'
-        ? 1.0
-        : boss.id === 'boss_cronos'
-          ? 1.6
-          : boss.id === 'boss_odin'
-            ? 2.3
-            : 3.2;
-
-    const fps = this.getFaithPerSecond();
-    const fpc = this.getFaithPerClick();
-
-    // 1. Fé (current Fé, total Fé accumulated, and Fé/s)
-    const faithLog = Math.log10(Math.max(0, this.faithPoints) + 1);
-    const faithHistoryLog = Math.log10(Math.max(this.faithPoints, this.totalFaithAccumulated, 0) + 1);
-    const fpsLog = fps > 1 ? Math.log10(fps) : 0;
-    const faithBonus = (faithLog * 0.02 + faithHistoryLog * 0.02 + fpsLog * 0.05) / difficultyScale;
-
-    // 2. Fiéis Devotos (count of active devotees chanting)
-    const followersCount = this.getTotalFollowersCount();
-    const followersBonus =
-      followersCount > 0
-        ? (Math.log10(followersCount + 1) * 0.22 + Math.min(1.5, followersCount * 0.008)) /
-          difficultyScale
-        : 0;
-
-    // 3. Fervor (accumulated Fervor, Fervor/s, and Ritos de Fervor levels)
-    const fervorRate = this.getFervorRatePerSecond();
-    const fervorLevels = this.fervorUpgrades.reduce((acc, u) => acc + u.level, 0);
-    const fervorLog = this.fervorPoints > 0 ? Math.log10(this.fervorPoints + 1) : 0;
-    const fervorHistoryLog = Math.log10(Math.max(this.fervorPoints, this.totalFervorGenerated, 0) + 1);
-    const fervorRateLog = fervorRate > 0 ? Math.log10(fervorRate + 1) : 0;
-    const fervorBonus =
-      (fervorLog * 0.08 + fervorHistoryLog * 0.04 + fervorRateLog * 0.08 + fervorLevels * 0.04) / difficultyScale;
-
-    // 4. Relíquias & Fragmentos (Fragmentos pool, best transmutation, and Relic upgrade levels)
-    const relicLevels = this.relicUpgrades.reduce((acc, r) => acc + r.level, 0);
-    const effectiveRelics = Math.max(this.relicPoints, this.bestRelicsToGet);
-    const relicsLog = effectiveRelics > 0 ? Math.log10(effectiveRelics + 1) : 0;
-    const relicsHistoryLog = Math.log10(Math.max(effectiveRelics, this.totalRelicsGenerated, 0) + 1);
-    const relicsRateLog = Math.log10(this.getRelicsRatePerSecond() + 1);
-    const relicsBonus = (relicsLog * 0.15 + relicsHistoryLog * 0.1 + relicsRateLog * 0.08 + relicLevels * 0.08) / difficultyScale;
-
-    // 5. Encarnação Sagrada (Avatar stage 1..5 and active Blessing)
-    const isBoostActive =
-      this.incarnationBoostTimer > 0 ||
-      (this.hasGnoseUpgrade('gn_bencao_eterna') && this.isIncarnationUnlocked());
-    const incarnationBonus =
-      ((this.incarnationStage - 1) * 0.35 + (isBoostActive ? 0.25 : 0)) / difficultyScale;
-
-    // 6. Gnose & Conquistas (Gnose points, total Gnose earned, assimilated Gnose nodes, and unlocked Achievements)
-    const effectiveGnose = Math.max(this.gnosePoints, this.totalGnoseEarned);
-    const gnoseLog = effectiveGnose > 0 ? Math.log10(effectiveGnose + 1) : 0;
-    const gnoseNodes = this.unlockedGnoseUpgrades.size;
-    const unlockedAchievements = this.achievements.filter((a) => a.unlocked).length;
-    const achievementsBonus = (unlockedAchievements * 0.025) / difficultyScale;
-    const gnoseBonus = (gnoseLog * 0.22 + gnoseNodes * 0.08 + unlockedAchievements * 0.015) / difficultyScale;
-
-    const bonusSum =
-      faithBonus + followersBonus + fervorBonus + relicsBonus + incarnationBonus + gnoseBonus + achievementsBonus;
-    const curseMult = this.getBossCurseMultiplier();
-    const totalResourceMultiplier = (1 + bonusSum) * curseMult;
-
-    // Cult Readiness Index: measures how well the player has developed all systems vs. boss requirements
-    const req = boss.requirements ?? {
-      faithLog: 15,
-      followers: 120,
-      fervorLog: 7,
-      fervorLevels: 35,
-      relicsLog: 2.5,
-      relicLevels: 6,
-      incarnationStage: 2,
-      gnoseLog: 0,
-      gnoseNodes: 1
-    };
-    const faithReadiness = Math.min(2.0, Math.max(faithLog, faithHistoryLog) / Math.max(1, req.faithLog));
-    const followersReadiness = Math.min(2.0, followersCount / Math.max(1, req.followers));
-    const fervorReadiness = Math.min(
-      2.0,
-      0.5 * (fervorHistoryLog / Math.max(1, req.fervorLog)) +
-        0.5 * (fervorLevels / Math.max(1, req.fervorLevels))
-    );
-    const relicsReadiness = Math.min(
-      2.0,
-      0.5 * (relicsHistoryLog / Math.max(1, req.relicsLog)) +
-        0.5 * (relicLevels / Math.max(1, req.relicLevels))
-    );
-    const incarnationReadiness = Math.min(
-      2.0,
-      (this.incarnationStage + (isBoostActive ? 0.5 : 0)) / Math.max(1, req.incarnationStage)
-    );
-    const gnoseReadiness =
-      req.gnoseNodes <= 1 && req.gnoseLog <= 0
-        ? Math.min(2.0, 0.8 + gnoseNodes * 0.25 + gnoseLog * 0.2)
-        : Math.min(
-            2.0,
-            0.5 * (gnoseLog / Math.max(0.5, req.gnoseLog)) +
-              0.5 * (gnoseNodes / Math.max(1, req.gnoseNodes))
-          );
-
-    const pillarReadiness: Record<CultPillarId, number> = {
-      faith: faithReadiness,
-      followers: followersReadiness,
-      fervor: fervorReadiness,
-      relics: relicsReadiness,
-      incarnation: incarnationReadiness,
-      gnose: gnoseReadiness
-    };
-
-    const pillarCatalog: CultPillarStatus[] = [
-      {
-        id: 'faith',
-        label: 'Fé',
-        readiness: faithReadiness
-      },
-      {
-        id: 'followers',
-        label: 'Fiéis',
-        readiness: followersReadiness
-      },
-      {
-        id: 'fervor',
-        label: 'Fervor',
-        readiness: fervorReadiness
-      },
-      {
-        id: 'relics',
-        label: 'Relíquias',
-        readiness: relicsReadiness
-      },
-      {
-        id: 'incarnation',
-        label: 'Encarnação',
-        readiness: incarnationReadiness
-      },
-      {
-        id: 'gnose',
-        label: 'Gnose',
-        readiness: gnoseReadiness
-      }
-    ];
-
-    const sortedPillars = [...pillarCatalog].sort((a, b) => a.readiness - b.readiness);
-    const weakPillars = sortedPillars.filter((p) => p.readiness < 0.95);
-    const lowestTwoPillars: [CultPillarStatus, CultPillarStatus] = [sortedPillars[0], sortedPillars[1]];
-
-    // A surplus in one system cannot replace a missing pillar. Each pillar is
-    // capped at 2 before taking the geometric mean, so all resources matter.
-    const cultReadiness = Object.values(pillarReadiness).reduce((product, value) => product * value, 1) ** (1 / 6);
-    const canDamageBoss = cultReadiness >= BOSS_DAMAGE_READINESS_THRESHOLD;
-    const canWithstandBoss = cultReadiness >= BOSS_DEFENSE_READINESS_THRESHOLD;
-    const damageMultiplier = canDamageBoss ? Math.min(1, cultReadiness) : 0;
-
-    const hasActiveCultPower =
-      fps > 0 ||
-      followersCount > 0 ||
-      this.fervorPoints > 0 ||
-      fervorLevels > 0 ||
-      effectiveRelics > 0 ||
-      relicLevels > 0 ||
-      this.incarnationStage > 1 ||
-      effectiveGnose > 0 ||
-      gnoseNodes > 0 ||
-      this.faithPoints > 1 ||
-      this.totalFaithAccumulated > 1 ||
-      this.totalFervorGenerated > 0 ||
-      this.totalRelicsGenerated > 0;
-
-    // Normalize and cap final damage: Cult Readiness + Resource Synergies + Raw Production determine battle speed.
-    const readinessFactor = 0.45 + 0.55 * cultReadiness;
-    const passiveDps = damageMultiplier * Math.min(
-      bossMaxHp * BOSS_MAX_PASSIVE_HP_PER_SEC,
-      Math.max(fps, hasActiveCultPower ? bossMaxHp * bonusSum * 0.00175 * readinessFactor * curseMult : 0)
-    );
-    const passiveHpFractionPerSec = passiveDps / bossMaxHp;
-
-    const hasHadesChains =
-      this.activeBossBattle &&
-      this.activeBossBattle.bossId === boss.id &&
-      this.activeBossBattle.activeRifts.some((r) => r.kind === 'hades_chains');
-    const chainPenaltyMult = hasHadesChains ? 0.5 : 1.0;
-
-    const rawClickDamage = Math.min(
-      bossMaxHp * BOSS_MAX_CLICK_HP_FRACTION,
-      Math.max(
-        fpc,
-        bossMaxHp *
-          0.0014 *
-          (0.6 + 0.4 * cultReadiness) *
-          (1 + bonusSum * 0.12 + fervorBonus * 0.08 + incarnationBonus * 0.08)
-      )
-    );
-    const clickDamage = rawClickDamage * chainPenaltyMult * damageMultiplier;
-    const clickHpFraction = clickDamage / bossMaxHp;
-
-    // Parrying is defensive: it charges the Sphere without dealing damage.
-    const riftDamage = 0;
-    const riftHpFraction = 0;
-
-    // FULGOR DIVINO (100% Sphere Astral Charge): pure attack beam (~10% max HP scaled by cultReadiness, no heal)
-    const fulgorHpFraction = damageMultiplier * Math.min(0.14, Math.max(0.06, 0.08 + 0.02 * Math.min(2.0, cultReadiness)));
-    const fulgorDamage = bossMaxHp * fulgorHpFraction;
-
-    // Every cult system contributes directly to Sphere protection.
-    const defenseScore =
-      faithBonus * 0.2 +
-      followersBonus * 0.25 +
-      relicsBonus * 0.35 +
-      incarnationBonus * 0.35 +
-      fervorBonus * 0.15 +
-      gnoseBonus * 0.25 +
-      achievementsBonus * 0.25;
-    const mitigationFactor = 1 / (1 + defenseScore * 1.85);
-    const minMissFloor =
-      boss.id === 'boss_anubis'
-        ? 3.2
-        : boss.id === 'boss_cronos'
-          ? 4.2
-          : boss.id === 'boss_odin'
-            ? 5.5
-            : 7.5;
-    const altarDamageOnMiss = canWithstandBoss
-      ? Math.max(minMissFloor, boss.altarDamageOnMiss * mitigationFactor)
-      : BOSS_MAX_ALTAR_INTEGRITY;
-    const altarHealOnRift = Math.min(
-      16,
-      followersBonus * 4 + relicsBonus * 5 + incarnationBonus * 4
-    );
-
-    // Continuous Divine Pressure on Altar Integrity:
-    // Strongly mitigated when cultReadiness >= 1.0; heavier drain when cultReadiness < 0.8
-    const rawPressure = boss.altarPressurePerSec ?? 0.65;
-    const underpreparedPenalty =
-      cultReadiness < 0.8 ? 1 + (0.8 - cultReadiness) * 1.8 : 1.0;
-    const preparedBonus =
-      cultReadiness >= 1.0 ? 1 / (1 + (cultReadiness - 0.9) * 3.2) : 1.0;
-    const pressureMitigation =
-      (underpreparedPenalty * preparedBonus) / (1 + defenseScore * 2.2 + cultReadiness * 1.4);
-    const altarPressurePerSec = canWithstandBoss
-      ? Math.max(0.06, rawPressure * pressureMitigation)
-      : Math.max(
-          BOSS_UNPREPARED_PRESSURE_PER_SEC * (1 + BOSS_DEFENSE_READINESS_THRESHOLD - cultReadiness),
-          rawPressure * pressureMitigation
-        );
-
-    const estimatedPassiveVictorySec =
-      passiveHpFractionPerSec > 0 ? 1 / passiveHpFractionPerSec : Infinity;
-    const avgMissDrainPerSec = altarDamageOnMiss / (boss.riftIntervalSec + boss.riftWindowSec * 0.35);
-    const estimatedAltarSurvivalSec =
-      BOSS_MAX_ALTAR_INTEGRITY / Math.max(0.05, altarPressurePerSec + avgMissDrainPerSec);
-
-    return {
-      faithBonus,
-      followersBonus,
-      fervorBonus,
-      relicsBonus,
-      incarnationBonus,
-      gnoseBonus,
-      achievementsBonus,
-      totalResourceMultiplier,
-      cultReadiness,
-      canDamageBoss,
-      canWithstandBoss,
-      pillarReadiness,
-      weakPillars,
-      lowestTwoPillars,
-      passiveHpFractionPerSec,
-      passiveDps,
-      clickHpFraction,
-      clickDamage,
-      riftHpFraction,
-      riftDamage,
-      fulgorHpFraction,
-      fulgorDamage,
-      altarDamageOnMiss,
-      altarHealOnRift,
-      altarPressurePerSec,
-      estimatedPassiveVictorySec,
-      estimatedAltarSurvivalSec
-    };
+    return calculateBossCombatBreakdown(this, bossId);
   }
 
   public startBossBattle(
     bossId: string,
     options?: { awaitProcession?: boolean; isRematch?: boolean }
   ): boolean {
-    const boss = GNOSE_BOSSES.find((b) => b.id === bossId);
-    const isRematch = options?.isRematch === true;
-    if (this.activeBossBattle || !boss || !this.canChallengeBoss(bossId, { isRematch })) {
-      return false;
-    }
-
-    this.activeBossBattle = {
-      bossId: boss.id,
-      bossHp: boss.maxHp,
-      bossMaxHp: boss.maxHp,
-      altarIntegrity: BOSS_MAX_ALTAR_INTEGRITY,
-      maxAltarIntegrity: BOSS_MAX_ALTAR_INTEGRITY,
-      riftSpawnTimerSec: boss.riftIntervalSec * 0.65,
-      sphereCooldownSec: 0,
-      activeRifts: [],
-      riftsShattered: 0,
-      riftsMissed: 0,
-      combatStarted: options?.awaitProcession ? false : true,
-      phase: 1,
-      comboStreak: 0,
-      sphereCharge: 0,
-      activeMiracle: null,
-      miracleSpawnTimerSec: 11,
-      highestPhaseShocked: 1,
-      isRematch,
-      elapsedCombatSec: 0,
-      attackWaveCounter: 0
-    };
-    return true;
+    return startBossBattle(this, bossId, options);
   }
 
   public beginBossCombat(): void {
-    if (this.activeBossBattle) {
-      this.activeBossBattle.combatStarted = true;
-    }
+    beginBossCombat(this);
   }
 
   public getBossPhase(): 1 | 2 | 3 {
-    if (!this.activeBossBattle) return 1;
-    const hpRatio = this.activeBossBattle.bossHp / this.activeBossBattle.bossMaxHp;
-    if (hpRatio <= 0.25) return 3;
-    if (hpRatio <= 0.6) return 2;
-    return 1;
-  }
-
-  /**
-   * Applies lethal Phase II (15%) and Phase III (30%) shockwave damage to Sphere Integrity,
-   * clears stale active rifts without extra miss penalty, and guarantees a Faithful Miracle on the circle.
-   * Returns true if the Altar collapsed (defeat).
-   */
-  private checkAndApplyBossPhaseTransitions(): boolean {
-    const battle = this.activeBossBattle;
-    if (!battle) return false;
-
-    const newPhase = this.getBossPhase();
-    battle.phase = newPhase;
-    const prevShocked = battle.highestPhaseShocked ?? 1;
-    if (newPhase <= prevShocked) {
-      return false;
-    }
-
-    let phaseDamage = 0;
-    if (prevShocked < 2 && newPhase >= 2) {
-      phaseDamage += 15;
-    }
-    if (prevShocked < 3 && newPhase >= 3) {
-      phaseDamage += 30;
-    }
-    battle.highestPhaseShocked = newPhase;
-
-    // Dissipate existing rifts without extra penalty at the exact instant of phase shockwave
-    battle.activeRifts = [];
-
-    if (phaseDamage > 0) {
-      battle.altarIntegrity = Math.max(0, battle.altarIntegrity - phaseDamage);
-      if (battle.altarIntegrity <= 0) {
-        this.completeBossBattle(false);
-        return true;
-      }
-      // Guarantee a Faithful Miracle on the wheel right after the Phase II/III shockwave if none is active
-      if (!battle.activeMiracle) {
-        this.spawnBossMiracle();
-      }
-    }
-    return false;
+    return getBossPhase(this);
   }
 
   private hasUnlockedAchievementBuff(buffType: Achievement['buffType']): boolean {
@@ -712,187 +324,15 @@ export class GameStateManager {
   }
 
   public spawnBossMiracle(preferredSlot?: number): void {
-    const battle = this.activeBossBattle;
-    if (!battle) return;
-    if (!this.areMiraclesUnlocked()) return;
-    this.miracleIdCounter += 1;
-    const totalSlots = Math.max(1, Math.min(34, Math.max(1, this.getTotalFollowersCount())));
-    const slot =
-      typeof preferredSlot === 'number' && preferredSlot >= 0
-        ? preferredSlot % totalSlots
-        : (this.miracleIdCounter * 7 + Math.floor(battle.elapsedCombatSec ?? 0)) % totalSlots;
-    battle.activeMiracle = {
-      id: `miracle_${this.miracleIdCounter}`,
-      followerSlot: slot,
-      remainingSec: 1.5,
-      maxSec: 1.5
-    };
-    battle.miracleSpawnTimerSec = 10 + ((this.miracleIdCounter * 3) % 5);
-    if (this.areMiraclesAutoCollected()) this.clickBossMiracle();
+    spawnBossMiracle(this, preferredSlot);
   }
 
   public clickBossMiracle(): { healed: number; triggered: boolean; integrityAfter: number } {
-    const battle = this.activeBossBattle;
-    if (!battle || battle.combatStarted === false || !battle.activeMiracle) {
-      return { healed: 0, triggered: false, integrityAfter: battle?.altarIntegrity ?? 0 };
-    }
-    const before = battle.altarIntegrity;
-    battle.altarIntegrity = Math.min(battle.maxAltarIntegrity, battle.altarIntegrity + 10);
-    const healed = battle.altarIntegrity - before;
-    battle.activeMiracle = null;
-    battle.miracleSpawnTimerSec = 10 + ((this.miracleIdCounter * 3) % 5);
-    return { healed, triggered: true, integrityAfter: battle.altarIntegrity };
-  }
-
-  public triggerSphereFulgor(): { damage: number; triggered: boolean; victory: boolean } {
-    const battle = this.activeBossBattle;
-    if (
-      !battle ||
-      battle.combatStarted === false ||
-      (battle.sphereCharge ?? 0) < 100 - 1e-6
-    ) {
-      return { damage: 0, triggered: false, victory: false };
-    }
-
-    const breakdown = this.getBossCombatBreakdown(battle.bossId);
-    if (!breakdown.canDamageBoss) {
-      return { damage: 0, triggered: false, victory: false };
-    }
-    const damage = breakdown.fulgorDamage;
-    battle.sphereCharge = 0;
-    battle.bossHp = Math.max(0, battle.bossHp - damage);
-    battle.phase = this.getBossPhase();
-
-    if (battle.bossHp <= 0) {
-      this.completeBossBattle(true);
-      return { damage, triggered: true, victory: true };
-    }
-
-    if (this.checkAndApplyBossPhaseTransitions()) {
-      return { damage, triggered: true, victory: false };
-    }
-
-    return { damage, triggered: true, victory: false };
+    return clickBossMiracle(this);
   }
 
   public spawnBossRift(options?: { forceSpecial?: boolean; forceStandard?: boolean }): void {
-    if (!this.activeBossBattle) return;
-    const battle = this.activeBossBattle;
-    const boss = GNOSE_BOSSES.find((b) => b.id === battle.bossId);
-    if (!boss) return;
-
-    const phase = this.getBossPhase();
-    const wave = (battle.attackWaveCounter ?? 0) + 1;
-    battle.attackWaveCounter = wave;
-
-    const useSpecial =
-      options?.forceSpecial === true ||
-      (!options?.forceStandard && phase >= 2 && wave % 2 === 0);
-
-    const windowScale = phase === 3 ? 0.85 : phase === 2 ? 0.92 : 1.0;
-    const baseWindowSec = Math.max(1.3, boss.riftWindowSec * windowScale);
-
-    if (!useSpecial) {
-      this.riftIdCounter += 1;
-      const angle = ((this.riftIdCounter * 137.5) % 360) * (Math.PI / 180);
-      const radiusPercent = 30 + (this.riftIdCounter % 3) * 6;
-      const xPercent = Math.max(14, Math.min(86, 50 + Math.cos(angle) * radiusPercent));
-      const yPercent = Math.max(18, Math.min(82, 50 + Math.sin(angle) * radiusPercent));
-
-      battle.activeRifts.push({
-        id: `rift_${this.riftIdCounter}`,
-        xPercent,
-        yPercent,
-        remainingSec: baseWindowSec,
-        maxSec: baseWindowSec,
-        kind: 'standard',
-        attackIndex: 0
-      });
-      return;
-    }
-
-    // Special Attack 2 patterns (synced with the 2nd spritesheet of each Guardian)
-    const groupId = `grp_${wave}_${this.riftIdCounter + 1}`;
-    if (boss.id === 'boss_anubis') {
-      // Anubis (ataque-balanca): 2 symmetric golden scale rifts left & right of the Sphere
-      const positions = [
-        { xPercent: 22, yPercent: 50, slotIndex: 0 },
-        { xPercent: 78, yPercent: 50, slotIndex: 1 }
-      ];
-      const lowerValue = 1 + ((wave * 7) % 40);
-      const higherValue = lowerValue + 1 + ((wave * 11) % 40);
-      for (const pos of positions) {
-        this.riftIdCounter += 1;
-        battle.activeRifts.push({
-          id: `rift_${this.riftIdCounter}`,
-          xPercent: pos.xPercent,
-          yPercent: pos.yPercent,
-          remainingSec: baseWindowSec * 1.15,
-          maxSec: baseWindowSec * 1.15,
-          kind: 'anubis_scales',
-          scaleValue: pos.slotIndex === Math.floor(wave / 2) % 2 ? higherValue : lowerValue,
-          attackIndex: 1,
-          groupId,
-          slotIndex: pos.slotIndex
-        });
-      }
-    } else if (boss.id === 'boss_cronos') {
-      // Hades (ataque-correntes): 2 crimson shackle rifts locked on the Sphere edges (-50% click damage while active)
-      const positions = [
-        { xPercent: 32, yPercent: 34, slotIndex: 0 },
-        { xPercent: 68, yPercent: 66, slotIndex: 1 }
-      ];
-      for (const pos of positions) {
-        this.riftIdCounter += 1;
-        battle.activeRifts.push({
-          id: `rift_${this.riftIdCounter}`,
-          xPercent: pos.xPercent,
-          yPercent: pos.yPercent,
-          remainingSec: baseWindowSec * 1.15,
-          maxSec: baseWindowSec * 1.15,
-          kind: 'hades_chains',
-          attackIndex: 1,
-          groupId,
-          slotIndex: pos.slotIndex
-        });
-      }
-    } else if (boss.id === 'boss_odin') {
-      // Odin (ataque-corvo): 1 swift diagonal raven seal with critical golden window
-      this.riftIdCounter += 1;
-      const ravenWindow = Math.max(1.15, baseWindowSec * 0.82);
-      battle.activeRifts.push({
-        id: `rift_${this.riftIdCounter}`,
-        xPercent: 46,
-        yPercent: 26,
-        remainingSec: ravenWindow,
-        maxSec: ravenWindow,
-        kind: 'odin_raven',
-        attackIndex: 1,
-        groupId,
-        slotIndex: 0
-      });
-    } else {
-      // Primordial Chaos (ataque-circulos): 3 abyssal seals in an orbital triangle around the Sphere
-      const positions = [
-        { xPercent: 50, yPercent: 18, slotIndex: 0 },
-        { xPercent: 22, yPercent: 72, slotIndex: 1 },
-        { xPercent: 78, yPercent: 72, slotIndex: 2 }
-      ];
-      for (const pos of positions) {
-        this.riftIdCounter += 1;
-        battle.activeRifts.push({
-          id: `rift_${this.riftIdCounter}`,
-          xPercent: pos.xPercent,
-          yPercent: pos.yPercent,
-          remainingSec: baseWindowSec * 1.25,
-          maxSec: baseWindowSec * 1.25,
-          kind: 'chaos_orbit',
-          attackIndex: 1,
-          groupId,
-          slotIndex: pos.slotIndex
-        });
-      }
-    }
+    spawnBossRift(this, options);
   }
 
   public clickBossRift(riftId: string): {
@@ -906,126 +346,20 @@ export class GameStateManager {
     altarDamageTaken?: number;
     scaleDamageMultiplier?: number;
   } {
-    if (!this.activeBossBattle || this.activeBossBattle.combatStarted === false) {
-      return { damage: 0, shattered: false, victory: false };
-    }
-    const battle = this.activeBossBattle;
-    const idx = battle.activeRifts.findIndex((r) => r.id === riftId);
-    if (idx === -1) {
-      return { damage: 0, shattered: false, victory: false };
-    }
-
-    const rift = battle.activeRifts[idx];
-    const kind: BossRiftKind = rift.kind ?? 'standard';
-    const groupId = rift.groupId;
-
-    if (kind === 'anubis_scales') {
-      const siblings = battle.activeRifts.filter(r => r.kind === kind && r.groupId === groupId);
-      const isLower = rift.scaleHigherSelected === true ||
-        siblings.some(r => (r.scaleValue ?? 0) > (rift.scaleValue ?? 0));
-      if (isLower) {
-        const multiplier = rift.scaleHigherSelected ? 3 : 2;
-        const damage = this.getBossCombatBreakdown(battle.bossId).altarDamageOnMiss * multiplier;
-        const before = battle.altarIntegrity;
-        battle.activeRifts = battle.activeRifts.filter(r => !siblings.includes(r));
-        battle.altarIntegrity = Math.max(0, before - damage);
-        battle.riftsMissed += 1;
-        battle.comboStreak = 0;
-        if (battle.altarIntegrity <= 0) this.completeBossBattle(false);
-        return {
-          damage: 0, shattered: false, victory: false, kind,
-          altarDamageTaken: before - battle.altarIntegrity,
-          scaleDamageMultiplier: multiplier
-        };
-      }
-      // Keep the lower balloon clickable, but harmless if its window expires.
-      siblings.forEach(r => { if (r !== rift) r.scaleHigherSelected = true; });
-    }
-
-    const nextCombo = (battle.comboStreak ?? 0) + 1;
-    battle.comboStreak = nextCombo;
-
-    battle.activeRifts.splice(idx, 1);
-    battle.riftsShattered += 1;
-
-    // Charge the Divine Sphere (+25% per APARAR)
-    battle.sphereCharge = Math.min(100, (battle.sphereCharge ?? 0) + 25);
-
-    let specialBonusTriggered = false;
-    const miracleAwakened = false;
-    const siblingsRemaining = groupId
-      ? battle.activeRifts.filter((r) => r.groupId === groupId).length
-      : 0;
-
-    if (kind === 'hades_chains' && siblingsRemaining === 0) {
-      // Hades Chains broken: restores full click power
-      specialBonusTriggered = true;
-    } else if (kind === 'odin_raven') {
-      // Intercepting the raven early delays Odin's next attack.
-      const isCritParry = rift.remainingSec >= rift.maxSec * 0.35;
-      if (isCritParry) {
-        battle.riftSpawnTimerSec += 1.4;
-        specialBonusTriggered = true;
-      }
-    } else if (kind === 'chaos_orbit' && siblingsRemaining === 0) {
-      // All orbital seals have been safely intercepted.
-      specialBonusTriggered = true;
-    }
-
-    // A parry changes neither combatant's health and cannot trigger phase shockwaves.
-    return {
-      damage: 0,
-      shattered: true,
-      victory: false,
-      comboStreak: nextCombo,
-      kind,
-      specialBonusTriggered,
-      miracleAwakened
-    };
+    return clickBossRift(this, riftId);
   }
 
   public retreatBossBattle(): void {
-    this.activeBossBattle = null;
+    retreatBossBattle(this);
   }
 
   /** Test panel shortcut: grant a Guardian victory without campaign requirements. */
   public defeatBossForTesting(bossId: string): boolean {
-    if (!GNOSE_BOSSES.some(boss => boss.id === bossId)) return false;
-    if (this.activeBossBattle?.bossId === bossId) {
-      this.completeBossBattle(true);
-    } else {
-      this.defeatedBosses.add(bossId);
-      this.bossCurseTimerSec = 0;
-    }
-    return true;
-  }
-
-  private completeBossBattle(victory: boolean): void {
-    if (!this.activeBossBattle) return;
-    const battle = this.activeBossBattle;
-    const boss = GNOSE_BOSSES.find((b) => b.id === battle.bossId);
-    const isRematch = battle.isRematch === true;
-    const durationSec = Math.max(0.1, battle.elapsedCombatSec ?? 0);
-    this.activeBossBattle = null;
-
-    if (victory && boss) {
-      this.defeatedBosses.add(boss.id);
-      this.bossCurseTimerSec = 0;
-      const prevBest = this.bestBossTimesSec[boss.id];
-      if (durationSec > 0 && (typeof prevBest !== 'number' || durationSec < prevBest)) {
-        this.bestBossTimesSec[boss.id] = Number(durationSec.toFixed(1));
-      }
-    } else if (!isRematch) {
-      this.bossCurseTimerSec = BOSS_CURSE_DURATION_SEC;
-    }
-
-    if (boss && this.onBossBattleFinished) {
-      this.onBossBattleFinished({ boss, victory, isRematch, durationSec });
-    }
+    return defeatBossForTesting(this, bossId);
   }
 
   public isConvertMaxUnlocked(): boolean {
-    return this.getTotalFollowersCount() >= 25 || this.hasGnoseUpgrade('gn_memoria_selos');
+    return this.convertMaxUnlocked || this.getTotalFollowersCount() >= 25 || this.hasGnoseUpgrade('gn_memoria_selos');
   }
 
   public isFu1Boosted(): boolean {
@@ -1047,14 +381,9 @@ export class GameStateManager {
     return calculateTotalGnoseMultiplier(this.totalGnoseEarned);
   }
 
-  public getGnoseReconstructionMultiplier(): number {
-    return PROGRESSION_BALANCE.nodeProductionMultiplier ** this.unlockedGnoseUpgrades.size;
-  }
-
   /** Smooth cycle growth between permanent milestones; no lifetime resource history. */
   public getFervorResonanceMultiplier(): number {
-    const nodes = this.unlockedGnoseUpgrades.size;
-    const exponent = PROGRESSION_BALANCE.fervorResonanceExponent * nodes / (nodes + 1);
+    const exponent = PROGRESSION_BALANCE.fervorResonanceExponent;
     return (1 + Math.max(this.fervorPoints, this.fervorPeakThisRun) / PROGRESSION_BALANCE.fervorResonanceScale) ** exponent;
   }
 
@@ -1064,8 +393,7 @@ export class GameStateManager {
     const exponent = hasCongregation
       ? (this.hasGnoseUpgrade('gn_followers_cubic') ? 1.1 : PROGRESSION_BALANCE.congregationExponent)
       : PROGRESSION_BALANCE.earlySynergyExponent;
-    return calculateGnoseFollowersSynergyMultiplier(followersCount, hasCongregation || early, exponent)
-      * this.getGnoseReconstructionMultiplier();
+    return calculateGnoseFollowersSynergyMultiplier(followersCount, hasCongregation || early, exponent);
 
   }
 
@@ -1092,8 +420,8 @@ export class GameStateManager {
   }
 
   /** Manual purchases, automation and UI use the same effective exponential cost. */
-  public getFervorUpgradeCost(upg: FervorUpgrade): number {
-    return calculateFervorUpgradeCost(upg, this.getFervorUpgradeCostMultiplier(upg));
+  public getFervorUpgradeCost(upg: FervorUpgrade, level = upg.level): number {
+    return calculateFervorUpgradeCost(upg, this.getFervorUpgradeCostMultiplier(upg), level);
   }
 
   public getFervorUpgradeCostMultiplier(upg: FervorUpgrade): number {
@@ -1108,14 +436,14 @@ export class GameStateManager {
   }
 
   /** Only formula coefficients change; production retains the same level exponent. */
-  public getFervorUpgradeEffect(upg: FervorUpgrade, followersCount = this.getTotalFollowersCount()): number {
+  public getFervorUpgradeEffect(upg: FervorUpgrade, followersCount = this.getTotalFollowersCount(), level = upg.level): number {
     const productionBase = this.hasGnoseUpgrade('gn_empyrean_fire') ? GNOSE_FORMULAS.empyreanProductionBase
       : this.isFu1Boosted() ? GNOSE_FORMULAS.hermeticProductionBase
       : this.hasGnoseUpgrade('gn_init_fervor') ? GNOSE_FORMULAS.fervorProductionBase : 2;
     const relicBase = this.hasGnoseUpgrade('gn_perfect_opus') ? GNOSE_FORMULAS.perfectRelicProductionBase
       : this.hasGnoseUpgrade('gn_relic_refinement') ? GNOSE_FORMULAS.refinedRelicProductionBase
       : this.hasGnoseUpgrade('gn_relic_gain') ? GNOSE_FORMULAS.relicProductionBase : 3;
-    return getFervorUpgradeMultiplier(upg, followersCount, this.faithPoints, productionBase, relicBase);
+    return getFervorUpgradeMultiplier(upg, followersCount, this.faithPoints, productionBase, relicBase, level);
   }
 
   public getAutoRelicsFraction(): number {
@@ -1240,7 +568,6 @@ export class GameStateManager {
     const torchMult = 1 + (torchLevel * 0.20);
     prodMult *= torchMult;
     prodMult *= this.getIncarnationStageMultiplier();
-    prodMult *= this.getGnoseReconstructionMultiplier();
     prodMult *= this.getTotalGnosePassiveMultiplier();
     prodMult *= this.getBossRewardsMultiplier();
     prodMult *= this.getBossCurseMultiplier();
@@ -1267,7 +594,7 @@ export class GameStateManager {
     if (this.hasGnoseUpgrade('gn_omniscience') && this.autoRelicsEnabled) {
       autoGen += toGet * this.getAutoRelicsFraction();
     }
-    return (Math.max(1.0, extraPerSec) + autoGen) * this.getGnoseReconstructionMultiplier();
+    return Math.max(1.0, extraPerSec) + autoGen;
   }
 
   /** Production history survives spending and Ascension, and also includes offline gains. */
@@ -1379,7 +706,7 @@ export class GameStateManager {
 
     // Active Boss Battle tick (no countdown timer; Altar Integrity vs Boss HP)
     if (this.activeBossBattle) {
-      this.tickBossBattle(deltaSec);
+      tickBossBattle(this, deltaSec);
     }
 
     let autoClickFaithGained = 0;
@@ -1416,113 +743,14 @@ export class GameStateManager {
     return this.tickResult;
   }
 
-  private tickBossBattle(deltaSec: number): void {
-    const battle = this.activeBossBattle;
-    if (!battle || battle.combatStarted === false) return;
-
-    const boss = GNOSE_BOSSES.find((b) => b.id === battle.bossId);
-    if (!boss) return;
-
-    battle.elapsedCombatSec = (battle.elapsedCombatSec ?? 0) + deltaSec;
-    battle.sphereCooldownSec = Math.max(0, battle.sphereCooldownSec - deltaSec);
-    const breakdown = this.getBossCombatBreakdown(battle.bossId);
-
-    // Check if external HP manipulation crossed a phase boundary before ticking rifts
-    if (this.checkAndApplyBossPhaseTransitions()) {
-      return;
-    }
-    const phase = this.getBossPhase();
-    battle.phase = phase;
-
-    // 1. Update active rifts & check for expired rifts first so defeat on expiry takes precedence over passive tick victory
-    for (const rift of [...battle.activeRifts].reverse()) {
-      const i = battle.activeRifts.indexOf(rift);
-      if (i === -1) continue;
-      rift.remainingSec -= deltaSec;
-      if (rift.remainingSec <= 0) {
-        battle.activeRifts.splice(i, 1);
-        if (rift.kind === 'anubis_scales') {
-          battle.activeRifts = battle.activeRifts.filter(r =>
-            r.kind !== 'anubis_scales' || r.groupId !== rift.groupId);
-          if (rift.scaleHigherSelected) continue;
-        }
-        battle.riftsMissed += 1;
-        battle.comboStreak = 0;
-        const missMult =
-          rift.kind === 'hades_chains'
-            ? 0.5
-            : rift.kind === 'chaos_orbit'
-              ? 0.4
-              : 1.0;
-        battle.altarIntegrity = Math.max(
-          0,
-          battle.altarIntegrity - breakdown.altarDamageOnMiss * (breakdown.canWithstandBoss ? missMult : 1)
-        );
-        if (battle.altarIntegrity <= 0) {
-          this.completeBossBattle(false);
-          return;
-        }
-      }
-    }
-
-    // 1b. Continuous Divine Pressure on Altar Integrity (strongly mitigated when cultReadiness >= 100%, heavier when < 80%)
-    if (breakdown.altarPressurePerSec > 0) {
-      battle.altarIntegrity = Math.max(
-        0,
-        battle.altarIntegrity - breakdown.altarPressurePerSec * deltaSec
-      );
-      if (battle.altarIntegrity <= 0) {
-        this.completeBossBattle(false);
-        return;
-      }
-    }
-
-    // 1c. Update Faithful Miracle on the Sacred Circle (1.5s duration, spawns every ~10..14s)
-    if (battle.activeMiracle) {
-      battle.activeMiracle.remainingSec -= deltaSec;
-      if (battle.activeMiracle.remainingSec <= 0) {
-        battle.activeMiracle = null;
-      }
-    } else {
-      battle.miracleSpawnTimerSec = (battle.miracleSpawnTimerSec ?? 11) - deltaSec;
-      if (battle.miracleSpawnTimerSec <= 0) {
-        this.spawnBossMiracle();
-      }
-    }
-
-    // 2. Passive DPS from all Cult Resources (Fé, Fiéis, Fervor, Relíquias, Encarnação, Gnose, Conquistas)
-    if (breakdown.passiveDps > 0) {
-      battle.bossHp = Math.max(0, battle.bossHp - breakdown.passiveDps * deltaSec);
-      battle.phase = this.getBossPhase();
-      if (battle.bossHp <= 0) {
-        this.completeBossBattle(true);
-        return;
-      }
-      if (this.checkAndApplyBossPhaseTransitions()) {
-        return;
-      }
-    }
-
-    // 3. Spawn new rifts periodically (faster in Phase 2 & 3 as the guardian grows desperate)
-    const phaseIntervalScale = phase === 3 ? 0.78 : phase === 2 ? 0.88 : 1.0;
-    battle.riftSpawnTimerSec -= deltaSec;
-    if (battle.riftSpawnTimerSec <= 0) {
-      battle.riftSpawnTimerSec += boss.riftIntervalSec * phaseIntervalScale;
-      if (battle.activeRifts.length < 3) {
-        this.spawnBossRift();
-      }
-    }
-  }
-
   public canAccessIncarnationStage(stage: number): boolean {
     return INCARNATION_STAGES.some(incarnation => incarnation.stage === stage);
   }
 
   private ritualInvestmentScore(upg: FervorUpgrade): number {
-    const before = this.getFervorUpgradeEffect(upg);
-    upg.level++;
-    const after = this.getFervorUpgradeEffect(upg);
-    upg.level--;
+    const followersCount = this.getTotalFollowersCount();
+    const before = this.getFervorUpgradeEffect(upg, followersCount, upg.level);
+    const after = this.getFervorUpgradeEffect(upg, followersCount, upg.level + 1);
     const weight = upg.id === 'fu_click' ? 0.15 : 1;
     return weight * Math.max(0, after / before - 1) / this.getFervorUpgradeCost(upg);
   }
@@ -1628,16 +856,14 @@ export class GameStateManager {
     ) {
       const battle = this.activeBossBattle;
       battle.sphereCooldownSec = BOSS_SPHERE_COOLDOWN_SEC;
-      // Charge the Divine Sphere (+8% per Boss click)
-      battle.sphereCharge = Math.min(100, (battle.sphereCharge ?? 0) + 8);
       const breakdown = this.getBossCombatBreakdown(battle.bossId);
       bossClickDamage = breakdown.clickDamage * (bossIsCrit ? SPHERE_CRITICAL.multiplier : 1);
       battle.bossHp = Math.max(0, battle.bossHp - bossClickDamage);
       battle.phase = this.getBossPhase();
       if (battle.bossHp <= 0) {
-        this.completeBossBattle(true);
+        completeBossBattle(this, true);
       } else {
-        this.checkAndApplyBossPhaseTransitions();
+        checkAndApplyBossPhaseTransitions(this);
       }
     }
 
@@ -1707,14 +933,12 @@ export class GameStateManager {
 
   public getMaxFervorUpgradeCount(upg: FervorUpgrade): number {
     if (!this.hasGnoseUpgrade('gn_memoria_selos') || (upg.id === 'fu_relics' && !this.isPhoenixRelicUnlocked())) return 0;
-    const preview = { ...upg };
     let remaining = this.fervorPoints;
     let count = 0;
     while (count < 100) {
-      const cost = this.getFervorUpgradeCost(preview);
+      const cost = this.getFervorUpgradeCost(upg, upg.level + count);
       if (!Number.isFinite(cost) || remaining < cost) break;
       remaining -= cost;
-      preview.level++;
       count++;
     }
     return count;
@@ -1801,7 +1025,7 @@ export class GameStateManager {
     if (this.unlockedGnoseUpgrades.has(upg.id)) return false;
     if (!this.isGnoseTierUnlocked(upg.tier)) return false;
     if (this.gnosePoints < upg.cost) return false;
-    return upg.prerequisites.every((reqId) => this.unlockedGnoseUpgrades.has(reqId));
+    return true;
   }
 
   public buyGnoseUpgrade(upgradeId: string): boolean {
@@ -1838,6 +1062,9 @@ export class GameStateManager {
 
     // Reset Fé (starts at 1000 if gn_init_faith is unlocked)
     this.faithPoints = this.hasGnoseUpgrade('gn_init_faith') ? 1000 : 0;
+
+    // Preserve recruitment access before clearing this ascension's followers.
+    this.convertMaxUnlocked = this.isConvertMaxUnlocked();
 
     // Reset Followers
     this.followers.forEach((f) => {
@@ -1969,236 +1196,17 @@ export class GameStateManager {
 
   public isCampaignComplete(): boolean {
     const finalStage = INCARNATION_STAGES.at(-1)!;
-    const finalBoss = GNOSE_BOSSES.find(boss => boss.unlocksTier === 'endgame');
-    return this.incarnationStage >= finalStage.stage && !!finalBoss && this.isBossDefeated(finalBoss.id);
+    const finalBoss = GNOSE_BOSSES.find(boss => boss.unlocksTier === 4);
+    return this.incarnationStage >= finalStage.stage && !!finalBoss && this.isBossDefeated(finalBoss.id)
+      && GNOSE_UPGRADES.every(upgrade => this.hasGnoseUpgrade(upgrade.id));
   }
 
   public buildSaveData(): SaveData {
-    return {
-      version: SaveSystem.CURRENT_VERSION,
-      progressionRevision: PROGRESSION_REVISION,
-      timestamp: Date.now(),
-      stats: {
-        campaignEnding: this.campaignEnding,
-        faithPoints: this.faithPoints,
-        totalFaithAccumulated: this.totalFaithAccumulated,
-        totalClicks: this.totalClicks,
-        gameStartedAtMs: this.gameStartedAtMs,
-        fervorPoints: this.fervorPoints,
-        fervorPeakThisRun: this.fervorPeakThisRun,
-        relicPeakThisRun: this.relicPeakThisRun,
-        totalFervorGenerated: this.totalFervorGenerated,
-        incarnationStage: this.incarnationStage,
-        relicPoints: this.relicPoints,
-        totalRelicsGenerated: this.totalRelicsGenerated,
-        bestRelicsToGet: this.bestRelicsToGet,
-        incarnationBoostTimer: this.incarnationBoostTimer,
-        hasSeenIntro: this.hasSeenIntro,
-        seenCardTutorials: Array.from(this.seenCardTutorials),
-        hideGuidance: this.hideGuidance,
-        bulkFervorEnabled: this.bulkFervorEnabled,
-        bulkRelicsEnabled: this.bulkRelicsEnabled,
-        nerdsEnabled: this.nerdsEnabled
-      },
-      followers: this.followers.map((f) => ({ id: f.id, count: f.count })),
-      fervorUpgrades: this.fervorUpgrades.map((u) => ({ id: u.id, level: u.level })),
-      relicUpgrades: this.relicUpgrades.map((r) => ({ id: r.id, level: r.level })),
-      unlocks: this.unlocks.filter((u) => u.unlocked).map((u) => u.id),
-      achievements: this.achievements.filter((a) => a.unlocked).map((a) => a.id),
-      gnose: {
-        gnosePoints: this.gnosePoints,
-        totalGnoseEarned: this.totalGnoseEarned,
-        gnoseResets: this.gnoseResets,
-        unlockedUpgrades: Array.from(this.unlockedGnoseUpgrades),
-        defeatedBosses: Array.from(this.defeatedBosses),
-        bestBossTimesSec: { ...this.bestBossTimesSec },
-        bossCurseTimerSec: this.bossCurseTimerSec,
-        automationAccumulatorSec: this.gnoseAutoAccumulatorSec,
-        sphereAutoAccumulatorSec: this.sphereAutoAccumulatorSec,
-        confirmReset: this.confirmGnoseReset,
-        autoFollowersEnabled: this.autoFollowersEnabled,
-        autoFervorEnabled: this.autoFervorEnabled,
-        autoRelicsEnabled: this.autoRelicsEnabled,
-        autoRelicUpgradesEnabled: this.autoRelicUpgradesEnabled
-      }
-    };
+    return buildSaveDataFromState(this);
   }
 
   public applySaveData(save: SaveData): void {
-    if (!isValidSaveData(save)) throw new TypeError('Dados de progresso inválidos.');
-    this.retreatBossBattle();
-    this.resetToDefaults();
-    this.campaignEnding = save.stats.campaignEnding === 'completed' || save.stats.campaignEnding === 'freeplay'
-      ? save.stats.campaignEnding : 'pending';
-    this.retreatBossBattle();
-    this.riftIdCounter = 0;
-    this.miracleIdCounter = 0;
-    this.gnoseAutoAccumulatorSec = 0;
-    this.sphereAutoAccumulatorSec = 0;
+    applySaveDataToState(this, save);
     this.lastSphereAutoclick = null;
-
-    this.faithPoints = typeof save.stats.faithPoints === 'number' ? Math.max(0, save.stats.faithPoints) : 0;
-    this.totalFaithAccumulated = typeof save.stats.totalFaithAccumulated === 'number' ? Math.max(0, save.stats.totalFaithAccumulated) : 0;
-    this.totalClicks = typeof save.stats.totalClicks === 'number' ? Math.max(0, save.stats.totalClicks) : 0;
-    this.gameStartedAtMs = save.stats.gameStartedAtMs ?? 0;
-    this.fervorPoints = typeof save.stats.fervorPoints === 'number' ? Math.max(0, save.stats.fervorPoints) : 0;
-    this.totalFervorGenerated = Math.max(this.fervorPoints,
-      Number.isFinite(save.stats.totalFervorGenerated) ? save.stats.totalFervorGenerated! : 0);
-    this.incarnationStage = typeof save.stats.incarnationStage === 'number'
-      ? Math.min(INCARNATION_STAGES.length, Math.max(1, save.stats.incarnationStage))
-      : 1;
-    this.relicPoints = typeof save.stats.relicPoints === 'number' ? Math.max(0, save.stats.relicPoints) : 0;
-    this.fervorPeakThisRun = Math.max(this.fervorPoints, Number.isFinite(save.stats.fervorPeakThisRun) ? save.stats.fervorPeakThisRun! : 0);
-    this.relicPeakThisRun = Math.max(this.relicPoints, Number.isFinite(save.stats.relicPeakThisRun) ? save.stats.relicPeakThisRun! : 0);
-    this.bestRelicsToGet = typeof save.stats.bestRelicsToGet === 'number' ? Math.max(0, save.stats.bestRelicsToGet) : 0;
-    this.incarnationBoostTimer = typeof save.stats.incarnationBoostTimer === 'number'
-      ? Math.max(0, Math.min(this.getMaxIncarnationBoost(), save.stats.incarnationBoostTimer))
-      : 0;
-    this.hasSeenIntro = typeof save.stats.hasSeenIntro === 'boolean' ? save.stats.hasSeenIntro : false;
-    this.nerdsEnabled = save.stats.nerdsEnabled === true;
-    this.hideGuidance = save.stats.hideGuidance === true;
-    this.bulkFervorEnabled = save.stats.bulkFervorEnabled === true;
-    this.bulkRelicsEnabled = save.stats.bulkRelicsEnabled === true;
-    this.seenCardTutorials = new Set(Array.isArray(save.stats.seenCardTutorials)
-      ? save.stats.seenCardTutorials.filter(id => typeof id === 'string') : []);
-
-    if (Array.isArray(save.followers)) {
-      save.followers.forEach((savedItem) => {
-        const item = this.followers.find((f) => f.id === savedItem.id);
-        if (item && typeof savedItem.count === 'number') {
-          item.count = Math.max(0, savedItem.count);
-        }
-      });
-    }
-
-    if (Array.isArray(save.fervorUpgrades)) {
-      save.fervorUpgrades.forEach((savedItem) => {
-        const upg = this.fervorUpgrades.find((u) => u.id === savedItem.id);
-        if (upg && typeof savedItem.level === 'number') {
-          upg.level = Math.max(0, savedItem.level);
-        }
-      });
-    }
-
-
-    if (Array.isArray(save.unlocks)) {
-      this.unlocks.forEach((u) => {
-        u.unlocked = save.unlocks.includes(u.id);
-      });
-    }
-
-    if (!this.isRelicsUnlocked()) {
-      this.relicPoints = 0;
-      this.bestRelicsToGet = 0;
-    }
-
-    this.totalRelicsGenerated = Math.max(this.relicPoints, this.bestRelicsToGet,
-      Number.isFinite(save.stats.totalRelicsGenerated) ? save.stats.totalRelicsGenerated! : 0);
-
-    if (Array.isArray(save.achievements)) {
-      this.achievements.forEach((a) => {
-        a.unlocked = a.id.startsWith('ach_click_')
-          ? a.check(this.getSnapshot())
-          : save.achievements.includes(a.id) || (a.id.startsWith('ach_f_') && a.check(this.getSnapshot()));
-      });
-    }
-
-    if (save.gnose) {
-      this.gnosePoints = typeof save.gnose.gnosePoints === 'number' ? Math.max(0, save.gnose.gnosePoints) : 0;
-      this.totalGnoseEarned = typeof save.gnose.totalGnoseEarned === 'number' ? Math.max(0, save.gnose.totalGnoseEarned) : 0;
-      this.gnoseResets = typeof save.gnose.gnoseResets === 'number' ? Math.max(0, save.gnose.gnoseResets) : 0;
-      if (Array.isArray(save.gnose.unlockedUpgrades)) {
-        this.unlockedGnoseUpgrades = new Set(save.gnose.unlockedUpgrades);
-      } else {
-        this.unlockedGnoseUpgrades.clear();
-      }
-      if (Array.isArray(save.gnose.defeatedBosses)) {
-        this.defeatedBosses = new Set(save.gnose.defeatedBosses);
-      } else {
-        this.defeatedBosses.clear();
-      }
-      this.bestBossTimesSec = {};
-      if (save.gnose.bestBossTimesSec && typeof save.gnose.bestBossTimesSec === 'object') {
-        for (const [k, v] of Object.entries(save.gnose.bestBossTimesSec)) {
-          if (typeof v === 'number' && Number.isFinite(v) && v > 0) {
-            this.bestBossTimesSec[k] = v;
-          }
-        }
-      }
-      if ((save.progressionRevision ?? 0) < PROGRESSION_REVISION) {
-        // Unversioned saves only have known historical prices for a few nodes.
-        // Never assume they paid the later, much higher revision 1 prices.
-        const paidPrices = (save.progressionRevision ?? 0) < 1 ? PROGRESSION_OLD_PRICES : PROGRESSION_REVISION_1_PRICES;
-        for (const [id, paid] of Object.entries(paidPrices)) {
-          if (this.hasGnoseUpgrade(id)) this.gnosePoints += Math.max(0, paid - GNOSE_UPGRADES.find(u => u.id === id)!.cost);
-        }
-      }
-      this.migrateGnoseUpgrades();
-      this.bossCurseTimerSec =
-        typeof save.gnose.bossCurseTimerSec === 'number' ? Math.max(0, save.gnose.bossCurseTimerSec) : 0;
-      this.sphereAutoAccumulatorSec = Number.isFinite(save.gnose.sphereAutoAccumulatorSec) ? Math.max(0, Math.min(1, save.gnose.sphereAutoAccumulatorSec!)) : 0;
-      this.gnoseAutoAccumulatorSec = Number.isFinite(save.gnose.automationAccumulatorSec) ? Math.max(0, Math.min(1, save.gnose.automationAccumulatorSec!)) : 0;
-      this.confirmGnoseReset = typeof save.gnose.confirmReset === 'boolean' ? save.gnose.confirmReset : true;
-      this.autoFollowersEnabled =
-        typeof save.gnose.autoFollowersEnabled === 'boolean' ? save.gnose.autoFollowersEnabled : true;
-      this.autoFervorEnabled =
-        typeof save.gnose.autoFervorEnabled === 'boolean' ? save.gnose.autoFervorEnabled : true;
-      this.autoRelicsEnabled =
-        typeof save.gnose.autoRelicsEnabled === 'boolean' ? save.gnose.autoRelicsEnabled : true;
-      this.autoRelicUpgradesEnabled =
-        typeof save.gnose.autoRelicUpgradesEnabled === 'boolean' ? save.gnose.autoRelicUpgradesEnabled : true;
-    } else {
-      this.gnosePoints = 0;
-      this.totalGnoseEarned = 0;
-      this.gnoseResets = 0;
-      this.unlockedGnoseUpgrades.clear();
-      this.defeatedBosses.clear();
-      this.bestBossTimesSec = {};
-      this.bossCurseTimerSec = 0;
-    }
-
-    if (Array.isArray(save.relicUpgrades)) {
-      save.relicUpgrades.forEach((savedItem) => {
-        const rel = this.relicUpgrades.find((r) => r.id === savedItem.id);
-        if (rel && typeof savedItem.level === 'number') {
-          rel.level = Math.max(0, Math.min(this.getRelicMaxLevel(rel), Number.MAX_SAFE_INTEGER, savedItem.level));
-        }
-      });
-    }
-
-    if (this.hasGnoseUpgrade('gn_bencao_eterna') && this.isIncarnationUnlocked()) {
-      this.incarnationBoostTimer = this.getMaxIncarnationBoost();
-    }
-  }
-
-  private migrateGnoseUpgrades(): void {
-    for (const upgrade of RETIRED_GNOSE_UPGRADES) {
-      if (!this.unlockedGnoseUpgrades.delete(upgrade.id)) continue;
-      this.gnosePoints += upgrade.cost;
-      // Owning a later-tier purchase already made that tier accessible in old saves.
-      const guardian = GNOSE_BOSSES.find(boss => boss.unlocksTier === upgrade.tier);
-      if (guardian) this.defeatedBosses.add(guardian.id);
-    }
-    const automations = LEGACY_GNOSE_AUTOMATIONS.filter(upgrade => this.unlockedGnoseUpgrades.delete(upgrade.id));
-    if (automations.length > 0) {
-      const automation = GNOSE_UPGRADES.find(upgrade => upgrade.id === 'gn_automation')!;
-      const previousCost = automations.reduce((sum, upgrade) => sum + upgrade.cost, 0);
-      this.gnosePoints += this.hasGnoseUpgrade(automation.id) ? previousCost : Math.max(0, previousCost - automation.cost);
-      this.unlockedGnoseUpgrades.add(automation.id);
-    }
-    const sealAutomations = LEGACY_GNOSE_SEAL_AUTOMATIONS.filter(upgrade => this.unlockedGnoseUpgrades.delete(upgrade.id));
-    if (sealAutomations.length > 0) {
-      const replacement = GNOSE_UPGRADES.find(upgrade => upgrade.id === 'gn_seal_automation')!;
-      const paid = sealAutomations.reduce((sum, upgrade) => sum + upgrade.cost, 0);
-      this.gnosePoints += this.hasGnoseUpgrade(replacement.id) ? paid : Math.max(0, paid - replacement.cost);
-      this.unlockedGnoseUpgrades.add(replacement.id);
-      // Preserve access granted by a tier-II purchase in older saves.
-      for (const upgrade of sealAutomations) {
-        const guardian = GNOSE_BOSSES.find(boss => boss.unlocksTier === upgrade.tier);
-        if (guardian) this.defeatedBosses.add(guardian.id);
-      }
-    }
-    const validIds = new Set(GNOSE_UPGRADES.map(upgrade => upgrade.id));
-    this.unlockedGnoseUpgrades = new Set([...this.unlockedGnoseUpgrades].filter(id => validIds.has(id)));
   }
 }

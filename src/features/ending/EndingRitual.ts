@@ -1,5 +1,5 @@
-import { loadFollowerSprites, followerAnimationFrame } from '../../ui/followerVisuals.js';
-import { loadIncarnationSprites } from '../../ui/incarnationSprites.js';
+import { loadFollowerSprites, followerAnimationFrame } from '../followers/followerVisuals.js';
+import { loadIncarnationSprites } from '../incarnation/incarnationSprites.js';
 import { SPHERE_FORMS, SphereMotion } from '../sphere/SphereMotion.js';
 import { drawSphere } from '../sphere/SphereRenderer.js';
 import { VisualFrameClock } from '../../ui/visualTiming.js';

@@ -3,7 +3,8 @@ import { AudioManager } from '../../systems/audio.js';
 import { NotificationManager } from '../../systems/notifications.js';
 import { INCARNATION_STAGES, BLESSING_SECONDS_PER_PRESS } from '../../config/incarnation.js';
 import { formatNumber } from '../../systems/calculations.js';
-import { IncarnationAltar } from '../../ui/incarnationAltar.js';
+import { IncarnationAltar } from './IncarnationAltar.js';
+import { setText } from '../../ui/dom.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 
 export interface IncarnationTabOptions {
@@ -32,6 +33,7 @@ export class IncarnationTab {
   private blessingPanelEl: HTMLElement | null = null;
   private blessingStatusEl: HTMLElement | null = null;
   private blessingFillEl: HTMLElement | null = null;
+  private lastBlessingWidth: string = '';
 
   constructor(options: IncarnationTabOptions) {
     this.options = options;
@@ -98,24 +100,33 @@ export class IncarnationTab {
       this.options.gameState.isIncarnationUnlocked();
     this.altar?.setBlessingActive(boostSec > 0 || eternalBlessing);
     if (!this.blessingFillEl || !this.blessingStatusEl) return;
-    this.blessingStatusEl.hidden = eternalBlessing;
+    if (this.blessingStatusEl.hidden !== eternalBlessing) {
+      this.blessingStatusEl.hidden = eternalBlessing;
+    }
     if (eternalBlessing) {
-      this.blessingStatusEl.textContent = '';
-      this.blessingFillEl.style.width = '100%';
-      this.blessingPanelEl?.classList.add('active');
+      setText(this.blessingStatusEl, '');
+      if (this.lastBlessingWidth !== '100%') {
+        this.lastBlessingWidth = '100%';
+        this.blessingFillEl.style.width = '100%';
+      }
+      if (this.blessingPanelEl && !this.blessingPanelEl.classList.contains('active')) {
+        this.blessingPanelEl.classList.add('active');
+      }
       return;
     }
     const maxCap = this.options.gameState.getMaxIncarnationBoost();
     const percent = Math.min(100, Math.max(0, (boostSec / maxCap) * 100));
+    const width = `${percent.toFixed(1)}%`;
 
-    this.blessingFillEl.style.width = `${percent.toFixed(1)}%`;
+    if (this.lastBlessingWidth !== width) {
+      this.lastBlessingWidth = width;
+      this.blessingFillEl.style.width = width;
+    }
 
-    if (boostSec > 0) {
-      this.blessingStatusEl.textContent = `Ativa · ${Math.ceil(boostSec)}s / ${maxCap}s`;
-      this.blessingPanelEl?.classList.add('active');
-    } else {
-      this.blessingStatusEl.textContent = 'Inativa';
-      this.blessingPanelEl?.classList.remove('active');
+    const isActive = boostSec > 0;
+    setText(this.blessingStatusEl, isActive ? `Ativa · ${Math.ceil(boostSec)}s / ${maxCap}s` : 'Inativa');
+    if (this.blessingPanelEl && this.blessingPanelEl.classList.contains('active') !== isActive) {
+      this.blessingPanelEl.classList.toggle('active', isActive);
     }
   }
 
@@ -146,36 +157,34 @@ export class IncarnationTab {
 
     if (this.altar && this.altar.getCurrentStage() !== stage) this.altar.setStage(stage, true);
 
-    if (this.stageBadgeEl) {
-      this.stageBadgeEl.textContent = currentStage?.name ?? 'Encarnação';
-    }
-    if (this.stageEffectEl) {
-      this.stageEffectEl.textContent = currentStage ? `Fervor/s ×${formatNumber(currentStage.multiplier)}` : '';
-    }
-    if (this.rateBadgeEl) {
-      const incFollowerMult = this.options.gameState.getEffectiveIncarnationFollowerMultiplier();
-      this.rateBadgeEl.textContent = `x${formatNumber(incFollowerMult)}`;
-    }
+    setText(this.stageBadgeEl, currentStage?.name ?? 'Encarnação');
+    setText(this.stageEffectEl, currentStage ? `Fervor/s ×${formatNumber(currentStage.multiplier)}` : '');
+    const incFollowerMult = this.options.gameState.getEffectiveIncarnationFollowerMultiplier();
+    setText(this.rateBadgeEl, `x${formatNumber(incFollowerMult)}`);
 
     if (this.btnUpgradeEl && this.upgradeTitleEl && this.upgradeCostValEl) {
       if (nextStage) {
         const stageCost = this.options.gameState.getIncarnationStageCost(nextStage);
-        this.upgradeTitleEl.textContent = 'EVOLUIR';
+        setText(this.upgradeTitleEl, 'EVOLUIR');
         if (this.upgradeBenefitEl) {
-          this.upgradeBenefitEl.textContent = `${formatNumber(nextStage.multiplier)}x Fervor/s`
-            + (nextStage.stage === 5 ? ' · Disponível antes do duelo com Caos Primordial' : '');
-          this.upgradeBenefitEl.style.display = 'block';
+          setText(
+            this.upgradeBenefitEl,
+            `${formatNumber(nextStage.multiplier)}x Fervor/s`
+              + (nextStage.stage === 5 ? ' · Disponível antes do duelo com Caos Primordial' : '')
+          );
+          if (this.upgradeBenefitEl.style.display !== 'block') this.upgradeBenefitEl.style.display = 'block';
         }
-        this.upgradeCostValEl.textContent = `${formatNumber(stageCost)} Fé`;
-        this.btnUpgradeEl.disabled = !this.options.gameState.canAccessIncarnationStage(nextStage.stage) || this.options.gameState.faithPoints < stageCost;
+        setText(this.upgradeCostValEl, `${formatNumber(stageCost)} Fé`);
+        const disabled = !this.options.gameState.canAccessIncarnationStage(nextStage.stage) || this.options.gameState.faithPoints < stageCost;
+        if (this.btnUpgradeEl.disabled !== disabled) this.btnUpgradeEl.disabled = disabled;
       } else {
-        this.upgradeTitleEl.textContent = 'ENCARNAÇÃO MÁXIMA';
+        setText(this.upgradeTitleEl, 'ENCARNAÇÃO MÁXIMA');
         if (this.upgradeBenefitEl) {
-          this.upgradeBenefitEl.textContent = 'Ápice Atingido';
-          this.upgradeBenefitEl.style.display = 'block';
+          setText(this.upgradeBenefitEl, 'Ápice Atingido');
+          if (this.upgradeBenefitEl.style.display !== 'block') this.upgradeBenefitEl.style.display = 'block';
         }
-        this.upgradeCostValEl.textContent = 'MÁX';
-        this.btnUpgradeEl.disabled = true;
+        setText(this.upgradeCostValEl, 'MÁX');
+        if (!this.btnUpgradeEl.disabled) this.btnUpgradeEl.disabled = true;
       }
     }
 
@@ -194,7 +203,7 @@ export class IncarnationTab {
   public updateRealtime(): void {
     if (this.rateBadgeEl) {
       const incFollowerMult = this.options.gameState.getEffectiveIncarnationFollowerMultiplier();
-      this.rateBadgeEl.textContent = `x${formatNumber(incFollowerMult)}`;
+      setText(this.rateBadgeEl, `x${formatNumber(incFollowerMult)}`);
     }
     this.updateUpgradeButtonState();
     this.updateBlessingBar();
