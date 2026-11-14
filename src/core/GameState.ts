@@ -18,7 +18,7 @@ import { initialAchievements, SPHERE_CRITICAL } from '../config/achievements.js'
 import { initialUnlocks } from '../config/unlocks.js';
 import { initialRelicUpgrades, ETERNAL_RELIC_IDS } from '../config/relics.js';
 import { INCARNATION_STAGES, BLESSING_MAX_SECONDS, type IncarnationStage } from '../config/incarnation.js';
-import { PROGRESSION_BALANCE, GNOSE_UPGRADES, GNOSE_AUTOMATION, GNOSE_SEAL_UPGRADES, GNOSE_FORMULAS, GNOSE_APOTHEOSIS_COSTS } from '../config/gnose.js';
+import { PROGRESSION_BALANCE, GNOSE_UPGRADES, GNOSE_SEAL_UPGRADES, GNOSE_FORMULAS, GNOSE_APOTHEOSIS_COSTS } from '../config/gnose.js';
 import {
   GNOSE_BOSSES,
   BOSS_SPHERE_COOLDOWN_SEC,
@@ -359,7 +359,7 @@ export class GameStateManager {
   }
 
   public isConvertMaxUnlocked(): boolean {
-    return this.convertMaxUnlocked || this.getTotalFollowersCount() >= 25 || this.hasGnoseUpgrade('gn_memoria_selos');
+    return this.convertMaxUnlocked || this.hasGnoseUpgrade('gn_automation') || this.getTotalFollowersCount() >= 25 || this.hasGnoseUpgrade('gn_memoria_selos');
   }
 
   public isFu1Boosted(): boolean {
@@ -776,32 +776,22 @@ export class GameStateManager {
     }
     const free = this.hasGnoseUpgrade('gn_omniscience');
     if (this.hasGnoseUpgrade('gn_automation') && this.autoFollowersEnabled) {
-      const devotee = this.followers[0];
-      if (devotee) {
-        let available = this.faithPoints;
-        for (let bought = 0; bought < 10000; bought++) {
-          const cost = this.getItemCost(devotee);
-          if (available < cost) break;
-          available -= cost;
-          if (!free) this.faithPoints -= cost;
-          devotee.count++;
-        }
-      }
+      this.recruitMaxFollowers(0, free);
     }
 
     if (this.hasGnoseUpgrade('gn_ritual_automation') && this.autoFervorEnabled && this.isFervorUpgradesUnlocked()) {
-      const bought = new Map<string, number>();
-      const cap = GNOSE_AUTOMATION.maxRitualLevelsPerCycle;
-      // Positive marginal effect per Fervor; keep resources required by pending seals.
+      const bought = new Set<string>();
       const reserved = this.unlocks.find(u => !u.unlocked && u.costCurrency === 'fervor')?.cost ?? 0;
-      for (let step = 0; step < this.fervorUpgrades.length * cap; step++) {
+      for (let step = 0; step < this.fervorUpgrades.length; step++) {
         const upg = this.fervorUpgrades.filter(u => (u.id !== 'fu_relics' || this.isPhoenixRelicUnlocked())
-          && (bought.get(u.id) ?? 0) < cap && this.getFervorUpgradeCost(u) <= this.fervorPoints - reserved && this.ritualInvestmentScore(u) > 0)
+          && !bought.has(u.id) && this.getFervorUpgradeCost(u) <= this.fervorPoints - reserved && this.ritualInvestmentScore(u) > 0)
           .sort((a, b) => this.ritualInvestmentScore(b) - this.ritualInvestmentScore(a))[0];
         if (!upg) break;
-        if (free) upg.level++;
-        else if (!this.buyFervorUpgrade(upg)) break;
-        bought.set(upg.id, (bought.get(upg.id) ?? 0) + 1);
+        const count = this.bulkFervorEnabled && this.hasGnoseUpgrade('gn_memoria_selos')
+          ? this.getMaxFervorUpgradeCount(upg, this.fervorPoints - reserved) : 1;
+        if (free) upg.level += count;
+        else for (let level = 0; level < count; level++) this.buyFervorUpgrade(upg);
+        bought.add(upg.id);
       }
     }
 
@@ -812,19 +802,16 @@ export class GameStateManager {
         if (this.relicPoints >= phoenix.cost) this.buyRelicUpgrade(phoenix);
         else return;
       }
-      // Eternal relics require a work budget independent of balance size.
-      const limit = GNOSE_AUTOMATION.maxRelicLevelsPerCycle;
-      const bought = new Map<string, number>();
-      const cap = this.relicUpgrades.length * limit;
-      for (let step = 0; step < cap; step++) {
+      const bought = new Set<string>();
+      // Each relic receives one purchase per cycle, using the same quantity as its card.
+      for (let step = 0; step < this.relicUpgrades.length; step++) {
         const relic = this.relicUpgrades.filter(r => r.level < this.getRelicMaxLevel(r) && r.level < Number.MAX_SAFE_INTEGER
-          && (bought.get(r.id) ?? 0) < limit && this.getRelicUpgradeCost(r) <= this.relicPoints)
+          && !bought.has(r.id) && this.getRelicUpgradeCost(r) <= this.relicPoints)
           .sort((a, b) => this.relicInvestmentScore(b) - this.relicInvestmentScore(a))[0];
         if (!relic) break;
-        const count = Math.min(limit - (bought.get(relic.id) ?? 0), this.getAffordableRelicUpgradeCount(relic));
-        if (count <= 0) break;
-        this.restoreRelicLevels(relic, count);
-        bought.set(relic.id, (bought.get(relic.id) ?? 0) + count);
+        if (this.bulkRelicsEnabled && this.hasGnoseUpgrade('gn_memoria_selos')) this.buyMaxRelicUpgrade(relic);
+        else this.buyRelicUpgrade(relic);
+        bought.add(relic.id);
       }
     }
   }
@@ -893,12 +880,18 @@ export class GameStateManager {
       return { count: 0, totalCost: 0, success: false };
     }
 
+    return this.recruitMaxFollowers(index);
+  }
+
+  private recruitMaxFollowers(index: number, free = false): { count: number; totalCost: number; success: boolean } {
+    const item = this.followers[index];
+    if (!item) return { count: 0, totalCost: 0, success: false };
     const discount = calculateCostDiscountMultiplier(this.achievements);
     const mult = this.getDevoteeBaseMultiplier();
     const { count, totalCost } = calculateMaxAffordableFollowers(item, this.faithPoints, discount, mult);
 
     if (count > 0 && this.faithPoints >= totalCost) {
-      this.faithPoints -= totalCost;
+      if (!free) this.faithPoints -= totalCost;
       item.count += count;
       return { count, totalCost, success: true };
     }
@@ -931,9 +924,9 @@ export class GameStateManager {
     return false;
   }
 
-  public getMaxFervorUpgradeCount(upg: FervorUpgrade): number {
+  public getMaxFervorUpgradeCount(upg: FervorUpgrade, balance = this.fervorPoints): number {
     if (!this.hasGnoseUpgrade('gn_memoria_selos') || (upg.id === 'fu_relics' && !this.isPhoenixRelicUnlocked())) return 0;
-    let remaining = this.fervorPoints;
+    let remaining = balance;
     let count = 0;
     while (count < 100) {
       const cost = this.getFervorUpgradeCost(upg, upg.level + count);
@@ -983,6 +976,11 @@ export class GameStateManager {
 
   public getRelicUpgradeCost(relic: RelicUpgrade): number {
     return getRelicUpgradeCost(relic);
+  }
+
+  public getEternalRelicRetention(): number {
+    if (!this.hasGnoseUpgrade('gn_keep_relics')) return 0;
+    return this.hasGnoseUpgrade('gn_eternal_memory') ? 0.8 : 0.5;
   }
 
   public getRelicMaxLevel(relic: RelicUpgrade): number {
@@ -1090,11 +1088,12 @@ export class GameStateManager {
     this.relicPoints = 0;
     this.bestRelicsToGet = 0;
     this.relicConvertCooldown = 0;
-    if (!this.hasGnoseUpgrade('gn_keep_relics')) {
-      this.relicUpgrades.forEach((r) => {
-        r.level = 0;
-      });
-    }
+    const keepRelics = this.hasGnoseUpgrade('gn_keep_relics');
+    const retention = this.getEternalRelicRetention();
+    this.relicUpgrades.forEach((relic) => {
+      if (!keepRelics) relic.level = 0;
+      else if (ETERNAL_RELIC_IDS.includes(relic.id)) relic.level = Math.floor(relic.level * retention);
+    });
 
     // Only Memória Hermética preserves Encarnação; automated seals must be paid again.
     const permanentSelos = new Set(Object.entries(GNOSE_SEAL_UPGRADES)

@@ -415,9 +415,10 @@ class Simulation {
     const eligibleGnose = GNOSE_UPGRADES.filter(u => !g.hasGnoseUpgrade(u.id)
       && g.isGnoseTierUnlocked(u.tier));
     const cheapestGnoseCost = Math.min(...eligibleGnose.map(u => u.cost));
+    const maxChoiceCost = Math.max(cheapestGnoseCost + 1, cheapestGnoseCost * 1.25);
     const nextGnose = eligibleGnose.sort((a, b) => {
-        const score = (u: typeof a) => u.cost <= cheapestGnoseCost * 1.25 && g.unlockedGnoseUpgrades.size < 8 && this.options.purchasePriority === 'comfort' && /automation|keep_relics|bencao/.test(u.id) ? u.cost / 5
-          : u.cost <= cheapestGnoseCost * 1.25 && g.unlockedGnoseUpgrades.size < 8 && this.options.purchasePriority === 'production' && /followers_syn|init_fervor|fu1_boost/.test(u.id) ? u.cost / 5 : u.cost;
+        const score = (u: typeof a) => u.cost <= maxChoiceCost && this.options.purchasePriority === 'comfort' && /automation|keep_relics|bencao|followers_economy|eternal_memory|apotheosis/.test(u.id) ? u.cost / 5
+          : u.cost <= maxChoiceCost && this.options.purchasePriority === 'production' && /init_faith|followers_syn|init_fervor|followers_cubic|gnose_mult|fu1_boost|empyrean_fire/.test(u.id) ? u.cost / 5 : u.cost;
         return score(a) - score(b);
       })[0];
     const remainingGnose = Math.max(1, (nextGnose?.cost ?? 1) - g.gnosePoints);

@@ -21,6 +21,7 @@ import {
   PROGRESSION_REVISION_2_PRICES,
   PROGRESSION_REVISION_3_PRICES,
   PROGRESSION_REVISION_4_PRICES,
+  PROGRESSION_REVISION_5_PRICES,
   RETIRED_GNOSE_UPGRADES,
 } from '../config/gnose.js';
 
@@ -440,7 +441,9 @@ export function applySaveDataToState(state: SaveStateHost, save: SaveData): void
               ? PROGRESSION_REVISION_2_PRICES
               : revision < 4
                 ? PROGRESSION_REVISION_3_PRICES
-                : PROGRESSION_REVISION_4_PRICES;
+                : revision < 5
+                  ? PROGRESSION_REVISION_4_PRICES
+                  : PROGRESSION_REVISION_5_PRICES;
       for (const [id, paid] of Object.entries(paidPrices)) {
         if (state.hasGnoseUpgrade(id)) {
           state.gnosePoints += Math.max(0, paid - GNOSE_UPGRADES.find((u) => u.id === id)!.cost);

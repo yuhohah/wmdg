@@ -2,6 +2,20 @@
 
 Novidades de *Cult of the Sphere*, da versão mais recente para a mais antiga.
 
+## 0.12.2 — 2026-11-13
+
+### Progressão e Gnose
+
+- Emanação Primordial passa para o Tier II e Convergência dos Fiéis para o Tier III.
+- Custos da árvore da Gnose ajustados para a nova ordem dos tiers, organizando as melhorias em grupos de preço próximos para permitir escolhas em cada etapa.
+- Cripta Eterna preserva as Relíquias com limite, torna Cornucópia e Tocha sem limite de nível e mantém 50% delas a cada Ascensão.
+- Nova melhoria Memória do Opus no Tier III: preserva mais 30% das Relíquias sem limite, mantendo 80% dos níveis de Cornucópia e Tocha na Ascensão.
+
+### Automações
+
+- Culto Autônomo passa a comprar Fiéis automaticamente usando o Converter Máximo.
+- Liturgia Autônoma e Oficina Autônoma respeitam a opção Compra máxima de cada painel, comprando 1 nível quando desativada ou o máximo disponível quando ativada.
+
 ## 0.12.1 — 2026-11-12
 
 ### Progressão

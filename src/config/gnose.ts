@@ -10,8 +10,6 @@ export const GNOSE_TIER_LABELS: Record<1 | 2 | 3 | 4, string> = {
   4: 'IV. APOTEOSE'
 };
 
-/** Bound work per simulation second even when resources are extremely large. */
-export const GNOSE_AUTOMATION = { maxRitualLevelsPerCycle: 50, maxRelicLevelsPerCycle: 50 } as const;
 export const GNOSE_SEAL_UPGRADES: Readonly<Record<string, string>> = {
   gn_memoria_selos: 'unlock_incarnation',
 };
@@ -38,17 +36,6 @@ export const GNOSE_APOTHEOSIS_COSTS: Readonly<Record<number, number>> = { 4: 1e2
  * free automation is the final reward. All paths stay purchasable. */
 export const GNOSE_UPGRADES: GnoseUpgrade[] = [
   {
-    id: 'gn_init_faith',
-    name: 'Emanação Primordial',
-    title: 'Centelha do Nous',
-    desc: 'Reduz o aumento de custo por Fiel de 10% para 9%, antes do Cajado de Hermes (escala 1,10 → 1,09). Multiplica a Fé por clique e a Fé/s por 1 + √Fiéis; com 100 Fiéis, o bônus é 11×. Ao comprar, completa seu saldo até 1.000 Fé; após cada Ascensão, você começa com 1.000 Fé.',
-    lore: 'Mesmo quando o templo retorna ao pó, a primeira centelha do Nous permanece acesa na memória da Esfera.',
-    icon: 'star',
-    tier: 1,
-    cost: 1,
-    effectText: 'Custo dos Fiéis: +10% → +9% por compra · sinergia: 1 + √Fiéis · início com 1.000 Fé',
-  },
-  {
     id: 'gn_memoria_selos',
     name: 'Memória Hermética',
     title: 'Tábuas Inquebráveis',
@@ -63,23 +50,12 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     id: 'gn_automation',
     name: 'Culto Autônomo',
     title: 'Liturgia Autônoma',
-    desc: 'A cada segundo, compra automaticamente até 10.000 Fiéis com a Fé disponível, pagando o custo de cada compra. Pode usar todo o saldo. A automação pode ser ativada ou desativada no card dos Fiéis.',
+    desc: 'A cada segundo, usa Converter Máximo para comprar todos os Fiéis que a Fé disponível permitir. Libera Converter Máximo e paga o custo total da compra. Pode ser pausado no painel dos Fiéis.',
     lore: 'Você não precisa mais chamar: as mentes mortais caminham em sonhos até o pátio da catedral por pura gravidade espiritual.',
     icon: 'gear',
     tier: 1,
-    cost: 4,
-    effectText: 'Compra automática de até 10.000 Fiéis/s · usa Fé',
-  },
-  {
-    id: 'gn_init_fervor',
-    name: 'Chama Astral',
-    title: 'Fogo Inextinguível',
-    desc: 'Melhora o Rito de produção de Fervor: a base do multiplicador sobe de 2 para 2,05, e o aumento de custo por nível cai de 80% para 75% (escala 1,80 → 1,75). O multiplicador de produção é base^(nível^0,6); o ganho depende do nível do Rito.',
-    lore: 'O fogo que arde acima das esferas planetárias não precisa de lenha terrena para consumir o firmamento.',
-    icon: 'fervor',
-    tier: 1,
-    cost: 5,
-    effectText: 'Rito de Fervor: base 2 → 2,05 · custo por nível: +80% → +75%',
+    cost: 3,
+    effectText: 'Converter Máximo automático a cada 1 s · usa Fé',
   },
   {
     id: 'gn_seal_automation',
@@ -93,59 +69,48 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     effectText: 'Abre Selos automaticamente a cada 1 s · paga os custos exigidos',
   },
   {
-    id: 'gn_relic_gain',
-    name: 'Alquimia Astral',
-    title: 'Matéria Transfigurada',
-    desc: 'Melhora o Rito de ganho de Fragmentos: a base do multiplicador sobe de 3 para 3,05, e o aumento de custo por nível cai de 400% para 390% (escala 5 → 4,90). O multiplicador é base^(nível^0,6) e melhora o resultado da Transmutação. O Rito exige a Fênix restaurada.',
-    lore: 'O cadinho revela a essência que já repousava na matéria.',
-    icon: 'gem',
-    tier: 1,
-    cost: 10,
-    effectText: 'Rito de Fragmentos: base 3 → 3,05 · escala de custo 5 → 4,90',
-  },
-  {
     id: 'gn_ritual_automation',
     name: 'Liturgia Autônoma',
     title: 'Ritos sem Vigília',
-    desc: 'A cada segundo, compra até 50 níveis de cada Rito, priorizando o maior ganho relativo por Fervor gasto. Usa o saldo disponível, mas reserva o Fervor exigido por Selos ainda fechados. O Rito de Fragmentos exige a Fênix. A automação pode ser ativada ou desativada no card de Fervor.',
+    desc: 'A cada segundo, compra Ritos seguindo a opção Máximo do painel de Fervor: desativada, compra um nível de cada Rito; ativada, compra o máximo disponível. Prioriza o maior ganho por Fervor e reserva o custo de Selos ainda fechados. O Rito de Fragmentos exige a Fênix. Pode ser pausada no painel.',
     lore: 'Os cânticos mantêm a chama sem aguardar a mão da Esfera.',
     icon: 'gear',
-    tier: 2,
-    cost: 20,
-    effectText: 'Compra automática de até 50 níveis por Rito/s · usa Fervor',
+    tier: 1,
+    cost: 9,
+    effectText: 'Ritos automáticos a cada 1 s · respeita a opção Máximo do painel',
   },
   {
     id: 'gn_relic_automation',
     name: 'Oficina Autônoma',
     title: 'Artífices da Transmutação',
-    desc: 'A cada segundo, restaura Relíquias com os Fragmentos disponíveis. Prioriza o primeiro nível da Fênix; depois escolhe o maior retorno por Fragmento, até 50 níveis de cada Relíquia por segundo. Respeita os limites de nível e pode usar todo o saldo. A automação pode ser ativada ou desativada no card de Relíquias.',
+    desc: 'A cada segundo, restaura Relíquias seguindo a opção Máximo do painel: desativada, compra um nível de cada Relíquia; ativada, compra o máximo disponível. Prioriza a primeira Fênix e depois o maior retorno por Fragmento. Respeita os limites de nível e pode usar todo o saldo. Pode ser pausada no painel.',
     lore: 'As cinzas transmutadas encontram seu lugar nas obras dos antigos deuses.',
     icon: 'gear',
+    tier: 1,
+    cost: 10,
+    effectText: 'Relíquias automáticas a cada 1 s · respeita a opção Máximo do painel',
+  },
+  {
+    id: 'gn_init_faith',
+    name: 'Emanação Primordial',
+    title: 'Centelha do Nous',
+    desc: 'Reduz o aumento de custo por Fiel de 10% para 9%, antes do Cajado de Hermes (escala 1,10 → 1,09). Multiplica a Fé por clique e a Fé/s por 1 + √Fiéis; com 100 Fiéis, o bônus é 11×. Ao comprar, completa seu saldo até 1.000 Fé; após cada Ascensão, você começa com 1.000 Fé.',
+    lore: 'Mesmo quando o templo retorna ao pó, a primeira centelha do Nous permanece acesa na memória da Esfera.',
+    icon: 'star',
     tier: 2,
-    cost: 25,
-    effectText: 'Restaura automaticamente até 50 níveis por Relíquia/s · usa Fragmentos',
+    cost: 20,
+    effectText: 'Custo dos Fiéis: +10% → +9% por compra · sinergia: 1 + √Fiéis · início com 1.000 Fé',
   },
   {
     id: 'gn_keep_relics',
     name: 'Cripta Eterna',
     title: 'Preservação do Opus Magnum',
-    desc: 'Preserva 100% dos níveis restaurados das Relíquias após cada Ascensão. Remove também o limite de nível da Cornucópia de Amalteia e da Tocha de Prometeu; os limites das demais Relíquias permanecem.',
+    desc: 'Preserva todos os níveis das Relíquias com limite após cada Ascensão. Cornucópia de Amalteia e Tocha de Prometeu ficam sem limite de nível e mantêm 50% dos níveis a cada Ascensão, arredondados para baixo.',
     lore: 'As relíquias dos deuses esquecidos foram fundidas ao próprio núcleo da Esfera, tornando-se imunes à dissolução dos ciclos.',
     icon: 'urn',
     tier: 2,
-    cost: 48,
-    effectText: 'Preserva 100% dos níveis das Relíquias · Cornucópia e Tocha sem limite',
-  },
-  {
-    id: 'gn_followers_syn',
-    name: 'Congregação Esférica',
-    title: 'Ressonância dos Devotos (MU6)',
-    desc: 'Melhora a sinergia dos Fiéis: o multiplicador de Fé por clique e Fé/s passa de 1 + √Fiéis para 1 + Fiéis. Com 100 Fiéis, passa de 11× para 101×. Substitui a sinergia da Emanação Primordial; os dois multiplicadores não se acumulam.',
-    lore: 'Cada mente devota passa a refletir todas as outras como espelhos dispostos no interior de uma esfera perfeita.',
-    icon: 'followers',
-    tier: 2,
-    cost: 60,
-    effectText: 'Sinergia de Fé: 1 + √Fiéis → 1 + Fiéis',
+    cost: 25,
+    effectText: 'Relíquias com limite preservadas · Cornucópia e Tocha ilimitadas, com 50% dos níveis mantidos',
   },
   {
     id: 'gn_bencao_eterna',
@@ -155,8 +120,41 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Quando o Profeta contempla a Gnose, sua prece deixa de ser um sopro passageiro e se torna um estado eterno do ser.',
     icon: 'hourglass',
     tier: 2,
-    cost: 120,
+    cost: 48,
     effectText: 'Bênção permanente: 2× Fé/s (+100%)',
+  },
+  {
+    id: 'gn_init_fervor',
+    name: 'Chama Astral',
+    title: 'Fogo Inextinguível',
+    desc: 'Melhora o Rito de produção de Fervor: a base do multiplicador sobe de 2 para 2,05, e o aumento de custo por nível cai de 80% para 75% (escala 1,80 → 1,75). O multiplicador de produção é base^(nível^0,6); o ganho depende do nível do Rito.',
+    lore: 'O fogo que arde acima das esferas planetárias não precisa de lenha terrena para consumir o firmamento.',
+    icon: 'fervor',
+    tier: 2,
+    cost: 60,
+    effectText: 'Rito de Fervor: base 2 → 2,05 · custo por nível: +80% → +75%',
+  },
+  {
+    id: 'gn_relic_gain',
+    name: 'Alquimia Astral',
+    title: 'Matéria Transfigurada',
+    desc: 'Melhora o Rito de ganho de Fragmentos: a base do multiplicador sobe de 3 para 3,05, e o aumento de custo por nível cai de 400% para 390% (escala 5 → 4,90). O multiplicador é base^(nível^0,6) e melhora o resultado da Transmutação. O Rito exige a Fênix restaurada.',
+    lore: 'O cadinho revela a essência que já repousava na matéria.',
+    icon: 'gem',
+    tier: 2,
+    cost: 120,
+    effectText: 'Rito de Fragmentos: base 3 → 3,05 · escala de custo 5 → 4,90',
+  },
+  {
+    id: 'gn_followers_syn',
+    name: 'Congregação Esférica',
+    title: 'Ressonância dos Devotos (MU6)',
+    desc: 'Melhora a sinergia dos Fiéis: o multiplicador de Fé por clique e Fé/s passa de 1 + √Fiéis para 1 + Fiéis. Com 100 Fiéis, passa de 11× para 101×. Substitui a sinergia da Emanação Primordial; os dois multiplicadores não se acumulam.',
+    lore: 'Cada mente devota passa a refletir todas as outras como espelhos dispostos no interior de uma esfera perfeita.',
+    icon: 'followers',
+    tier: 2,
+    cost: 150,
+    effectText: 'Sinergia de Fé: 1 + √Fiéis → 1 + Fiéis',
   },
   {
     id: 'gn_followers_economy',
@@ -165,8 +163,8 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     desc: 'Reduz o aumento de custo por Fiel de 9% para 7,5%, antes do Cajado de Hermes (escala 1,09 → 1,075). Soma sua redução à da Emanação Primordial. Com o Cajado, a escala mínima continua sendo 1,05, ou +5% de custo por Fiel.',
     lore: 'Cada voz reunida torna o chamado seguinte mais fácil de ouvir.',
     icon: 'followers',
-    tier: 2,
-    cost: 150,
+    tier: 3,
+    cost: 1200,
     effectText: 'Custo dos Fiéis: +9% → +7,5% por compra',
   },
   {
@@ -177,7 +175,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'Três dimensões da mente, três oitavas do cântico: a devoção coletiva cresce a cada alma convertida.',
     icon: 'gem',
     tier: 3,
-    cost: 30000,
+    cost: 1500,
     effectText: 'Sinergia de Fé: 1 + Fiéis → 1 + Fiéis^1,1',
   },
   {
@@ -190,6 +188,17 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     tier: 3,
     cost: 36000,
     effectText: 'Gnose por Ascensão: expoente 0,25 → 0,28',
+  },
+  {
+    id: 'gn_eternal_memory',
+    name: 'Memória do Opus',
+    title: 'Herança dos Artífices',
+    desc: 'Com Cripta Eterna, aumenta de 50% para 80% a preservação dos níveis da Cornucópia de Amalteia e da Tocha de Prometeu em cada Ascensão. Os níveis preservados são arredondados para baixo. Não remove limites nem preserva Relíquias sem Cripta Eterna.',
+    lore: 'O fogo dos artífices grava na matéria aquilo que nem os ciclos conseguem apagar.',
+    icon: 'urn',
+    tier: 3,
+    cost: 45000,
+    effectText: 'Com Cripta Eterna: preservação de Cornucópia e Tocha de 50% → 80%',
   },
   {
     id: 'gn_relic_refinement',
@@ -221,7 +230,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'O centro está em toda parte; a circunferência, em lugar nenhum. A Esfera recorda sua plenitude anterior à criação.',
     icon: 'crown',
     tier: 4,
-    cost: 300000,
+    cost: 600000,
     effectText: 'Escala de custo dos Ritos: −0,05 · Eclipse 100.000× mais barato',
   },
   {
@@ -232,7 +241,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     lore: 'A chama já não consome o altar: ilumina o próprio firmamento.',
     icon: 'sun',
     tier: 4,
-    cost: 600000,
+    cost: 660000,
     effectText: 'Rito de Fervor: base 2,35 → 2,65 · custo por nível: +70% → +60%',
   },
   {
@@ -288,7 +297,31 @@ export const PROGRESSION_OLD_PRICES: Readonly<Record<string, number>> = {
 };
 
 /** Current economy revision persisted in saves for one-time price refunds. */
-export const PROGRESSION_REVISION = 5;
+export const PROGRESSION_REVISION = 6;
+
+/** Prices before reordering tiers and pairing choices in 0.12.2. */
+export const PROGRESSION_REVISION_5_PRICES: Readonly<Record<string, number>> = {
+  gn_init_faith: 1,
+  gn_memoria_selos: 2,
+  gn_automation: 4,
+  gn_init_fervor: 5,
+  gn_seal_automation: 8,
+  gn_relic_gain: 10,
+  gn_ritual_automation: 20,
+  gn_relic_automation: 25,
+  gn_keep_relics: 48,
+  gn_followers_syn: 60,
+  gn_bencao_eterna: 120,
+  gn_followers_economy: 150,
+  gn_followers_cubic: 30_000,
+  gn_gnose_mult: 36_000,
+  gn_relic_refinement: 200_000,
+  gn_fu1_boost: 240_000,
+  gn_apotheosis: 300_000,
+  gn_empyrean_fire: 600_000,
+  gn_perfect_opus: 720_000,
+  gn_omniscience: 2_200_000,
+};
 
 /** Prices before calibrating time and Ascensions per tier. */
 export const PROGRESSION_REVISION_4_PRICES: Readonly<Record<string, number>> = {

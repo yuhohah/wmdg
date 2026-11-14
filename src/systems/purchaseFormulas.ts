@@ -76,7 +76,7 @@ const gnoseBonuses: Record<string, string> = {
     `• Escala de custo do Rito: escala′ = escala − ${coefficient(GNOSE_FORMULAS.relicCostStep)} (5,00 → 4,90)`,
   ].join('\n'),
   gn_automation: [
-    '• Ciclo (1s): compra Fiéis automaticamente (até 10.000/s)',
+    '• Ciclo (1s): usa Converter Máximo com a Fé disponível',
     '• Desconta o custo normal: Fé′ = Fé − Σ Custo(Fiéis)',
   ].join('\n'),
   gn_seal_automation: [
@@ -85,11 +85,11 @@ const gnoseBonuses: Record<string, string> = {
   ].join('\n'),
   gn_ritual_automation: [
     '• Ciclo (1s): compra Ritos por maior ganho relativo / custo',
-    '• Limite: Δnível ≤ 50/rito/s; desconta Fervor′ = Fervor − Σ Custo_Rito',
+    '• Máximo desligado: 1 nível por Rito; ligado: compra máxima do painel (até 100 níveis)',
   ].join('\n'),
   gn_relic_automation: [
     '• Ciclo (1s): prioriza Fênix e compra Relíquias por maior retorno / custo',
-    '• Limite: Δnível ≤ 50/relíquia/s; desconta Fragmentos′ = Fragmentos − Σ Custo_Relíquia',
+    '• Máximo desligado: 1 nível por Relíquia; ligado: compra máxima do painel',
   ].join('\n'),
   gn_followers_syn: [
     `• Sinergia dos Fiéis na Fé: M_sinergia = 1 + Fiéis^${coefficient(PROGRESSION_BALANCE.congregationExponent)} (expoente 0,5 → 1)`,
@@ -98,9 +98,10 @@ const gnoseBonuses: Record<string, string> = {
     '• Bênção da Encarnação permanente: M_Bênção = ×2 Fé/s (mantém 60s ativos)',
   ].join('\n'),
   gn_keep_relics: [
-    '• Preserva os níveis das Relíquias ao ascender',
+    '• Preserva 100% dos níveis das Relíquias com limite; Cornucópia e Tocha mantêm ⌊nível × 0,50⌋',
     '• Limite de nível da Cornucópia e Tocha: 20 → ∞ (custo ×1,15^max(0, L − 19))',
   ].join('\n'),
+  gn_eternal_memory: '• Com Cripta Eterna: Cornucópia e Tocha mantêm ⌊nível × 0,80⌋ em cada Ascensão (50% + 30 pontos percentuais)',
   gn_followers_economy: [
     `• Escala de custo dos Fiéis: escala′ = escala − ${coefficient(GNOSE_FORMULAS.followerEconomyStep)} (1,09 → 1,075 antes de Hermes, piso 1,05)`,
   ].join('\n'),
