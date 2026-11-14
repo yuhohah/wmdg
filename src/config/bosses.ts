@@ -99,3 +99,13 @@ export const GNOSE_BOSSES: GnoseBoss[] = [
     faithFervorMult: 10.0
   }
 ];
+
+/** Final invader shares combat rules without adding a fifth Gnose tier. */
+export const DEMIURGE_BOSS: GnoseBoss = {
+  ...GNOSE_BOSSES[3], id: 'boss_demiurge', name: 'Demiurgo', title: 'O Falso Criador',
+  mythology: 'Cosmogonia Gnóstica', symbol: 'eye', maxHp: 2e42,
+  rewardName: 'Libertação da Criação', rewardDesc: 'Encerra a invasão do Demiurgo e liberta o culto.',
+  lore: 'Yaldabaoth abandona os recursos e marcha até a Esfera para reivindicar a criação.',
+  faithFervorMult: 1,
+};
+export const COMBAT_BOSSES = [...GNOSE_BOSSES, DEMIURGE_BOSS];

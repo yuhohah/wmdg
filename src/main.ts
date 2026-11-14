@@ -1,3 +1,4 @@
+import { DemiurgeEncounter } from './features/demiurge/DemiurgeEncounter.js';
 import { ShortcutsHelp } from './ui/ShortcutsHelp.js';
 import { GameplayShortcuts, createGameplayShortcutActions } from './ui/GameplayShortcuts.js';
 /// <reference types="vite/client" />
@@ -36,14 +37,25 @@ import { TestMenu } from './ui/TestMenu.js';
 
 export function isDevMode(): boolean {
   if (typeof window === 'undefined') return false;
+  const hostname = window.location.hostname.toLowerCase();
+  const octets = hostname.split('.').map(Number);
+  const localIPv4 = octets.length === 4 && octets.every(n => Number.isInteger(n) && n >= 0 && n <= 255)
+    && (octets[0] === 10 || octets[0] === 127
+      // Tailscale devices use the shared address range 100.64.0.0/10.
+      || (octets[0] === 100 && octets[1] >= 64 && octets[1] <= 127)
+      || (octets[0] === 192 && octets[1] === 168)
+      || (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31));
+  const localHostname = hostname === '[::1]' || hostname.endsWith('.localhost') || hostname.endsWith('.local');
+  let enabled = false;
+  try { enabled = localStorage.getItem('cult_dev_mode') === 'true'; } catch { /* Session-only access still works. */ }
   return (
-    Boolean(import.meta.env?.DEV) ||
+    Boolean(import.meta.env?.DEV) || localIPv4 || localHostname ||
     window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1' ||
     window.location.hostname === '0.0.0.0' ||
     window.location.search.includes('test') ||
     window.location.search.includes('dev') ||
-    localStorage.getItem('cult_dev_mode') === 'true'
+    enabled
   );
 }
 
@@ -75,6 +87,7 @@ class AppManager {
   public statsTab: StatsTab;
   public testMenu?: TestMenu;
   public campaignEnding: CampaignEnding;
+  public demiurge: DemiurgeEncounter;
   private cardUpdates: VisibleCardUpdates;
 
   // Save & System State
@@ -232,6 +245,7 @@ class AppManager {
     this.settingsModal = new SettingsModal({
       audio: this.audio,
       onShowChangelog: () => { void changelogModal.open(); },
+      onOpenDevMenu: () => this.openDevMenu(),
       getLastSaveTime: () => this.persistence.lastSaveTime,
       onManualSave: () => this.persistence.manualSave(),
       onExportSave: () => this.saveDataModal.openExport(),
@@ -294,6 +308,11 @@ class AppManager {
     this.onboardingGuide.setOnFocusCard((cardId, immediate, targetSelector) => {
       this.board.centerOnCard(cardId, immediate, targetSelector);
     });
+    this.demiurge = new DemiurgeEncounter(this.gameState, () => this.persistence.saveProgress(),
+      () => document.body.classList.contains('is-playing') && !this.gnoseTab.bossBattleModal.isOpen(),
+      () => this.persistence.confirmHardReset(),
+      () => this.board.centerOnCard('card-altar-sphere', true),
+      () => this.gnoseTab.bossBattleModal.openForBoss('boss_demiurge', { isRematch: this.gameState.isBossDefeated('boss_demiurge') }));
     this.campaignEnding = new CampaignEnding(
       this.gameState,
       () => this.persistence.saveProgress(),
@@ -432,6 +451,7 @@ class AppManager {
     this.gameLoop.onTick((deltaSec) => {
       const unlockedCount = this.countUnlockedSeals();
       this.gameState.tick(deltaSec);
+      this.demiurge.update(deltaSec);
       if (this.countUnlockedSeals() !== unlockedCount) {
         this.updateUnlockedTabsVisibility();
         this.renderAllLists();
@@ -441,6 +461,13 @@ class AppManager {
       events.emit(GameEvents.GAME_TICK, deltaSec);
     });
     this.gameLoop.start();
+  }
+
+  public openDevMenu(): void {
+    try { localStorage.setItem('cult_dev_mode', 'true'); } catch { /* Keep access available when storage is blocked. */ }
+    this.testMenu ??= new TestMenu(this);
+    this.registerGlobalHelpers();
+    this.testMenu.open();
   }
 
   public triggerHaptic(pattern: number | number[] = 8): void {
@@ -454,7 +481,7 @@ class AppManager {
   }
 
   private registerGlobalHelpers(): void {
-    if (isDevMode()) {
+    if (this.testMenu || isDevMode()) {
       (window as any).cultGame = this;
       (window as any).game = this;
       (window as any).testMenu = this.testMenu;

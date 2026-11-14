@@ -154,12 +154,12 @@ export function parryCardPosition(
   elapsedSec: number,
   scale: number
 ): { x: number; y: number } {
+  // Odin's card is anchored by its bottom edge above the central combat area.
+  if (rift.kind === 'odin_raven') return { x: sphere.x, y: sphere.y - 210 };
   const slot = rift.slotIndex ?? 0;
   let degrees: number;
-  if (rift.kind === 'anubis_scales' || rift.kind === 'hades_chains') {
+  if (rift.kind === 'anubis_scales' || rift.kind === 'hades_chains' || rift.kind === 'demiurge_ritual') {
     degrees = slot === 0 ? -80 : -5;
-  } else if (rift.kind === 'odin_raven') {
-    degrees = -45;
   } else if (rift.kind === 'chaos_orbit') {
     degrees = [-100, -45, 5][slot] + Math.sin(elapsedSec * 0.55) * 3;
   } else {

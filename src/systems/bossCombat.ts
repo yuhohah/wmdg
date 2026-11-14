@@ -1,3 +1,6 @@
+import { odinParryCue } from './odinParry.js';
+import { RITUAL_DURATION, ritualPointer, ritualJudgement } from './demiurgeRitual.js';
+import type { DemiurgeState } from './demiurge.js';
 import type {
   Achievement,
   ActiveBossBattle,
@@ -16,12 +19,13 @@ import {
   BOSS_MAX_ALTAR_INTEGRITY,
   BOSS_MAX_CLICK_HP_FRACTION,
   BOSS_MAX_PASSIVE_HP_PER_SEC,
-  GNOSE_BOSSES,
+  COMBAT_BOSSES,
 } from '../config/bosses.js';
 
 export interface BossCombatStateHost {
   faithPoints: number;
   totalFaithAccumulated: number;
+  demiurge: DemiurgeState;
   fervorPoints: number;
   totalFervorGenerated: number;
   relicPoints: number;
@@ -69,6 +73,8 @@ export interface BossRiftClickResult {
   miracleAwakened?: boolean;
   altarDamageTaken?: number;
   scaleDamageMultiplier?: number;
+  ritualSide?: 'center' | 'moon' | 'sun';
+  ritualPercent?: number;
 }
 
 export function isBossDefeated(state: BossCombatStateHost, bossId: string): boolean {
@@ -81,11 +87,11 @@ export function getBossBestTimeSec(state: BossCombatStateHost, bossId: string): 
 }
 
 export function getBossForTier(tier: 1 | 2 | 3 | 4): GnoseBoss | undefined {
-  return GNOSE_BOSSES.find((b) => b.unlocksTier === tier);
+  return COMBAT_BOSSES.find((b) => b.unlocksTier === tier);
 }
 
 export function isGnoseTierUnlocked(state: BossCombatStateHost, tier: 1 | 2 | 3 | 4): boolean {
-  const boss = GNOSE_BOSSES.find((b) => b.unlocksTier === tier);
+  const boss = COMBAT_BOSSES.find((b) => b.unlocksTier === tier);
   if (!boss) return true;
   if (state.defeatedBosses.has(boss.id)) return true;
   // Backward compatibility: if player already owns an upgrade in this tier, consider it unlocked
@@ -99,13 +105,15 @@ export function canChallengeBoss(
   bossId: string,
   options?: { isRematch?: boolean }
 ): boolean {
-  const boss = GNOSE_BOSSES.find((b) => b.id === bossId);
+  const boss = COMBAT_BOSSES.find((b) => b.id === bossId);
   if (!boss) return false;
   if (options?.isRematch) {
     return state.defeatedBosses.has(boss.id);
   }
   if (state.defeatedBosses.has(boss.id)) return false;
 
+  if (bossId === 'boss_demiurge') return state.demiurge.phase === 'approaching'
+    && state.defeatedBosses.has('boss_tiamat') && GNOSE_UPGRADES.every(u => state.hasGnoseUpgrade(u.id));
   if (boss.unlocksTier === 1) return state.isGnoseUnlocked();
   const previousTier = (boss.unlocksTier - 1) as 1 | 2 | 3;
   return (
@@ -117,7 +125,7 @@ export function canChallengeBoss(
 
 export function getBossRewardsMultiplier(state: BossCombatStateHost): number {
   let mult = 1.0;
-  for (const boss of GNOSE_BOSSES) {
+  for (const boss of COMBAT_BOSSES) {
     if (state.defeatedBosses.has(boss.id)) {
       mult *= boss.faithFervorMult;
     }
@@ -139,7 +147,7 @@ export function calculateBossCombatBreakdown(
   bossId?: string
 ): BossCombatBreakdown {
   const targetBossId = bossId ?? state.activeBossBattle?.bossId ?? 'boss_anubis';
-  const boss = GNOSE_BOSSES.find((b) => b.id === targetBossId) ?? GNOSE_BOSSES[0];
+  const boss = COMBAT_BOSSES.find((b) => b.id === targetBossId) ?? COMBAT_BOSSES[0];
   const bossMaxHp =
     state.activeBossBattle && state.activeBossBattle.bossId === boss.id
       ? state.activeBossBattle.bossMaxHp
@@ -334,12 +342,13 @@ export function startBossBattle(
   bossId: string,
   options?: { awaitProcession?: boolean; isRematch?: boolean }
 ): boolean {
-  const boss = GNOSE_BOSSES.find((b) => b.id === bossId);
+  const boss = COMBAT_BOSSES.find((b) => b.id === bossId);
   const isRematch = options?.isRematch === true;
   if (state.activeBossBattle || !boss || !canChallengeBoss(state, bossId, { isRematch })) {
     return false;
   }
 
+  if (bossId === 'boss_demiurge') state.demiurge.phase = 'fighting';
   state.activeBossBattle = {
     bossId: boss.id,
     bossHp: boss.maxHp,
@@ -461,7 +470,7 @@ export function spawnBossRift(
 ): void {
   if (!state.activeBossBattle) return;
   const battle = state.activeBossBattle;
-  const boss = GNOSE_BOSSES.find((b) => b.id === battle.bossId);
+  const boss = COMBAT_BOSSES.find((b) => b.id === battle.bossId);
   if (!boss) return;
 
   const phase = getBossPhase(state);
@@ -537,6 +546,11 @@ export function spawnBossRift(
         slotIndex: pos.slotIndex,
       });
     }
+  } else if (boss.id === 'boss_demiurge') {
+    state.riftIdCounter++;
+    battle.activeRifts.push({ id: `rift_${state.riftIdCounter}`, xPercent: 50, yPercent: 20,
+      remainingSec: RITUAL_DURATION, maxSec: RITUAL_DURATION,
+      kind: 'demiurge_ritual', attackIndex: 1, groupId });
   } else if (boss.id === 'boss_odin') {
     state.riftIdCounter += 1;
     const ravenWindow = Math.max(1.15, baseWindowSec * 0.82);
@@ -574,7 +588,7 @@ export function spawnBossRift(
   }
 }
 
-export function clickBossRift(state: BossCombatStateHost, riftId: string): BossRiftClickResult {
+export function clickBossRift(state: BossCombatStateHost, riftId: string, pointerPosition?: number): BossRiftClickResult {
   if (!state.activeBossBattle || state.activeBossBattle.combatStarted === false) {
     return { damage: 0, shattered: false, victory: false };
   }
@@ -587,6 +601,36 @@ export function clickBossRift(state: BossCombatStateHost, riftId: string): BossR
   const rift = battle.activeRifts[idx];
   const kind: BossRiftKind = rift.kind ?? 'standard';
   const groupId = rift.groupId;
+
+  if (kind === 'odin_raven' && !odinParryCue(rift).green) {
+    const damage = calculateBossCombatBreakdown(state, battle.bossId).altarDamageOnMiss;
+    const before = battle.altarIntegrity;
+    battle.activeRifts.splice(idx, 1);
+    battle.riftsMissed++;
+    battle.comboStreak = 0;
+    battle.altarIntegrity = Math.max(0, before - damage);
+    if (battle.altarIntegrity <= 0) completeBossBattle(state, false);
+    return { damage: 0, shattered: false, victory: false, kind,
+      altarDamageTaken: before - battle.altarIntegrity };
+  }
+
+  if (kind === 'demiurge_ritual') {
+    const result = ritualJudgement(pointerPosition ?? ritualPointer(rift.maxSec - rift.remainingSec));
+    battle.ritualOutcome = { id: rift.id, ...result, remainingSec: 1.7 };
+    if (result.side !== 'center') {
+      battle.activeRifts.splice(idx, 1);
+      battle.riftsMissed++;
+      battle.comboStreak = 0;
+      if (result.side === 'moon') {
+        battle.bossHp = Math.min(battle.bossMaxHp, battle.bossHp + battle.bossMaxHp * result.percent / 100);
+        battle.phase = getBossPhase(state);
+      } else {
+        battle.altarIntegrity = Math.max(0, battle.altarIntegrity - battle.maxAltarIntegrity * result.percent / 100);
+        if (battle.altarIntegrity <= 0) completeBossBattle(state, false);
+      }
+      return { damage: 0, shattered: false, victory: false, kind, ritualSide: result.side, ritualPercent: result.percent };
+    }
+  }
 
   if (kind === 'anubis_scales') {
     const siblings = battle.activeRifts.filter((r) => r.kind === kind && r.groupId === groupId);
@@ -632,11 +676,8 @@ export function clickBossRift(state: BossCombatStateHost, riftId: string): BossR
   if (kind === 'hades_chains' && siblingsRemaining === 0) {
     specialBonusTriggered = true;
   } else if (kind === 'odin_raven') {
-    const isCritParry = rift.remainingSec >= rift.maxSec * 0.35;
-    if (isCritParry) {
-      battle.riftSpawnTimerSec += 1.4;
-      specialBonusTriggered = true;
-    }
+    battle.riftSpawnTimerSec += 1.4;
+    specialBonusTriggered = true;
   } else if (kind === 'chaos_orbit' && siblingsRemaining === 0) {
     specialBonusTriggered = true;
   }
@@ -653,11 +694,12 @@ export function clickBossRift(state: BossCombatStateHost, riftId: string): BossR
 }
 
 export function retreatBossBattle(state: BossCombatStateHost): void {
+  if (state.activeBossBattle?.bossId === 'boss_demiurge') { state.demiurge.phase = state.activeBossBattle.isRematch ? 'defeated' : 'walking'; state.demiurge.elapsed = 0; }
   state.activeBossBattle = null;
 }
 
 export function defeatBossForTesting(state: BossCombatStateHost, bossId: string): boolean {
-  if (!GNOSE_BOSSES.some((boss) => boss.id === bossId)) return false;
+  if (!COMBAT_BOSSES.some((boss) => boss.id === bossId)) return false;
   if (state.activeBossBattle?.bossId === bossId) {
     completeBossBattle(state, true);
   } else {
@@ -670,11 +712,15 @@ export function defeatBossForTesting(state: BossCombatStateHost, bossId: string)
 export function completeBossBattle(state: BossCombatStateHost, victory: boolean): void {
   if (!state.activeBossBattle) return;
   const battle = state.activeBossBattle;
-  const boss = GNOSE_BOSSES.find((b) => b.id === battle.bossId);
+  const boss = COMBAT_BOSSES.find((b) => b.id === battle.bossId);
   const isRematch = battle.isRematch === true;
   const durationSec = Math.max(0.1, battle.elapsedCombatSec ?? 0);
   state.activeBossBattle = null;
 
+  if (battle.bossId === 'boss_demiurge') {
+    state.demiurge.phase = victory || isRematch ? 'defeated' : 'walking';
+    state.demiurge.elapsed = 0;
+  }
   if (victory && boss) {
     state.defeatedBosses.add(boss.id);
     state.bossCurseTimerSec = 0;
@@ -695,7 +741,7 @@ export function tickBossBattle(state: BossCombatStateHost, deltaSec: number): vo
   const battle = state.activeBossBattle;
   if (!battle || battle.combatStarted === false) return;
 
-  const boss = GNOSE_BOSSES.find((b) => b.id === battle.bossId);
+  const boss = COMBAT_BOSSES.find((b) => b.id === battle.bossId);
   if (!boss) return;
 
   battle.elapsedCombatSec = (battle.elapsedCombatSec ?? 0) + deltaSec;
@@ -709,12 +755,19 @@ export function tickBossBattle(state: BossCombatStateHost, deltaSec: number): vo
   const phase = getBossPhase(state);
   battle.phase = phase;
 
+  if (battle.ritualOutcome) battle.ritualOutcome.remainingSec = Math.max(0, battle.ritualOutcome.remainingSec - deltaSec);
+
   // 1. Update active rifts & check for expired rifts first so defeat on expiry takes precedence over passive tick victory
   for (const rift of [...battle.activeRifts].reverse()) {
     const i = battle.activeRifts.indexOf(rift);
     if (i === -1) continue;
     rift.remainingSec -= deltaSec;
     if (rift.remainingSec <= 0) {
+      if (rift.kind === 'demiurge_ritual') {
+        clickBossRift(state, rift.id, ritualPointer(rift.maxSec));
+        if (!state.activeBossBattle) return;
+        continue;
+      }
       battle.activeRifts.splice(i, 1);
       if (rift.kind === 'anubis_scales') {
         battle.activeRifts = battle.activeRifts.filter(
@@ -778,6 +831,8 @@ export function tickBossBattle(state: BossCombatStateHost, deltaSec: number): vo
       return;
     }
   }
+
+  if (battle.activeRifts.some(r => r.kind === 'demiurge_ritual') || (battle.ritualOutcome?.remainingSec ?? 0) > 0) return;
 
   // 3. Spawn new rifts periodically (faster in Phase 2 & 3 as the guardian grows desperate)
   const phaseIntervalScale = phase === 3 ? 0.78 : phase === 2 ? 0.88 : 1.0;

@@ -1,3 +1,4 @@
+import { newDemiurge, demiurgeProductionMultiplier } from '../systems/demiurge.js';
 import { getRelicUpgradeCost, getRelicUpgradeBulkCost, getMaxAffordableRelicLevels } from '../systems/relicCosts.js';
 import type {
   BuyableItem,
@@ -92,6 +93,7 @@ export class GameStateManager {
   public relicUpgrades: RelicUpgrade[] = initialRelicUpgrades.map((r) => ({ ...r }));
 
   // Incarnation State
+  public demiurge = newDemiurge();
   public campaignEnding: 'pending' | 'completed' | 'freeplay' = 'pending';
   public incarnationStage: number = 1;
   public incarnationBoostTimer: number = 0;
@@ -145,6 +147,7 @@ export class GameStateManager {
   }
 
   public resetToDefaults(): void {
+    this.demiurge = newDemiurge();
     this.campaignEnding = 'pending';
     this.faithPoints = 0;
     this.totalFaithAccumulated = 0;
@@ -335,7 +338,7 @@ export class GameStateManager {
     spawnBossRift(this, options);
   }
 
-  public clickBossRift(riftId: string): {
+  public clickBossRift(riftId: string, pointerPosition?: number): {
     damage: number;
     shattered: boolean;
     victory: boolean;
@@ -346,7 +349,7 @@ export class GameStateManager {
     altarDamageTaken?: number;
     scaleDamageMultiplier?: number;
   } {
-    return clickBossRift(this, riftId);
+    return clickBossRift(this, riftId, pointerPosition);
   }
 
   public retreatBossBattle(): void {
@@ -552,7 +555,7 @@ export class GameStateManager {
       fervorFaithBonus,
       relicFaithMult,
       incarnationBoostMult
-    );
+    ) * demiurgeProductionMultiplier(this, 0);
   }
 
   public getFervorRatePerSecond(): number {
@@ -577,7 +580,7 @@ export class GameStateManager {
       synergyMult *= 1.5;
     }
 
-    return calculateFervorRate(BASE_FERVOR_RATE, prodMult, synergyMult);
+    return calculateFervorRate(BASE_FERVOR_RATE, prodMult, synergyMult) * demiurgeProductionMultiplier(this, 2);
   }
 
   public getRelicsRatePerSecond(): number {
@@ -594,7 +597,7 @@ export class GameStateManager {
     if (this.hasGnoseUpgrade('gn_omniscience') && this.autoRelicsEnabled) {
       autoGen += toGet * this.getAutoRelicsFraction();
     }
-    return Math.max(1.0, extraPerSec) + autoGen;
+    return (Math.max(1.0, extraPerSec) + autoGen) * demiurgeProductionMultiplier(this, 3);
   }
 
   /** Production history survives spending and Ascension, and also includes offline gains. */
@@ -631,6 +634,7 @@ export class GameStateManager {
     autoClickBossDamage: number;
   } {
     if (!Number.isFinite(deltaSec) || deltaSec < 0) throw new RangeError('Intervalo de simulação inválido.');
+    if (this.demiurge.phase === 'lost') return { faithGained: 0, fervorGained: 0, relicGained: 0, autoClickFaithGained: 0, autoClickBossDamage: 0 };
     let faithGained = 0;
     let fervorGained = 0;
     let relicGained = 0;
@@ -823,6 +827,7 @@ export class GameStateManager {
   }
 
   public addClick(random: () => number = Math.random): { fpc: number; bossClickDamage: number; isCrit: boolean; bossIsCrit: boolean } {
+    if (this.demiurge.phase === 'lost') return { fpc: 0, bossClickDamage: 0, isCrit: false, bossIsCrit: false };
     let fpc = this.getFaithPerClick();
     // The completed lifetime click milestones apply starting with the next click.
     const isCrit = random() < this.getSphereCriticalChance();
@@ -1196,7 +1201,7 @@ export class GameStateManager {
   public isCampaignComplete(): boolean {
     const finalStage = INCARNATION_STAGES.at(-1)!;
     const finalBoss = GNOSE_BOSSES.find(boss => boss.unlocksTier === 4);
-    return this.incarnationStage >= finalStage.stage && !!finalBoss && this.isBossDefeated(finalBoss.id)
+    return this.demiurge.phase === 'defeated' && this.incarnationStage >= finalStage.stage && !!finalBoss && this.isBossDefeated(finalBoss.id)
       && GNOSE_UPGRADES.every(upgrade => this.hasGnoseUpgrade(upgrade.id));
   }
 

@@ -1,0 +1,21 @@
+{
+  "boss": "05-demiurgo",
+  "name": "O Demiurgo — Yaldabaoth",
+  "key": "ataque-ritual",
+  "label": "Ritual celeste",
+  "sourceJobId": "658a92e9-6326-45a5-818d-613ab8b32946",
+  "jobId": "b0f20200-708f-437c-b4c6-06e8d5451de4",
+  "description": "Perform solemn celestial conjuration ritual: slowly lift the cage-topped staff high overhead, hold it raised as a restrained mystical pale silver-violet light shines down over head shoulders and raised staff, then lower staff back to neutral. Keep the orb held in other hand. ONLY the subtle mystical light and raised staff convey summoning moon and sun; do NOT draw a moon or sun or other summoned objects.",
+  "generator": "PixelLab PixMiniMax",
+  "frame_count": 16,
+  "source_frame_count": 17,
+  "sheet_frame_count": 17,
+  "frame_width": 256,
+  "frame_height": 192,
+  "frame_duration_ms": 100,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true,
+  "sourceFrameIncluded": true
+}

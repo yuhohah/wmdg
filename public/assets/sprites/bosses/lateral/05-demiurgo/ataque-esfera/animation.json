@@ -1,0 +1,21 @@
+{
+  "boss": "05-demiurgo",
+  "name": "O Demiurgo — Yaldabaoth",
+  "key": "ataque-esfera",
+  "label": "Arremesso da esfera",
+  "sourceJobId": "658a92e9-6326-45a5-818d-613ab8b32946",
+  "jobId": "5aa3fbd0-9e1c-40fe-84bd-9a3c84d8f2f0",
+  "description": "Throw the sphere from the free hand towards the RIGHT: draw orb hand back, twist torso for anticipation, swing arm forward and release the dark orb to fly right off canvas, extend throwing hand, then recover neutral pose with orb restored for next attack. Other hand keeps staff. Clear throw, not staff strike.",
+  "generator": "PixelLab PixMiniMax",
+  "frame_count": 16,
+  "source_frame_count": 17,
+  "sheet_frame_count": 17,
+  "frame_width": 256,
+  "frame_height": 192,
+  "frame_duration_ms": 100,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true,
+  "sourceFrameIncluded": true
+}

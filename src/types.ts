@@ -145,7 +145,8 @@ export type BossRiftKind =
   | 'anubis_scales'
   | 'hades_chains'
   | 'odin_raven'
-  | 'chaos_orbit';
+  | 'chaos_orbit'
+  | 'demiurge_ritual';
 
 export interface BossRift {
   id: string;
@@ -169,6 +170,7 @@ export interface ActiveBossMiracle {
 }
 
 export interface ActiveBossBattle {
+  ritualOutcome?: { id: string; side: 'center' | 'moon' | 'sun'; percent: number; remainingSec: number };
   bossId: string;
   bossHp: number;
   bossMaxHp: number;

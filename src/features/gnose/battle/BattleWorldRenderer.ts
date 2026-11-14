@@ -291,7 +291,7 @@ export function renderBattleWorldScene(rc: BattleWorldRenderContext): void {
     orderCount = pushDrawOrder(drawOrderPool, orderCount, 0, i, followerActors[i].y);
   }
   orderCount = pushDrawOrder(drawOrderPool, orderCount, 1, 0, incY);
-  if (bossState !== 'awaiting_ritual' && !(climax?.victory && climax.remainingSec <= 0)) {
+  if ((bossState !== 'awaiting_ritual' || bossId === 'boss_demiurge') && !(climax?.victory && climax.remainingSec <= 0)) {
     orderCount = pushDrawOrder(drawOrderPool, orderCount, 2, 0, bossY);
   }
   drawOrderPool.length = orderCount;

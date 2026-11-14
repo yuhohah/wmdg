@@ -1,0 +1,21 @@
+{
+  "boss": "05-demiurgo",
+  "name": "O Demiurgo — Yaldabaoth",
+  "key": "ataque-ritual-sem-luz",
+  "label": "Ritual sem luz",
+  "sourceJobId": "658a92e9-6326-45a5-818d-613ab8b32946",
+  "jobId": "d949c02c-4f9d-4a84-84c6-641ac7c6a4f8",
+  "description": "Ritual sem efeitos de luz: erguer o cajado, sustentar a pose e retornar.",
+  "generator": "PixelLab PixMiniMax",
+  "frame_count": 16,
+  "source_frame_count": 17,
+  "sheet_frame_count": 17,
+  "frame_width": 256,
+  "frame_height": 192,
+  "frame_duration_ms": 100,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true,
+  "sourceFrameIncluded": true
+}

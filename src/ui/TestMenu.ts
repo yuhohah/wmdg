@@ -238,7 +238,10 @@ export class TestMenu {
     const launcher = document.createElement('button');
     launcher.id = 'test-menu-launcher';
     launcher.className = 'test-menu-launcher';
-    launcher.innerHTML = `<span class="test-launcher-icon">${icon('gear')}</span> <span class="test-launcher-badge">1x</span>`;
+    launcher.type = 'button';
+    launcher.setAttribute('aria-label', 'Abrir menu de desenvolvimento');
+    launcher.title = 'Menu de desenvolvimento';
+    launcher.innerHTML = `<span class="test-launcher-icon">${icon('gear')}</span> <span>DEV</span> <span class="test-launcher-badge">1x</span>`;
     launcher.addEventListener('click', (e) => {
       e.stopPropagation();
       this.toggle();

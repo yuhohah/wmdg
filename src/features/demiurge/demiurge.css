@@ -1,0 +1,9 @@
+.demiurge-actor { position: fixed; z-index: 90; width: 128px; height: 96px; padding: 0; border: 0; background: transparent; cursor: crosshair; touch-action: manipulation; }
+.demiurge-actor canvas { width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
+.demiurge-actor:focus-visible { outline: 2px solid var(--accent-color, #d4af37); border-radius: 8px; }
+.demiurge-actor:active { filter: brightness(1.5); }
+.demiurge-status { position: fixed; z-index: 89; right: 12px; bottom: 16px; max-width: calc(100vw - 24px); padding: 10px 14px; color: #e2e8f0; background: #090a0fee; border: 1px solid #85704c; border-radius: 8px; font-size: 13px; pointer-events: none; }
+.demiurge-actor[hidden], .demiurge-status[hidden] { display: none; }
+
+.demiurge-challenge { position: fixed; z-index: 90; right: 12px; bottom: 76px; padding: 10px 16px; border: 1px solid #a78a53; border-radius: 8px; background: #14110c; color: #ead8ac; cursor: pointer; }
+.demiurge-challenge[hidden] { display: none; }

@@ -4,6 +4,7 @@ export interface SettingsModalOptions {
   audio: AudioManager;
   onOpen?: () => void;
   onShowChangelog?: () => void;
+  onOpenDevMenu?: () => void;
   onReplayTutorials?: () => void;
   getLastSaveTime: () => number;
   onManualSave: () => void;
@@ -90,6 +91,10 @@ export class SettingsModal {
   }
 
   private bindEvents(): void {
+    document.getElementById('btn-open-dev-menu')?.addEventListener('click', () => {
+      this.close();
+      this.options.onOpenDevMenu?.();
+    });
     document.getElementById('btn-replay-tutorials')?.addEventListener('click', () => {
       this.close();
       this.options.onReplayTutorials?.();

@@ -1,3 +1,5 @@
+import { odinParryCue } from '../systems/odinParry.js';
+import { summonDemiurge, tickDemiurge, challengeDemiurge } from '../systems/demiurge.js';
 import { ElapsedTimeCredit } from '../systems/elapsedTime.js';
 import type { SaveData } from '../systems/saveSystem.js';
 import { GameStateManager } from '../core/GameState.js';
@@ -98,6 +100,11 @@ class Simulation {
         const gains = this.absenceCredit
           ? { faithGained: 0, autoClickFaithGained: 0, autoClickBossDamage: 0 }
           : this.game.tick(dt, this.randomClicks);
+        if (this.visits.present && !this.game.activeBossBattle) {
+          summonDemiurge(this.game);
+          tickDemiurge(this.game, dt);
+        }
+        if (this.game.demiurge.phase === 'lost') { this.blockedReason = 'O Demiurgo consumiu toda a Gnose.'; break; }
         this.tickOffset = 0;
         if (battle) {
           const totalTickDamage = Math.max(0, hpBefore - battle.bossHp);
@@ -256,6 +263,18 @@ class Simulation {
 
   private interact(): void {
     const g = this.game;
+    if (['announced', 'walking', 'draining', 'approaching'].includes(g.demiurge.phase)) {
+      if (this.time + EPSILON < this.nextInteraction) return;
+      if (g.demiurge.phase === 'announced') g.demiurge.phase = 'walking';
+      else if (g.demiurge.phase === 'approaching') { g.startBossBattle('boss_demiurge'); }
+      else if (challengeDemiurge(g)) {
+        this.actions.demiurge = (this.actions.demiurge ?? 0) + 1;
+        this.emit('action', 'demiurge');
+      }
+      this.nextInteraction = this.time + Math.max(this.behavior.decisionDelaySec,
+        1 / Math.max(0.1, Math.min(this.behavior.combatClickCps, this.behavior.maxInteractionCps)));
+      return;
+    }
     if (!this.pending && !g.activeBossBattle) {
       const decision = this.chooseDecision();
       if (decision) {
@@ -277,6 +296,7 @@ class Simulation {
     }
     const rift = !this.awaitingConfirmation && battleBeforeRift?.activeRifts.find(r => {
       if (r.maxSec - r.remainingSec + EPSILON < this.behavior.riftResponseSec) return false;
+      if (r.kind === 'odin_raven') return odinParryCue(r).green;
       if (r.kind !== 'anubis_scales') return true;
       // Pick only the higher weight; its remaining sibling must expire untouched.
       return !r.scaleHigherSelected && !battleBeforeRift.activeRifts.some(other =>

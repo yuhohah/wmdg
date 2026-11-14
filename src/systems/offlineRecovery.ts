@@ -10,6 +10,11 @@ export async function recoverOfflineProgress(
 ): Promise<{ save: SaveData; notice?: { title: string; desc: string } }> {
   const candidate = new GameStateManager();
   candidate.applySaveData(source);
+  if (!['dormant', 'defeated'].includes(candidate.demiurge.phase)) {
+    const save = candidate.buildSaveData();
+    save.timestamp = nowMs;
+    return { save };
+  }
   const fromMs = source.timestamp > 0 ? source.timestamp : nowMs;
   const gains = await consumeElapsedTime(new ElapsedTimeCredit(fromMs), candidate, fromMs, nowMs, yieldControl);
   const save = candidate.buildSaveData();

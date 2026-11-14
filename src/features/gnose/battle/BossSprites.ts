@@ -36,7 +36,7 @@ export interface BossRenderFrame {
 
 export interface BossSpriteConfig {
   folder: string;
-  attacks: [string, string];
+  attacks: [string, string, ...string[]];
   walkFrameSec?: number;
   attackFrameSec?: number;
   animateIdle?: boolean;
@@ -48,6 +48,7 @@ export const BOSS_SRC_H = 192;
 export const HITBOX_PAD_PX = 6;
 
 export const BOSS_SPRITE_FOLDERS: Record<string, BossSpriteConfig> = {
+  boss_demiurge: { folder: 'lateral/05-demiurgo', attacks: ['ataque-esfera', 'ataque-ritual-sem-luz', 'ataque-ritual'], walkFrameSec: 0.09, attackFrameSec: 0.1 },
   boss_anubis: { folder: 'lateral/01-anubis', attacks: ['ataque-bastao', 'ataque-balanca'] },
   boss_cronos: { folder: 'lateral/02-hades', attacks: ['ataque-duplo', 'ataque-correntes'] },
   boss_odin: { folder: 'lateral/03-odin', attacks: ['ataque-lanca', 'ataque-corvo'] },
@@ -176,10 +177,7 @@ export function loadBossSprites(bossId: string): BossLateralSprites | undefined 
     idle: load('idle.png'),
     walk: load('andar/spritesheet.png'),
     defeat: load('derrota/spritesheet.png'),
-    attacks: [
-      load(`${cfg.attacks[0]}/spritesheet.png`),
-      load(`${cfg.attacks[1]}/spritesheet.png`),
-    ],
+    attacks: cfg.attacks.map(attack => load(`${attack}/spritesheet.png`)),
   };
   cachedBossSprites.set(bossId, sprites);
   return sprites;

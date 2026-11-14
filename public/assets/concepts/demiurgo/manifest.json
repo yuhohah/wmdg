@@ -1,0 +1,60 @@
+{
+  "generator": "PixelLab MCP / create_image_pro",
+  "purpose": "Três conceitos visuais do novo boss O Demiurgo; sem integração ao jogo.",
+  "size": [
+    192,
+    192
+  ],
+  "transparent": true,
+  "styleReferences": [
+    "../bosses/01-anubis.png",
+    "../bosses/03-odin.png",
+    "../bosses/04-caos-primordial.png",
+    "../bosses/04-caos-referencia-v2.png",
+    "../esfera-pixellab-v1/05-plenitude-armilar.png"
+  ],
+  "concepts": [
+    {
+      "file": "01-demiurgo-arquiteto-cego.png",
+      "name": "Conceito 1 — O Arquiteto Cego",
+      "subtitle": "O Geômetra Vendado da Matéria",
+      "conceptSummary": "Patriarca hermético vendado por uma faixa dourada rachada, coroa-auréola de astrolábio férreo, caixa torácica aberta com engrenagens planetárias, compasso monumental e prumo/esquadro de pedra.",
+      "jobId": "e6f73a31-480f-416e-989e-f7d4a9b9e480",
+      "assetId": "c323a247-3ccc-5aa1-a148-ec6fa732904f",
+      "seed": 710101,
+      "styleImage": "../bosses/01-anubis.png",
+      "referenceImages": [
+        "../bosses/03-odin.png",
+        "../esfera-pixellab-v1/05-plenitude-armilar.png"
+      ]
+    },
+    {
+      "file": "02-demiurgo-yaldabaoth.png",
+      "name": "Conceito 2 — Yaldabaoth, O Arconte Leontocefálico",
+      "subtitle": "O Falso Criador Serpentino",
+      "conceptSummary": "Forma gnóstica clássica de Yaldabaoth: cabeça leonina de osso e prata com olhos cegos e coroa solar de sete raios, peitoral com sete selos planetários, corpo inferior em cauda serpentina escamada com asas esqueléticas, cetro de gaiola astral e globo acorrentado.",
+      "jobId": "68f94482-97d8-4569-aa59-edb548a8bece",
+      "assetId": "3716c35d-a0ad-56f0-bee6-ecfce8f1515c",
+      "seed": 710202,
+      "styleImage": "../bosses/01-anubis.png",
+      "referenceImages": [
+        "../bosses/01-anubis.png",
+        "../bosses/04-caos-primordial.png"
+      ]
+    },
+    {
+      "file": "03-demiurgo-relogio-astral.png",
+      "name": "Conceito 3 — O Relógio dos Sete Céus",
+      "subtitle": "O Ídolo Armilar do Destino",
+      "conceptSummary": "Colosso mecânico-ocultista sem rosto humano: máscara de quadrante solar com fenda vertical cega e mitra bipartida, núcleo de vazio obsidiano cercado por dois aros armilares com sete selos planetários, quatro braços articulados com correntes e fragmentos de monólito levitantes.",
+      "jobId": "a5edb098-495f-4a9e-859f-04c3f9d15717",
+      "assetId": "9e318b87-4ccb-5cd4-9152-bdc68d4c97e3",
+      "seed": 710303,
+      "styleImage": "../bosses/01-anubis.png",
+      "referenceImages": [
+        "../bosses/04-caos-referencia-v2.png",
+        "../esfera-pixellab-v1/05-plenitude-armilar.png"
+      ]
+    }
+  ]
+}

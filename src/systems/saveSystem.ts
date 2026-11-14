@@ -1,3 +1,4 @@
+import { isDemiurgeState, type DemiurgeState } from './demiurge.js';
 // --- Save System for Cult of the Sphere ---
 
 import type {
@@ -26,6 +27,7 @@ import {
 } from '../config/gnose.js';
 
 export interface SaveData {
+  demiurge?: DemiurgeState;
   version: number;
   timestamp: number;
   stats: {
@@ -72,6 +74,7 @@ const optional = (object: Record<string, unknown>, key: string, check: (value: u
 /** Check the actual persistence boundary, including legacy optional fields, before any mutation. */
 export function isValidSaveData(value: unknown): value is SaveData {
   if (!record(value) || value.version !== SaveSystem.CURRENT_VERSION || !nonnegative(value.timestamp) || !record(value.stats)) return false;
+  if (!optional(value, 'demiurge', isDemiurgeState)) return false;
   const stats = value.stats;
   if (!['faithPoints', 'totalFaithAccumulated', 'fervorPoints', 'relicPoints', 'bestRelicsToGet'].every(key => nonnegative(stats[key]))) return false;
   if (!integer(stats.totalClicks) || !integer(stats.incarnationStage) || stats.incarnationStage === 0) return false;
@@ -205,6 +208,7 @@ export class SaveSystem {
 }
 
 export interface SaveStateHost {
+  demiurge: DemiurgeState;
   campaignEnding: 'pending' | 'completed' | 'freeplay';
   faithPoints: number;
   totalFaithAccumulated: number;
@@ -259,6 +263,7 @@ export interface SaveStateHost {
 
 export function buildSaveDataFromState(state: SaveStateHost): SaveData {
   return {
+    demiurge: { ...state.demiurge },
     version: SaveSystem.CURRENT_VERSION,
     progressionRevision: PROGRESSION_REVISION,
     timestamp: Date.now(),
@@ -314,6 +319,11 @@ export function applySaveDataToState(state: SaveStateHost, save: SaveData): void
   if (!isValidSaveData(save)) throw new TypeError('Dados de progresso inválidos.');
   state.retreatBossBattle();
   state.resetToDefaults();
+  if (isDemiurgeState(save.demiurge)) state.demiurge = { ...save.demiurge };
+  if (state.demiurge.phase === 'fighting' || state.demiurge.phase === 'approaching') {
+    state.demiurge.phase = save.gnose?.defeatedBosses?.includes('boss_demiurge') ? 'defeated' : 'walking';
+    state.demiurge.elapsed = 0;
+  }
   state.campaignEnding =
     save.stats.campaignEnding === 'completed' || save.stats.campaignEnding === 'freeplay'
       ? save.stats.campaignEnding

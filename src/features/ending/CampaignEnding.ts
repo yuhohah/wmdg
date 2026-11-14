@@ -1,5 +1,5 @@
 import { GameStateManager } from '../../core/GameState.js';
-import { GNOSE_BOSSES } from '../../config/bosses.js';
+import { COMBAT_BOSSES } from '../../config/bosses.js';
 import { formatNumber } from '../../systems/numberFormat.js';
 import { EndingRitual, type RitualPhase } from './EndingRitual.js';
 import type { AudioManager } from '../../systems/audio.js';
@@ -22,14 +22,14 @@ export class CampaignEnding {
   }
 
   public update(): void {
-    const shouldHide = this.gs.campaignEnding === 'pending' || !this.canPresent();
+    const shouldHide = !this.gs.isCampaignComplete() || this.gs.campaignEnding === 'pending' || !this.canPresent();
     if (this.launcher.hidden !== shouldHide) this.launcher.hidden = shouldHide;
     if (this.dialog || !this.canPresent() || document.querySelector('dialog[open], .modal-overlay.open')) return;
     if (this.gs.campaignEnding === 'pending' && this.gs.isCampaignComplete()) this.open(true);
   }
 
   public open(tribute = true): void {
-    if (this.dialog || !this.canPresent()) return;
+    if (this.dialog || !this.canPresent() || !this.gs.isCampaignComplete()) return;
     if (this.gs.campaignEnding === 'pending' && !this.gs.isCampaignComplete()) return;
     const dialog = document.createElement('dialog');
     this.dialog = dialog;
@@ -113,7 +113,7 @@ export class CampaignEnding {
       this.gs.campaignEnding = 'completed';
       this.save();
     }
-    copy.innerHTML = `<p class="ending-eyebrow">A ETERNIDADE É SUA</p><h1 id="ending-title">JOGO LIVRE? (LEADERBOARD)</h1><p>A jornada foi concluída. Seu culto pode continuar.<br>Expanda sua criação e enfrente novamente os guardiões para superar seus recordes.</p><details class="ending-records"><summary>Leaderboard local · seus melhores tempos</summary><p>Recordes deste save. Ranking online ainda indisponível.</p><ol>${GNOSE_BOSSES.map(boss => {
+    copy.innerHTML = `<p class="ending-eyebrow">A ETERNIDADE É SUA</p><h1 id="ending-title">JOGO LIVRE? (LEADERBOARD)</h1><p>A jornada foi concluída. Seu culto pode continuar.<br>Expanda sua criação e enfrente novamente os guardiões para superar seus recordes.</p><details class="ending-records"><summary>Leaderboard local · seus melhores tempos</summary><p>Recordes deste save. Ranking online ainda indisponível.</p><ol>${COMBAT_BOSSES.map(boss => {
       const time = this.gs.getBossBestTimeSec(boss.id);
       return `<li><span>${boss.name}</span><strong>${time === undefined ? 'Sem registro' : `${time.toFixed(1)} s`}</strong></li>`;
     }).join('')}</ol><p>Fé acumulada: ${formatNumber(this.gs.totalFaithAccumulated)} · Ascensões: ${this.gs.gnoseResets}</p></details>`;

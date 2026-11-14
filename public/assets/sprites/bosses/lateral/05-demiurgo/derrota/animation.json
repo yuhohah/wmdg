@@ -1,0 +1,21 @@
+{
+  "boss": "05-demiurgo",
+  "name": "O Demiurgo — Yaldabaoth",
+  "key": "derrota",
+  "label": "Derrota",
+  "sourceJobId": "658a92e9-6326-45a5-818d-613ab8b32946",
+  "jobId": "e68f82de-6690-4457-b515-4abc9450eb9b",
+  "description": "Defeat non-looping: stagger in pain, head and crown droop, release orb and staff, wings fold and collapse, serpentine coils buckle as torso sinks heavily to ground, end motionless slumped on tail with dropped staff beside body. Stay collapsed at end, never recover or resurrect.",
+  "generator": "PixelLab PixMiniMax",
+  "frame_count": 16,
+  "source_frame_count": 17,
+  "sheet_frame_count": 17,
+  "frame_width": 256,
+  "frame_height": 192,
+  "frame_duration_ms": 100,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true,
+  "sourceFrameIncluded": true
+}

@@ -1,0 +1,21 @@
+{
+  "boss": "05-demiurgo",
+  "name": "O Demiurgo — Yaldabaoth",
+  "key": "andar",
+  "label": "Andar",
+  "sourceJobId": "658a92e9-6326-45a5-818d-613ab8b32946",
+  "jobId": "44083ef6-4580-4359-9b8a-cb6a71c43a3d",
+  "description": "Complete seamless walking locomotion cycle IN PLACE to the right. Serpentine lower body undulates in alternating coils against ground, upper torso sways rhythmically, wings flex subtly, staff travels with hand, orb remains held. No human legs. Return to initial pose.",
+  "generator": "PixelLab PixMiniMax",
+  "frame_count": 16,
+  "source_frame_count": 17,
+  "sheet_frame_count": 17,
+  "frame_width": 256,
+  "frame_height": 192,
+  "frame_duration_ms": 90,
+  "loop": true,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true,
+  "sourceFrameIncluded": true
+}

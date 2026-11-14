@@ -25,6 +25,6 @@ export default defineConfig({
   plugins: [removeUnshippedAssets()],
   server: {
     port: 5173,
-    host: 'localhost'
+    host: true
   }
 });
