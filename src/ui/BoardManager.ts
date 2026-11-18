@@ -1,4 +1,5 @@
 import { BoardLayout, WORLD_TOP } from './BoardLayout.js';
+import { hudBottom } from './dom.js';
 
 interface FollowMeasure {
   width: number;
@@ -541,11 +542,11 @@ export class BoardManager {
 
   private measureFollow(viewportEl: HTMLElement, worldEl: HTMLElement): FollowMeasure {
     this.recoverNativeScroll();
-    const hud = document.querySelector<HTMLElement>('.top-hud-bar')?.getBoundingClientRect();
+    const hud = hudBottom(document.querySelector('.top-hud-bar'));
     return {
       width: viewportEl.clientWidth || window.innerWidth,
       height: viewportEl.clientHeight || window.innerHeight,
-      top: Math.max(90, hud ? hud.bottom + 12 : 90),
+      top: Math.max(90, hud + 12),
       worldWidth: worldEl.offsetWidth,
       worldHeight: worldEl.offsetHeight,
     };
@@ -564,10 +565,9 @@ export class BoardManager {
     const isMobile = viewWidth <= 860;
 
     // Safe viewport margins accounting for Top HUD and Bottom QuickNav + Utility Row
-    const hudEl = document.querySelector<HTMLElement>('.top-hud-bar');
-    const hudRect = hudEl?.getBoundingClientRect();
-    const topSafe = hudRect && hudRect.height > 0
-      ? Math.min(viewHeight / 2, Math.round(hudRect.bottom + 8))
+    const hud = hudBottom(document.querySelector('.top-hud-bar'));
+    const topSafe = hud > 0
+      ? Math.min(viewHeight / 2, Math.round(hud + 8))
       : (isMobile ? 54 : 76);
 
     const navEl = document.getElementById('board-quicknav-bar');

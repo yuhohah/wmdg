@@ -2,6 +2,7 @@ import { GameStateManager } from '../core/GameState.js';
 import { AudioManager } from '../systems/audio.js';
 import { formatNumber } from '../systems/calculations.js';
 import { icon } from './icons.js';
+import { hudBottom } from './dom.js';
 import { CARD_TUTORIALS, cardTutorialKey, type CardTutorial } from '../config/cardTutorials.js';
 
 export interface OnboardingGuideOptions {
@@ -435,8 +436,8 @@ export class OnboardingGuide {
       const balloonH = bRect.height || 185;
 
       const hudBar = this.hudBarEl ?? (this.hudBarEl = document.querySelector<HTMLElement>('.top-hud-bar'));
-      const hudRect = hudBar?.getBoundingClientRect();
-      const topSafe = hudRect && hudRect.height > 0 ? Math.round(hudRect.bottom + 6) : 52;
+      const hud = hudBottom(hudBar);
+      const topSafe = hud > 0 ? Math.round(hud + 6) : 52;
       const navBar = this.quickNavBarEl ?? (this.quickNavBarEl = document.getElementById('board-quicknav-bar'));
       const navRect = navBar?.getBoundingClientRect();
       const bottomLimit = navRect && navRect.height > 0 ? Math.round(navRect.top - 8) : vh - 56;

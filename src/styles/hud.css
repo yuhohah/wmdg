@@ -251,6 +251,10 @@ html,body { background:#211a18; }
 #gameplay-screen { padding:84px 20px 14px; gap:0; display:flex; flex-direction:column; height:100%; box-sizing:border-box; overflow:hidden; }
 .top-hud-bar { position:absolute; top:20px; left:38px; width:calc(100% - 76px); height:52px; padding:0; background:none; border:0; pointer-events:none; z-index:40; }
 .top-hud-bar button,.top-hud-bar a { pointer-events:auto; }
+/* The absolute HUD floats over the start screen too: reserve its height, and let a card taller than the window scroll instead of clipping. */
+#start-screen { overflow-y:auto; }
+#start-screen .slide-card { margin:auto; }
+@media (min-width:861px) { #start-screen { padding-top:116px; } }
 .cult-wordmark { font-family:var(--font-game); font-size:20px; line-height:.85; letter-spacing:1px; text-shadow:2px 2px #17110f; padding:8px 12px; background:#261e1be6; border:8px solid transparent; border-image:var(--wood-frame) 8 / 8px / 0 stretch; }
 .cult-mark { display:block; width:30px; height:30px; font-size:0; background:url('/assets/hud/faith.svg') center / contain no-repeat; }
 .resources-hud-card { top:0; padding:0; }
