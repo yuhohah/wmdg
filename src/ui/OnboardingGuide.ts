@@ -59,6 +59,15 @@ export class OnboardingGuide {
     this.onFocusCard = cb;
   }
 
+  // Cached static DOM references & layout dirty state
+  private startScreenEl: HTMLElement | null = null;
+  private convertBtnEl: HTMLElement | null = null;
+  private trackerEl: HTMLElement | null = null;
+  private hudBarEl: HTMLElement | null = null;
+  private quickNavBarEl: HTMLElement | null = null;
+  private lastLayoutSig = '';
+  private balloonContentDirty = true;
+
   private initElements(): void {
     this.overlayEl = document.getElementById('spotlight-tour-overlay');
     this.panelTop = document.getElementById('spotlight-panel-top');
@@ -78,6 +87,12 @@ export class OnboardingGuide {
     this.trackerFillEl = document.getElementById('spotlight-tracker-bar-fill');
     this.actionTipEl = document.getElementById('spotlight-balloon-action-tip');
     this.skipBtn = document.getElementById('spotlight-balloon-skip') as HTMLButtonElement | null;
+
+    this.startScreenEl = document.getElementById('start-screen');
+    this.convertBtnEl = document.getElementById('btn-convert-one');
+    this.trackerEl = document.getElementById('spotlight-balloon-tracker');
+    this.hudBarEl = document.querySelector<HTMLElement>('.top-hud-bar');
+    this.quickNavBarEl = document.getElementById('board-quicknav-bar');
   }
 
   private bindEvents(): void {
@@ -96,12 +111,14 @@ export class OnboardingGuide {
 
     window.addEventListener('resize', () => {
       if (this.overlayEl && this.overlayEl.style.display !== 'none') {
+        this.lastLayoutSig = '';
         this.updatePosition();
       }
     });
 
     window.addEventListener('scroll', () => {
       if (this.overlayEl && this.overlayEl.style.display !== 'none') {
+        this.lastLayoutSig = '';
         this.updatePosition();
       }
     });
@@ -129,6 +146,7 @@ export class OnboardingGuide {
     this.cardTutorial = null;
     this.isDismissed = false;
     this.currentStep = 'sphere';
+    this.lastLayoutSig = '';
     this.update();
   }
 
@@ -141,14 +159,16 @@ export class OnboardingGuide {
     }
     this.isDismissed = true;
     this.gameState.hasSeenIntro = true;
-    document.getElementById('btn-convert-one')?.classList.remove('pulse-guide');
+    const convertBtn = this.convertBtnEl ?? (this.convertBtnEl = document.getElementById('btn-convert-one'));
+    convertBtn?.classList.remove('pulse-guide');
     this.hideOverlay();
   }
 
   private hideOverlay(): void {
     if (!this.overlayEl) return;
     // Hide synchronously so an old dismissal cannot hide the next queued tooltip.
-    this.overlayEl.style.display = 'none';
+    this.setStyleIfChanged(this.overlayEl, 'display', 'none');
+    this.lastLayoutSig = '';
   }
 
   public update(): void {
@@ -172,16 +192,17 @@ export class OnboardingGuide {
     }
 
     // Do not show spotlight overlay while start screen is active
-    const startScreen = document.getElementById('start-screen');
+    const startScreen = this.startScreenEl ?? (this.startScreenEl = document.getElementById('start-screen'));
     if (startScreen && startScreen.classList.contains('active')) {
-      this.overlayEl.style.display = 'none';
+      this.setStyleIfChanged(this.overlayEl, 'display', 'none');
+      this.lastLayoutSig = '';
       return;
     }
 
     // Do not show spotlight overlay while any full modal is visibly open
-    const openModals = document.querySelectorAll('.modal-overlay.open, .modal-overlay.active, dialog[open]');
-    if (openModals.length > 0 || this.gameState.activeBossBattle) {
-      this.overlayEl.style.display = 'none';
+    if (this.gameState.activeBossBattle || document.querySelector('.modal-overlay.open, .modal-overlay.active, dialog[open]')) {
+      this.setStyleIfChanged(this.overlayEl, 'display', 'none');
+      this.lastLayoutSig = '';
       return;
     }
 
@@ -210,7 +231,7 @@ export class OnboardingGuide {
     }
 
     // Toggle glowing pulse on the convert button when in step 2
-    const convertBtn = document.getElementById('btn-convert-one');
+    const convertBtn = this.convertBtnEl ?? (this.convertBtnEl = document.getElementById('btn-convert-one'));
     const shouldPulse = this.currentStep === 'buy_follower';
     if (convertBtn && convertBtn.classList.contains('pulse-guide') !== shouldPulse) {
       convertBtn.classList.toggle('pulse-guide', shouldPulse);
@@ -219,8 +240,8 @@ export class OnboardingGuide {
     // If step just transitioned to buy_follower, pan the board camera to card-followers!
     if (prevStep !== this.currentStep && this.currentStep === 'buy_follower') {
       this.onFocusCard?.('card-followers', true);
-      setTimeout(() => this.updatePosition(), 60);
-      setTimeout(() => this.updatePosition(), 200);
+      setTimeout(() => { this.lastLayoutSig = ''; this.updatePosition(); }, 60);
+      setTimeout(() => { this.lastLayoutSig = ''; this.updatePosition(); }, 200);
     }
 
     this.renderStepContent(faith, targetFaith);
@@ -228,13 +249,17 @@ export class OnboardingGuide {
   }
 
   private setTextIfChanged(el: HTMLElement | null, value: string): void {
-    if (el && el.textContent !== value) el.textContent = value;
+    if (el && el.textContent !== value) {
+      el.textContent = value;
+      this.balloonContentDirty = true;
+    }
   }
 
   private setIconIfChanged(iconKey: Parameters<typeof icon>[0]): void {
     if (!this.iconEl || this.iconEl.dataset.iconKey === iconKey) return;
     this.iconEl.dataset.iconKey = iconKey;
     this.iconEl.innerHTML = icon(iconKey);
+    this.balloonContentDirty = true;
   }
 
   private setStyleIfChanged(el: HTMLElement | null, prop: 'top' | 'left' | 'width' | 'height' | 'display' | 'opacity' | 'borderRadius' | 'background', value: string): void {
@@ -243,7 +268,7 @@ export class OnboardingGuide {
 
   private renderStepContent(faith: number, targetFaith: number): void {
     this.setTextIfChanged(this.skipBtn, 'Pular');
-    const tracker = document.getElementById('spotlight-balloon-tracker');
+    const tracker = this.trackerEl ?? (this.trackerEl = document.getElementById('spotlight-balloon-tracker'));
     this.setStyleIfChanged(tracker, 'display', '');
     if (this.currentStep === 'sphere') {
       const percent = Math.min(100, Math.floor((faith / targetFaith) * 100));
@@ -297,6 +322,7 @@ export class OnboardingGuide {
     const entering = this.cardTutorial !== tutorial;
     this.cardTutorial = tutorial;
     if (entering) {
+      this.lastLayoutSig = '';
       if ('targetSelector' in tutorial) this.onFocusCard?.(tutorial.cardId, true, tutorial.targetSelector);
       else this.onFocusCard?.(tutorial.cardId, true);
     }
@@ -306,10 +332,11 @@ export class OnboardingGuide {
     this.setTextIfChanged(this.descEl, tutorial.lore);
     this.setTextIfChanged(this.actionTipEl, tutorial.basics);
     this.setTextIfChanged(this.skipBtn, 'Entendi');
-    const tracker = document.getElementById('spotlight-balloon-tracker');
+    const tracker = this.trackerEl ?? (this.trackerEl = document.getElementById('spotlight-balloon-tracker'));
     this.setStyleIfChanged(tracker, 'display', 'none');
     this.applyPositionSync();
     if (entering) {
+      this.lastLayoutSig = '';
       this.updatePosition();
       this.skipBtn?.focus({ preventScroll: true });
     }
@@ -325,7 +352,7 @@ export class OnboardingGuide {
       ? document.getElementById(this.cardTutorial.cardId)?.querySelector<HTMLElement>(this.cardTutorial.targetSelector) : null;
     const targetEl = tutorialTarget ?? tutorialHeader ?? (this.currentStep === 'sphere'
       ? (document.getElementById('divine-sphere-btn') || document.getElementById('divine-sphere-container'))
-      : (document.getElementById('btn-convert-one') || document.getElementById('card-followers')));
+      : ((this.convertBtnEl ?? (this.convertBtnEl = document.getElementById('btn-convert-one'))) || document.getElementById('card-followers')));
 
     if (!targetEl) return;
 
@@ -348,14 +375,22 @@ export class OnboardingGuide {
       rect = targetEl.getBoundingClientRect();
     }
 
-    this.setStyleIfChanged(this.overlayEl, 'display', 'block');
-    this.setStyleIfChanged(this.overlayEl, 'opacity', '1');
-
     const pad = this.currentStep === 'sphere' ? 10 : 6;
     const spotTop = Math.max(0, Math.round(rect.top - pad));
     const spotLeft = Math.max(0, Math.round(rect.left - pad));
     const spotWidth = Math.round(Math.min(vw - spotLeft, rect.width + pad * 2));
     const spotHeight = Math.round(Math.min(vh - spotTop, rect.height + pad * 2));
+    const layoutSig = `${vw}:${vh}:${spotTop}:${spotLeft}:${spotWidth}:${spotHeight}:${this.cardTutorial ? cardTutorialKey(this.cardTutorial) : this.currentStep}`;
+
+    if (!this.balloonContentDirty && layoutSig === this.lastLayoutSig && this.overlayEl.style.display === 'block') {
+      return;
+    }
+    this.balloonContentDirty = false;
+    this.lastLayoutSig = layoutSig;
+
+    this.setStyleIfChanged(this.overlayEl, 'display', 'block');
+    this.setStyleIfChanged(this.overlayEl, 'opacity', '1');
+
     const spotBottom = spotTop + spotHeight;
     const spotRight = spotLeft + spotWidth;
 
@@ -399,9 +434,11 @@ export class OnboardingGuide {
       const bRect = this.balloonEl.getBoundingClientRect();
       const balloonH = bRect.height || 185;
 
-      const hudRect = document.querySelector('.top-hud-bar')?.getBoundingClientRect();
+      const hudBar = this.hudBarEl ?? (this.hudBarEl = document.querySelector<HTMLElement>('.top-hud-bar'));
+      const hudRect = hudBar?.getBoundingClientRect();
       const topSafe = hudRect && hudRect.height > 0 ? Math.round(hudRect.bottom + 6) : 52;
-      const navRect = document.getElementById('board-quicknav-bar')?.getBoundingClientRect();
+      const navBar = this.quickNavBarEl ?? (this.quickNavBarEl = document.getElementById('board-quicknav-bar'));
+      const navRect = navBar?.getBoundingClientRect();
       const bottomLimit = navRect && navRect.height > 0 ? Math.round(navRect.top - 8) : vh - 56;
 
       let bTop = 0;

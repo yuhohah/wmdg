@@ -41,11 +41,17 @@ export class BoardManager {
   private initialPanY: number = 0;
   public hasMoved: boolean = false;
 
-  // Multi-touch Pinch State
+  // Multi-touch Pinch & Coalesced Drag State
   private activePointers = new Map<number, { x: number; y: number }>();
   private initialPinchDistance: number = 0;
   private initialPinchZoom: number = 1.0;
   private initialPinchCenterWorld = { x: 0, y: 0 };
+  private dragViewportRect: DOMRect | null = null;
+  private dragMeasure: FollowMeasure | null = null;
+  private dragCardCenters: Array<{ id: string; cx: number; cy: number }> = [];
+  private panRafId: number | null = null;
+  private pendingDragZoom: boolean = false;
+  private pendingDragQuickNav: boolean = false;
 
   // Quick Navigation & Cards
   private cards = new Map<string, HTMLElement>();
@@ -166,7 +172,8 @@ export class BoardManager {
         const pts = Array.from(this.activePointers.values());
         this.initialPinchDistance = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
         this.initialPinchZoom = this.zoom;
-        const rect = this.viewportEl!.getBoundingClientRect();
+        this.captureDragGeometry();
+        const rect = this.dragViewportRect ?? this.viewportEl!.getBoundingClientRect();
         const midX = (pts[0].x + pts[1].x) / 2 - rect.left;
         const midY = (pts[0].y + pts[1].y) / 2 - rect.top;
         this.initialPinchCenterWorld = {
@@ -202,6 +209,7 @@ export class BoardManager {
       this.initialPanY = this.panY;
       this.hasMoved = false;
       this.isCameraTransitioning = false;
+      this.captureDragGeometry();
     });
 
     // 3. Pointer Move (Dragging / Panning)
@@ -212,21 +220,22 @@ export class BoardManager {
 
       // Handle 2-finger pinch
       if (this.activePointers.size === 2) {
-        const pts = Array.from(this.activePointers.values());
-        const currentDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+        const iter = this.activePointers.values();
+        const p0 = iter.next().value!;
+        const p1 = iter.next().value!;
+        const currentDist = Math.hypot(p0.x - p1.x, p0.y - p1.y);
         if (this.initialPinchDistance > 10) {
           const pinchFactor = currentDist / this.initialPinchDistance;
           const newZoom = Math.min(this.maxZoom, Math.max(this.minZoom, this.initialPinchZoom * pinchFactor));
-          const rect = this.viewportEl!.getBoundingClientRect();
-          const midX = (pts[0].x + pts[1].x) / 2 - rect.left;
-          const midY = (pts[0].y + pts[1].y) / 2 - rect.top;
+          const rect = this.dragViewportRect ?? this.viewportEl!.getBoundingClientRect();
+          const midX = (p0.x + p1.x) / 2 - rect.left;
+          const midY = (p0.y + p1.y) / 2 - rect.top;
 
           this.panX = midX - this.initialPinchCenterWorld.x * newZoom;
           this.panY = midY - this.initialPinchCenterWorld.y * newZoom;
           this.zoom = newZoom;
 
-          this.applyTransform();
-          this.updateZoomIndicator();
+          this.scheduleDragFrame(true, false);
         }
         return;
       }
@@ -251,8 +260,7 @@ export class BoardManager {
       this.panX = this.initialPanX + deltaX;
       this.panY = this.initialPanY + deltaY;
 
-      this.applyTransform();
-      this.updateActiveQuickNav();
+      this.scheduleDragFrame(false, true);
     });
 
     // 4. Pointer Up / Cancel
@@ -260,14 +268,19 @@ export class BoardManager {
       this.activePointers.delete(e.pointerId);
 
       if (e.pointerId === this.activePointerId) {
+        this.flushDragFrame();
         this.isPointerDown = false;
         this.activePointerId = null;
+        this.clearDragGeometry();
         this.viewportEl?.classList.remove('is-dragging');
         try {
           this.viewportEl?.releasePointerCapture(e.pointerId);
         } catch {
           // pointer capture might already be released
         }
+      } else if (this.activePointers.size === 0) {
+        this.flushDragFrame();
+        this.clearDragGeometry();
       }
     };
 
@@ -342,8 +355,73 @@ export class BoardManager {
     }
   }
 
+  private captureDragGeometry(): void {
+    if (!this.viewportEl || !this.worldEl) return;
+    this.dragViewportRect = this.viewportEl.getBoundingClientRect();
+    this.dragMeasure = this.measureFollow(this.viewportEl, this.worldEl);
+    this.dragCardCenters.length = 0;
+    this.cards.forEach((card, id) => {
+      if (card.style.display === 'none') return;
+      this.dragCardCenters.push({
+        id,
+        cx: card.offsetLeft + card.offsetWidth / 2,
+        cy: card.offsetTop + card.offsetHeight / 2,
+      });
+    });
+  }
+
+  private clearDragGeometry(): void {
+    this.dragViewportRect = null;
+    this.dragMeasure = null;
+    this.dragCardCenters.length = 0;
+  }
+
+  private scheduleDragFrame(updateZoom: boolean, updateQuickNav: boolean): void {
+    if (updateZoom) this.pendingDragZoom = true;
+    if (updateQuickNav) this.pendingDragQuickNav = true;
+    if (this.panRafId !== null) return;
+    this.panRafId = window.requestAnimationFrame(() => {
+      this.panRafId = null;
+      const measure = this.dragMeasure ?? undefined;
+      this.applyTransform(measure);
+      if (this.pendingDragZoom) {
+        this.pendingDragZoom = false;
+        this.updateZoomIndicator();
+      }
+      if (this.pendingDragQuickNav) {
+        this.pendingDragQuickNav = false;
+        this.updateActiveQuickNav(measure, this.dragCardCenters.length > 0 ? this.dragCardCenters : undefined);
+      }
+    });
+  }
+
+  private flushDragFrame(): void {
+    if (this.panRafId !== null) {
+      window.cancelAnimationFrame(this.panRafId);
+      this.panRafId = null;
+    }
+    const hadZoom = this.pendingDragZoom;
+    const hadQuickNav = this.pendingDragQuickNav;
+    this.pendingDragZoom = false;
+    this.pendingDragQuickNav = false;
+    if (hadZoom || hadQuickNav) {
+      const measure = this.dragMeasure ?? undefined;
+      this.applyTransform(measure);
+      if (hadZoom) this.updateZoomIndicator();
+      if (hadQuickNav) {
+        this.updateActiveQuickNav(measure, this.dragCardCenters.length > 0 ? this.dragCardCenters : undefined);
+      }
+    }
+  }
+
   // Abort an in-progress pan (a long press turned it into a card drag) and undo its small drift
   private cancelPan(): void {
+    if (this.panRafId !== null) {
+      window.cancelAnimationFrame(this.panRafId);
+      this.panRafId = null;
+      this.pendingDragZoom = false;
+      this.pendingDragQuickNav = false;
+    }
     if (this.activePointerId !== null) {
       try {
         this.viewportEl?.releasePointerCapture(this.activePointerId);
@@ -359,6 +437,7 @@ export class BoardManager {
     this.isPointerDown = false;
     this.activePointerId = null;
     this.hasMoved = false;
+    this.clearDragGeometry();
     this.viewportEl?.classList.remove('is-dragging');
   }
 
@@ -606,10 +685,13 @@ export class BoardManager {
     }, 2000);
   }
 
-  private updateActiveQuickNav(): void {
+  private updateActiveQuickNav(
+    measure?: FollowMeasure,
+    cardCenters?: ReadonlyArray<{ id: string; cx: number; cy: number }>
+  ): void {
     if (!this.viewportEl) return;
-    const viewWidth = this.viewportEl.clientWidth || window.innerWidth;
-    const viewHeight = this.viewportEl.clientHeight || window.innerHeight;
+    const viewWidth = measure?.width ?? (this.viewportEl.clientWidth || window.innerWidth);
+    const viewHeight = measure?.height ?? (this.viewportEl.clientHeight || window.innerHeight);
 
     const currentCenterWorldX = (viewWidth / 2 - this.panX) / this.zoom;
     const currentCenterWorldY = (viewHeight / 2 - this.panY) / this.zoom;
@@ -617,19 +699,33 @@ export class BoardManager {
     let closestCardId = 'card-altar-sphere';
     let minDistance = Infinity;
 
-    this.cards.forEach((card, id) => {
-      if (card.style.display === 'none') return;
-      const cx = card.offsetLeft + card.offsetWidth / 2;
-      const cy = card.offsetTop + card.offsetHeight / 2;
-      const dist = Math.hypot(currentCenterWorldX - cx, currentCenterWorldY - cy);
-      if (dist < minDistance) {
-        minDistance = dist;
-        closestCardId = id;
+    if (cardCenters) {
+      for (let i = 0; i < cardCenters.length; i++) {
+        const { id, cx, cy } = cardCenters[i];
+        const dist = Math.hypot(currentCenterWorldX - cx, currentCenterWorldY - cy);
+        if (dist < minDistance) {
+          minDistance = dist;
+          closestCardId = id;
+        }
       }
-    });
+    } else {
+      this.cards.forEach((card, id) => {
+        if (card.style.display === 'none') return;
+        const cx = card.offsetLeft + card.offsetWidth / 2;
+        const cy = card.offsetTop + card.offsetHeight / 2;
+        const dist = Math.hypot(currentCenterWorldX - cx, currentCenterWorldY - cy);
+        if (dist < minDistance) {
+          minDistance = dist;
+          closestCardId = id;
+        }
+      });
+    }
 
     this.quickNavBtns.forEach((btn, targetId) => {
-      btn.classList.toggle('active', targetId === closestCardId);
+      const isActive = targetId === closestCardId;
+      if (btn.classList.contains('active') !== isActive) {
+        btn.classList.toggle('active', isActive);
+      }
     });
   }
 

@@ -792,6 +792,39 @@ html .settings-section-subtitle {
   color: var(--gold) !important;
 }
 
+html .settings-section-subtitle::after {
+  background: linear-gradient(90deg, rgba(185, 155, 86, 0.42), transparent) !important;
+}
+
+html .settings-section + .settings-section,
+html .settings-modal-footer {
+  border-top: 1px solid var(--line) !important;
+}
+
+html .fps-segmented-control {
+  background: var(--void) !important;
+  border: 1px solid var(--line) !important;
+}
+
+html .btn-fps-option {
+  font: 18px/1 var(--font-game) !important;
+  color: var(--bone-dim) !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  padding: 6px 12px !important;
+}
+
+html .btn-fps-option:hover:not(.active) {
+  color: var(--bone) !important;
+  background: rgba(236, 226, 200, 0.05) !important;
+}
+
+html .btn-fps-option.active {
+  color: var(--gold-light) !important;
+  background: rgba(185, 155, 86, 0.18) !important;
+  border-color: var(--gold) !important;
+}
+
 html .setting-item.setting-danger {
   border-color: rgba(200, 96, 74, 0.45) !important;
 }

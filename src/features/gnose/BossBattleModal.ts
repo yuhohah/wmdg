@@ -79,6 +79,8 @@ export interface BossBattleModalOptions {
 
 export class BossBattleModal {
   private options: BossBattleModalOptions;
+  private boardWorldEl: HTMLElement | null = null;
+  private landscapeMediaQuery: MediaQueryList | null = null;
   private worldStageEl: HTMLElement | null = null;
   private worldCanvasEl: HTMLCanvasElement | null = null;
   private worldCtx: CanvasRenderingContext2D | null = null;
@@ -131,6 +133,16 @@ export class BossBattleModal {
   private cameraPhase: BattleCameraTarget['phase'] | null = null;
   private ritualDial?: DemiurgeRitualDial;
   private lastRitualOutcomeId = '';
+  private lastSpecialWaveGroupId = '';
+  private smoothCombatSec = 0;
+  private lastObservedCombatSec = -1;
+  private odinTracker: {
+    id: string;
+    observedRemaining: number;
+    observedAt: number;
+    displayedRemaining: number;
+    playedGreenTone: boolean;
+  } | null = null;
   private attackedRiftIds = new Set<string>();
 
   private incX = INCARNATION_FALLBACK_SPAWN.x;
@@ -329,6 +341,7 @@ export class BossBattleModal {
 
     // World-space Battle Stage anchored around the central Sphere (1740, 854)
     const worldEl = document.getElementById('dodeca-board-world');
+    this.boardWorldEl = worldEl;
     const stage = document.createElement('div');
     stage.id = 'boss-world-stage';
     stage.className = 'boss-world-stage';
@@ -463,8 +476,22 @@ export class BossBattleModal {
       this.updateUI();
     });
 
-    this.options.gameState.onBossBattleFinished = ({ boss, victory, isRematch, durationSec }) => {
-      this.handleBattleFinished(boss, victory, isRematch ?? false, durationSec ?? 0);
+    this.options.gameState.onBossBattleFinished = ({
+      boss,
+      victory,
+      isRematch,
+      durationSec,
+      cursePurified,
+      curseStacks,
+    }) => {
+      this.handleBattleFinished(
+        boss,
+        victory,
+        isRematch ?? false,
+        durationSec ?? 0,
+        cursePurified ?? false,
+        curseStacks ?? this.options.gameState.getBossCurseStacks()
+      );
     };
 
     document.addEventListener('keydown', (event) => {
@@ -552,7 +579,12 @@ export class BossBattleModal {
     }
 
     this.activeBossIdForScene = bossId;
-    this.ritualDial = undefined; this.lastRitualOutcomeId = '';
+    this.ritualDial = undefined;
+    this.lastRitualOutcomeId = '';
+    this.lastSpecialWaveGroupId = '';
+    this.smoothCombatSec = 0;
+    this.lastObservedCombatSec = -1;
+    this.odinTracker = null;
     this.lastRiftsMissed = 0;
     this.lastPhase = 1;
     this.bossTrail = { value: 100, holdSec: 0 };
@@ -619,6 +651,7 @@ export class BossBattleModal {
     const wasOpen = this.isOpen();
     this.isBattleActive = false;
     this.ritualDial = undefined;
+    this.odinTracker = null;
     if (this.animFrameId !== null) {
       cancelAnimationFrame(this.animFrameId);
       this.animFrameId = null;
@@ -793,11 +826,153 @@ export class BossBattleModal {
       || (this.options.gameState.activeBossBattle?.ritualOutcome?.remainingSec ?? 0) > 0) return;
     this.bossState = 'attacking';
     this.bossAttackFrameTimeSec = 0;
-    const phase = this.options.gameState.activeBossBattle?.phase ?? 1;
-    if ((phase >= 2 || this.activeBossIdForScene === 'boss_demiurge') && typeof rift?.attackIndex === 'number') {
+    if (this.options.gameState.activeBossBattle?.bossId === 'boss_demiurge') {
+      this.bossAttackIndex = 0;
+    } else if (typeof rift?.attackIndex === 'number') {
       this.bossAttackIndex = rift.attackIndex % 2;
     } else {
       this.bossAttackIndex = (this.bossAttackIndex + 1) % 2;
+    }
+  }
+
+  private syncRitualOutcome(): boolean {
+    const battle = this.options.gameState.activeBossBattle;
+    const outcome = battle?.ritualOutcome;
+    if (!battle || !outcome || outcome.id === this.lastRitualOutcomeId) return false;
+    this.lastRitualOutcomeId = outcome.id;
+    this.lastRiftsMissed = battle.riftsMissed;
+    this.bossAttackFrameTimeSec = 0;
+    this.bossParryRecoverySec = 1.75;
+    if (outcome.side === 'center') {
+      this.bossState = 'idle';
+      this.bossHitFlashSec = 0.28;
+      this.options.audio.playChime();
+      this.showHitFeedback('Equilíbrio perfeito! Ritual aparado.');
+    } else if (outcome.side === 'moon') {
+      this.bossState = 'attacking';
+      this.bossAttackIndex = 2; // 'ataque-ritual' — celestial light beam self-heal
+      this.bossHitFlashSec = 0;
+      this.options.audio.playTone(432, 'sine', 0.24);
+      this.showHitFeedback(`Lua: cura do Demiurgo +${outcome.percent.toFixed(1)}%`);
+    } else {
+      this.bossState = 'attacking';
+      this.bossAttackIndex = 0; // 'ataque-esfera' — dark orb hurled at the Sphere
+      this.bossHitFlashSec = 0;
+      this.options.audio.playTone(210, 'sawtooth', 0.18);
+      this.showHitFeedback(`Sol: dano à Esfera \u2212${outcome.percent.toFixed(1)}%`);
+    }
+    return true;
+  }
+
+  private isLandscapePromptLayout(): boolean {
+    if (typeof window === 'undefined' || !window.matchMedia) return false;
+    this.landscapeMediaQuery ??= window.matchMedia(
+      '(min-width: 760px) and (max-height: 600px), (min-width: 900px) and (max-height: 820px)'
+    );
+    return this.landscapeMediaQuery.matches;
+  }
+
+  private applyOdinCardFrame(rift: BossRift, displayedRemaining: number): void {
+    if (!this.riftsLayerEl) return;
+    const card = this.riftsLayerEl.querySelector<HTMLElement>(`.odin-parry-card[data-rift-id="${rift.id}"]`);
+    if (!card) return;
+    const cue = odinParryCue({ remainingSec: displayedRemaining, maxSec: rift.maxSec });
+    if (cue.green && this.odinTracker && this.odinTracker.id === rift.id && !this.odinTracker.playedGreenTone) {
+      this.odinTracker.playedGreenTone = true;
+      this.options.audio.playTone(988, 'sine', 0.09);
+    }
+    card.classList.toggle('is-green', cue.green);
+    card.classList.toggle('is-ready-soon', cue.readySoon);
+    const ringEl = card.querySelector<HTMLElement>('.odin-parry-ring');
+    if (ringEl) {
+      ringEl.style.width = `${cue.diameter.toFixed(1)}px`;
+      ringEl.style.height = `${cue.diameter.toFixed(1)}px`;
+    }
+    const btn = card.querySelector<HTMLButtonElement>('button.boss-rift-odin-raven');
+    if (btn) {
+      btn.classList.toggle('is-green', cue.green);
+      btn.classList.toggle('is-ready-soon', cue.readySoon);
+      btn.setAttribute(
+        'aria-label',
+        cue.green
+          ? 'Verde: apare o corvo de Odin agora!'
+          : cue.readySoon
+            ? 'Âmbar: prepare-se para aparar o corvo'
+            : 'Vermelho: aguarde o anel entrar na zona verde'
+      );
+    }
+    this.setText(
+      card.querySelector<HTMLElement>('.odin-parry-status'),
+      cue.green ? '\u2726 APARE AGORA! \u2726' : cue.readySoon ? 'PREPARE-SE…' : 'AGUARDE…'
+    );
+    this.setText(
+      card.querySelector<HTMLElement>('.odin-parry-timer'),
+      `${formatFixed(Math.max(0, displayedRemaining), 1)}s`
+    );
+    const fillEl = card.querySelector<HTMLElement>('.odin-parry-progress-fill');
+    if (fillEl && rift.maxSec > 0) {
+      const pct = Math.max(0, Math.min(100, (displayedRemaining / rift.maxSec) * 100));
+      fillEl.style.width = `${pct.toFixed(1)}%`;
+    }
+  }
+
+  private updateSmoothRiftsFrame(dt: number): void {
+    const battle = this.options.gameState.activeBossBattle;
+    if (!battle) {
+      this.odinTracker = null;
+      return;
+    }
+    const elapsedCombat = battle.elapsedCombatSec ?? 0;
+    if (elapsedCombat !== this.lastObservedCombatSec) {
+      this.lastObservedCombatSec = elapsedCombat;
+      if (Math.abs(this.smoothCombatSec - elapsedCombat) > 0.14 || elapsedCombat === 0) {
+        this.smoothCombatSec = elapsedCombat;
+      }
+    }
+    this.smoothCombatSec = Math.min(elapsedCombat + 0.12, this.smoothCombatSec + dt);
+
+    const odinRift = battle.activeRifts.find((r) => r.kind === 'odin_raven');
+    if (!odinRift) {
+      this.odinTracker = null;
+    } else {
+      const now = performance.now();
+      if (!this.odinTracker || this.odinTracker.id !== odinRift.id) {
+        this.odinTracker = {
+          id: odinRift.id,
+          observedRemaining: odinRift.remainingSec,
+          observedAt: now,
+          displayedRemaining: odinRift.remainingSec,
+          playedGreenTone: false,
+        };
+      } else if (odinRift.remainingSec !== this.odinTracker.observedRemaining) {
+        this.odinTracker.observedRemaining = odinRift.remainingSec;
+        this.odinTracker.observedAt = now;
+      }
+      const extrap =
+        Math.min(0.11, Math.max(0, (now - this.odinTracker.observedAt) / 1000)) *
+        Math.max(0, this.speedMultiplier);
+      this.odinTracker.displayedRemaining = Math.max(
+        0,
+        Math.min(this.odinTracker.displayedRemaining, odinRift.remainingSec - extrap)
+      );
+      this.applyOdinCardFrame(odinRift, this.odinTracker.displayedRemaining);
+    }
+
+    if (this.riftsLayerEl && battle.activeRifts.some((r) => r.kind === 'chaos_orbit')) {
+      const worldEl = (this.boardWorldEl ??= document.getElementById('dodeca-board-world'));
+      const promptScale = Number(worldEl?.style.getPropertyValue('--boss-prompt-scale')) || 1;
+      const sphereLocal = {
+        x: BOSS_SPHERE_CENTER.x - this.stageOriginX,
+        y: BOSS_SPHERE_CENTER.y - this.stageOriginY,
+      };
+      for (const rift of battle.activeRifts) {
+        if (rift.kind !== 'chaos_orbit') continue;
+        const btn = this.riftsLayerEl.querySelector<HTMLButtonElement>(`button[data-rift-id="${rift.id}"]`);
+        if (!btn) continue;
+        const pos = parryCardPosition(rift, sphereLocal, this.smoothCombatSec, promptScale);
+        btn.style.left = `${pos.x}px`;
+        btn.style.top = `${pos.y}px`;
+      }
     }
   }
 
@@ -813,7 +988,17 @@ export class BossBattleModal {
     if (this.incState === 'leading_return' || this.incState === 'returning_to_altar') {
       target = { phase: 'incarnation', x: this.incX, y: this.incY - 65, width: 900, height: 700 };
     } else if (this.bossState === 'awaiting_ritual') {
-      target = { phase: 'incarnation', x: this.incX, y: this.incY - 65, width: 680, height: 560 };
+      if (this.activeBossIdForScene === 'boss_demiurge') {
+        target = {
+          phase: 'combat',
+          x: BOSS_SPHERE_CENTER.x - 40,
+          y: BOSS_SPHERE_CENTER.y,
+          width: SACRED_CIRCLE_RADIUS * 2 + 220,
+          height: SACRED_CIRCLE_RADIUS * 2 + 180,
+        };
+      } else {
+        target = { phase: 'incarnation', x: this.incX, y: this.incY - 65, width: 680, height: 560 };
+      }
     } else if (this.bossState === 'walking') {
       target = { phase: 'boss', x: this.bossX, y: this.bossY - 90, width: 760, height: 580 };
     } else {
@@ -828,6 +1013,13 @@ export class BossBattleModal {
   }
 
   private getBossRenderFrame(bossId: string): BossRenderFrame {
+    const activeRitual =
+      bossId === 'boss_demiurge'
+        ? this.options.gameState.activeBossBattle?.activeRifts.find((r) => r.kind === 'demiurge_ritual')
+        : undefined;
+    const channelingRitualElapsedSec = activeRitual
+      ? Math.max(0, activeRitual.maxSec - activeRitual.remainingSec)
+      : undefined;
     return resolveBossRenderFrame({
       bossId,
       bossX: this.bossX,
@@ -838,6 +1030,8 @@ export class BossBattleModal {
       bossWalkTimeSec: this.bossWalkTimeSec,
       bossAttackIndex: this.bossAttackIndex,
       bossAttackFrameTimeSec: this.bossAttackFrameTimeSec,
+      channelingRitualElapsedSec,
+      channelingRitualDurationSec: activeRitual?.maxSec,
       climaxVictory: this.climaxState?.victory,
       climaxRemainingSec: this.climaxState?.remainingSec,
       climaxTotalSec: this.climaxState?.totalSec,
@@ -982,17 +1176,8 @@ export class BossBattleModal {
     this.bossParryRecoverySec = Math.max(0, this.bossParryRecoverySec - dt);
     const ritual = battle?.activeRifts.find(r => r.kind === 'demiurge_ritual');
     if (ritual) this.ritualDial?.update(ritual, this.speedMultiplier);
-    const outcome = battle?.ritualOutcome;
-    if (outcome && outcome.id !== this.lastRitualOutcomeId) {
-      this.lastRitualOutcomeId = outcome.id;
-      this.bossAttackFrameTimeSec = 0;
-      this.bossParryRecoverySec = 1.7;
-      this.bossState = outcome.side === 'center' ? 'idle' : 'attacking';
-      this.bossAttackIndex = outcome.side === 'moon' ? 2 : 1;
-      this.bossHitFlashSec = outcome.side === 'center' ? 0.28 : 0;
-      this.showHitFeedback(outcome.side === 'center' ? 'Equilíbrio perfeito! Ritual aparado.' :
-        `${outcome.side === 'moon' ? 'Lua: cura do Demiurgo' : 'Sol: dano à Esfera'} ${outcome.percent.toFixed(1)}%`);
-    }
+    this.updateSmoothRiftsFrame(dt);
+    this.syncRitualOutcome();
 
 
     if (this.bossHitFlashSec > 0) {
@@ -1157,6 +1342,7 @@ export class BossBattleModal {
 
     // 3. Update Boss
     if (this.bossState === 'awaiting_ritual') {
+      this.bossWalkTimeSec += dt * 0.58;
       const allEncircling =
         this.followerActors.length === 0 ||
         this.followerActors.every((f) => f.state === 'encircling');
@@ -1214,7 +1400,7 @@ export class BossBattleModal {
       const bossId = battle?.bossId ?? this.activeBossIdForScene;
       const sheet = loadBossSprites(bossId)?.attacks[this.bossAttackIndex];
       const attackDuration = bossSheetFrameCount(sheet) * (BOSS_SPRITE_FOLDERS[bossId]?.attackFrameSec ?? 0.115);
-      // Trigger impact wave on the Sphere mid-swing
+      // Trigger impact wave on the Sphere mid-swing (skip when Demiurge channels Lunar self-heal)
       if (
         !(battle?.bossId === 'boss_demiurge' && this.bossAttackIndex === 2) &&
         this.bossAttackFrameTimeSec >= 0.85 &&
@@ -1227,7 +1413,8 @@ export class BossBattleModal {
       }
     } else {
       // Boss is in 'idle' stance at the Sphere: "APARAR" appears first, then after RIFT_TELEGRAPH_BEFORE_ATTACK_SEC the Boss swings!
-      this.bossWalkTimeSec += dt * 0.35;
+      const idleRate = (battle?.bossId ?? this.activeBossIdForScene) === 'boss_demiurge' ? 0.65 : 0.35;
+      this.bossWalkTimeSec += dt * idleRate;
       if (battle && this.bossParryRecoverySec <= 0) {
         for (const rift of battle.activeRifts) {
           if (this.attackedRiftIds.has(rift.id)) continue;
@@ -1257,6 +1444,9 @@ export class BossBattleModal {
 
     const ctx = this.worldCtx;
     if (!ctx) return;
+
+    const promptScale =
+      Number(document.getElementById('dodeca-board-world')?.style.getPropertyValue('--boss-prompt-scale')) || 1;
 
     renderBattleWorldScene({
       ctx,
@@ -1288,35 +1478,62 @@ export class BossBattleModal {
       phaseShockwaveAlpha: this.phaseShockwaveAlpha,
       miracleBeam: this.miracleBeam,
       drawOrderPool: this.drawOrderPool,
+      promptScale,
+      smoothCombatSec: this.smoothCombatSec || (battle?.elapsedCombatSec ?? 0),
+      odinRemainingOverride: this.odinTracker?.displayedRemaining,
     });
   }
 
   private presentBattleResultPopup(result: PendingBattleClimax): void {
-    const { boss, victory, isRematch, durationSec, cultReadiness } = result;
+    const {
+      boss,
+      victory,
+      isRematch,
+      durationSec,
+      cultReadiness,
+      cursePurified = false,
+      curseStacks = 0,
+    } = result;
     if (victory) {
       this.options.audio.playChime();
       if (isRematch) {
         const bestSec = this.options.gameState.getBossBestTimeSec(boss.id) ?? durationSec;
+        const purifyNote = cursePurified ? ' Maldição dos Guardiões purificada!' : '';
         this.options.notifications.showCustomPopup(
           `${boss.name.toUpperCase()} SUBJUGADO!`,
-          `Duelo relembrado em ${formatFixed(durationSec, 1)}s (melhor tempo: ${formatFixed(bestSec, 1)}s).`,
+          `Duelo relembrado em ${formatFixed(durationSec, 1)}s (melhor tempo: ${formatFixed(bestSec, 1)}s).${purifyNote}`,
           boss.symbol,
-          'MEMÓRIA DE DUELO'
+          cursePurified ? 'MALDIÇÃO PURIFICADA' : 'MEMÓRIA DE DUELO'
         );
       } else {
+        const purifyNote = cursePurified ? ' · Maldição purificada!' : '';
         this.options.notifications.showCustomPopup(
           `${boss.name.toUpperCase()} SUBJUGADO!`,
-          `${boss.rewardName}: ${boss.rewardDesc}`,
+          `${boss.rewardName}: ${boss.rewardDesc}${purifyNote}`,
           boss.symbol,
           'VITÓRIA MITOLÓGICA'
         );
       }
     } else {
       this.options.audio.playTone(150, 'sawtooth', 0.35);
-      const diagnosis = `Prontidão ${(cultReadiness * 100).toFixed(0)}%: acumule Gnose total para aumentar a proteção e apare os ataques.`;
-      const cursePrefix = isRematch
-        ? 'Revanche sem Maldição.'
-        : 'Maldição: -25% de Fé/s e Fervor/s por 20s.';
+      const diagnosis = `Prontidão ${(cultReadiness * 100).toFixed(0)}%: acumule Gnose total para aumentar a proteção e apare todos os ataques.`;
+      const cleanseBoss = this.options.gameState.getBossCurseCleanseBoss();
+      let cursePrefix: string;
+      if (isRematch) {
+        cursePrefix =
+          curseStacks > 0 && cleanseBoss
+            ? `Revanche sem novo acúmulo. Maldição ativa (${curseStacks}/5) — derrote ${cleanseBoss.name} para purificar.`
+            : 'Revanche sem Maldição.';
+      } else if (curseStacks > 0) {
+        const mods = this.options.gameState.getBossCurseModifiers(boss.id);
+        const dmgRedPct = Math.round(mods.damageReduction * 100);
+        const extraDmgPct = Math.round(mods.extraDamageRatio * 100);
+        const hitkillTag = curseStacks >= 5 ? ' (HITKILL ao errar aparo)' : '';
+        const cleanseHint = cleanseBoss ? ` Derrote ${cleanseBoss.name} para purificar.` : '';
+        cursePrefix = `Maldição (${curseStacks}/5): −${dmgRedPct}% dano ao chefe, +${extraDmgPct}% dano sofrido e Riposte ao aparar${hitkillTag}.${cleanseHint}`;
+      } else {
+        cursePrefix = 'Derrota sem Maldição.';
+      }
       this.options.notifications.showCustomPopup(
         `ALTAR ROMPIDO POR ${boss.name.toUpperCase()}`,
         `${cursePrefix} ${diagnosis}`,
@@ -1333,7 +1550,9 @@ export class BossBattleModal {
     boss: GnoseBoss,
     victory: boolean,
     isRematch = false,
-    durationSec = 0
+    durationSec = 0,
+    cursePurified = false,
+    curseStacks = 0
   ): void {
     const breakdown = this.options.gameState.getBossCombatBreakdown(boss.id);
     const pending: PendingBattleClimax = {
@@ -1344,6 +1563,8 @@ export class BossBattleModal {
       remainingSec: CLIMAX_DURATION_SEC,
       totalSec: CLIMAX_DURATION_SEC,
       cultReadiness: breakdown.cultReadiness,
+      cursePurified,
+      curseStacks,
     };
 
     // If the scene is still in 'awaiting_ritual' (e.g. synchronous unit test skipping choreography), close immediately
@@ -1471,11 +1692,22 @@ export class BossBattleModal {
       } else {
         const warning = !breakdown.canDamageBoss
           ? `Sem dano: Prontidão abaixo de ${BOSS_DAMAGE_READINESS_THRESHOLD * 100}%.`
-          : !breakdown.canWithstandBoss
+          : !breakdown.canWithstandBoss || breakdown.altarDamageOnMiss >= 100
             ? 'Um golpe não aparado destrói a Esfera.'
             : '';
+        const activeCurseStacks = breakdown.curseStacks ?? 0;
+        const curseInfo =
+          activeCurseStacks > 0
+            ? `Maldição ${activeCurseStacks}/5 (−${Math.round((breakdown.curseDamageReduction ?? 0) * 100)}% dano · +${Math.round((breakdown.curseExtraDamageRatio ?? 0) * 100)}% sofrido · Riposte no aparo)`
+            : '';
+        const chainsWarning = battle.activeRifts.some((r) => r.kind === 'hades_chains')
+          ? 'Grilhões ativos: dano reduzido!'
+          : '';
         const combo = comboStreak > 0 ? `Combo ×${formatNumber(comboStreak)}` : '';
-        this.setText(this.combatStatsEl, [warning, combo].filter(Boolean).join(' '));
+        this.setText(
+          this.combatStatsEl,
+          [curseInfo, warning, chainsWarning, combo].filter(Boolean).join(' · ')
+        );
       }
     }
 
@@ -1542,61 +1774,171 @@ export class BossBattleModal {
   private syncRiftsDOM(activeRifts: BossRift[]): void {
     if (!this.riftsLayerEl) return;
 
-    const activeIds = new Set(activeRifts.map((r) => r.id));
-
+    const children = this.riftsLayerEl.children;
     // Remove expired/shattered rift elements (keep miracle button intact)
-    Array.from(this.riftsLayerEl.children).forEach((child) => {
-      const el = child as HTMLElement;
+    for (let i = children.length - 1; i >= 0; i--) {
+      const el = children[i] as HTMLElement;
       const riftId = el.getAttribute('data-rift-id');
-      if (!riftId) return;
-      if (!activeIds.has(riftId)) {
+      if (!riftId) continue;
+      let stillActive = false;
+      for (let j = 0; j < activeRifts.length; j++) {
+        if (activeRifts[j].id === riftId) {
+          stillActive = true;
+          break;
+        }
+      }
+      if (!stillActive) {
         const hadFocus = el.contains(document.activeElement);
         el.remove();
         if (hadFocus && this.isOpen()) this.attackBtnEl?.focus({ preventScroll: true });
       }
-    });
+    }
 
-    const promptScale = Number(document.getElementById('dodeca-board-world')?.style.getPropertyValue('--boss-prompt-scale')) || 1;
-    const sphereLocal = { x: BOSS_SPHERE_CENTER.x - this.stageOriginX, y: BOSS_SPHERE_CENTER.y - this.stageOriginY };
-    const elapsedCombatSec = this.options.gameState.activeBossBattle?.elapsedCombatSec ?? 0;
+    if (activeRifts.length === 0) return;
+
+    const specialRift = activeRifts.find((r) => r.kind && r.kind !== 'standard' && r.groupId);
+    if (specialRift?.groupId && specialRift.groupId !== this.lastSpecialWaveGroupId) {
+      this.lastSpecialWaveGroupId = specialRift.groupId;
+      this.options.audio.playTone(540, 'triangle', 0.11);
+      const announceMsg =
+        specialRift.kind === 'anubis_scales'
+          ? 'Balança de Anúbis: compare os pratos e clique no MAIOR peso!'
+          : specialRift.kind === 'hades_chains'
+            ? `Grilhões de Hades: quebre na ordem 1º → ${specialRift.chainTotal ?? 2}º!`
+            : specialRift.kind === 'odin_raven'
+              ? 'Corvo de Odin: aguarde o anel encolher até a zona VERDE!'
+              : specialRift.kind === 'chaos_orbit'
+                ? 'Colapso do Caos: apare os 3 selos orbitais antes do fim!'
+                : 'Ritual Sol e Lua: toque quando o ponteiro cruzar o centro VERDE!';
+      this.setText(this.combatFeedbackEl, announceMsg);
+    }
+
+    const worldEl = (this.boardWorldEl ??= document.getElementById('dodeca-board-world'));
+    const promptScale = Number(worldEl?.style.getPropertyValue('--boss-prompt-scale')) || 1;
+    const sphereLocal = {
+      x: BOSS_SPHERE_CENTER.x - this.stageOriginX,
+      y: BOSS_SPHERE_CENTER.y - this.stageOriginY,
+    };
+    const elapsedCombatSec =
+      this.smoothCombatSec || (this.options.gameState.activeBossBattle?.elapsedCombatSec ?? 0);
+    const besideSphere = this.isLandscapePromptLayout();
+
+    const activeBattle = this.options.gameState.activeBossBattle;
+    const riftBreakdown = activeBattle
+      ? this.options.gameState.getBossCombatBreakdown(activeBattle.bossId)
+      : null;
 
     activeRifts.forEach((rift) => {
       const kind = rift.kind ?? 'standard';
       if (kind === 'demiurge_ritual') {
         if (this.ritualDial?.id !== rift.id) {
-          this.ritualDial = new DemiurgeRitualDial(rift.id, position => {
-            this.options.gameState.clickBossRift(rift.id, position);
+          this.ritualDial = new DemiurgeRitualDial(rift.id, (position) => {
+            const res = this.options.gameState.clickBossRift(rift.id, position);
+            this.syncRitualOutcome();
+            if (res.shattered && res.riposteHpPercent && res.riposteHpPercent > 0) {
+              this.bossHitFlashSec = 0.34;
+              this.options.audio.playTone(940, 'triangle', 0.2);
+              this.showHitFeedback(
+                `Riposte Gnóstico! −${formatFixed(res.riposteHpPercent, 1)}% HP do Demiurgo (Combo ×${formatNumber(res.comboStreak ?? 1)})`
+              );
+              const rect = this.ritualDial?.element.getBoundingClientRect();
+              const cx = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+              const cy = rect ? rect.top + rect.height / 3 : window.innerHeight / 2;
+              this.options.spawnFloatingText(
+                cx,
+                cy,
+                `\u2726 RIPOSTE −${formatFixed(res.riposteHpPercent, 1)}% HP!`
+              );
+            }
             this.updateUI();
+            this.drawWorldScene();
             events.emit(GameEvents.STATE_CHANGED);
           });
           this.riftsLayerEl!.append(this.ritualDial.element);
         }
-        this.ritualDial.element.style.left = `${sphereLocal.x}px`;
-        this.ritualDial.element.style.top = `${sphereLocal.y - 290 * promptScale}px`;
+        const basePos = parryCardPosition(rift, sphereLocal, elapsedCombatSec, promptScale);
+        this.ritualDial.element.classList.toggle('is-beside-sphere', besideSphere);
+        this.ritualDial.element.style.left = `${besideSphere ? sphereLocal.x + 178 : basePos.x}px`;
+        this.ritualDial.element.style.top = `${besideSphere ? sphereLocal.y + 10 : basePos.y}px`;
         this.ritualDial.update(rift, this.speedMultiplier);
         return;
       }
+
       const pos = parryCardPosition(rift, sphereLocal, elapsedCombatSec, promptScale);
+      const chainOrder = rift.chainOrder ?? 1;
+      const chainTotal = rift.chainTotal ?? 2;
+      const isChainUnlocked =
+        kind === 'hades_chains' &&
+        !activeRifts.some(
+          (other) =>
+            other.kind === 'hades_chains' &&
+            other.groupId === rift.groupId &&
+            (other.chainOrder ?? 0) < chainOrder
+        );
+      const chaosRemaining =
+        kind === 'chaos_orbit'
+          ? activeRifts.filter(
+              (other) => other.kind === 'chaos_orbit' && other.groupId === rift.groupId
+            ).length
+          : 0;
+      const isDismissedScale = kind === 'anubis_scales' && Boolean(rift.scaleHigherSelected);
+
+      const kickerIcon =
+        kind === 'anubis_scales'
+          ? isDismissedScale
+            ? 'warning'
+            : 'scales'
+          : kind === 'hades_chains'
+            ? isChainUnlocked
+              ? 'unlock'
+              : 'lock'
+            : kind === 'chaos_orbit'
+              ? 'ouroboros'
+              : 'shield';
+      const kickerText =
+        kind === 'anubis_scales'
+          ? isDismissedScale
+            ? 'ARMADILHA'
+            : 'BALANÇA'
+          : kind === 'hades_chains'
+            ? `${chainOrder}º/${chainTotal} ELO`
+            : kind === 'chaos_orbit'
+              ? 'VAZIO'
+              : '';
       const labelText =
         kind === 'anubis_scales'
-          ? 'PESAR'
+          ? isDismissedScale
+            ? 'NÃO TOQUE'
+            : 'MAIOR PESO'
           : kind === 'hades_chains'
-            ? 'GRILHÃO'
+            ? isChainUnlocked
+              ? `QUEBRE ${chainOrder}º`
+              : `${chainOrder}º TRAVADO`
             : kind === 'odin_raven'
               ? 'CORVO'
               : kind === 'chaos_orbit'
-                ? 'COLAPSO'
+                ? chaosRemaining <= 1
+                  ? 'ÚLTIMO SELO!'
+                  : `SELO (${chaosRemaining} REST.)`
                 : 'APARAR';
+      const standardDetail =
+        riftBreakdown && riftBreakdown.riftHpFraction > 0
+          ? `Riposte −${formatFixed(riftBreakdown.riftHpFraction * 100, 1)}% HP`
+          : 'Ataque aparado';
       const detailText =
         kind === 'anubis_scales'
-          ? 'Clique no maior peso'
+          ? isDismissedScale
+            ? 'Balança julgada'
+            : 'Compare e clique no maior'
           : kind === 'hades_chains'
-            ? 'Quebre para recuperar os cliques'
+            ? isChainUnlocked
+              ? 'Elo vulnerável agora!'
+              : `Quebre o ${chainOrder - 1}º antes`
             : kind === 'odin_raven'
-              ? 'Apare para atrasar o ataque'
+              ? 'Apare na zona verde'
               : kind === 'chaos_orbit'
-                ? 'Apare os três selos'
-                : 'Ataque aparado';
+                ? 'Impeça o colapso'
+                : standardDetail;
 
       let riftEl = this.riftsLayerEl!.querySelector<HTMLButtonElement>(
         `button[data-rift-id="${rift.id}"]`
@@ -1608,70 +1950,132 @@ export class BossBattleModal {
         riftEl.className = `boss-rift-target${kindClass}`;
         riftEl.setAttribute('data-rift-id', rift.id);
         riftEl.setAttribute('data-rift-kind', kind);
-        riftEl.setAttribute('aria-label', kind === 'anubis_scales'
-          ? `Pesar: peso ${rift.scaleValue}. Escolha apenas o maior peso.`
-          : `${labelText}: aparar golpe do Guardião e carregar a Esfera`);
         riftEl.style.left = `${pos.x}px`;
         riftEl.style.top = `${pos.y}px`;
-        riftEl.innerHTML = `
-          ${kind === 'anubis_scales'
-            ? `<span class="boss-rift-number"><small>PESO</small>${rift.scaleValue}</span>`
-            : `<span class="boss-rift-core" aria-hidden="true">${icon('shield')}</span>`}
-          <span class="boss-rift-label">${labelText}</span>
-          <span class="boss-rift-damage">${detailText}</span>
-          <span class="boss-rift-timer"></span>
-          <span class="boss-rift-window" aria-hidden="true"><span class="boss-rift-window-fill"></span></span>
-        `;
-        if (kind === 'odin_raven') riftEl.replaceChildren();
+        if (kind === 'odin_raven') {
+          riftEl.innerHTML = `
+            <span class="odin-parry-zone" aria-hidden="true"></span>
+            <span class="odin-parry-ring" aria-hidden="true"></span>
+            <span class="odin-parry-emblem" aria-hidden="true">${icon('eye')}</span>
+          `;
+        } else {
+          riftEl.innerHTML = `
+            ${kickerText ? `<span class="boss-rift-kicker"><span class="boss-rift-kicker-icon" aria-hidden="true"></span><span class="boss-rift-kicker-text"></span></span>` : ''}
+            ${kind === 'anubis_scales'
+              ? `<span class="boss-rift-number"><small>PESO DA ALMA</small>${rift.scaleValue}</span>`
+              : `<span class="boss-rift-core" aria-hidden="true">${icon(kickerIcon)}</span>`}
+            <span class="boss-rift-label">${labelText}</span>
+            <span class="boss-rift-damage">${detailText}</span>
+            <span class="boss-rift-timer"></span>
+            <span class="boss-rift-window" aria-hidden="true"><span class="boss-rift-window-fill"></span></span>
+          `;
+        }
+        riftEl.addEventListener('pointerdown', (event) => event.stopPropagation());
         riftEl.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation();
-          const res = this.options.gameState.clickBossRift(rift.id);
-          if (res.altarDamageTaken !== undefined) {
-            this.lastRiftsMissed = this.options.gameState.activeBossBattle?.riftsMissed ?? this.lastRiftsMissed;
-            this.spherePulseAlpha = 0.9;
-            this.showHitFeedback(res.kind === 'odin_raven'
-              ? `Fora de tempo! Espere o círculo verde. −${res.altarDamageTaken.toFixed(0)}% da Esfera.`
-              : `Peso menor! −${res.altarDamageTaken.toFixed(0)}% da Esfera (×${formatNumber(res.scaleDamageMultiplier ?? 1)}).`);
+          const odinDisplayed =
+            kind === 'odin_raven' && this.odinTracker?.id === rift.id
+              ? this.odinTracker.displayedRemaining
+              : undefined;
+          const res = this.options.gameState.clickBossRift(rift.id, undefined, odinDisplayed);
+          if (res.chainLocked) {
+            this.spherePulseAlpha = 0.55;
+            this.options.audio.playTone(175, 'square', 0.12);
+            this.showHitFeedback(
+              `Elo travado! Quebre na ordem 1º → ${rift.chainTotal ?? 2}º (−${(res.altarDamageTaken ?? 0).toFixed(1)}% da Esfera).`
+            );
             this.options.spawnFloatingText(
-              e.clientX || window.innerWidth / 2, e.clientY || window.innerHeight / 2,
-              res.kind === 'odin_raven' ? `−${formatFixed(res.altarDamageTaken, 1)}% ESFERA`
-                : `−${formatFixed(res.altarDamageTaken, 1)}% ESFERA (×${formatNumber(res.scaleDamageMultiplier ?? 1)})`
+              e.clientX || window.innerWidth / 2,
+              e.clientY || window.innerHeight / 2,
+              `ORDEM ERRADA! −${formatFixed(res.altarDamageTaken ?? 0, 1)}%`
+            );
+            if (
+              typeof window !== 'undefined' &&
+              !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+            ) {
+              riftEl?.animate?.(
+                [
+                  { transform: 'translate(calc(-50% - 6px), -50%) scale(var(--boss-prompt-scale, 1))' },
+                  { transform: 'translate(calc(-50% + 6px), -50%) scale(var(--boss-prompt-scale, 1))' },
+                  { transform: 'translate(-50%, -50%) scale(var(--boss-prompt-scale, 1))' },
+                ],
+                { duration: 180, easing: effectEasing(180) }
+              );
+            }
+            this.updateUI();
+            this.drawWorldScene();
+            events.emit(GameEvents.STATE_CHANGED);
+          } else if (res.altarDamageTaken !== undefined) {
+            this.lastRiftsMissed =
+              this.options.gameState.activeBossBattle?.riftsMissed ?? this.lastRiftsMissed;
+            this.spherePulseAlpha = 0.9;
+            this.options.audio.playTone(195, 'sawtooth', 0.15);
+            this.showHitFeedback(
+              res.kind === 'odin_raven'
+                ? `Fora de tempo! Espere o anel entrar na zona verde. −${res.altarDamageTaken.toFixed(0)}% da Esfera.`
+                : `Prato mais leve! −${res.altarDamageTaken.toFixed(0)}% da Esfera (×${formatNumber(res.scaleDamageMultiplier ?? 1)}).`
+            );
+            this.options.spawnFloatingText(
+              e.clientX || window.innerWidth / 2,
+              e.clientY || window.innerHeight / 2,
+              res.kind === 'odin_raven'
+                ? `CEDO DEMAIS! −${formatFixed(res.altarDamageTaken, 1)}%`
+                : `PESO MENOR! −${formatFixed(res.altarDamageTaken, 1)}%`
             );
             this.updateUI();
             this.drawWorldScene();
             events.emit(GameEvents.STATE_CHANGED);
           } else if (res.shattered) {
             // Parry interrupts/cancels the Boss's attack swing and flashes the Boss sprite
+            const hasRiposte = (res.riposteHpPercent ?? 0) > 0;
             this.attackedRiftIds.add(rift.id);
-            this.bossHitFlashSec = 0.28;
+            this.bossHitFlashSec = hasRiposte ? 0.34 : 0.28;
             this.bossState = 'idle';
             this.bossAttackFrameTimeSec = 0;
             this.bossParryRecoverySec = PARRY_RECOVERY_SEC;
             this.spherePulseAlpha = 0;
-            this.lastRiftsMissed = this.options.gameState.activeBossBattle?.riftsMissed ?? this.lastRiftsMissed;
+            this.lastRiftsMissed =
+              this.options.gameState.activeBossBattle?.riftsMissed ?? this.lastRiftsMissed;
             // A stale target from another pending rift cannot immediately replay the cancelled swing.
-            this.options.gameState.activeBossBattle?.activeRifts.forEach(r => this.attackedRiftIds.add(r.id));
-            const comboTag = (res.comboStreak ?? 1) > 1 ? ` Combo ×${formatNumber(res.comboStreak ?? 1)} ·` : '';
-            let specialMsg = res.kind === 'anubis_scales'
-              ? 'Não clique no peso menor.'
-              : 'Ataque aparado';
+            this.options.gameState.activeBossBattle?.activeRifts.forEach((r) =>
+              this.attackedRiftIds.add(r.id)
+            );
+            const comboTag =
+              (res.comboStreak ?? 1) > 1 ? ` Combo ×${formatNumber(res.comboStreak ?? 1)} ·` : '';
+            const riposteTag = hasRiposte
+              ? ` · Riposte −${formatFixed(res.riposteHpPercent ?? 0, 1)}% HP!`
+              : '';
+            let specialMsg =
+              res.kind === 'anubis_scales'
+                ? 'Balança julgada! Evite tocar no prato menor.'
+                : 'Ataque aparado';
             if (res.specialBonusTriggered) {
               if (res.kind === 'hades_chains') {
-                specialMsg = 'Grilhões quebrados! Cliques normais de novo.';
+                specialMsg = 'Grilhões despedaçados! Dano total restaurado.';
               } else if (res.kind === 'odin_raven') {
-                specialMsg = 'Corvo interceptado! Próximo ataque atrasado.';
+                specialMsg = 'Corvo interceptado! Próximo golpe atrasado.';
               } else if (res.kind === 'chaos_orbit') {
-                specialMsg = 'Colapso revertido!';
+                specialMsg = 'Colapso do Caos revertido!';
               }
+            } else if (res.kind === 'hades_chains') {
+              specialMsg = `${chainOrder}º elo rompido! Quebre o ${chainOrder + 1}º elo!`;
+            } else if (res.kind === 'chaos_orbit') {
+              const leftCount =
+                this.options.gameState.activeBossBattle?.activeRifts.filter(
+                  (r) => r.kind === 'chaos_orbit' && r.groupId === rift.groupId
+                ).length ?? 0;
+              specialMsg = leftCount > 0 ? `Selo dissipado! Faltam ${leftCount}.` : 'Colapso revertido!';
             }
-            this.showHitFeedback(`Aparado!${comboTag} ${specialMsg}`);
-            this.options.audio.playTone(880, 'triangle', 0.16);
+            this.showHitFeedback(`Aparado!${comboTag} ${specialMsg}${riposteTag}`);
+            this.options.audio.playTone(hasRiposte ? 940 : 880, 'triangle', hasRiposte ? 0.2 : 0.16);
             const x = e.clientX || window.innerWidth / 2;
             const y = e.clientY || window.innerHeight / 2;
             this.options.spawnFloatingText(
               x,
               y,
-              '\u2726 APARADO!'
+              hasRiposte
+                ? `\u2726 RIPOSTE −${formatFixed(res.riposteHpPercent ?? 0, 1)}% HP!`
+                : '\u2726 APARADO!'
             );
             this.updateUI();
             this.drawWorldScene();
@@ -1684,17 +2088,22 @@ export class BossBattleModal {
           card.dataset.riftId = rift.id;
           card.setAttribute('aria-label', 'Aparar o corvo de Odin');
           card.innerHTML = `
-            <header class="odin-parry-heading"><span>${icon('shield')}</span><strong>CORVO DE ODIN</strong></header>
-            <p class="odin-parry-instruction">Toque no círculo quando ficar verde</p>
-            <div class="odin-parry-arena"><span class="odin-parry-guide" aria-hidden="true"></span></div>
+            <header class="odin-parry-heading">
+              <span>${icon('eye')}</span>
+              <strong>CORVO DE ODIN</strong>
+              <span class="odin-parry-timer"></span>
+            </header>
+            <p class="odin-parry-instruction">Espere o anel entrar na <b>zona verde</b> e toque</p>
+            <div class="odin-parry-arena"></div>
             <strong class="odin-parry-status" role="status" aria-live="polite"></strong>
-            <small class="odin-parry-hint">Tocar antes ou deixar passar fere a Esfera</small>
+            <span class="odin-parry-progress" aria-hidden="true"><span class="odin-parry-progress-fill"></span></span>
+            <small class="odin-parry-hint">Tocar cedo (vermelho/âmbar) ou atrasar fere a Esfera</small>
           `;
           card.querySelector('.odin-parry-arena')!.appendChild(riftEl);
           this.riftsLayerEl!.appendChild(card);
           // The card's padding is not a parry target and must not drag the board.
-          card.addEventListener('pointerdown', event => event.stopPropagation());
-          card.addEventListener('click', event => event.stopPropagation());
+          card.addEventListener('pointerdown', (event) => event.stopPropagation());
+          card.addEventListener('click', (event) => event.stopPropagation());
         } else {
           this.riftsLayerEl!.appendChild(riftEl);
         }
@@ -1703,39 +2112,59 @@ export class BossBattleModal {
       if (kind !== 'odin_raven') {
         riftEl.style.left = `${pos.x}px`;
         riftEl.style.top = `${pos.y}px`;
-      }
-      const labelEl = riftEl.querySelector<HTMLElement>('.boss-rift-label');
-      this.setText(labelEl, labelText);
-      this.setText(riftEl.querySelector<HTMLElement>('.boss-rift-damage'), detailText);
-      const timerEl = riftEl.querySelector<HTMLElement>('.boss-rift-timer');
-      this.setText(timerEl, `${formatFixed(Math.max(0, rift.remainingSec), 1)}s`);
-      const fillEl = riftEl.querySelector<HTMLElement>('.boss-rift-window-fill');
-      if (fillEl && rift.maxSec > 0) {
-        const pct = Math.max(0, Math.min(100, (rift.remainingSec / rift.maxSec) * 100));
-        fillEl.style.width = `${pct.toFixed(0)}%`;
-      }
-      if (kind === 'odin_raven') {
-        const cue = odinParryCue(rift);
+        riftEl.classList.toggle('is-dismissed-trap', isDismissedScale);
+        riftEl.classList.toggle('is-chain-unlocked', kind === 'hades_chains' && isChainUnlocked);
+        riftEl.classList.toggle('is-chain-locked', kind === 'hades_chains' && !isChainUnlocked);
+        riftEl.setAttribute(
+          'aria-label',
+          kind === 'anubis_scales'
+            ? isDismissedScale
+              ? `Prato menor (${rift.scaleValue}): balança já julgada, não toque.`
+              : `Balança de Anúbis: peso ${rift.scaleValue}. Clique apenas no maior peso.`
+            : kind === 'hades_chains'
+              ? isChainUnlocked
+                ? `Grilhão ${chainOrder} de ${chainTotal}: elo vulnerável, clique para quebrar.`
+                : `Grilhão ${chainOrder} de ${chainTotal}: travado, quebre o ${chainOrder - 1}º elo primeiro.`
+              : `${labelText}: aparar golpe do Guardião e carregar a Esfera`
+        );
+
+        const kickerIconEl = riftEl.querySelector<HTMLElement>('.boss-rift-kicker-icon');
+        if (kickerIconEl && kickerIconEl.dataset.iconName !== kickerIcon) {
+          kickerIconEl.dataset.iconName = kickerIcon;
+          kickerIconEl.innerHTML = icon(kickerIcon);
+        }
+        const coreEl = riftEl.querySelector<HTMLElement>('.boss-rift-core');
+        if (coreEl && coreEl.dataset.iconName !== kickerIcon) {
+          coreEl.dataset.iconName = kickerIcon;
+          coreEl.innerHTML = icon(kickerIcon);
+        }
+        this.setText(riftEl.querySelector<HTMLElement>('.boss-rift-kicker-text'), kickerText);
+        this.setText(riftEl.querySelector<HTMLElement>('.boss-rift-label'), labelText);
+        this.setText(riftEl.querySelector<HTMLElement>('.boss-rift-damage'), detailText);
+        this.setText(
+          riftEl.querySelector<HTMLElement>('.boss-rift-timer'),
+          `${formatFixed(Math.max(0, rift.remainingSec), 1)}s`
+        );
+        const fillEl = riftEl.querySelector<HTMLElement>('.boss-rift-window-fill');
+        if (fillEl && rift.maxSec > 0) {
+          const pct = Math.max(0, Math.min(100, (rift.remainingSec / rift.maxSec) * 100));
+          fillEl.style.width = `${pct.toFixed(0)}%`;
+        }
+      } else {
         const card = riftEl.closest<HTMLElement>('.odin-parry-card')!;
-        const besideSphere = window.matchMedia(
-          '(min-width: 760px) and (max-height: 600px), (min-width: 900px) and (max-height: 820px)'
-        ).matches;
-        // Anchor above the space between Odin and the Sphere, clear of both hitboxes.
-        // Short landscape screens use the free space to the right, below the resource bar.
         card.classList.toggle('is-beside-sphere', besideSphere);
         card.style.left = `${besideSphere ? sphereLocal.x + 180 : pos.x}px`;
-        card.style.top = `${besideSphere ? sphereLocal.y - 200 : pos.y}px`;
-        card.classList.toggle('is-green', cue.green);
-        this.setText(card.querySelector('.odin-parry-status'), cue.green ? 'APARE AGORA!' : 'AGUARDE…');
-        riftEl.classList.toggle('is-green', cue.green);
-        riftEl.style.left = '50%';
-        riftEl.style.top = '50%';
-        riftEl.style.width = `${cue.diameter}px`;
-        riftEl.style.height = `${cue.diameter}px`;
-        riftEl.setAttribute('aria-label', cue.green
-          ? 'Verde: apare o corvo agora' : 'Vermelho: aguarde o círculo encolher e ficar verde');
+        card.style.top = `${besideSphere ? sphereLocal.y - 10 : pos.y}px`;
+        const displayedRem =
+          this.odinTracker?.id === rift.id ? this.odinTracker.displayedRemaining : rift.remainingSec;
+        this.applyOdinCardFrame(rift, displayedRem);
       }
-      riftEl.classList.toggle('is-urgent', kind !== 'odin_raven' && rift.remainingSec <= 0.9);
+
+      const suppressUrgency =
+        kind === 'odin_raven' ||
+        isDismissedScale ||
+        (kind === 'hades_chains' && !isChainUnlocked);
+      riftEl.classList.toggle('is-urgent', !suppressUrgency && rift.remainingSec <= 0.9);
     });
   }
 }

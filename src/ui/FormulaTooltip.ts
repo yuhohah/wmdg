@@ -22,9 +22,12 @@ export class FormulaTooltip {
   private costEl: HTMLElement;
   private bonusEl: HTMLElement;
   private target: HTMLElement | null = null;
+  private resolvedTarget: HTMLElement | null = null;
   private x = 0;
   private y = 0;
   private lastContent = '';
+  private cachedWidth = 0;
+  private cachedHeight = 0;
 
   constructor(private game: GameStateManager) {
     this.el = document.createElement('div');
@@ -39,9 +42,19 @@ export class FormulaTooltip {
 
     document.addEventListener('pointermove', e => {
       if (!this.game.nerdsEnabled || e.pointerType === 'touch') return;
-      this.target = e.target instanceof HTMLElement ? e.target : e.target instanceof Element ? e.target.parentElement : null;
+      const raw = e.target instanceof HTMLElement ? e.target : e.target instanceof Element ? e.target.parentElement : null;
       this.x = e.clientX;
       this.y = e.clientY;
+      const nextResolved = raw?.closest<HTMLElement>(TOOLTIP_SELECTOR) ?? null;
+      if (!nextResolved || nextResolved.closest('[inert], [aria-hidden="true"]')) {
+        this.hide();
+        return;
+      }
+      this.target = raw;
+      if (nextResolved === this.resolvedTarget && !this.el.hidden && this.cachedWidth > 0) {
+        this.positionTooltip();
+        return;
+      }
       this.update();
     });
     document.addEventListener('focusin', e => {
@@ -70,6 +83,16 @@ export class FormulaTooltip {
   public hide(): void {
     if (!this.el.hidden) this.el.hidden = true;
     this.target = null;
+    this.resolvedTarget = null;
+  }
+
+  private positionTooltip(): void {
+    const w = this.cachedWidth;
+    const h = this.cachedHeight;
+    const left = Math.max(8, Math.min(window.innerWidth - w - 8, this.x + 16));
+    const top = this.y + h + 20 > window.innerHeight ? this.y - h - 12 : this.y + 16;
+    this.el.style.left = `${left}px`;
+    this.el.style.top = `${Math.max(8, Math.min(window.innerHeight - h - 8, top))}px`;
   }
 
   public update(): void {
@@ -90,6 +113,7 @@ export class FormulaTooltip {
       this.hide();
       return;
     }
+    this.resolvedTarget = target;
     const id = target.id === 'btn-convert-one' || target.id === 'btn-convert-max' ? 'f_devotee'
       : target.id === 'btn-upgrade-incarnation' ? 'incarnation'
       : target.id === 'btn-convert-relics' ? 'transmute_relics'
@@ -108,16 +132,20 @@ export class FormulaTooltip {
       return;
     }
     const content = `${formulas.cost}\n${formulas.bonus}`;
+    const wasHidden = this.el.hidden;
+    let needsMeasure = wasHidden || this.cachedWidth <= 0;
     if (content !== this.lastContent) {
       this.costEl.textContent = formulas.cost;
       this.bonusEl.textContent = formulas.bonus;
       this.lastContent = content;
+      needsMeasure = true;
     }
-    this.el.hidden = false;
-    const rect = this.el.getBoundingClientRect();
-    const left = Math.max(8, Math.min(window.innerWidth - rect.width - 8, this.x + 16));
-    const top = this.y + rect.height + 20 > window.innerHeight ? this.y - rect.height - 12 : this.y + 16;
-    this.el.style.left = `${left}px`;
-    this.el.style.top = `${Math.max(8, Math.min(window.innerHeight - rect.height - 8, top))}px`;
+    if (wasHidden) this.el.hidden = false;
+    if (needsMeasure) {
+      const rect = this.el.getBoundingClientRect();
+      this.cachedWidth = rect.width;
+      this.cachedHeight = rect.height;
+    }
+    this.positionTooltip();
   }
 }

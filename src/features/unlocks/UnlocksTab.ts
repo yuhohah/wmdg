@@ -65,9 +65,10 @@ export class UnlocksTab {
     btn.id = 'btn-unlock-single';
     btn.className = `btn-unlock-mechanic ${canAfford ? 'affordable' : 'unaffordable'}`;
     btn.setAttribute('aria-label', `Desbloquear ${currentUnlock.name}`);
+    btn.setAttribute('aria-keyshortcuts', '.');
 
     btn.innerHTML = `
-      <div class="unlock-btn-badge">${icon('unlock')} DESBLOQUEAR NOVA MECÂNICA</div>
+      <div class="unlock-btn-badge">${icon('unlock')} DESBLOQUEAR NOVA MECÂNICA <kbd class="hotkey-badge">.</kbd></div>
       <div class="unlock-btn-main">
         <span class="unlock-btn-name">${currentUnlock.name}</span>
         <span class="unlock-btn-cost">${currentUnlock.id === 'unlock_gnose' ? 'Atingir ' : ''}${formatNumber(currentUnlock.cost)} Fé${currentUnlock.id === 'unlock_gnose' ? ' · sem gasto' : ''}</span>

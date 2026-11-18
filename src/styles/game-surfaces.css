@@ -40,6 +40,7 @@ body,button,input,textarea { font-family:var(--font-game); }
 .modal-header { border-bottom:2px solid #9c794b; padding-bottom:10px; margin-bottom:12px; }
 .modal-title { color:var(--ink); font:30px var(--font-game); letter-spacing:0; }
 .settings-group { gap:9px; margin-bottom:14px; }
+.settings-section .settings-group { margin-bottom:0; }
 .setting-item { gap:12px; padding:9px 10px; }
 .setting-item>div { min-width:0; }
 .setting-name { color:var(--ink); font:21px var(--font-game); }

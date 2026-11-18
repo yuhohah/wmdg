@@ -624,149 +624,172 @@
         </div>
 
 
-        <div class="settings-group">
-          <div class="setting-item audio-setting">
-            <div>
-              <div class="setting-name">Volume Geral</div>
-              <div class="setting-desc">Música e efeitos do culto</div>
+        <section class="settings-section" aria-labelledby="settings-heading-audio">
+          <div id="settings-heading-audio" class="settings-section-subtitle">Áudio &amp; Resposta Tátil</div>
+          <div class="settings-group">
+            <div class="setting-item audio-setting">
+              <div>
+                <div class="setting-name">Volume Geral</div>
+                <div class="setting-desc">Música e efeitos do culto</div>
+              </div>
+              <div class="audio-setting-controls">
+                <button type="button" id="audio-toggle" class="audio-toggle" aria-label="Silenciar volume geral" aria-pressed="true">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/>
+                    <path class="audio-muted-slash" d="m3 3 18 18"/>
+                  </svg>
+                </button>
+                <input type="range" id="volume-slider" aria-label="Volume Geral" min="0" max="100" value="70">
+              </div>
             </div>
-            <div class="audio-setting-controls">
-              <button type="button" id="audio-toggle" class="audio-toggle" aria-label="Silenciar volume geral" aria-pressed="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/>
-                  <path class="audio-muted-slash" d="m3 3 18 18"/>
-                </svg>
-              </button>
-              <input type="range" id="volume-slider" aria-label="Volume Geral" min="0" max="100" value="70">
+
+            <div class="setting-item audio-setting">
+              <div>
+                <div class="setting-name">Volume da Música</div>
+                <div class="setting-desc">Trilha do santuário e dos combates</div>
+              </div>
+              <div class="audio-setting-controls">
+                <button type="button" id="music-toggle" class="audio-toggle" aria-label="Silenciar volume da música" aria-pressed="true">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M9 18V5l12-2v13M9 9l12-2"/><ellipse cx="6" cy="18" rx="3" ry="3"/><ellipse cx="18" cy="16" rx="3" ry="3"/>
+                    <path class="audio-muted-slash" d="m3 3 18 18"/>
+                  </svg>
+                </button>
+                <input type="range" id="music-volume-slider" aria-label="Volume da Música" min="0" max="100" value="100">
+              </div>
+            </div>
+
+            <div class="setting-item audio-setting">
+              <div>
+                <div class="setting-name">Volume dos Efeitos</div>
+                <div class="setting-desc">Sons de rituais e cliques</div>
+              </div>
+              <div class="audio-setting-controls">
+                <button type="button" id="sfx-toggle" class="audio-toggle" aria-label="Silenciar volume dos efeitos" aria-pressed="true">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m13 2-9 12h7l-1 8 10-13h-7z"/>
+                    <path class="audio-muted-slash" d="m3 3 18 18"/>
+                  </svg>
+                </button>
+                <input type="range" id="sfx-volume-slider" aria-label="Volume dos Efeitos" min="0" max="100" value="100">
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div>
+                <div class="setting-name">Vibração Háptica</div>
+                <div class="setting-desc">Feedback tátil nos toques e rituais (Mobile)</div>
+              </div>
+              <input type="checkbox" id="haptics-toggle" style="accent-color: var(--gold-accent);" checked>
             </div>
           </div>
+        </section>
 
-          <div class="setting-item audio-setting">
-            <div>
-              <div class="setting-name">Volume da Música</div>
-              <div class="setting-desc">Trilha do santuário e dos combates</div>
-            </div>
-            <div class="audio-setting-controls">
-              <button type="button" id="music-toggle" class="audio-toggle" aria-label="Silenciar volume da música" aria-pressed="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M9 18V5l12-2v13M9 9l12-2"/><ellipse cx="6" cy="18" rx="3" ry="3"/><ellipse cx="18" cy="16" rx="3" ry="3"/>
-                  <path class="audio-muted-slash" d="m3 3 18 18"/>
-                </svg>
-              </button>
-              <input type="range" id="music-volume-slider" aria-label="Volume da Música" min="0" max="100" value="100">
+        <section class="settings-section" aria-labelledby="settings-heading-video">
+          <div id="settings-heading-video" class="settings-section-subtitle">Desempenho &amp; Vídeo</div>
+          <div class="settings-group">
+            <div class="setting-item">
+              <div>
+                <div class="setting-name">Taxa de Quadros</div>
+                <div class="setting-desc">Padrão em 30 FPS para menor consumo; 60 FPS deixa as animações mais fluidas.</div>
+              </div>
+              <div class="fps-segmented-control" role="group" aria-label="Taxa de quadros">
+                <button type="button" id="fps-mode-30" class="btn-fps-option active" data-fps="30" aria-pressed="true">30 FPS</button>
+                <button type="button" id="fps-mode-60" class="btn-fps-option" data-fps="60" aria-pressed="false">60 FPS</button>
+              </div>
             </div>
           </div>
+        </section>
 
-          <div class="setting-item audio-setting">
-            <div>
-              <div class="setting-name">Volume dos Efeitos</div>
-              <div class="setting-desc">Sons de rituais e cliques</div>
+        <section class="settings-section" aria-labelledby="settings-heading-interface">
+          <div id="settings-heading-interface" class="settings-section-subtitle">Interface &amp; Orientações</div>
+          <div class="settings-group">
+            <label class="setting-item" for="hide-guidance-toggle">
+              <div>
+                <div class="setting-name">Ocultar dicas e tutoriais</div>
+                <div class="setting-desc">Esconder tutoriais e orientações iniciais. Dicas dos recursos e fórmulas Nerds continuam disponíveis. Desmarque para reiniciar as orientações.</div>
+              </div>
+              <input type="checkbox" id="hide-guidance-toggle" />
+            </label>
+            <div class="setting-item">
+              <div>
+                <div class="setting-name">Rever tutoriais</div>
+                <div class="setting-desc">Reiniciar as orientações sem alterar seu progresso.</div>
+              </div>
+              <button type="button" id="btn-replay-tutorials" class="btn-setting-action">Rever</button>
             </div>
-            <div class="audio-setting-controls">
-              <button type="button" id="sfx-toggle" class="audio-toggle" aria-label="Silenciar volume dos efeitos" aria-pressed="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="m13 2-9 12h7l-1 8 10-13h-7z"/>
-                  <path class="audio-muted-slash" d="m3 3 18 18"/>
-                </svg>
-              </button>
-              <input type="range" id="sfx-volume-slider" aria-label="Volume dos Efeitos" min="0" max="100" value="100">
+            <label class="setting-item" for="show-hotkeys-toggle">
+              <div>
+                <div class="setting-name">Exibir atalhos nos botões</div>
+                <div class="setting-desc">Mostrar as teclas de atalho (1–6 e ações) diretamente nos botões e na barra inferior.</div>
+              </div>
+              <input type="checkbox" id="show-hotkeys-toggle" checked />
+            </label>
+            <label class="setting-item" for="nerds-toggle">
+              <div>
+                <div class="setting-name">Nerds</div>
+                <div class="setting-desc">Mostrar fórmulas de custo e bônus ao passar o mouse sobre compras e melhorias.</div>
+              </div>
+              <input type="checkbox" id="nerds-toggle" />
+            </label>
+          </div>
+        </section>
+
+        <section class="settings-section" aria-labelledby="settings-heading-save">
+          <div id="settings-heading-save" class="settings-section-subtitle">Progresso &amp; Salvamento</div>
+          <div class="settings-group">
+            <div class="setting-item">
+              <div>
+                <div class="setting-name">Progresso do Culto</div>
+                <div id="save-status-text" class="setting-desc">Auto-salvamento ativo a cada 20s</div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button id="btn-manual-save" class="btn-setting-action">Salvar Agora</button>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div>
+                <div class="setting-name">Backup &amp; Transferência</div>
+                <div class="setting-desc">Exporte ou importe sua chave de progresso</div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button id="btn-export-save" class="btn-setting-action">Exportar</button>
+                <button id="btn-import-save" class="btn-setting-action">Importar</button>
+              </div>
+            </div>
+
+            <div class="setting-item setting-danger">
+              <div>
+                <div class="setting-name">Reiniciar Culto</div>
+                <div class="setting-desc">Apaga todo o progresso e recomeça do zero</div>
+              </div>
+              <button id="btn-reset-save" class="btn-setting-danger">Reiniciar</button>
             </div>
           </div>
+        </section>
 
-          <div class="setting-item">
-            <div>
-              <div class="setting-name">Vibração Háptica</div>
-              <div class="setting-desc">Feedback tátil nos toques e rituais (Mobile)</div>
+        <section class="settings-section" aria-labelledby="settings-heading-system">
+          <div id="settings-heading-system" class="settings-section-subtitle">Sistema &amp; Histórico</div>
+          <div class="settings-group">
+            <div class="setting-item">
+              <div>
+                <div class="setting-name" id="game-version"></div>
+                <div class="setting-desc">Acompanhe as novidades e o histórico do jogo.</div>
+              </div>
+              <button id="btn-show-changelog" class="btn-setting-action">Ver novidades</button>
             </div>
-            <input type="checkbox" id="haptics-toggle" style="accent-color: var(--gold-accent);" checked>
-          </div>
-
-        </div>
-
-        <div class="settings-group">
-          <label class="setting-item" for="hide-guidance-toggle">
-            <div>
-              <div class="setting-name">Ocultar dicas e tutoriais</div>
-              <div class="setting-desc">Esconder tutoriais e orientações iniciais. Dicas dos recursos e fórmulas Nerds continuam disponíveis. Desmarque para reiniciar as orientações.</div>
-            </div>
-            <input type="checkbox" id="hide-guidance-toggle" />
-          </label>
-          <div class="setting-item">
-            <div>
-              <div class="setting-name">Rever tutoriais</div>
-              <div class="setting-desc">Reiniciar as orientações sem alterar seu progresso.</div>
-            </div>
-            <button type="button" id="btn-replay-tutorials" class="btn-setting-action">Rever</button>
-          </div>
-          <label class="setting-item" for="show-hotkeys-toggle">
-            <div>
-              <div class="setting-name">Exibir atalhos nos botões</div>
-              <div class="setting-desc">Mostrar as teclas de atalho (1–6 e ações) diretamente nos botões e na barra inferior.</div>
-            </div>
-            <input type="checkbox" id="show-hotkeys-toggle" checked />
-          </label>
-          <label class="setting-item" for="nerds-toggle">
-            <div>
-              <div class="setting-name">Nerds</div>
-              <div class="setting-desc">Mostrar fórmulas de custo e bônus ao passar o mouse sobre compras e melhorias.</div>
-            </div>
-            <input type="checkbox" id="nerds-toggle" />
-          </label>
-        </div>
-
-        <div class="settings-group">
-          <div class="setting-item">
-            <div>
-              <div class="setting-name">Menu de desenvolvimento</div>
-              <div class="setting-desc">Controles de teste, recursos e velocidade do jogo.</div>
-            </div>
-            <button id="btn-open-dev-menu" class="btn-setting-action" type="button">Abrir menu dev</button>
-          </div>
-        </div>
-
-        <div class="settings-section-subtitle">Progresso & Salvamento</div>
-        <div class="settings-group">
-          <div class="setting-item">
-            <div>
-              <div class="setting-name" id="game-version"></div>
-              <div class="setting-desc">Acompanhe as novidades e o histórico do jogo.</div>
-            </div>
-            <button id="btn-show-changelog" class="btn-setting-action">Ver novidades</button>
-          </div>
-        </div>
-
-        <div class="settings-group">
-          <div class="setting-item">
-            <div>
-              <div class="setting-name">Progresso do Culto</div>
-              <div id="save-status-text" class="setting-desc">Auto-salvamento ativo a cada 20s</div>
-            </div>
-            <div style="display: flex; gap: 8px;">
-              <button id="btn-manual-save" class="btn-setting-action">Salvar Agora</button>
+            <div class="setting-item">
+              <div>
+                <div class="setting-name">Menu de desenvolvimento</div>
+                <div class="setting-desc">Controles de teste, recursos e velocidade do jogo.</div>
+              </div>
+              <button id="btn-open-dev-menu" class="btn-setting-action" type="button">Abrir menu dev</button>
             </div>
           </div>
+        </section>
 
-          <div class="setting-item">
-            <div>
-              <div class="setting-name">Backup & Transferência</div>
-              <div class="setting-desc">Exporte ou importe sua chave de progresso</div>
-            </div>
-            <div style="display: flex; gap: 8px;">
-              <button id="btn-export-save" class="btn-setting-action">Exportar</button>
-              <button id="btn-import-save" class="btn-setting-action">Importar</button>
-            </div>
-          </div>
-
-          <div class="setting-item setting-danger">
-            <div>
-              <div class="setting-name">Reiniciar Culto</div>
-              <div class="setting-desc">Apaga todo o progresso e recomeça do zero</div>
-            </div>
-            <button id="btn-reset-save" class="btn-setting-danger">Reiniciar</button>
-          </div>
-        </div>
-
-        <div style="display: flex; justify-content: flex-end;">
+        <div class="settings-modal-footer">
           <button id="close-settings-footer-btn" class="btn-slide-play" style="padding: 10px 24px; font-size: 15px;">
             FECHAR
           </button>

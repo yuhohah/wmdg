@@ -233,21 +233,29 @@ export class HUDController {
     }
   }
 
+  private cachedTipWidth = 0;
+  private lastTooltipSig = '';
+  private lastTooltipLeft = '';
+  private lastTooltipTop = '';
+
   private showTooltip(currency: CurrencyId, anchorEl: HTMLElement): void {
+    const changedAnchor = this.activeAnchorEl !== anchorEl || this.activeCurrency !== currency;
     this.activeCurrency = currency;
     this.activeAnchorEl = anchorEl;
-    this.renderActiveTooltip();
+    if (changedAnchor) this.cachedTipWidth = 0;
+    this.renderActiveTooltip(changedAnchor);
   }
 
   public hideTooltip(): void {
     this.activeCurrency = null;
     this.activeAnchorEl = null;
-    if (this.tooltipEl) {
+    this.cachedTipWidth = 0;
+    if (this.tooltipEl && !this.tooltipEl.hidden) {
       this.tooltipEl.hidden = true;
     }
   }
 
-  private renderActiveTooltip(): void {
+  private renderActiveTooltip(forceReposition = false): void {
     if (!this.activeCurrency || !this.activeAnchorEl || !this.tooltipEl) return;
     if (!this.activeAnchorEl.isConnected || this.activeAnchorEl.style.display === 'none') {
       this.hideTooltip();
@@ -255,26 +263,34 @@ export class HUDController {
     }
 
     const data = this.getCurrencyTooltipData(this.activeCurrency);
-    if (this.tooltipTitleEl) {
-      setText(this.tooltipTitleEl, data.title);
-    }
-    if (this.tooltipDescEl) {
-      setText(this.tooltipDescEl, data.description);
-    }
-    if (this.tooltipStatsEl) {
-      setText(this.tooltipStatsEl, data.stats.join('\n'));
+    const statsText = data.stats.join('\n');
+    const sig = `${data.title}\n${data.description}\n${statsText}`;
+    if (sig !== this.lastTooltipSig) {
+      this.lastTooltipSig = sig;
+      if (this.tooltipTitleEl) setText(this.tooltipTitleEl, data.title);
+      if (this.tooltipDescEl) setText(this.tooltipDescEl, data.description);
+      if (this.tooltipStatsEl) setText(this.tooltipStatsEl, statsText);
     }
 
-    this.tooltipEl.hidden = false;
-    const anchorRect = this.activeAnchorEl.getBoundingClientRect();
-    const tipRect = this.tooltipEl.getBoundingClientRect();
-    const left = Math.max(
-      8,
-      Math.min(window.innerWidth - tipRect.width - 8, anchorRect.left)
-    );
-    const top = Math.max(8, anchorRect.bottom + 8);
-    this.tooltipEl.style.left = `${left}px`;
-    this.tooltipEl.style.top = `${top}px`;
+    const wasHidden = this.tooltipEl.hidden;
+    if (wasHidden) {
+      this.tooltipEl.hidden = false;
+    }
+    if (forceReposition || wasHidden || this.cachedTipWidth <= 0) {
+      const anchorRect = this.activeAnchorEl.getBoundingClientRect();
+      const tipRect = this.tooltipEl.getBoundingClientRect();
+      this.cachedTipWidth = tipRect.width;
+      const leftStr = `${Math.max(8, Math.min(window.innerWidth - this.cachedTipWidth - 8, anchorRect.left))}px`;
+      const topStr = `${Math.max(8, anchorRect.bottom + 8)}px`;
+      if (this.lastTooltipLeft !== leftStr) {
+        this.lastTooltipLeft = leftStr;
+        this.tooltipEl.style.left = leftStr;
+      }
+      if (this.lastTooltipTop !== topStr) {
+        this.lastTooltipTop = topStr;
+        this.tooltipEl.style.top = topStr;
+      }
+    }
   }
 
   private bindEvents(): void {
@@ -292,7 +308,9 @@ export class HUDController {
     const isBoosted = this.gameState.incarnationBoostTimer > 0;
     if (this.faithPerSecCounterEl) {
       setText(this.faithPerSecCounterEl, `${formatNumber(fps)}/s${isBoosted ? ' (2×)' : ''}`);
-      this.faithPerSecCounterEl.classList.toggle('boosted', isBoosted);
+      if (this.faithPerSecCounterEl.classList.contains('boosted') !== isBoosted) {
+        this.faithPerSecCounterEl.classList.toggle('boosted', isBoosted);
+      }
     }
 
     if (this.followersCounterEl) {
@@ -327,7 +345,7 @@ export class HUDController {
     }
 
     if (this.activeCurrency) {
-      this.renderActiveTooltip();
+      this.renderActiveTooltip(false);
     }
   }
 

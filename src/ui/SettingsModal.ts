@@ -1,4 +1,5 @@
 import { AudioManager } from '../systems/audio.js';
+import type { VisualFpsMode } from './visualTiming.js';
 
 export interface SettingsModalOptions {
   audio: AudioManager;
@@ -13,6 +14,8 @@ export interface SettingsModalOptions {
   onResetSave: () => void;
   onToggleHaptics?: (enabled: boolean) => void;
   isHapticsEnabled?: () => boolean;
+  getTargetFps?: () => VisualFpsMode;
+  onChangeTargetFps?: (fps: VisualFpsMode) => void;
   isGuidanceHidden?: () => boolean;
   onToggleHideGuidance?: (hidden: boolean) => void;
   isShowHotkeysEnabled?: () => boolean;
@@ -39,7 +42,9 @@ export class SettingsModal {
   private musicIconOnEl: HTMLElement | null = null;
   private musicIconOffEl: HTMLElement | null = null;
 
-  // Haptics & Preferences Controls
+  // Video, Haptics & Preferences Controls
+  private fps30BtnEl: HTMLButtonElement | null = null;
+  private fps60BtnEl: HTMLButtonElement | null = null;
   private hapticsToggleEl: HTMLInputElement | null = null;
   private hideGuidanceEl: HTMLInputElement | null = null;
   private showHotkeysToggleEl: HTMLInputElement | null = null;
@@ -60,6 +65,7 @@ export class SettingsModal {
     this.bindEvents();
     this.initAudioGestureListener();
     this.updateMusicUI();
+    this.updateFpsUI();
   }
 
   private initElements(): void {
@@ -78,6 +84,8 @@ export class SettingsModal {
     this.musicIconOnEl = document.getElementById('music-icon-on');
     this.musicIconOffEl = document.getElementById('music-icon-off');
 
+    this.fps30BtnEl = document.getElementById('fps-mode-30') as HTMLButtonElement | null;
+    this.fps60BtnEl = document.getElementById('fps-mode-60') as HTMLButtonElement | null;
     this.hapticsToggleEl = document.getElementById('haptics-toggle') as HTMLInputElement | null;
     this.hideGuidanceEl = document.getElementById('hide-guidance-toggle') as HTMLInputElement | null;
     this.showHotkeysToggleEl = document.getElementById('show-hotkeys-toggle') as HTMLInputElement | null;
@@ -102,6 +110,18 @@ export class SettingsModal {
     document.getElementById('btn-show-changelog')?.addEventListener('click', () => {
       this.close();
       this.options.onShowChangelog?.();
+    });
+    this.fps30BtnEl?.addEventListener('click', () => {
+      if ((this.options.getTargetFps?.() ?? 30) !== 30) {
+        this.options.onChangeTargetFps?.(30);
+      }
+      this.updateFpsUI();
+    });
+    this.fps60BtnEl?.addEventListener('click', () => {
+      if ((this.options.getTargetFps?.() ?? 30) !== 60) {
+        this.options.onChangeTargetFps?.(60);
+      }
+      this.updateFpsUI();
     });
     if (this.showHotkeysToggleEl) {
       this.showHotkeysToggleEl.checked = this.options.isShowHotkeysEnabled?.() ?? true;
@@ -238,10 +258,24 @@ export class SettingsModal {
     }
   }
 
+  public updateFpsUI(): void {
+    const fps = this.options.getTargetFps?.() ?? 30;
+    const is60 = fps === 60;
+    if (this.fps30BtnEl) {
+      this.fps30BtnEl.classList.toggle('active', !is60);
+      this.fps30BtnEl.setAttribute('aria-pressed', String(!is60));
+    }
+    if (this.fps60BtnEl) {
+      this.fps60BtnEl.classList.toggle('active', is60);
+      this.fps60BtnEl.setAttribute('aria-pressed', String(is60));
+    }
+  }
+
   public open(): void {
     if (this.hideGuidanceEl) this.hideGuidanceEl.checked = this.options.isGuidanceHidden?.() ?? false;
     if (this.showHotkeysToggleEl) this.showHotkeysToggleEl.checked = this.options.isShowHotkeysEnabled?.() ?? true;
     if (this.nerdsToggleEl) this.nerdsToggleEl.checked = this.options.isNerdsEnabled?.() ?? false;
+    this.updateFpsUI();
     this.modalEl?.classList.add('open');
     this.updateSaveStatus();
     this.options.onOpen?.();

@@ -1,27 +1,27 @@
-/* Decorative effects sample at 30 Hz; camera, drag and interface transitions stay native.
-   CSS easing applies between keyframes: counts below use each segment's duration. */
-.floating-faith-num {
+/* Decorative effects sample at 30 Hz by default; in 60 FPS mode they use smooth native easing.
+   Camera, drag and interface transitions stay native in both modes. */
+html:not([data-fps="60"]) .floating-faith-num {
   /* Two 400 ms segments: 12 steps each. */
   animation-timing-function: steps(12, end);
 }
 
-.incarnation-altar-aura {
+html:not([data-fps="60"]) .incarnation-altar-aura {
   /* Two 2 s segments. */
   animation-timing-function: steps(60, end);
 }
 
-.btn-unlock-mechanic.affordable::after {
+html:not([data-fps="60"]) .btn-unlock-mechanic.affordable::after {
   /* Two 1.2 s segments. */
   animation-timing-function: steps(36, end);
 }
 
-.start-sphere-img {
+html:not([data-fps="60"]) .start-sphere-img {
   /* One 4 s segment. */
   animation-timing-function: steps(120, end);
 }
 
-.resource-item-faith .res-rate.boosted,
-#faith-per-sec-counter.boosted {
+html:not([data-fps="60"]) .resource-item-faith .res-rate.boosted,
+html:not([data-fps="60"]) #faith-per-sec-counter.boosted {
   /* One 1.2 s segment. */
   animation-timing-function: steps(36, end);
 }

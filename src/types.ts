@@ -54,6 +54,8 @@ export interface GameState {
   gnoseUpgradeIds?: string[];
   defeatedBossesCount?: number;
   defeatedBossIds?: string[];
+  maxCurseDefeatedBossIds?: string[];
+  bossCurseStacks?: number;
   tiamatDefeated?: boolean;
 }
 
@@ -160,6 +162,8 @@ export interface BossRift {
   slotIndex?: number;
   scaleValue?: number;
   scaleHigherSelected?: boolean;
+  chainOrder?: number;
+  chainTotal?: number;
 }
 
 export interface ActiveBossMiracle {
@@ -233,6 +237,12 @@ export interface BossCombatBreakdown {
   estimatedPassiveVictorySec: number;
   /** Estimated time until Altar breaks if no rifts are shattered (seconds) */
   estimatedAltarSurvivalSec: number;
+  /** Active Boss Curse stacks affecting this boss (0 for Anúbis or when uncursed, 1..5 from Hades onward) */
+  curseStacks?: number;
+  /** Fraction of damage mitigated by the boss due to Curse (0 to 0.80) */
+  curseDamageReduction?: number;
+  /** Extra damage ratio dealt by the boss due to Curse (0 to 5.0, i.e. +0% to +500%) */
+  curseExtraDamageRatio?: number;
 }
 
 export interface GnoseSaveData {
@@ -243,8 +253,11 @@ export interface GnoseSaveData {
   gnoseResets: number;
   unlockedUpgrades: string[];
   defeatedBosses?: string[];
+  maxCurseDefeatedBosses?: string[];
   bestBossTimesSec?: Record<string, number>;
   bossCurseTimerSec?: number;
+  bossCurseStacks?: number;
+  bossCurseBossId?: string | null;
   confirmReset: boolean;
   autoFollowersEnabled: boolean;
   autoFervorEnabled: boolean;

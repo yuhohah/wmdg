@@ -2,6 +2,68 @@
 
 Novidades de *Cult of the Sphere*, da versão mais recente para a mais antiga.
 
+## 0.14.0 — 2026-11-18
+
+### Maldição dos Guardiões
+
+- Perder para um chefe a partir de Hades (Hades, Odin, Caos Primordial e Demiurgo) aplica 1 acúmulo da Maldição dos Guardiões, até o máximo de 5 acúmulos.
+- Cada acúmulo reduz em 10% o dano causado aos chefes (até −50%) e aumenta em 60% o dano sofrido ao errar um aparo (até +300%, destruindo a Esfera instantaneamente caso erre um aparo no acúmulo máximo).
+- Combates sob maldição ganham regras próprias: os chefes atacam até 25% mais rápido, a coleta automática de milagres durante o duelo fica suspensa e cada aparo concluído dispara um Riposte Gnóstico que causa dano direto à vida do chefe de acordo com o combo.
+- Para remover a maldição, derrote o chefe imediatamente anterior pelo botão de purificação na aba Gnose (ou vença o próprio chefe amaldiçoado).
+- Aparar ataques não cura mais a integridade da Esfera.
+
+### Mecânicas de Aparo dos Chefes
+
+- Melhorada a visibilidade das mecânicas únicas de aparo com linhas guias no mundo, indicadores de sequência e avisos visuais mais nítidos.
+- Balança de Anúbis ajustada com pesos de dois dígitos próximos e posições imprevisíveis, destacando o prato restante como armadilha após escolher o maior peso.
+- Grilhões de Hades ganham elos numerados com cadeado nos elos travados, trilha indicando a ordem correta (2 elos nas Fases I–II e 3 elos na Fase III) e recuo ao clicar fora de sequência.
+- Corvo de Odin recebe aviso âmbar antes da zona verde e janela de reação rebalanceada.
+- Colapso de Caos Primordial destaca o anel orbital entre os 3 selos e exibe quantos selos restam.
+- Ritual Sol e Lua do Demiurgo ganha mostrador ampliado com trilha do ponteiro, destaque ao cruzar o centro verde e animação com feixe de luz de cura sempre que o clique cai no lado da Lua.
+
+### Demiurgo, Esfera e Final da Campanha
+
+- Animação do Demiurgo reformulada com rastejar mais fluido e natural entre os recursos do topo.
+- Nova visualização de drenagem com feixe de sifão e partículas fluindo do recurso até o orbe do Demiurgo.
+- Saída suave ao ser desafiado: o Demiurgo rompe a drenagem e desliza em curva até a arena enquanto a câmera acompanha sua chegada à Esfera.
+- Cerimônia de finalização do jogo reformulada com estética hermética, anéis armilares em rotação ao redor da Esfera, feixes de tributo e a presença do Demiurgo curvando seu cetro ao lado dos quatro guardiões, do Avatar Solar e dos fiéis.
+- Animação do Satélite da Gnose (Autoclicker) reformulada com órbita kepleriana contínua, anéis armilares giratórios, rastro luminoso, arco de choque e faíscas no ponto de impacto com a Esfera, além de segundo satélite antipodal alternando golpes ao alcançar 2 cliques/s.
+
+### Conquistas e Atalhos
+
+- Adicionada a tecla . como atalho para comprar diretamente o desbloqueio de mecânica atual.
+- Novas conquistas de Provação Amaldiçoada por subjugar Hades, Odin, Caos Primordial e o Demiurgo sob a Maldição máxima (5/5 acúmulos).
+- Novos ícones em estilo de gravura hermética para todas as famílias de conquistas, incluindo medalhões com retratos e selos de cinco espinhos para as provações amaldiçoadas.
+- Todas as 40 conquistas agora concedem bônus permanentes harmonizados por família: Fé por clique em Fé acumulada, Fé dos fiéis distribuída entre Congregação e Produção, aceleração do Autoclicker nos Tiers II e III da Gnose, Fé global nos Guardiões e no Tier IV da Gnose, e bônus de crítico, desconto de fiéis e Fé global nas Provações Amaldiçoadas.
+
+### Configurações e Desempenho
+
+- Adicionado seletor de taxa de quadros nas Configurações (30 FPS por padrão ou 60 FPS), aplicado em tempo real a todas as animações do jogo sem alterar a velocidade de progressão.
+- Menu de Configurações reorganizado em 5 seções visuais: Áudio e Resposta Tátil, Desempenho e Vídeo, Interface e Orientações, Progresso e Salvamento, e Sistema e Histórico.
+- Otimizadas as atualizações de interface nos painéis de Fervor e Relíquias, cálculo de compra máxima, dicas de fórmulas, barra de recursos, guia inicial e movimentação da câmera no tabuleiro.
+
+## 0.13.0 — 2026-11-14
+
+### Demiurgo
+
+- Novo boss final: o Demiurgo aparece após derrotar Caos Primordial e comprar todas as melhorias da Gnose, com um aviso para o jogador.
+- O Demiurgo percorre os recursos do topo, da Fé à Gnose. Ao parar ao lado de cada recurso, drena o saldo e reduz sua geração por segundo até zero em até 4 segundos. Se a Gnose zerar, a partida termina em derrota.
+- Clicar no Demiurgo interrompe sua caminhada pelos recursos e o leva até a Esfera, iniciando a procissão dos Fiéis e uma batalha com as regras dos demais bosses. A vitória restaura a produção e passa a ser necessária para concluir a campanha.
+- Adicionado o botão Redesafiar o Demiurgo após sua aparição, também disponível para revanche após a vitória.
+- Novas animações de caminhada, arremesso da esfera, ritual com o cajado erguido com e sem luz mística, e derrota.
+
+### Combate
+
+- O ritual Sol e Lua do Demiurgo ganha um arco com ponteiro que faz duas idas e voltas em ritmo irregular. Acerte a pequena faixa verde central para aparar.
+- Errar para o lado da Lua cura o Demiurgo e mostra o ritual com luz; errar para o lado do Sol causa dano à Esfera e mostra o ritual sem luz. Quanto mais longe do centro, maior a porcentagem, até 40%. Deixar o tempo acabar aplica a cura máxima ao boss.
+- O segundo ataque de Odin usa um círculo de contorno vermelho que encolhe até ficar verde. Tocar antes ou deixar o tempo acabar causa erro; acertar no verde apara o corvo e atrasa o próximo ataque.
+- O círculo de Odin fica em um card com instruções e os avisos Aguarde e Apare agora. O card aparece acima da Esfera ou ao lado em telas horizontais mais baixas, com alvo verde maior para facilitar o toque no celular.
+
+### Menu de desenvolvimento
+
+- Adicionado o botão Abrir menu dev nas Configurações e melhorada a posição e a identificação do botão DEV no celular.
+- Corrigida a detecção do modo de desenvolvimento ao acessar o jogo pela rede local ou por endereços do Tailscale.
+
 ## 0.12.2 — 2026-11-13
 
 ### Progressão e Gnose

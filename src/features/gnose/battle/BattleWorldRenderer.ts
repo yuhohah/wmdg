@@ -1,4 +1,5 @@
 import type { ActiveBossBattle } from '../../../types.js';
+import { odinParryCue } from '../../../systems/odinParry.js';
 import {
   FOLLOWER_FRAME_SIZE,
   followerAnimationFrame,
@@ -14,6 +15,7 @@ import {
 } from './BossSprites.js';
 import {
   BOSS_SPHERE_CENTER,
+  parryCardPosition,
   polylineLength,
   resolveMiracleFollowerActor,
   SPHERE_CIRCLE_RX,
@@ -106,6 +108,9 @@ export interface BattleWorldRenderContext {
   phaseShockwaveAlpha: number;
   miracleBeam: { fromX: number; fromY: number; alpha: number } | null;
   drawOrderPool: DrawOrderEntry[];
+  promptScale?: number;
+  smoothCombatSec?: number;
+  odinRemainingOverride?: number;
 }
 
 function pushDrawOrder(
@@ -203,29 +208,239 @@ export function renderBattleWorldScene(rc: BattleWorldRenderContext): void {
   ctx.stroke();
   ctx.restore();
 
-  // 2b. Special Attack 2 Canvas Overlays (Hades Chains & Anubis Balance Beam)
-  if (battle && battle.activeRifts.some((r) => r.kind === 'hades_chains')) {
-    ctx.save();
-    ctx.strokeStyle = 'rgba(220, 62, 62, 0.85)';
-    ctx.lineWidth = 3.5;
-    ctx.setLineDash([6, 4]);
-    ctx.beginPath();
-    ctx.moveTo(sphereLocalX - 120, sphereLocalY - 75);
-    ctx.lineTo(sphereLocalX + 120, sphereLocalY + 75);
-    ctx.moveTo(sphereLocalX - 120, sphereLocalY + 75);
-    ctx.lineTo(sphereLocalX + 120, sphereLocalY - 75);
-    ctx.stroke();
-    ctx.restore();
-  }
-  if (battle && battle.activeRifts.some((r) => r.kind === 'anubis_scales')) {
-    ctx.save();
-    ctx.strokeStyle = 'rgba(246, 220, 154, 0.72)';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.moveTo(sphereLocalX - 185, sphereLocalY - 10);
-    ctx.lineTo(sphereLocalX + 185, sphereLocalY - 10);
-    ctx.stroke();
-    ctx.restore();
+  // 2b. Signature Guardian Parry Canvas Overlays (connected directly to live parry card positions)
+  const promptScale = rc.promptScale ?? 1;
+  const smoothCombatSec = rc.smoothCombatSec ?? battle?.elapsedCombatSec ?? 0;
+  const spherePoint = { x: sphereLocalX, y: sphereLocalY };
+
+  if (battle && battle.activeRifts.length > 0) {
+    // Anúbis: Golden Balance of Maat suspending both Scale Pans above the Sphere
+    const scaleRifts = battle.activeRifts.filter((r) => r.kind === 'anubis_scales');
+    if (scaleRifts.length > 0) {
+      const leftPos = parryCardPosition(
+        { kind: 'anubis_scales', slotIndex: 0, xPercent: 28, yPercent: 32 },
+        spherePoint,
+        smoothCombatSec,
+        promptScale
+      );
+      const rightPos = parryCardPosition(
+        { kind: 'anubis_scales', slotIndex: 1, xPercent: 72, yPercent: 32 },
+        spherePoint,
+        smoothCombatSec,
+        promptScale
+      );
+      const beamY = Math.min(leftPos.y, rightPos.y) - Math.round(58 * promptScale);
+      const settled = scaleRifts.some((r) => r.scaleHigherSelected);
+      ctx.save();
+      ctx.strokeStyle = settled ? 'rgba(74, 222, 128, 0.78)' : 'rgba(246, 220, 154, 0.9)';
+      ctx.lineWidth = 3;
+      // Central pillar from Sphere crown to fulcrum
+      ctx.beginPath();
+      ctx.moveTo(sphereLocalX, sphereLocalY - 110);
+      ctx.lineTo(sphereLocalX, beamY);
+      // Crossbar
+      ctx.moveTo(leftPos.x, beamY);
+      ctx.lineTo(rightPos.x, beamY);
+      ctx.stroke();
+
+      // Suspension chains to each pan
+      ctx.setLineDash([5, 4]);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(leftPos.x, beamY);
+      ctx.lineTo(leftPos.x, leftPos.y);
+      ctx.moveTo(rightPos.x, beamY);
+      ctx.lineTo(rightPos.x, rightPos.y);
+      ctx.stroke();
+
+      // Fulcrum diamond
+      ctx.setLineDash([]);
+      ctx.fillStyle = settled ? '#4ade80' : '#fff0bb';
+      ctx.beginPath();
+      ctx.moveTo(sphereLocalX, beamY - 9);
+      ctx.lineTo(sphereLocalX + 9, beamY);
+      ctx.lineTo(sphereLocalX, beamY + 9);
+      ctx.lineTo(sphereLocalX - 9, beamY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Hades: Crimson-Iron Shackle Ring outside the Sphere + Taut Chains + Sequence Guide (1º → 2º)
+    const chainRifts = battle.activeRifts.filter((r) => r.kind === 'hades_chains');
+    if (chainRifts.length > 0) {
+      ctx.save();
+      // Shackle rings outside #divine-sphere-btn so the Sphere never hides them
+      ctx.strokeStyle = 'rgba(224, 85, 85, 0.88)';
+      ctx.lineWidth = 3.5;
+      ctx.setLineDash([10, 6]);
+      ctx.beginPath();
+      ctx.arc(sphereLocalX, sphereLocalY, 150, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(125, 41, 27, 0.82)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.arc(sphereLocalX, sphereLocalY, 164, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Sort by chainOrder so index 0 is the active unlocked chain
+      const ordered = [...chainRifts].sort((a, b) => (a.chainOrder ?? 0) - (b.chainOrder ?? 0));
+      const positions = ordered.map((r) =>
+        parryCardPosition(r, spherePoint, smoothCombatSec, promptScale)
+      );
+
+      // Taut iron-crimson chain from Sphere perimeter to every unbroken link
+      for (let i = 0; i < positions.length; i++) {
+        const p = positions[i];
+        const angle = Math.atan2(p.y - sphereLocalY, p.x - sphereLocalX);
+        const sx = sphereLocalX + Math.cos(angle) * 148;
+        const sy = sphereLocalY + Math.sin(angle) * 148;
+        ctx.strokeStyle = i === 0 ? 'rgba(251, 191, 36, 0.95)' : 'rgba(224, 85, 85, 0.72)';
+        ctx.lineWidth = i === 0 ? 4 : 3;
+        ctx.setLineDash(i === 0 ? [8, 4] : [5, 6]);
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+      }
+
+      // Directional sequence sightline from current unlocked link (1º) to next link (2º)
+      if (positions.length >= 2) {
+        ctx.strokeStyle = 'rgba(246, 220, 154, 0.78)';
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.moveTo(positions[0].x, positions[0].y);
+        ctx.lineTo(positions[1].x, positions[1].y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // Odin: Runic Trajectory & Contracting Emerald/Amber/Crimson Halo around the Sphere
+    const odinRift = battle.activeRifts.find((r) => r.kind === 'odin_raven');
+    if (odinRift) {
+      const cue = odinParryCue({
+        remainingSec: rc.odinRemainingOverride ?? odinRift.remainingSec,
+        maxSec: odinRift.maxSec,
+      });
+      const color = cue.green
+        ? 'rgba(74, 222, 128, 0.92)'
+        : cue.readySoon
+          ? 'rgba(251, 191, 36, 0.88)'
+          : 'rgba(239, 68, 68, 0.78)';
+      const shrinkRatio = Math.max(0, Math.min(1, (cue.diameter - 64) / 94));
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = cue.green ? 4.5 : 3;
+      ctx.setLineDash(cue.green ? [] : [9, 6]);
+      ctx.beginPath();
+      ctx.arc(sphereLocalX, sphereLocalY, 146 + shrinkRatio * 54, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Sightline from Odin toward the Sphere
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([7, 7]);
+      ctx.beginPath();
+      ctx.moveTo(bossFrame.lx + 36, bossFrame.ly - 92);
+      ctx.lineTo(sphereLocalX - 146, sphereLocalY);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Caos Primordial: Contracting Astral-Violet Void Vortex & Orbital Seal Chords
+    const chaosRifts = battle.activeRifts.filter((r) => r.kind === 'chaos_orbit');
+    if (chaosRifts.length > 0) {
+      const ratio = Math.max(
+        0,
+        Math.min(1, chaosRifts[0].remainingSec / Math.max(0.1, chaosRifts[0].maxSec))
+      );
+      const pts = chaosRifts.map((r) =>
+        parryCardPosition(r, spherePoint, smoothCombatSec, promptScale)
+      );
+      ctx.save();
+      // Contracting void ring around the Sphere
+      ctx.strokeStyle = 'rgba(192, 132, 252, 0.88)';
+      ctx.lineWidth = 3.5;
+      ctx.setLineDash([10, 5]);
+      ctx.beginPath();
+      ctx.arc(sphereLocalX, sphereLocalY, 142 + ratio * 48, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Radial collapse beams to Sphere
+      ctx.strokeStyle = 'rgba(216, 180, 254, 0.72)';
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([6, 5]);
+      for (const p of pts) {
+        const ang = Math.atan2(p.y - sphereLocalY, p.x - sphereLocalX);
+        ctx.beginPath();
+        ctx.moveTo(sphereLocalX + Math.cos(ang) * 142, sphereLocalY + Math.sin(ang) * 142);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+      }
+
+      // Eldritch chords linking remaining seals
+      if (pts.length >= 2) {
+        ctx.strokeStyle = 'rgba(192, 132, 252, 0.55)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) {
+          ctx.lineTo(pts[i].x, pts[i].y);
+        }
+        if (pts.length === 3) ctx.closePath();
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // Demiurgo: Split Lunar (Left) & Solar (Right) Eclipse Halo + Staff Conduit
+    if (battle.activeRifts.some((r) => r.kind === 'demiurge_ritual')) {
+      const pulse = 0.5 + 0.5 * Math.sin(smoothCombatSec * 4.8);
+      const staffX = bossFrame.drawLeft + bossFrame.drawW * 0.72;
+      const staffY = bossFrame.drawTop + bossFrame.drawH * 0.14;
+      const orbX = bossFrame.drawLeft + bossFrame.drawW * 0.74;
+      const orbY = bossFrame.drawTop + bossFrame.drawH * 0.48;
+      ctx.save();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = 'rgba(96, 165, 250, 0.84)';
+      ctx.beginPath();
+      ctx.arc(sphereLocalX, sphereLocalY, 156, Math.PI * 0.56, Math.PI * 1.44);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(245, 158, 11, 0.86)';
+      ctx.beginPath();
+      ctx.arc(sphereLocalX, sphereLocalY, 156, -Math.PI * 0.44, Math.PI * 0.44);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(74, 222, 128, 0.95)';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.arc(sphereLocalX, sphereLocalY, 156, -Math.PI * 0.56, -Math.PI * 0.44);
+      ctx.stroke();
+
+      // Astral aura around Demiurge's raised Sun/Moon staff and chained orb
+      ctx.strokeStyle = `rgba(246, 220, 154, ${(0.45 + 0.3 * pulse).toFixed(2)})`;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(staffX, staffY, 22 + pulse * 6, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = `rgba(192, 132, 252, ${(0.4 + 0.25 * pulse).toFixed(2)})`;
+      ctx.setLineDash([7, 6]);
+      ctx.beginPath();
+      ctx.moveTo(orbX, orbY);
+      ctx.quadraticCurveTo(
+        (orbX + sphereLocalX) * 0.5,
+        Math.min(orbY, sphereLocalY) - 64,
+        sphereLocalX - 152,
+        sphereLocalY
+      );
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 
   // 2c. Incarnation Call Wave inside the Pátio dos Fiéis (when summoning the queue)

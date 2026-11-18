@@ -4,6 +4,7 @@ import { AudioManager } from '../../systems/audio.js';
 import { calculateMiracleReward, formatNumber } from '../../systems/calculations.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 import { effectEasing } from '../../ui/visualTiming.js';
+import { AutoclickSatelliteVisual } from './AutoclickSatellite.js';
 import { SphereVisual } from './SphereVisual.js';
 
 export interface SphereControllerOptions {
@@ -19,19 +20,14 @@ export class SphereController {
 
   private divineSphereBtn: HTMLElement | null = null;
   private sphereAnimation: SphereVisual | null = null;
+  private autoclickVisual: AutoclickSatelliteVisual | null = null;
   private unsubscribeState?: () => void;
   private unsubscribeTick?: () => void;
-  private satellite: HTMLElement | null = null;
-  private satelliteOrb: HTMLElement | null = null;
-  private wrapperWidth = 400;
-  private wrapperHeight = 400;
-  private wrapperObserver?: ResizeObserver;
-  private lastSatelliteTransform = '';
   private lastAutoClick: ReturnType<GameStateManager['getLastSphereAutoclick']> = null;
-  private satelliteAngle = 0;
   private sphereGlobe: HTMLElement | null = null;
   private shockPool: HTMLElement[] = [];
   private shockIndex: number = 0;
+  private floatingPool: HTMLDivElement[] = [];
   private reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   constructor(options: SphereControllerOptions) {
@@ -54,27 +50,7 @@ export class SphereController {
     this.sphereAnimation = new SphereVisual(this.sphereGlobe);
     const wrapper = this.divineSphereBtn.parentElement;
     if (wrapper) {
-      this.wrapperWidth = wrapper.clientWidth || 400;
-      this.wrapperHeight = wrapper.clientHeight || 400;
-      if (typeof ResizeObserver !== 'undefined') {
-        this.wrapperObserver = new ResizeObserver((entries) => {
-          const rect = entries[entries.length - 1]?.contentRect;
-          if (rect && rect.width > 0 && rect.height > 0) {
-            this.wrapperWidth = rect.width;
-            this.wrapperHeight = rect.height;
-          }
-        });
-        this.wrapperObserver.observe(wrapper);
-      }
-      this.satellite = document.createElement('span');
-      this.satellite.className = 'sphere-autoclick-satellite';
-      this.satellite.hidden = true;
-      this.satellite.setAttribute('role', 'img');
-      this.satellite.setAttribute('aria-label', 'Satélite da Gnose: 1 clique automático por segundo');
-      this.satellite.title = 'Satélite da Gnose · 1 clique por segundo';
-      this.satellite.innerHTML = '<span class="autoclick-orb"></span>';
-      this.satelliteOrb = this.satellite.firstElementChild as HTMLElement | null;
-      wrapper.appendChild(this.satellite);
+      this.autoclickVisual = new AutoclickSatelliteVisual(wrapper);
     }
     this.syncProgress();
     for (let i = 0; i < 3; i++) {
@@ -110,10 +86,7 @@ export class SphereController {
     this.divineSphereBtn?.addEventListener('click', this.handleClick);
     document.addEventListener('keydown', this.handleKeyDown);
     this.unsubscribeState = events.on(GameEvents.STATE_CHANGED, this.syncProgress);
-    this.unsubscribeTick = events.on<number>(GameEvents.GAME_TICK, (deltaSec) => {
-      this.satelliteAngle = (this.satelliteAngle + deltaSec * Math.PI / 4) % (Math.PI * 2);
-      this.syncProgress();
-    });
+    this.unsubscribeTick = events.on(GameEvents.GAME_TICK, this.syncProgress);
   }
 
   private handleKeyDown = (event: KeyboardEvent): void => {
@@ -128,56 +101,40 @@ export class SphereController {
 
   public syncProgress = (): void => {
     this.sphereAnimation?.setProgress(this.gameState.isIncarnationUnlocked(), this.gameState.incarnationStage);
-    if (!this.satellite) return;
+    if (!this.autoclickVisual) return;
     const phase = this.gameState.getSphereAutoclickProgress();
-    const shouldHide = phase === null;
-    if (this.satellite.hidden !== shouldHide) this.satellite.hidden = shouldHide;
+    const rate = this.gameState.getSphereAutoclickRate();
+    this.autoclickVisual.syncState(phase, rate);
+
     const autoClick = this.gameState.getLastSphereAutoclick();
     const clicked = autoClick !== null && autoClick !== this.lastAutoClick;
     this.lastAutoClick = autoClick;
-    if (phase === null) return;
-    // At the click boundary the moon touches the globe, recoils, then falls inward again.
-    const distance = phase < 0.25
-      ? Math.sin((phase / 0.25) * Math.PI / 2)
-      : phase < 0.55 ? 1 : Math.cos(((phase - 0.55) / 0.45) * Math.PI / 2);
-    const radius = this.reducedMotion.matches ? 40 : 26 + distance * 17;
-    const angle = this.reducedMotion.matches ? -Math.PI / 4 : this.satelliteAngle;
-    const dx = Math.cos(angle) * (radius / 100) * this.wrapperWidth;
-    const dy = Math.sin(angle) * (radius / 100) * this.wrapperHeight;
-    const transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0)`;
-    if (transform !== this.lastSatelliteTransform) {
-      this.lastSatelliteTransform = transform;
-      this.satellite.style.transform = transform;
-    }
-    if (clicked && autoClick
-      && document.visibilityState !== 'hidden' && this.divineSphereBtn?.getClientRects().length) {
+    if (phase === null || !clicked || !autoClick) return;
+
+    const canShowDom =
+      document.visibilityState !== 'hidden' && Boolean(this.divineSphereBtn?.getClientRects().length);
+    const impactPos = this.autoclickVisual.triggerImpact(autoClick.isCrit, canShowDom);
+    if (canShowDom && impactPos) {
       this.sphereAnimation?.reactToClick();
       this.playClickAnimation(autoClick.isCrit);
-      const rect = this.satellite.parentElement!.getBoundingClientRect();
-      const contactRadius = this.reducedMotion.matches ? 0.40 : 0.26;
-      const x = rect.left + rect.width * (0.5 + Math.cos(angle) * contactRadius);
-      const y = rect.top + rect.height * (0.5 + Math.sin(angle) * contactRadius);
       const label = autoClick.isCrit
         ? `✦ CRÍTICO! +${formatNumber(autoClick.fpc)} FÉ`
         : `+${formatNumber(autoClick.fpc)} FÉ`;
-      this.spawnFloatingText(x, y, label, true);
-      if (!this.reducedMotion.matches && this.satelliteOrb) this.satelliteOrb.animate(
-        [{ transform: 'scale(0.8)' },
-          { transform: 'scale(1.18)', offset: 0.4 },
-          { transform: 'scale(1)' }],
-        { duration: 280, easing: effectEasing(280) }
-      );
+      this.spawnFloatingText(impactPos.clientX, impactPos.clientY, label, true);
     }
   };
 
   public destroy(): void {
-    this.wrapperObserver?.disconnect();
     this.unsubscribeState?.();
     this.unsubscribeTick?.();
     this.divineSphereBtn?.removeEventListener('click', this.handleClick);
     document.removeEventListener('keydown', this.handleKeyDown);
     this.sphereAnimation?.destroy();
-    this.satellite?.remove();
+    this.autoclickVisual?.destroy();
+    for (let i = 0; i < this.floatingPool.length; i++) {
+      this.floatingPool[i].remove();
+    }
+    this.floatingPool.length = 0;
   }
 
   public onSphereClicked(e?: MouseEvent): void {
@@ -236,15 +193,32 @@ export class SphereController {
   }
 
   public spawnFloatingText(x: number, y: number, text: string, small = false): void {
-    const floatEl = document.createElement('div');
-    floatEl.className = small ? 'floating-faith-num is-small' : 'floating-faith-num';
-    floatEl.textContent = text;
-    floatEl.style.left = `${x}px`;
-    floatEl.style.top = `${y}px`;
+    let floatEl = this.floatingPool.pop();
+    const nextClass = small ? 'floating-faith-num is-small' : 'floating-faith-num';
+    if (!floatEl || !floatEl.isConnected) {
+      floatEl = document.createElement('div');
+      floatEl.className = nextClass;
+      floatEl.textContent = text;
+      floatEl.style.left = `${x}px`;
+      floatEl.style.top = `${y}px`;
+      document.body.appendChild(floatEl);
+    } else {
+      if (floatEl.className !== nextClass) floatEl.className = nextClass;
+      floatEl.textContent = text;
+      floatEl.style.left = `${x}px`;
+      floatEl.style.top = `${y}px`;
+      floatEl.hidden = false;
+    }
 
-    document.body.appendChild(floatEl);
+    const ref = floatEl;
     setTimeout(() => {
-      floatEl.remove();
+      if (!ref.isConnected) return;
+      if (this.floatingPool.length < 24) {
+        ref.hidden = true;
+        this.floatingPool.push(ref);
+      } else {
+        ref.remove();
+      }
     }, 850);
   }
 }

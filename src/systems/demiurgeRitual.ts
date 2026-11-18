@@ -1,7 +1,7 @@
 /** Four unequal legs: Moon → Sun → Moon → Sun → Moon, exactly two round trips. */
-export const RITUAL_LEGS = [1.6, 1.1, 1.9, 1.4] as const;
+export const RITUAL_LEGS = [1.65, 1.32, 1.85, 1.48] as const;
 export const RITUAL_DURATION = RITUAL_LEGS.reduce((sum, leg) => sum + leg, 0);
-export const RITUAL_SAFE_HALF_WIDTH = 0.08;
+export const RITUAL_SAFE_HALF_WIDTH = 0.11;
 export const RITUAL_MAX_PENALTY = 40;
 export function ritualPointer(elapsed: number): number {
   let time = Math.max(0, elapsed);
@@ -16,6 +16,14 @@ export function ritualPointer(elapsed: number): number {
     time -= duration;
   }
   return -1;
+}
+export function ritualPassInfo(elapsed: number): { pass: number; total: number } {
+  let time = Math.max(0, elapsed);
+  for (let i = 0; i < RITUAL_LEGS.length; i++) {
+    if (time <= RITUAL_LEGS[i]) return { pass: i + 1, total: RITUAL_LEGS.length };
+    time -= RITUAL_LEGS[i];
+  }
+  return { pass: RITUAL_LEGS.length, total: RITUAL_LEGS.length };
 }
 export function ritualJudgement(position: number): { side: 'center' | 'moon' | 'sun'; percent: number } {
   const p = Math.max(-1, Math.min(1, Number.isFinite(position) ? position : -1));

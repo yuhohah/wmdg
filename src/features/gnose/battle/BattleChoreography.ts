@@ -49,6 +49,8 @@ export interface PendingBattleClimax {
   remainingSec: number;
   totalSec: number;
   cultReadiness: number;
+  cursePurified?: boolean;
+  curseStacks?: number;
 }
 
 export const BOSS_SPHERE_CENTER = { x: 1740, y: 854 };
@@ -149,25 +151,39 @@ const PARRY_ARC_START_DEG = -105;
 const PARRY_ARC_SPAN_DEG = 113;
 
 export function parryCardPosition(
-  rift: Pick<BossRift, 'kind' | 'slotIndex' | 'xPercent' | 'yPercent'>,
+  rift: Pick<BossRift, 'kind' | 'slotIndex' | 'xPercent' | 'yPercent' | 'chainTotal'>,
   sphere: { x: number; y: number },
   elapsedSec: number,
   scale: number
 ): { x: number; y: number } {
-  // Odin's card is anchored by its bottom edge above the central combat area.
-  if (rift.kind === 'odin_raven') return { x: sphere.x, y: sphere.y - 210 };
+  // Odin's card and Demiurge's dial anchor by their bottom edge above the central combat area.
+  if (rift.kind === 'odin_raven' || rift.kind === 'demiurge_ritual') {
+    return { x: sphere.x, y: sphere.y - 205 };
+  }
   const slot = rift.slotIndex ?? 0;
+  // Anúbis's Scales sit side-by-side as two golden pans of a true Balance Beam above the Sphere.
+  if (rift.kind === 'anubis_scales') {
+    const spread = 102 * scale;
+    const lift = 122 + 96 * scale;
+    return {
+      x: Math.round(sphere.x + (slot === 0 ? -spread : spread)),
+      y: Math.round(sphere.y - lift),
+    };
+  }
   let degrees: number;
-  if (rift.kind === 'anubis_scales' || rift.kind === 'hades_chains' || rift.kind === 'demiurge_ritual') {
-    degrees = slot === 0 ? -80 : -5;
+  let extraRadius = 0;
+  if (rift.kind === 'hades_chains') {
+    degrees = rift.chainTotal === 3 ? ([-102, -44, 14][slot] ?? -44) : slot === 0 ? -84 : -10;
   } else if (rift.kind === 'chaos_orbit') {
-    degrees = [-100, -45, 5][slot] + Math.sin(elapsedSec * 0.55) * 3;
+    const base = [-102, -45, 12][slot] ?? -45;
+    degrees = base + Math.sin(elapsedSec * 1.45 + slot * 0.95) * 13;
+    extraRadius = Math.cos(elapsedSec * 1.75 + slot * 2.1) * 11 * scale;
   } else {
     const turn = (Math.atan2(rift.yPercent - 50, rift.xPercent - 50) + Math.PI) / (Math.PI * 2);
     degrees = PARRY_ARC_START_DEG + turn * PARRY_ARC_SPAN_DEG;
   }
   // Cards grow as the camera zooms out, so the arc widens with them
-  const radius = 120 + 110 * scale;
+  const radius = 126 + 112 * scale + extraRadius;
   const radians = (degrees * Math.PI) / 180;
   return {
     x: Math.round(sphere.x + Math.cos(radians) * radius),

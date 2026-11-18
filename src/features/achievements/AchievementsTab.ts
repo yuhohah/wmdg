@@ -116,6 +116,7 @@ export class AchievementsTab {
       { prefix: 'ach_fps_', name: 'Produção' },
       { prefix: 'ach_gnose_', name: 'Gnose' },
       { prefix: 'ach_boss_', name: 'Guardiões' },
+      { prefix: 'ach_curse_', name: 'Provação Amaldiçoada' },
     ];
     for (const group of groups) {
       const achievements = this.gameState.achievements.filter((ach) => ach.id.startsWith(group.prefix));
@@ -130,7 +131,7 @@ export class AchievementsTab {
       achievements.forEach((ach, index) => {
         const tile = document.createElement('button');
         tile.type = 'button';
-        tile.className = 'achievement-tile';
+        tile.className = ach.id.startsWith('ach_curse_') ? 'achievement-tile ach-cursed-tile' : 'achievement-tile';
         tile.id = `ach-card-${ach.id}`;
         tile.title = `${ach.name} — ${ach.buffText}`;
         tile.innerHTML = `${achievementIcon(ach.id)}<span class="achievement-rank" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>`;
@@ -175,7 +176,7 @@ export class AchievementsTab {
         if (detailKey !== this.lastDetailKey) {
           this.lastDetailKey = detailKey;
           this.detailEl.innerHTML = `
-            <div class="achievement-detail-icon">${achievementIcon(selected.id)}</div>
+            <div class="achievement-detail-icon is-unlocked">${achievementIcon(selected.id)}</div>
             <span class="achievement-status">Conquista desbloqueada</span>
             <h4>${selected.name}</h4>
             <p>${selected.desc}</p>

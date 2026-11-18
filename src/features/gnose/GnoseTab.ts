@@ -9,7 +9,7 @@ import { cultDialog } from '../../ui/CultDialog.js';
 import { BossBattleModal, type BattleCameraTarget } from './BossBattleModal.js';
 import type { BossCombatBreakdown, GnoseUpgrade } from '../../types.js';
 import { icon, iconOrText } from '../../ui/icons.js';
-import { setDisplay, setHudSectionVisibility, setText } from '../../ui/dom.js';
+import { setHudSectionVisibility, setText } from '../../ui/dom.js';
 
 export interface GnoseTabOptions {
   gameState: GameStateManager;
@@ -48,9 +48,8 @@ export function guardianRequirement(tier: number, canChallenge: boolean, previou
   if (tier === 1 && !canChallenge) return 'Abra o Selo da Gnose para desafiar Anúbis.';
   if (canChallenge) return 'Vença para liberar estes nós.';
   const previousTier = tier - 1;
-  const required = GNOSE_UPGRADES.filter(u => u.tier === previousTier).length;
   const label = previousTier === 1 ? 'I' : previousTier === 2 ? 'II' : 'III';
-  return `Complete o Tier ${label} (${previousTierOwned}/${required} nós)`;
+  return `Assimile 1 nó do Tier ${label} (${Math.min(1, previousTierOwned)}/1)`;
 }
 
 export function ascensionSummary(gs: GameStateManager): string {
@@ -81,6 +80,14 @@ export class GnoseTab {
 
   private confirmToggleEl: HTMLInputElement | null = null;
   private treeContainerEl: HTMLElement | null = null;
+  private lastRenderedCurseSig = '';
+  private nodeEls = new Map<string, HTMLButtonElement>();
+  private sealRefs: Array<{
+    boss: (typeof GNOSE_BOSSES)[number];
+    btn: HTMLButtonElement;
+    reqEl: HTMLElement | null;
+    readinessEl: HTMLElement | null;
+  }> = [];
 
   constructor(options: GnoseTabOptions) {
     this.options = options;
@@ -91,6 +98,8 @@ export class GnoseTab {
       spawnFloatingText: options.spawnFloatingText,
       onCameraFrame: options.onBattleCamera,
       onBattleEnded: (_boss, victory) => {
+        this.renderTree();
+        this.updateUI();
         this.options.onUpgradePurchased?.(GNOSE_UPGRADES[0]);
         if (victory) this.options.onBossDefeated?.();
       }
@@ -125,7 +134,13 @@ export class GnoseTab {
   }
 
   private previousTierOwned(tier: number): number {
-    return GNOSE_UPGRADES.filter((u) => (u.tier === tier - 1) && this.options.gameState.hasGnoseUpgrade(u.id)).length;
+    let count = 0;
+    const prevTier = tier - 1;
+    for (let i = 0; i < GNOSE_UPGRADES.length; i++) {
+      const u = GNOSE_UPGRADES[i];
+      if (u.tier === prevTier && this.options.gameState.hasGnoseUpgrade(u.id)) count++;
+    }
+    return count;
   }
 
   public async handleResetClick(): Promise<void> {
@@ -191,18 +206,38 @@ export class GnoseTab {
   public renderTree(): void {
     if (!this.treeContainerEl) return;
     this.treeContainerEl.innerHTML = '';
+    this.nodeEls.clear();
+    this.sealRefs.length = 0;
 
     const gs = this.options.gameState;
+    const curseStacks = gs.getBossCurseStacks();
+    const cleanseBoss = gs.getBossCurseCleanseBoss();
+    this.lastRenderedCurseSig = `${curseStacks}:${gs.bossCurseBossId ?? ''}`;
 
-    // Active curse banner (if player recently failed a boss trial)
+    // Active curse banner (stacked when losing to Hades, Odin, Primordial Chaos, or Demiurge)
     const curseBanner = document.createElement('div');
     curseBanner.id = 'gnose-curse-banner';
     curseBanner.className = 'gnose-curse-banner';
-    curseBanner.style.display = gs.bossCurseTimerSec > 0 ? 'flex' : 'none';
-    curseBanner.innerHTML = `
-      <span>${icon('warning')} <strong>Maldição dos Deuses Antigos:</strong> -25% Fé/s e Fervor/s</span>
-      <span id="gnose-curse-timer-val">${Math.ceil(gs.bossCurseTimerSec)}s</span>
-    `;
+    curseBanner.style.display = curseStacks > 0 ? 'flex' : 'none';
+    if (curseStacks > 0) {
+      const mods = gs.getBossCurseModifiers('boss_cronos');
+      const dmgRedPct = Math.round(mods.damageReduction * 100);
+      const extraDmgPct = Math.round(mods.extraDamageRatio * 100);
+      const hitkillNote = curseStacks >= 5 ? ' · HITKILL ao errar aparo' : '';
+      const purifyHtml = cleanseBoss
+        ? `<button type="button" class="btn-purify-curse" data-cleanse-boss-id="${cleanseBoss.id}">⚔ Purificar contra ${cleanseBoss.name}</button>`
+        : `<span class="gnose-curse-hint">Derrote o chefe anterior para purificar</span>`;
+      curseBanner.innerHTML = `
+        <span class="gnose-curse-summary">${icon('warning')} <strong>Maldição dos Guardiões (${curseStacks}/5):</strong> −${dmgRedPct}% dano aos chefes, +${extraDmgPct}% dano sofrido e <em>Riposte Gnóstico</em> ao aparar${hitkillNote}</span>
+        ${purifyHtml}
+      `;
+      const purifyBtn = curseBanner.querySelector<HTMLButtonElement>('.btn-purify-curse');
+      purifyBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const bossId = purifyBtn.getAttribute('data-cleanse-boss-id');
+        if (bossId) this.bossBattleModal.openForBoss(bossId, { isRematch: true });
+      });
+    }
     this.treeContainerEl.appendChild(curseBanner);
 
     const tiersToRender: Array<1 | 2 | 3 | 4> = [1, 2, 3, 4];
@@ -219,39 +254,46 @@ export class GnoseTab {
 
       let guardianBadgeHtml = '';
       let guardianSealHtml = '';
-      {
-        const guardian = gs.getBossForTier(tier);
-        if (guardian) {
-          const isTierOpen = gs.isGnoseTierUnlocked(tier);
-          const canChallenge = gs.canChallengeBoss(guardian.id);
-          if (isTierOpen) {
-            const bestTime = gs.getBossBestTimeSec(guardian.id);
-            const bestTimeTag = typeof bestTime === 'number' ? ` • Recorde: ${formatFixed(bestTime, 1)}s` : '';
-            guardianBadgeHtml = `
-              <span class="gnose-guardian-badge defeated">
-                ${iconOrText(guardian.symbol)} ${guardian.name}: SUBJUGADO (×${formatNumber(guardian.faithFervorMult)} Fé/Fervor${bestTimeTag})
-              </span>
-              <button type="button" class="btn-rematch-guardian" data-boss-id="${guardian.id}" title="Relembrar duelo contra ${guardian.name} sem risco de maldição">
-                ⚔ Relembrar Duelo
-              </button>
-            `;
-          } else {
-            const readiness = canChallenge ? readinessLine(gs.getBossCombatBreakdown(guardian.id)) : '';
-            guardianSealHtml = `
-              <div class="gnose-tier-seal" role="group" aria-label="Tier bloqueado por ${guardian.name}">
-                <span class="gnose-seal-chain gnose-seal-chain-left" aria-hidden="true"></span>
-                <span class="gnose-seal-chain gnose-seal-chain-right" aria-hidden="true"></span>
-                <div class="gnose-tier-seal-content">
-                  <span class="gnose-tier-padlock" aria-hidden="true">${icon('lock')}</span>
-                  <span class="gnose-guardian-requirement">${guardianRequirement(tier, canChallenge, this.previousTierOwned(tier))}</span>
-                  <button type="button" class="btn-challenge-guardian ${canChallenge ? 'ready' : 'locked'}" data-boss-id="${guardian.id}" ${canChallenge ? '' : 'disabled'}>
-                    ${icon('swords')} <span class="gnose-guardian-label">Desafiar ${guardian.name}</span>
-                  </button>
-                  <span class="gnose-guardian-readiness">${readiness}</span>
-                </div>
+      const guardian = gs.getBossForTier(tier);
+      if (guardian) {
+        const isTierOpen = gs.isGnoseTierUnlocked(tier);
+        const canChallenge = gs.canChallengeBoss(guardian.id);
+        if (isTierOpen) {
+          const bestTime = gs.getBossBestTimeSec(guardian.id);
+          const bestTimeTag = typeof bestTime === 'number' ? ` • Recorde: ${formatFixed(bestTime, 1)}s` : '';
+          const isCleanseTarget = cleanseBoss?.id === guardian.id && curseStacks > 0;
+          const rematchLabel = isCleanseTarget
+            ? `⚔ Purificar Maldição (${curseStacks}/5)`
+            : '⚔ Relembrar Duelo';
+          const rematchTitle = isCleanseTarget
+            ? `Derrote ${guardian.name} para remover todos os acúmulos da Maldição`
+            : guardian.id === 'boss_anubis'
+              ? `Relembrar duelo contra ${guardian.name} sem risco de maldição`
+              : `Relembrar duelo contra ${guardian.name} (derrotas acumulam Maldição até 5/5)`;
+          guardianBadgeHtml = `
+            <span class="gnose-guardian-badge defeated">
+              ${iconOrText(guardian.symbol)} ${guardian.name}: SUBJUGADO (×${formatNumber(guardian.faithFervorMult)} Fé/Fervor${bestTimeTag})
+            </span>
+            <button type="button" class="btn-rematch-guardian${isCleanseTarget ? ' is-cleanse-target' : ''}" data-boss-id="${guardian.id}" title="${rematchTitle}">
+              ${rematchLabel}
+            </button>
+          `;
+        } else {
+          const readiness = canChallenge ? readinessLine(gs.getBossCombatBreakdown(guardian.id)) : '';
+          guardianSealHtml = `
+            <div class="gnose-tier-seal" role="group" aria-label="Tier bloqueado por ${guardian.name}">
+              <span class="gnose-seal-chain gnose-seal-chain-left" aria-hidden="true"></span>
+              <span class="gnose-seal-chain gnose-seal-chain-right" aria-hidden="true"></span>
+              <div class="gnose-tier-seal-content">
+                <span class="gnose-tier-padlock" aria-hidden="true">${icon('lock')}</span>
+                <span class="gnose-guardian-requirement">${guardianRequirement(tier, canChallenge, this.previousTierOwned(tier))}</span>
+                <button type="button" class="btn-challenge-guardian ${canChallenge ? 'ready' : 'locked'}" data-boss-id="${guardian.id}" ${canChallenge ? '' : 'disabled'}>
+                  ${icon('swords')} <span class="gnose-guardian-label">Desafiar ${guardian.name}</span>
+                </button>
+                <span class="gnose-guardian-readiness">${readiness}</span>
               </div>
-            `;
-          }
+            </div>
+          `;
         }
       }
 
@@ -320,13 +362,14 @@ export class GnoseTab {
           this.buyUpgrade(upg);
         });
 
+        this.nodeEls.set(upg.id, nodeEl);
         tierGrid.appendChild(nodeEl);
       });
 
       const tierContent = document.createElement('div');
       tierContent.className = 'gnose-tier-content';
       tierContent.appendChild(tierGrid);
-      if (guardianSealHtml) {
+      if (guardianSealHtml && guardian) {
         tierContent.insertAdjacentHTML('beforeend', guardianSealHtml);
         const challengeBtn = tierContent.querySelector<HTMLButtonElement>('.btn-challenge-guardian');
         challengeBtn?.addEventListener('click', (e) => {
@@ -334,6 +377,15 @@ export class GnoseTab {
           const bossId = challengeBtn.getAttribute('data-boss-id');
           if (bossId) this.bossBattleModal.openForBoss(bossId);
         });
+        if (challengeBtn) {
+          const seal = challengeBtn.closest('.gnose-tier-seal');
+          this.sealRefs.push({
+            boss: guardian,
+            btn: challengeBtn,
+            reqEl: seal?.querySelector<HTMLElement>('.gnose-guardian-requirement') ?? null,
+            readinessEl: seal?.querySelector<HTMLElement>('.gnose-guardian-readiness') ?? null,
+          });
+        }
       }
       tierSection.appendChild(tierContent);
       this.treeContainerEl!.appendChild(tierSection);
@@ -360,11 +412,11 @@ export class GnoseTab {
     if (this.gnoseBalanceValEl) {
       this.setText(this.gnoseBalanceValEl, formatNumber(gs.gnosePoints));
     }
+    const multiplier = gs.getTotalGnosePassiveMultiplier();
     if (this.gnosePassiveMultValEl) {
-      this.setText(this.gnosePassiveMultValEl, `×${formatNumber(gs.getTotalGnosePassiveMultiplier())}`);
+      this.setText(this.gnosePassiveMultValEl, `×${formatNumber(multiplier)}`);
     }
     if (this.gnoseProductionHintEl) {
-      const multiplier = gs.getTotalGnosePassiveMultiplier();
       this.setText(this.gnoseProductionHintEl, `A Gnose total obtida concede ×${formatNumber(multiplier)} (+${formatNumber((multiplier - 1) * 100)}%) à Fé por clique, Fé/s e Fervor/s. Gastar Gnose não reduz o bônus.`);
     }
 
@@ -372,14 +424,10 @@ export class GnoseTab {
       if (this.confirmToggleEl.checked !== (gs.confirmGnoseReset)) this.confirmToggleEl.checked = gs.confirmGnoseReset;
     }
 
-    // Update curse banner countdown
-    const curseBanner = document.getElementById('gnose-curse-banner');
-    const curseTimerVal = document.getElementById('gnose-curse-timer-val');
-    if (curseBanner) {
-      this.setDisplay(curseBanner, gs.bossCurseTimerSec > 0 ? 'flex' : 'none');
-    }
-    if (curseTimerVal && gs.bossCurseTimerSec > 0) {
-      this.setText(curseTimerVal, `${Math.ceil(gs.bossCurseTimerSec)}s`);
+    // Re-render curse banner and purify actions whenever curse state changes externally (e.g. Demiurge loss or save load)
+    const curseSig = `${gs.getBossCurseStacks()}:${gs.bossCurseBossId ?? ''}`;
+    if (this.treeContainerEl && curseSig !== this.lastRenderedCurseSig) {
+      this.renderTree();
     }
 
     this.updateNodeStates();
@@ -387,25 +435,33 @@ export class GnoseTab {
 
   public updateNodeStates(): void {
     const gs = this.options.gameState;
-    GNOSE_UPGRADES.forEach((upg) => {
+    const gnosePoints = gs.gnosePoints;
+    const tierUnlocked1 = gs.isGnoseTierUnlocked(1);
+    const tierUnlocked2 = gs.isGnoseTierUnlocked(2);
+    const tierUnlocked3 = gs.isGnoseTierUnlocked(3);
+    const tierUnlocked4 = gs.isGnoseTierUnlocked(4);
+
+    for (let i = 0; i < GNOSE_UPGRADES.length; i++) {
+      const upg = GNOSE_UPGRADES[i];
+      const isTierUnlocked = upg.tier === 1 ? tierUnlocked1
+        : upg.tier === 2 ? tierUnlocked2
+        : upg.tier === 3 ? tierUnlocked3
+        : tierUnlocked4;
       // Covered grids stay static until the victory callback rebuilds the tier.
-      if (!gs.isGnoseTierUnlocked(upg.tier)) return;
-      const nodeEl = document.getElementById(`card-${upg.id}`);
-      if (!nodeEl) return;
+      if (!isTierUnlocked) continue;
+      const nodeEl = this.nodeEls.get(upg.id);
+      if (!nodeEl) continue;
 
       const isUnlocked = gs.hasGnoseUpgrade(upg.id);
-      const isTierUnlocked = gs.isGnoseTierUnlocked(upg.tier);
-      const canAfford = gs.gnosePoints >= upg.cost;
-
-      if (nodeEl instanceof HTMLButtonElement) nodeEl.disabled = !gs.canBuyGnoseUpgrade(upg);
+      const canAfford = gnosePoints >= upg.cost;
+      const shouldDisable = isUnlocked || !canAfford;
+      if (nodeEl.disabled !== shouldDisable) nodeEl.disabled = shouldDisable;
 
       const stateClass = isUnlocked
         ? 'gnose-node-unlocked'
-        : !isTierUnlocked
-          ? 'gnose-node-locked-prereq'
-          : canAfford
-            ? 'gnose-node-available'
-            : 'gnose-node-unaffordable';
+        : canAfford
+          ? 'gnose-node-available'
+          : 'gnose-node-unaffordable';
       if (!nodeEl.classList.contains(stateClass)) {
         nodeEl.classList.remove(
           'gnose-node-unlocked',
@@ -415,39 +471,23 @@ export class GnoseTab {
         );
         nodeEl.classList.add(stateClass);
       }
-    });
+    }
 
     // Dynamically update Guardian Boss challenge buttons & Endgame Boss bar as resources change
-    if (this.treeContainerEl) {
-      const bossBtns = this.treeContainerEl.querySelectorAll<HTMLButtonElement>('.btn-challenge-guardian[data-boss-id]');
-      bossBtns.forEach((btn) => {
-        const bossId = btn.getAttribute('data-boss-id');
-        if (!bossId) return;
-        const boss = GNOSE_BOSSES.find((b) => b.id === bossId);
-        if (!boss) return;
+    for (let i = 0; i < this.sealRefs.length; i++) {
+      const { boss, btn, reqEl, readinessEl } = this.sealRefs[i];
+      const canChallenge = gs.canChallengeBoss(boss.id);
+      if (btn.disabled !== !canChallenge) btn.disabled = !canChallenge;
+      if (btn.classList.contains('ready') !== canChallenge) btn.classList.toggle('ready', canChallenge);
+      if (btn.classList.contains('locked') === canChallenge) btn.classList.toggle('locked', !canChallenge);
 
-        const canChallenge = gs.canChallengeBoss(bossId);
-        if (btn.disabled !== !canChallenge) btn.disabled = !canChallenge;
-        if (btn.classList.contains('ready') !== canChallenge) btn.classList.toggle('ready', canChallenge);
-        if (btn.classList.contains('locked') === canChallenge) btn.classList.toggle('locked', !canChallenge);
-
-        const seal = btn.closest('.gnose-tier-seal');
-        if (seal) {
-          this.setText(seal.querySelector('.gnose-guardian-requirement'), guardianRequirement(boss.unlocksTier, canChallenge, this.previousTierOwned(boss.unlocksTier)));
-          this.setText(seal.querySelector('.gnose-guardian-readiness'), canChallenge ? readinessLine(gs.getBossCombatBreakdown(bossId)) : '');
-        }
-      });
-
-
+      this.setText(reqEl, guardianRequirement(boss.unlocksTier, canChallenge, this.previousTierOwned(boss.unlocksTier)));
+      this.setText(readinessEl, canChallenge ? readinessLine(gs.getBossCombatBreakdown(boss.id)) : '');
     }
   }
 
   private setText(element: Element | null, text: string): void {
     setText(element, text);
-  }
-
-  private setDisplay(element: HTMLElement, display: string): void {
-    setDisplay(element, display);
   }
 
   public setHudVisibility(unlocked: boolean): void {

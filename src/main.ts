@@ -9,6 +9,7 @@ import { NotificationManager } from './systems/notifications.js';
 import { SaveSystem } from './systems/saveSystem.js';
 import { SessionPersistenceController } from './systems/sessionPersistence.js';
 import { SettingsModal } from './ui/SettingsModal.js';
+import { getVisualFps, setVisualFps } from './ui/visualTiming.js';
 import { ChangelogModal } from './ui/ChangelogModal.js';
 import { GAME_VERSION } from './config/changelog.js';
 import { SaveDataModal } from './ui/SaveDataModal.js';
@@ -93,6 +94,7 @@ class AppManager {
   // Save & System State
   public isResetting: boolean = false;
   private isHapticsEnabled: boolean = true;
+  private startTipsEl: HTMLElement | null = null;
 
   constructor() {
     // 0. Fill static [data-icon] placeholders with the game's engraved icon set
@@ -197,6 +199,8 @@ class AppManager {
       },
       onSaveStatusUpdated: () => this.settingsModal?.updateSaveStatus(),
       onSyncAfterLoadOrOffline: () => {
+        setVisualFps(this.gameState.targetFps);
+        this.settingsModal?.updateFpsUI();
         this.sphere.syncProgress();
         this.followersTab?.syncFollowerCount(this.gameState.getTotalFollowersCount());
         if (this.board && this.cardUpdates) {
@@ -223,6 +227,8 @@ class AppManager {
         if (ok) {
           const restored = await this.persistence.processOfflineGains(imported.timestamp, imported);
           if (!restored) return false;
+          setVisualFps(this.gameState.targetFps);
+          this.settingsModal?.updateFpsUI();
           this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
           this.refreshAllUI();
           this.persistence.showPendingOfflineNotice();
@@ -238,6 +244,7 @@ class AppManager {
       audio: this.audio
     });
 
+    this.gameState.targetFps = getVisualFps();
     this.formulaTooltip = new FormulaTooltip(this.gameState);
     const changelogModal = new ChangelogModal();
     const versionLabel = document.getElementById('game-version');
@@ -255,6 +262,12 @@ class AppManager {
         this.isHapticsEnabled = enabled;
       },
       isHapticsEnabled: () => this.isHapticsEnabled,
+      getTargetFps: () => this.gameState.targetFps,
+      onChangeTargetFps: (fps) => {
+        this.gameState.targetFps = fps;
+        setVisualFps(fps);
+        this.persistence.saveProgress();
+      },
       isGuidanceHidden: () => this.gameState.hideGuidance,
       onReplayTutorials: () => {
         this.onboardingGuide.restart();
@@ -285,6 +298,10 @@ class AppManager {
     new GameplayShortcuts(createGameplayShortcutActions({
       gameState: this.gameState,
       focusCard: cardId => this.board?.centerOnCard(cardId),
+      buyUnlock: () => {
+        const current = this.unlocksTab.getCurrentUnlock();
+        if (current) this.unlocksTab.buyUnlock(current);
+      },
       buyFollower: () => this.followersTab.buyOneFollower(),
       buyMaxFollowers: () => this.followersTab.buyMaxFollowers(),
       buyFervor: index => this.fervorTab.buyUpgrade(this.gameState.fervorUpgrades[index]),
@@ -300,6 +317,8 @@ class AppManager {
 
     // 5. Load Progress & Sync Views
     this.persistence.loadProgress();
+    setVisualFps(this.gameState.targetFps);
+    this.settingsModal.updateFpsUI();
     this.followersTab.syncFollowerCount(this.gameState.getTotalFollowersCount());
 
     // 6. Setup Listeners, Initial Renders & Loops
@@ -308,11 +327,15 @@ class AppManager {
     this.onboardingGuide.setOnFocusCard((cardId, immediate, targetSelector) => {
       this.board.centerOnCard(cardId, immediate, targetSelector);
     });
-    this.demiurge = new DemiurgeEncounter(this.gameState, () => this.persistence.saveProgress(),
+    this.demiurge = new DemiurgeEncounter(
+      this.gameState,
+      () => this.persistence.saveProgress(),
       () => document.body.classList.contains('is-playing') && !this.gnoseTab.bossBattleModal.isOpen(),
       () => this.persistence.confirmHardReset(),
-      () => this.board.centerOnCard('card-altar-sphere', true),
-      () => this.gnoseTab.bossBattleModal.openForBoss('boss_demiurge', { isRematch: this.gameState.isBossDefeated('boss_demiurge') }));
+      (target, elapsedSec) => this.board.followWorldTarget(target, elapsedSec),
+      () => this.gnoseTab.bossBattleModal.openForBoss('boss_demiurge', { isRematch: this.gameState.isBossDefeated('boss_demiurge') }),
+      this.audio
+    );
     this.campaignEnding = new CampaignEnding(
       this.gameState,
       () => this.persistence.saveProgress(),
@@ -359,7 +382,6 @@ class AppManager {
       this.cardUpdates.update();
       if (this.gnoseTab.bossBattleModal.isOpen()) this.gnoseTab.bossBattleModal.updateUI();
       this.onboardingGuide.update();
-      this.formulaTooltip.update();
       this.campaignEnding.update();
     });
 
@@ -379,13 +401,12 @@ class AppManager {
     this.updateUnlockedTabsVisibility();
     this.renderAllLists();
     this.hud.update();
-    this.statsTab.updateUI();
     events.emit(GameEvents.STATE_CHANGED);
   }
 
   public updateUnlockedTabsVisibility(): void {
-    const tips = document.querySelector<HTMLElement>('.start-game-tips');
-    if (tips) tips.hidden = this.gameState.hideGuidance;
+    const tips = (this.startTipsEl ??= document.querySelector<HTMLElement>('.start-game-tips'));
+    if (tips && tips.hidden !== this.gameState.hideGuidance) tips.hidden = this.gameState.hideGuidance;
     document.body.classList.toggle('hide-hotkeys', !this.gameState.showHotkeys);
     const inc = this.gameState.isIncarnationUnlocked();
     const ferv = this.gameState.isFervorUpgradesUnlocked();

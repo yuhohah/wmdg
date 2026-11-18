@@ -25,6 +25,7 @@ export class ShortcutsHelp {
       ${sequence(CARD_NAV_SHORTCUTS.map(({ key }) => key), CARD_NAV_SHORTCUTS.map(({ label }) => label), 'Navegação', 'Ir para os cards na ordem da lista')}
       ${group('Esfera', row('Espaço', 'Tocar a Esfera'))}
       ${group('Fiéis', row('Z', 'Comprar um Fiel') + row('X', 'Comprar o máximo, quando liberado') + row('M', 'Coletar milagre disponível, inclusive em duelo'))}
+      ${group('Desbloqueios', row('.', 'Desbloquear a mecânica atual'))}
       ${group('Encarnação', row('I', 'Carregar a Bênção') + row('U', 'Evoluir a Encarnação'))}
       ${sequence(FERVOR_SHORTCUTS, initialFervorUpgrades.map(upgrade => upgrade.name), 'Ritos de Fervor', 'Comprar na ordem da lista')}
       ${sequence(RELIC_SHORTCUTS, initialRelicUpgrades.map(upgrade => upgrade.name), 'Relíquias', 'Comprar na ordem da lista', row('Caps Lock', 'Transmutar Fé em Fragmentos'))}`;

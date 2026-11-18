@@ -171,18 +171,16 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
   const ritual = game.fervorUpgrades.find(upg => upg.id === id);
   if (ritual) {
     const L = ritual.level;
-    const step = bulk ? Math.max(1, game.getMaxFervorUpgradeCount(ritual)) : 1;
+    const maxAffordable = bulk ? game.getMaxFervorUpgradeCount(ritual) : 0;
+    const step = bulk ? Math.max(1, maxAffordable) : 1;
     const nextL = L + step;
-    const currentEff = game.getFervorUpgradeEffect(ritual);
-    const nextEff = game.getFervorUpgradeEffect({ ...ritual, level: nextL });
-    const base = coefficient(game.getFervorUpgradeEffect({ ...ritual, level: 1 }));
+    const followersCount = game.getTotalFollowersCount();
+    const currentEff = game.getFervorUpgradeEffect(ritual, followersCount, L);
+    const nextEff = game.getFervorUpgradeEffect(ritual, followersCount, nextL);
+    const base = coefficient(game.getFervorUpgradeEffect(ritual, followersCount, 1));
     const scale = game.getFervorUpgradeCostMultiplier(ritual);
     const single = `⌊${formatNumber(ritual.baseCost)} × (${coefficient(scale)})^nível⌋`;
-
-    let totalCost = 0;
-    for (let i = 0; i < step; i++) {
-      totalCost += game.getFervorUpgradeCost({ ...ritual, level: L + i });
-    }
+    const totalCost = game.getFervorUpgradeBulkCost(ritual, step);
 
     const transition = `Nível ${formatNumber(L)} → ${formatNumber(nextL)}: ×${formatNumber(currentEff)} → ×${formatNumber(nextEff)}`;
     const effects: Record<string, string> = {
@@ -195,7 +193,7 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
       fu_click: `M_Fé/clique(nível) = 1 + 4 × nível^2,6\n${transition} Fé/clique`,
       fu_followers: [
         `M_Fé/s(nível) = 1 + (nível^1,5 × Fiéis) / 50`,
-        `Com Fiéis = ${formatNumber(game.getTotalFollowersCount())} · ${transition} Fé/s`,
+        `Com Fiéis = ${formatNumber(followersCount)} · ${transition} Fé/s`,
       ].join('\n'),
       fu_synergy: [
         `M_Fervor/s(nível) = 1 + (nível^1,5 × log10(Fé + 1)) / 5`,
@@ -213,7 +211,7 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
         ? [
             `C(n) = Σ[i=0…n−1] C(nível + i) (n ≤ 100)`,
             `Unitário: C(nível) = ${single} Fervor`,
-            `Atual (nível = ${formatNumber(L)}, +n = ${formatNumber(game.getMaxFervorUpgradeCount(ritual))}): ${formatNumber(totalCost)} Fervor`,
+            `Atual (nível = ${formatNumber(L)}, +n = ${formatNumber(maxAffordable)}): ${formatNumber(totalCost)} Fervor`,
           ].join('\n')
         : [
             `C(nível) = ${single} Fervor`,

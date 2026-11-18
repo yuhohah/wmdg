@@ -187,18 +187,43 @@ html .gnose-tier-seal .btn-challenge-guardian:disabled {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 5px 10px;
-  margin-bottom: 4px;
-  background: rgba(125, 41, 27, 0.18);
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 7px 11px;
+  margin-bottom: 6px;
+  background: rgba(125, 41, 27, 0.2);
   border: 1.5px solid var(--hermetic-crimson-ink);
   color: var(--hermetic-crimson-ink);
-  font-size: 12px;
+  font-size: 12.5px;
 }
 
-#gnose-curse-timer-val {
+.gnose-curse-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 280px;
+}
+
+.btn-purify-curse,
+.btn-rematch-guardian.is-cleanse-target {
   font-family: var(--font-game);
-  font-weight: 800;
-  font-size: 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  padding: 3px 10px;
+  background: linear-gradient(180deg, #5e1d14 0%, #3b110b 100%);
+  color: #f7e6c4;
+  border: 1.5px solid #ad8c4d;
+  cursor: pointer;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-purify-curse:hover,
+.btn-rematch-guardian.is-cleanse-target:hover {
+  background: linear-gradient(180deg, #792519 0%, #4d160e 100%);
+  border-color: #f6dc9a;
 }
 
 /* Endgame Boss Bar (Primordial Chaos after completing the Gnose tree) */
@@ -582,24 +607,29 @@ body.is-boss-battle-active.is-courtyard-visible #dodeca-board-world #card-follow
 
 .boss-rift-target {
   position: absolute;
+  z-index: 24;
   transform: translate(-50%, -50%) scale(var(--boss-prompt-scale, 1));
   pointer-events: auto;
   display: grid;
   justify-items: center;
   gap: 4px;
-  width: 138px;
-  min-height: 106px;
+  width: 146px;
+  min-height: 108px;
   box-sizing: border-box;
-  padding: 11px 14px 10px;
+  padding: 12px 14px 10px;
   background: #14110c;
-  border: 1px solid #d4b575;
-  box-shadow: inset 0 0 0 3px #14110c, inset 0 0 0 4px #55452b, 0 6px 18px #000b;
+  border: 1.5px solid #d4b575;
+  box-shadow: inset 0 0 0 3px #14110c, inset 0 0 0 4px #55452b, 0 8px 20px #000c;
   clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
   color: #eddbb2;
   font-family: var(--font-heading);
   cursor: pointer;
   touch-action: manipulation;
-  transition: background 0.12s, border-color 0.12s;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, opacity 0.12s;
+}
+
+.boss-rift-target > * {
+  pointer-events: none;
 }
 
 .boss-rift-target:hover {
@@ -609,145 +639,345 @@ body.is-boss-battle-active.is-courtyard-visible #dodeca-board-world #card-follow
 
 .boss-rift-target:active { background: #40301b; }
 
-/* Variantes dos 2ºs Ataques Especiais de cada Guardião */
+.boss-rift-kicker {
+  position: absolute;
+  top: 7px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: 0.95;
+}
+
+.boss-rift-kicker .ico {
+  width: 12px;
+  height: 12px;
+}
+
+/* Variantes dos Ataques Especiais Únicos de cada Guardião */
 .boss-rift-target.boss-rift-anubis-scales {
+  width: 164px;
+  padding: 25px 12px 10px;
   clip-path: none;
   border-radius: 10px;
-  border-color: #f6dc9a;
-  background: #211a0c;
-  box-shadow: inset 0 0 0 3px #14110c, inset 0 0 0 4px #8c6d32, 0 6px 18px #000b;
+  border: 2px solid #f6dc9a;
+  background: linear-gradient(180deg, #2b210d 0%, #171208 100%);
+  box-shadow:
+    inset 0 0 0 2px #14110c,
+    inset 0 0 0 3px #9c7936,
+    0 8px 22px rgba(0, 0, 0, 0.85),
+    0 0 18px rgba(246, 220, 154, 0.25);
+}
+
+.boss-rift-target.boss-rift-anubis-scales:hover {
+  border-color: #fff8dc;
+  background: linear-gradient(180deg, #3a2d12 0%, #211a0c 100%);
+}
+
+.boss-rift-target.boss-rift-anubis-scales.is-dismissed-trap {
+  border: 1.5px dashed #ef4444;
+  background: #1a0d0d;
+  color: #fca5a5;
+  opacity: 0.72;
+  box-shadow: inset 0 0 0 2px #120808, 0 4px 12px rgba(0, 0, 0, 0.7);
+}
+
+.boss-rift-target.boss-rift-anubis-scales.is-dismissed-trap .boss-rift-number {
+  color: #fca5a5;
+  font-size: 28px;
 }
 
 .boss-rift-number {
   display: grid;
   justify-items: center;
-  gap: 1px;
-  font-size: 34px;
-  font-weight: 800;
+  gap: 2px;
+  font-size: 38px;
+  font-weight: 900;
   line-height: 1;
-  color: #fff0bb;
+  color: #fff4c9;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 10px rgba(246, 220, 154, 0.35);
 }
 
 .boss-rift-number small {
-  font-size: 11px;
+  font-size: 9.5px;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 1.4px;
   color: #d4b575;
+  text-shadow: none;
 }
 
 .boss-rift-target.boss-rift-hades-chains {
-  border-color: #e05555;
-  background: #241010;
-  color: #ffd4d4;
-  box-shadow: inset 0 0 0 3px #140a0a, inset 0 0 0 4px #7d291b, 0 6px 18px #000b;
+  width: 162px;
+  padding: 25px 12px 10px;
+  clip-path: none;
+  border-radius: 9px;
+}
+
+.boss-rift-target.boss-rift-hades-chains.is-chain-unlocked {
+  border: 2px solid #fbbf24;
+  background: linear-gradient(180deg, #381612 0%, #1f0b0a 100%);
+  color: #fff2d6;
+  box-shadow:
+    inset 0 0 0 2px #140a0a,
+    inset 0 0 0 3px #b93822,
+    0 8px 22px rgba(0, 0, 0, 0.85),
+    0 0 18px rgba(251, 191, 36, 0.35);
+}
+
+.boss-rift-target.boss-rift-hades-chains.is-chain-unlocked .boss-rift-core {
+  color: #fbbf24;
+}
+
+.boss-rift-target.boss-rift-hades-chains.is-chain-locked {
+  border: 1.5px dashed #9f4444;
+  background: #170d0e;
+  color: #cfa5a5;
+  opacity: 0.84;
+  box-shadow: inset 0 0 0 2px #100809, 0 6px 16px rgba(0, 0, 0, 0.78);
+}
+
+.boss-rift-target.boss-rift-hades-chains.is-chain-locked .boss-rift-core {
+  color: #b86b6b;
 }
 
 .odin-parry-card {
   position: absolute;
+  z-index: 28;
   transform: translate(-50%, -100%) scale(var(--boss-prompt-scale, 1));
   transform-origin: bottom center;
   display: grid;
-  grid-template-columns: 164px 1fr;
+  grid-template-columns: 172px 1fr;
   align-content: center;
   align-items: center;
-  column-gap: 10px;
+  column-gap: 12px;
   row-gap: 6px;
-  width: 340px;
+  width: 364px;
   box-sizing: border-box;
-  padding: 14px 12px 12px;
-  border: 1px solid #ae9871;
-  background: #100f0d;
-  box-shadow: inset 0 0 0 3px #100f0d, inset 0 0 0 4px #443d30, 0 6px 18px #000b;
-  color: #e4d9c1;
+  padding: 13px 14px 12px;
+  border-radius: 10px;
+  border: 1.5px solid #c9b082;
+  background: #11100d;
+  box-shadow:
+    inset 0 0 0 2px #11100d,
+    inset 0 0 0 3px #4b4232,
+    0 10px 26px rgba(0, 0, 0, 0.86);
+  color: #ece0c6;
   font-family: var(--font-game);
   text-align: center;
   pointer-events: auto;
   touch-action: manipulation;
+  transition: border-color 0.1s, box-shadow 0.1s, background 0.1s;
+}
+
+.odin-parry-card.is-beside-sphere {
+  transform: translateY(-50%) scale(var(--boss-prompt-scale, 1));
+  transform-origin: left center;
 }
 
 .odin-parry-heading {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 6px;
   font-family: var(--font-heading);
   font-size: 13px;
   letter-spacing: 1px;
 }
-.odin-parry-card.is-beside-sphere {
-  transform: translateY(-50%) scale(var(--boss-prompt-scale, 1));
-  transform-origin: left center;
+
+.odin-parry-heading .ico { width: 17px; height: 17px; color: #f6dc9a; }
+
+.odin-parry-timer {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #c9b999;
+  font-variant-numeric: tabular-nums;
 }
-.odin-parry-heading .ico { width: 18px; height: 18px; }
+
 .odin-parry-heading,
 .odin-parry-instruction,
 .odin-parry-status,
+.odin-parry-progress,
 .odin-parry-hint { grid-column: 2; }
-.odin-parry-instruction { margin: 0; font-size: 12px; line-height: 1.4; }
-.odin-parry-arena { position: relative; height: 164px; grid-column: 1; grid-row: 1 / 5; }
-.odin-parry-guide {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 56px;
-  height: 56px;
-  box-sizing: border-box;
-  border: 1px dashed #887b62;
-  border-radius: 50%;
-  pointer-events: none;
+
+.odin-parry-instruction { margin: 0; font-size: 12px; line-height: 1.35; color: #dfd3ba; }
+.odin-parry-instruction b { color: #86efac; }
+
+.odin-parry-arena {
+  position: relative;
+  width: 172px;
+  height: 172px;
+  grid-column: 1;
+  grid-row: 1 / 6;
 }
-.odin-parry-status { display: block; color: #e39b92; font-size: 15px; letter-spacing: 1px; }
-.odin-parry-hint { display: block; color: #b8ad98; font-size: 10px; line-height: 1.4; }
-.odin-parry-card.is-green .odin-parry-status { color: #4ade80; }
 
 .boss-rift-target.boss-rift-odin-raven,
 .boss-rift-target.boss-rift-odin-raven:hover,
 .boss-rift-target.boss-rift-odin-raven:active {
+  left: 50%;
+  top: 50%;
+  width: 172px;
+  height: 172px;
   min-height: 0;
   transform: translate(-50%, -50%);
   display: block;
   padding: 0;
-  border: 4px solid #ef4444;
+  border: 1.5px solid rgba(196, 174, 132, 0.35);
   border-radius: 50%;
-  background: transparent;
-  box-shadow: none;
+  background: radial-gradient(circle, rgba(28, 24, 19, 0.95) 0%, rgba(12, 11, 9, 0.98) 100%);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.75);
   clip-path: none;
   animation: none;
-  transition: width 0.1s linear, height 0.1s linear;
-}
-.boss-rift-target.boss-rift-odin-raven.is-green {
-  border-color: #4ade80;
-  transition: none;
 }
 
+.odin-parry-zone {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px;
+  height: 64px;
+  box-sizing: border-box;
+  border: 2.5px dashed rgba(74, 222, 128, 0.88);
+  background: rgba(74, 222, 128, 0.12);
+  border-radius: 50%;
+}
+
+.odin-parry-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 158px;
+  height: 158px;
+  box-sizing: border-box;
+  border: 4px solid #ef4444;
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.48);
+}
+
+.odin-parry-emblem {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(246, 220, 154, 0.72);
+  line-height: 0;
+}
+
+.odin-parry-emblem .ico { width: 22px; height: 22px; }
+
+.odin-parry-status {
+  display: block;
+  color: #f87171;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.odin-parry-progress {
+  display: block;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.odin-parry-progress-fill {
+  display: block;
+  height: 100%;
+  background: #ef4444;
+}
+
+.odin-parry-hint { display: block; color: #b8ad98; font-size: 10.5px; line-height: 1.35; }
+
+.odin-parry-card.is-ready-soon {
+  border-color: #fbbf24;
+}
+.odin-parry-card.is-ready-soon .odin-parry-ring {
+  border-color: #fbbf24;
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.65);
+}
+.odin-parry-card.is-ready-soon .odin-parry-status { color: #fcd34d; }
+.odin-parry-card.is-ready-soon .odin-parry-progress-fill { background: #fbbf24; }
+
+.odin-parry-card.is-green {
+  border-color: #4ade80;
+  background: #0e1a12;
+  box-shadow:
+    inset 0 0 0 2px #0e1a12,
+    inset 0 0 0 3px #225434,
+    0 10px 28px rgba(0, 0, 0, 0.88),
+    0 0 26px rgba(74, 222, 128, 0.45);
+}
+.odin-parry-card.is-green .odin-parry-zone {
+  border-style: solid;
+  border-color: #86efac;
+  background: rgba(74, 222, 128, 0.3);
+}
+.odin-parry-card.is-green .odin-parry-ring {
+  border-color: #4ade80;
+  border-width: 5px;
+  box-shadow: 0 0 22px rgba(74, 222, 128, 0.9);
+}
+.odin-parry-card.is-green .odin-parry-emblem { color: #86efac; }
+.odin-parry-card.is-green .odin-parry-status { color: #4ade80; }
+.odin-parry-card.is-green .odin-parry-progress-fill { background: #4ade80; }
+
 .boss-rift-target.boss-rift-chaos-orbit {
-  border-color: #c084fc;
-  background: #1a1026;
-  color: #f3e8ff;
+  width: 158px;
+  padding: 25px 12px 10px;
+  clip-path: none;
+  border-radius: 10px;
+  border: 2px solid #d8b4fe;
+  background: linear-gradient(180deg, #27153b 0%, #140b20 100%);
+  color: #f5ebff;
+  box-shadow:
+    inset 0 0 0 2px #12091c,
+    inset 0 0 0 3px #7e22ce,
+    0 8px 22px rgba(0, 0, 0, 0.85),
+    0 0 18px rgba(192, 132, 252, 0.35);
+}
+
+.boss-rift-target.boss-rift-chaos-orbit .boss-rift-core {
+  color: #e9d5ff;
+}
+
+.boss-rift-target.boss-rift-chaos-orbit:hover {
+  border-color: #f3e8ff;
+  background: linear-gradient(180deg, #351d50 0%, #1c102d 100%);
 }
 
 .boss-rift-target.is-urgent {
-  border-color: #ed9a83;
-  color: #ffd1bd;
-  background: #291510;
-  animation: boss-parry-urgency 0.6s steps(12, end) infinite alternate;
+  border-color: #fb923c;
+  color: #ffedd5;
+  background: #2b140e;
+  animation: boss-parry-urgency 0.55s steps(12, end) infinite alternate;
 }
 
 .boss-rift-core { line-height: 1; color: #d4b575; }
-.boss-rift-core .ico { width: 25px; height: 25px; }
-.boss-rift-label { font-size: 17px; font-weight: 800; letter-spacing: 2px; }
-.boss-rift-damage { font-size: 11px; color: #baaa8b; }
+.boss-rift-core .ico { width: 24px; height: 24px; }
+.boss-rift-label { font-size: 15px; font-weight: 800; letter-spacing: 1.5px; text-align: center; }
+.boss-rift-damage { font-size: 11px; color: #cbbba0; text-align: center; line-height: 1.25; }
 .boss-rift-timer {
   position: absolute;
-  top: 9px;
-  right: 9px;
-  font-size: 10px;
+  top: 7px;
+  right: 10px;
+  font-size: 10.5px;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+  opacity: 0.92;
 }
-.boss-rift-window { width: 100%; height: 3px; margin-top: 3px; background: #ffffff19; }
+.boss-rift-window { width: 100%; height: 3.5px; margin-top: 3px; background: #ffffff1f; border-radius: 2px; overflow: hidden; }
 .boss-rift-window-fill { display: block; height: 100%; background: currentColor; }
-@keyframes boss-parry-urgency { to { border-color: #ffd6b7; background: #402017; } }
+@keyframes boss-parry-urgency { to { border-color: #fed7aa; background: #431d14; } }
 @media (prefers-reduced-motion: reduce) { .boss-rift-target.is-urgent { animation: none; } }
 
 .altar-integrity-track.is-critical {
@@ -780,13 +1010,90 @@ body.is-boss-battle-active.is-courtyard-visible #dodeca-board-world #card-follow
   }
 }
 
-.boss-rift-target.demiurge-ritual-dial { width: 320px; padding: 12px; gap: 6px; z-index: 5; }
+.boss-rift-target.demiurge-ritual-dial {
+  z-index: 28;
+  width: 336px;
+  padding: 12px 14px 11px;
+  gap: 5px;
+  clip-path: none;
+  border-radius: 10px;
+  border: 2px solid #d4b575;
+  background: #12100d;
+  box-shadow:
+    inset 0 0 0 2px #12100d,
+    inset 0 0 0 3px #55452b,
+    0 10px 28px rgba(0, 0, 0, 0.88);
+  transform: translate(-50%, -100%) scale(var(--boss-prompt-scale, 1));
+  transform-origin: bottom center;
+}
+
+.boss-rift-target.demiurge-ritual-dial.is-beside-sphere {
+  transform: translateY(-50%) scale(var(--boss-prompt-scale, 1));
+  transform-origin: left center;
+}
+
+.ritual-dial-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+  letter-spacing: 1px;
+  color: #f6dc9a;
+}
+
+.ritual-pass {
+  font: 700 10.5px/1 var(--font-mono);
+  color: #d6c5a3;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+
 .demiurge-ritual-dial svg { width: 100%; overflow: visible; }
-.demiurge-ritual-dial text { fill: #ead8ac; text-anchor: middle; font-size: 32px; }
-.demiurge-ritual-dial .ritual-center-label { font-size: 10px; fill: #86efac; }
-.ritual-track { fill: none; stroke: #a8997d; stroke-width: 12; }
-.ritual-safe { fill: none; stroke: #4ade80; stroke-width: 14; }
-.ritual-needle { stroke: #fff6dc; stroke-width: 3; fill: #fff6dc; }
-.ritual-readout { font-variant-numeric: tabular-nums; }
-.demiurge-ritual-dial.in-safe-zone .ritual-readout { color: #86efac; }
-.demiurge-ritual-dial small { font: 11px/1.4 var(--font-mono); }
+.demiurge-ritual-dial text { fill: #ead8ac; text-anchor: middle; font-size: 30px; }
+.demiurge-ritual-dial .ritual-moon { fill: #93c5fd; }
+.demiurge-ritual-dial .ritual-sun { fill: #fcd34d; }
+.demiurge-ritual-dial .ritual-side-caption {
+  font-family: var(--font-heading);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+.demiurge-ritual-dial .ritual-moon-caption { fill: #93c5fd; }
+.demiurge-ritual-dial .ritual-sun-caption { fill: #fbbf24; }
+.demiurge-ritual-dial .ritual-center-label {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  fill: #86efac;
+}
+.ritual-track-moon { fill: none; stroke: #60a5fa; stroke-width: 12; opacity: 0.85; }
+.ritual-track-sun { fill: none; stroke: #f59e0b; stroke-width: 12; opacity: 0.88; }
+.ritual-safe-glow { fill: none; stroke: rgba(74, 222, 128, 0.34); stroke-width: 24; }
+.ritual-safe { fill: none; stroke: #4ade80; stroke-width: 15; }
+.ritual-tick { stroke: #dcfce7; stroke-width: 2.5; }
+.ritual-needle { stroke: #fff8e6; stroke-width: 3.5; fill: #fff8e6; }
+.ritual-pivot { fill: #f6dc9a; stroke: #14110c; stroke-width: 2; }
+.ritual-readout {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  font-variant-numeric: tabular-nums;
+  color: #f3e5c3;
+}
+.demiurge-ritual-dial.is-moon-side .ritual-readout { color: #93c5fd; }
+.demiurge-ritual-dial.is-sun-side .ritual-readout { color: #fcd34d; }
+.demiurge-ritual-dial.in-safe-zone {
+  border-color: #4ade80;
+  background: #0e1b13;
+  box-shadow:
+    inset 0 0 0 2px #0e1b13,
+    inset 0 0 0 3px #225434,
+    0 10px 28px rgba(0, 0, 0, 0.9),
+    0 0 24px rgba(74, 222, 128, 0.48);
+}
+.demiurge-ritual-dial.in-safe-zone .ritual-readout { color: #4ade80; }
+.demiurge-ritual-dial small { font: 11px/1.35 var(--font-game); color: #c7b99e; }
+.demiurge-ritual-dial small b { color: #86efac; }

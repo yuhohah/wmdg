@@ -1,5 +1,5 @@
 import { GNOSE_UPGRADES } from '../config/gnose.js';
-import { GNOSE_BOSSES } from '../config/bosses.js';
+import { COMBAT_BOSSES } from '../config/bosses.js';
 import { describeBehavior } from './behavior.js';
 import type { ArchetypeBenchmarkResult, BenchmarkReport } from './types.js';
 
@@ -25,16 +25,17 @@ const MILESTONES = [
   ['first_gnose_reset', '1ª Ascensão'], ['first_gnose_upgrade', '1º Upgrade da Gnose'],
   ['boss_anubis', 'Anúbis'], ['incarnation_stage_4', 'Avatar do Eclipse'],
   ['boss_cronos', 'Hades'], ['incarnation_stage_5', 'Avatar Solar'],
-  ['boss_odin', 'Odin'], ['gnose_tree_complete', 'Árvore da Gnose completa'],
-  ['boss_tiamat', 'Caos Primordial'],
+  ['boss_odin', 'Odin'], ['boss_tiamat', 'Caos Primordial'],
+  ['gnose_tree_complete', 'Árvore da Gnose completa'], ['boss_demiurge', 'Demiurgo'],
 ];
 
 const METRICS: Array<[string, (result: ArchetypeBenchmarkResult) => string]> = [
   ...[1, 2, 3, 4].map((tier): [string, (result: ArchetypeBenchmarkResult) => string] => [
-    `Tier ${tier}: intervalo / Ascensões`, r => {
+    `Tier ${tier}: jogo ativo / Ascensões`, r => {
       const cadence = r.progression.gnoseTiers?.find(t => t.tier === tier);
       if (!cadence || cadence.durationSec === null) return 'Incompleto';
-      return `${formatDuration(cadence.durationSec)} / ${cadence.ascensions} · ${cadence.timeInTarget && cadence.ascensionsInTarget ? 'na meta' : 'fora da meta'}`;
+      const activeSpan = cadence.presentDurationSec ?? cadence.durationSec;
+      return `${formatDuration(activeSpan)} / ${cadence.ascensions} · ${cadence.timeInTarget && cadence.ascensionsInTarget ? 'na meta' : 'fora da meta'}`;
     },
   ]),
   ['Maior intervalo permanente após Gnose', r => formatDuration(r.progression.maxPermanentGapSec)],
@@ -53,7 +54,13 @@ const METRICS: Array<[string, (result: ArchetypeBenchmarkResult) => string]> = [
   ['Última ativação manual do 2×', r => r.lastManualBlessingSec === undefined ? 'Nunca' : formatDuration(r.lastManualBlessingSec)],
   ['Milagres coletados / surgidos', r => `${r.miraclesCaught} / ${r.miraclesSpawned}`],
   ['Nós da Gnose', r => `${r.gnoseUpgradesBought}/${GNOSE_UPGRADES.length}`],
-  ['Chefes derrotados', r => `${r.bossesDefeated}/${GNOSE_BOSSES.length}`],
+  ['Chefes derrotados', r => `${r.bossesDefeated}/${COMBAT_BOSSES.length}`],
+  ['Derrotas / Purif. / Ripostes', r => {
+    const losses = r.progression.combat.filter(c => c.result === 'lost').length;
+    const purifies = r.progression.combat.filter(c => c.cursePurified).length;
+    const ripostes = r.progression.combat.filter(c => c.riftHpFraction > 0).length;
+    return `${losses} / ${purifies} / ${ripostes}`;
+  }],
   ['Ascensões / Transmutações', r => `${r.gnoseResets} / ${r.relicResets}`],
   ['Maior intervalo sem progresso', r => r.formattedMaxWait],
   ['Maior ociosidade presente', r => formatDuration(r.maxPresentIdleSec)],
@@ -89,7 +96,7 @@ export function formatTerminalReport(report: BenchmarkReport): string {
     ...rows(report).map(row => row.map((s, i) => s.padEnd(i === 0 ? 35 : 23)).join(' | ')),
     line,
     'Avaliação de ritmo é heurística; ausências programadas não são zonas mortas forçadas.',
-    'Incompleto indica limite ou bloqueio, nunca uma previsão de tempo até Caos Primordial.',
+    'Incompleto indica limite ou bloqueio, nunca uma previsão de tempo até o Demiurgo.',
   ];
   for (const result of Object.values(report.results)) {
     if (result.blockedReason) lines.push(`[${result.archetype}] Bloqueado: ${result.blockedReason}`);
@@ -119,6 +126,6 @@ export function formatHtmlReport(report: BenchmarkReport): string {
     </table></div>
     ${Object.values(report.results).filter(r => r.blockedReason).map(r => `<p><strong>${escapeHtml(r.archetypeName)} — bloqueado:</strong> ${escapeHtml(r.blockedReason!)}</p>`).join('')}
     ${deadZoneNotes}
-    <p>Incompleto = limite ou bloqueio, sem previsão de tempo até Caos Primordial. Ausências programadas não entram nas zonas mortas enquanto presente. A avaliação de ritmo é heurística.</p>
+    <p>Incompleto = limite ou bloqueio, sem previsão de tempo até o Demiurgo. Ausências programadas não entram nas zonas mortas enquanto presente. A avaliação de ritmo é heurística.</p>
   </div>`;
 }

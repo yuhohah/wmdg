@@ -12,8 +12,17 @@ import type {
 } from '../types.js';
 import { GNOSE_UPGRADES } from '../config/gnose.js';
 import {
-  BOSS_CURSE_DURATION_SEC,
+  BOSS_CURSE_ATTACK_SPEED_PER_STACK,
+  BOSS_CURSE_DAMAGE_TAKEN_REDUCTION_PER_STACK,
+  BOSS_CURSE_EXTRA_DAMAGE_PER_STACK,
+  BOSS_CURSE_MAX_DAMAGE_TAKEN_REDUCTION,
+  BOSS_CURSE_MAX_EXTRA_DAMAGE,
+  BOSS_CURSE_MAX_STACKS,
   BOSS_CURSE_MULTIPLIER,
+  BOSS_CURSE_RIPOSTE_MAX_COMBO_MULT,
+  BOSS_CURSE_RIPOSTE_SPECIAL_HP,
+  BOSS_CURSE_RIPOSTE_STANDARD_HP,
+  BOSS_CURSE_WINDOW_TIGHTEN_PER_STACK,
   BOSS_DAMAGE_READINESS_THRESHOLD,
   BOSS_DEFENSE_READINESS_THRESHOLD,
   BOSS_MAX_ALTAR_INTEGRITY,
@@ -21,6 +30,16 @@ import {
   BOSS_MAX_PASSIVE_HP_PER_SEC,
   COMBAT_BOSSES,
 } from '../config/bosses.js';
+
+export interface BossCurseModifiers {
+  stacks: number;
+  damageReduction: number;
+  damageTakenMult: number;
+  extraDamageRatio: number;
+  damageDealtMult: number;
+  attackCadenceMult: number;
+  windowScaleMult: number;
+}
 
 export interface BossCombatStateHost {
   faithPoints: number;
@@ -40,8 +59,11 @@ export interface BossCombatStateHost {
   achievements: Achievement[];
   unlockedGnoseUpgrades: Set<string>;
   defeatedBosses: Set<string>;
+  maxCurseDefeatedBosses?: Set<string>;
   bestBossTimesSec: Record<string, number>;
   bossCurseTimerSec: number;
+  bossCurseStacks: number;
+  bossCurseBossId: string | null;
   activeBossBattle: ActiveBossBattle | null;
   riftIdCounter: number;
   miracleIdCounter: number;
@@ -50,6 +72,8 @@ export interface BossCombatStateHost {
     victory: boolean;
     isRematch?: boolean;
     durationSec?: number;
+    cursePurified?: boolean;
+    curseStacks?: number;
   }) => void;
   getTotalFollowersCount(): number;
   getFaithPerSecond(): number;
@@ -60,7 +84,6 @@ export interface BossCombatStateHost {
   isGnoseUnlocked(): boolean;
   hasGnoseUpgrade(upgradeId: string): boolean;
   areMiraclesUnlocked(): boolean;
-  areMiraclesAutoCollected(): boolean;
 }
 
 export interface BossRiftClickResult {
@@ -73,8 +96,10 @@ export interface BossRiftClickResult {
   miracleAwakened?: boolean;
   altarDamageTaken?: number;
   scaleDamageMultiplier?: number;
+  chainLocked?: boolean;
   ritualSide?: 'center' | 'moon' | 'sun';
   ritualPercent?: number;
+  riposteHpPercent?: number;
 }
 
 export function isBossDefeated(state: BossCombatStateHost, bossId: string): boolean {
@@ -119,7 +144,7 @@ export function canChallengeBoss(
   return (
     state.isGnoseUnlocked() &&
     isGnoseTierUnlocked(state, previousTier) &&
-    GNOSE_UPGRADES.filter((u) => u.tier === previousTier).every((u) => state.hasGnoseUpgrade(u.id))
+    GNOSE_UPGRADES.some((u) => u.tier === previousTier && state.hasGnoseUpgrade(u.id))
   );
 }
 
@@ -135,6 +160,64 @@ export function getBossRewardsMultiplier(state: BossCombatStateHost): number {
 
 export function getBossCurseMultiplier(state: BossCombatStateHost): number {
   return state.bossCurseTimerSec > 0 ? BOSS_CURSE_MULTIPLIER : 1.0;
+}
+
+/** Curse starts from Hades (index 1 in COMBAT_BOSSES: Hades, Odin, Caos Primordial, Demiurgo). */
+export function isBossSubjectToCurse(bossId: string): boolean {
+  const idx = COMBAT_BOSSES.findIndex((b) => b.id === bossId);
+  return idx >= 1;
+}
+
+export function getPreviousBoss(bossId: string): GnoseBoss | undefined {
+  const idx = COMBAT_BOSSES.findIndex((b) => b.id === bossId);
+  return idx >= 1 ? COMBAT_BOSSES[idx - 1] : undefined;
+}
+
+export function getBossCurseStacks(state: BossCombatStateHost): number {
+  const raw = Number.isFinite(state.bossCurseStacks) ? Math.floor(state.bossCurseStacks) : 0;
+  return Math.max(0, Math.min(BOSS_CURSE_MAX_STACKS, raw));
+}
+
+export function getBossCurseCleanseBoss(state: BossCombatStateHost): GnoseBoss | undefined {
+  if (getBossCurseStacks(state) <= 0) return undefined;
+  if (state.bossCurseBossId) {
+    const prev = getPreviousBoss(state.bossCurseBossId);
+    if (prev) return prev;
+  }
+  const nextUndefeated = COMBAT_BOSSES.find((b, i) => i >= 1 && !state.defeatedBosses.has(b.id));
+  return getPreviousBoss(nextUndefeated?.id ?? 'boss_demiurge');
+}
+
+export function getBossCurseModifiers(state: BossCombatStateHost, bossId: string): BossCurseModifiers {
+  const stacks = isBossSubjectToCurse(bossId) ? getBossCurseStacks(state) : 0;
+  if (stacks <= 0) {
+    return {
+      stacks: 0,
+      damageReduction: 0,
+      damageTakenMult: 1,
+      extraDamageRatio: 0,
+      damageDealtMult: 1,
+      attackCadenceMult: 1,
+      windowScaleMult: 1,
+    };
+  }
+  const damageReduction = Math.min(
+    BOSS_CURSE_MAX_DAMAGE_TAKEN_REDUCTION,
+    stacks * BOSS_CURSE_DAMAGE_TAKEN_REDUCTION_PER_STACK
+  );
+  const extraDamageRatio = Math.min(
+    BOSS_CURSE_MAX_EXTRA_DAMAGE,
+    stacks * BOSS_CURSE_EXTRA_DAMAGE_PER_STACK
+  );
+  return {
+    stacks,
+    damageReduction,
+    damageTakenMult: Math.max(0.5, 1 - damageReduction),
+    extraDamageRatio,
+    damageDealtMult: 1 + extraDamageRatio,
+    attackCadenceMult: 1 + stacks * BOSS_CURSE_ATTACK_SPEED_PER_STACK,
+    windowScaleMult: Math.max(0.85, 1 - stacks * BOSS_CURSE_WINDOW_TIGHTEN_PER_STACK),
+  };
 }
 
 /**
@@ -250,21 +333,25 @@ export function calculateBossCombatBreakdown(
     state.totalFervorGenerated > 0 ||
     state.totalRelicsGenerated > 0;
 
+  const hasHadesChains =
+    state.activeBossBattle &&
+    state.activeBossBattle.bossId === boss.id &&
+    state.activeBossBattle.activeRifts.some((r) => r.kind === 'hades_chains');
+  const passiveChainMult = hasHadesChains ? 0.75 : 1.0;
+  const chainPenaltyMult = hasHadesChains ? 0.5 : 1.0;
+
   // Normalize and cap final damage: Cult Readiness + Resource Synergies + Raw Production determine battle speed.
+  const bossCurse = getBossCurseModifiers(state, boss.id);
   const readinessFactor = 0.45 + 0.55 * cultReadiness;
   const passiveDps =
     damageMultiplier *
+    passiveChainMult *
+    bossCurse.damageTakenMult *
     Math.min(
       bossMaxHp * BOSS_MAX_PASSIVE_HP_PER_SEC,
       Math.max(fps, hasActiveCultPower ? bossMaxHp * bonusSum * 0.00175 * readinessFactor * curseMult : 0)
     );
   const passiveHpFractionPerSec = passiveDps / bossMaxHp;
-
-  const hasHadesChains =
-    state.activeBossBattle &&
-    state.activeBossBattle.bossId === boss.id &&
-    state.activeBossBattle.activeRifts.some((r) => r.kind === 'hades_chains');
-  const chainPenaltyMult = hasHadesChains ? 0.5 : 1.0;
 
   const rawClickDamage = Math.min(
     bossMaxHp * BOSS_MAX_CLICK_HP_FRACTION,
@@ -276,12 +363,21 @@ export function calculateBossCombatBreakdown(
         (1 + bonusSum * 0.12 + fervorBonus * 0.08 + incarnationBonus * 0.08)
     )
   );
-  const clickDamage = rawClickDamage * chainPenaltyMult * damageMultiplier;
+  const clickDamage = rawClickDamage * chainPenaltyMult * damageMultiplier * bossCurse.damageTakenMult;
   const clickHpFraction = clickDamage / bossMaxHp;
 
-  // Parrying is defensive: it charges the Sphere without dealing damage.
-  const riftDamage = 0;
-  const riftHpFraction = 0;
+  // Parrying NEVER heals the Sphere. Under Curse, parrying reflects unstable energy as a Gnostic Riposte against the Boss!
+  const currentCombo =
+    state.activeBossBattle && state.activeBossBattle.bossId === boss.id
+      ? state.activeBossBattle.comboStreak ?? 0
+      : 0;
+  const riposteComboMult = Math.min(
+    BOSS_CURSE_RIPOSTE_MAX_COMBO_MULT,
+    1 + Math.max(0, currentCombo) * 0.08
+  );
+  const riftHpFraction =
+    bossCurse.stacks > 0 && canDamageBoss ? BOSS_CURSE_RIPOSTE_STANDARD_HP * riposteComboMult : 0;
+  const riftDamage = bossMaxHp * riftHpFraction;
 
   // Protection follows the same lifetime-Gnose curve as the readiness indicator.
   const defenseScore = Math.max(0, cultReadiness - BOSS_DAMAGE_READINESS_THRESHOLD) * 4;
@@ -294,14 +390,24 @@ export function calculateBossCombatBreakdown(
         : boss.id === 'boss_odin'
           ? 5.5
           : 7.5;
+  const baseAltarDamageOnMiss = Math.max(minMissFloor, boss.altarDamageOnMiss * mitigationFactor);
+  const curseMissFloors = [0, 30, 45, 65, 85, 100];
+  const cursedMissFloor = curseMissFloors[bossCurse.stacks] ?? BOSS_MAX_ALTAR_INTEGRITY;
   const altarDamageOnMiss = canWithstandBoss
-    ? Math.max(minMissFloor, boss.altarDamageOnMiss * mitigationFactor)
+    ? Math.min(
+        BOSS_MAX_ALTAR_INTEGRITY,
+        Math.max(baseAltarDamageOnMiss * bossCurse.damageDealtMult, cursedMissFloor)
+      )
     : BOSS_MAX_ALTAR_INTEGRITY;
-  const altarHealOnRift = Math.min(16, followersBonus * 4 + relicsBonus * 5 + incarnationBonus * 4);
 
-  // Low readiness makes misses lethal, not perfect play impossible.
-  const altarPressurePerSec = Math.max(0.06,
-    (boss.altarPressurePerSec ?? 0.65) / (1 + defenseScore * 2.2));
+  // Continuous Sphere tension without any parry healing: hitless play survives Phase II (-15%) + Phase III (-30%) shockwaves + aura drain.
+  const rawPressure = Math.max(
+    0.06,
+    (boss.altarPressurePerSec ?? 0.65) / (1 + defenseScore * 2.65)
+  );
+  const altarPressurePerSec =
+    bossCurse.stacks > 0 && canWithstandBoss ? Math.min(0.5, rawPressure) : rawPressure;
+  const altarHealOnRift = 0;
 
   const estimatedPassiveVictorySec =
     passiveHpFractionPerSec > 0 ? 1 / passiveHpFractionPerSec : Infinity;
@@ -334,6 +440,9 @@ export function calculateBossCombatBreakdown(
     altarPressurePerSec,
     estimatedPassiveVictorySec,
     estimatedAltarSurvivalSec,
+    curseStacks: bossCurse.stacks,
+    curseDamageReduction: bossCurse.damageReduction,
+    curseExtraDamageRatio: bossCurse.extraDamageRatio,
   };
 }
 
@@ -446,7 +555,6 @@ export function spawnBossMiracle(state: BossCombatStateHost, preferredSlot?: num
     maxSec: 1.5,
   };
   battle.miracleSpawnTimerSec = 10 + ((state.miracleIdCounter * 3) % 5);
-  if (state.areMiraclesAutoCollected()) clickBossMiracle(state);
 }
 
 export function clickBossMiracle(
@@ -473,16 +581,20 @@ export function spawnBossRift(
   const boss = COMBAT_BOSSES.find((b) => b.id === battle.bossId);
   if (!boss) return;
 
+  // Clear any harmlessly resolved Anúbis trap pan before spawning the next wave
+  battle.activeRifts = battle.activeRifts.filter((r) => !r.scaleHigherSelected);
+
   const phase = getBossPhase(state);
+  const curse = getBossCurseModifiers(state, boss.id);
   const wave = (battle.attackWaveCounter ?? 0) + 1;
   battle.attackWaveCounter = wave;
 
   const useSpecial =
     options?.forceSpecial === true ||
-    (!options?.forceStandard && phase >= 2 && wave % 2 === 0);
+    (!options?.forceStandard && wave >= 2 && wave % 2 === 0);
 
-  const windowScale = phase === 3 ? 0.85 : phase === 2 ? 0.92 : 1.0;
-  const baseWindowSec = Math.max(1.3, boss.riftWindowSec * windowScale);
+  const windowScale = (phase === 3 ? 0.85 : phase === 2 ? 0.92 : 1.0) * curse.windowScaleMult;
+  const baseWindowSec = Math.max(1.25, boss.riftWindowSec * windowScale);
 
   if (!useSpecial) {
     state.riftIdCounter += 1;
@@ -503,57 +615,88 @@ export function spawnBossRift(
     return;
   }
 
-  // Special Attack 2 patterns (synced with the 2nd spritesheet of each Guardian)
+  // Signature Guardian attacks (synced with the 2nd spritesheet of each Guardian)
   const groupId = `grp_${wave}_${state.riftIdCounter + 1}`;
   if (boss.id === 'boss_anubis') {
     const positions = [
-      { xPercent: 22, yPercent: 50, slotIndex: 0 },
-      { xPercent: 78, yPercent: 50, slotIndex: 1 },
+      { xPercent: 28, yPercent: 32, slotIndex: 0 },
+      { xPercent: 72, yPercent: 32, slotIndex: 1 },
     ];
-    const lowerValue = 1 + ((wave * 7) % 40);
-    const higherValue = lowerValue + 1 + ((wave * 11) % 40);
+    // Two-digit weights with a tight 5..13 spread and non-alternating side so players must read both plates
+    const diff = 5 + ((wave * 7) % 9);
+    const lowerValue = 24 + ((wave * 19 + state.riftIdCounter * 13) % 52);
+    const higherValue = lowerValue + diff;
+    const higherSlot = (Math.imul(wave + state.riftIdCounter, 2654435761) >>> 30) & 1;
+    const scaleWindow = Math.max(1.9, baseWindowSec * 1.02);
     for (const pos of positions) {
       state.riftIdCounter += 1;
       battle.activeRifts.push({
         id: `rift_${state.riftIdCounter}`,
         xPercent: pos.xPercent,
         yPercent: pos.yPercent,
-        remainingSec: baseWindowSec * 1.15,
-        maxSec: baseWindowSec * 1.15,
+        remainingSec: scaleWindow,
+        maxSec: scaleWindow,
         kind: 'anubis_scales',
-        scaleValue: pos.slotIndex === Math.floor(wave / 2) % 2 ? higherValue : lowerValue,
+        scaleValue: pos.slotIndex === higherSlot ? higherValue : lowerValue,
         attackIndex: 1,
         groupId,
         slotIndex: pos.slotIndex,
       });
     }
   } else if (boss.id === 'boss_cronos') {
-    const positions = [
-      { xPercent: 32, yPercent: 34, slotIndex: 0 },
-      { xPercent: 68, yPercent: 66, slotIndex: 1 },
-    ];
-    for (const pos of positions) {
+    // Sequenced Underworld Chains: 1º → 2º (and 1º → 2º → 3º in Phase III) at varied arc slots
+    const chainCount = phase >= 3 ? 3 : 2;
+    const slotPermutations =
+      chainCount === 3
+        ? [
+            [0, 1, 2],
+            [1, 2, 0],
+            [2, 0, 1],
+            [0, 2, 1],
+            [2, 1, 0],
+            [1, 0, 2],
+          ]
+        : [
+            [0, 1],
+            [1, 0],
+          ];
+    const slots = slotPermutations[(wave + state.riftIdCounter) % slotPermutations.length];
+    const chainWindow =
+      chainCount === 3
+        ? Math.max(2.25, baseWindowSec * 1.38)
+        : Math.max(1.95, baseWindowSec * 1.12);
+    for (let orderIdx = 0; orderIdx < chainCount; orderIdx++) {
+      const slotIndex = slots[orderIdx];
       state.riftIdCounter += 1;
       battle.activeRifts.push({
         id: `rift_${state.riftIdCounter}`,
-        xPercent: pos.xPercent,
-        yPercent: pos.yPercent,
-        remainingSec: baseWindowSec * 1.15,
-        maxSec: baseWindowSec * 1.15,
+        xPercent: 32 + slotIndex * 22,
+        yPercent: 30 + slotIndex * 20,
+        remainingSec: chainWindow,
+        maxSec: chainWindow,
         kind: 'hades_chains',
         attackIndex: 1,
         groupId,
-        slotIndex: pos.slotIndex,
+        slotIndex,
+        chainOrder: orderIdx + 1,
+        chainTotal: chainCount,
       });
     }
   } else if (boss.id === 'boss_demiurge') {
     state.riftIdCounter++;
-    battle.activeRifts.push({ id: `rift_${state.riftIdCounter}`, xPercent: 50, yPercent: 20,
-      remainingSec: RITUAL_DURATION, maxSec: RITUAL_DURATION,
-      kind: 'demiurge_ritual', attackIndex: 1, groupId });
+    battle.activeRifts.push({
+      id: `rift_${state.riftIdCounter}`,
+      xPercent: 50,
+      yPercent: 20,
+      remainingSec: RITUAL_DURATION,
+      maxSec: RITUAL_DURATION,
+      kind: 'demiurge_ritual',
+      attackIndex: 1,
+      groupId,
+    });
   } else if (boss.id === 'boss_odin') {
     state.riftIdCounter += 1;
-    const ravenWindow = Math.max(1.15, baseWindowSec * 0.82);
+    const ravenWindow = Math.max(1.8, baseWindowSec * 1.14);
     battle.activeRifts.push({
       id: `rift_${state.riftIdCounter}`,
       xPercent: 46,
@@ -571,14 +714,15 @@ export function spawnBossRift(
       { xPercent: 22, yPercent: 72, slotIndex: 1 },
       { xPercent: 78, yPercent: 72, slotIndex: 2 },
     ];
+    const chaosWindow = Math.max(2.05, baseWindowSec * 1.36);
     for (const pos of positions) {
       state.riftIdCounter += 1;
       battle.activeRifts.push({
         id: `rift_${state.riftIdCounter}`,
         xPercent: pos.xPercent,
         yPercent: pos.yPercent,
-        remainingSec: baseWindowSec * 1.25,
-        maxSec: baseWindowSec * 1.25,
+        remainingSec: chaosWindow,
+        maxSec: chaosWindow,
         kind: 'chaos_orbit',
         attackIndex: 1,
         groupId,
@@ -588,7 +732,12 @@ export function spawnBossRift(
   }
 }
 
-export function clickBossRift(state: BossCombatStateHost, riftId: string, pointerPosition?: number): BossRiftClickResult {
+export function clickBossRift(
+  state: BossCombatStateHost,
+  riftId: string,
+  pointerPosition?: number,
+  displayedRemainingSec?: number
+): BossRiftClickResult {
   if (!state.activeBossBattle || state.activeBossBattle.combatStarted === false) {
     return { damage: 0, shattered: false, victory: false };
   }
@@ -602,33 +751,100 @@ export function clickBossRift(state: BossCombatStateHost, riftId: string, pointe
   const kind: BossRiftKind = rift.kind ?? 'standard';
   const groupId = rift.groupId;
 
-  if (kind === 'odin_raven' && !odinParryCue(rift).green) {
-    const damage = calculateBossCombatBreakdown(state, battle.bossId).altarDamageOnMiss;
-    const before = battle.altarIntegrity;
-    battle.activeRifts.splice(idx, 1);
-    battle.riftsMissed++;
-    battle.comboStreak = 0;
-    battle.altarIntegrity = Math.max(0, before - damage);
-    if (battle.altarIntegrity <= 0) completeBossBattle(state, false);
-    return { damage: 0, shattered: false, victory: false, kind,
-      altarDamageTaken: before - battle.altarIntegrity };
+  if (kind === 'odin_raven') {
+    const cueRift =
+      typeof displayedRemainingSec === 'number' && Number.isFinite(displayedRemainingSec)
+        ? { remainingSec: displayedRemainingSec, maxSec: rift.maxSec }
+        : rift;
+    if (!odinParryCue(cueRift).green) {
+      const damage = calculateBossCombatBreakdown(state, battle.bossId).altarDamageOnMiss;
+      const before = battle.altarIntegrity;
+      battle.activeRifts.splice(idx, 1);
+      battle.riftsMissed++;
+      battle.comboStreak = 0;
+      battle.altarIntegrity = Math.max(0, before - damage);
+      if (battle.altarIntegrity <= 0) completeBossBattle(state, false);
+      return {
+        damage: 0,
+        shattered: false,
+        victory: false,
+        kind,
+        altarDamageTaken: before - battle.altarIntegrity,
+      };
+    }
   }
 
   if (kind === 'demiurge_ritual') {
     const result = ritualJudgement(pointerPosition ?? ritualPointer(rift.maxSec - rift.remainingSec));
-    battle.ritualOutcome = { id: rift.id, ...result, remainingSec: 1.7 };
+    const curse = getBossCurseModifiers(state, battle.bossId);
+    const effectivePercent =
+      result.side === 'sun' && curse.stacks > 0
+        ? curse.stacks >= BOSS_CURSE_MAX_STACKS
+          ? 100
+          : Math.min(100, Math.max(result.percent * curse.damageDealtMult, curse.stacks * 20))
+        : result.percent;
+    battle.ritualOutcome = {
+      id: rift.id,
+      side: result.side,
+      percent: effectivePercent,
+      remainingSec: 1.7,
+    };
     if (result.side !== 'center') {
       battle.activeRifts.splice(idx, 1);
       battle.riftsMissed++;
       battle.comboStreak = 0;
       if (result.side === 'moon') {
-        battle.bossHp = Math.min(battle.bossMaxHp, battle.bossHp + battle.bossMaxHp * result.percent / 100);
+        battle.bossHp = Math.min(battle.bossMaxHp, battle.bossHp + (battle.bossMaxHp * result.percent) / 100);
         battle.phase = getBossPhase(state);
+        if (curse.stacks >= BOSS_CURSE_MAX_STACKS) {
+          battle.altarIntegrity = 0;
+          completeBossBattle(state, false);
+        }
       } else {
-        battle.altarIntegrity = Math.max(0, battle.altarIntegrity - battle.maxAltarIntegrity * result.percent / 100);
+        battle.altarIntegrity = Math.max(
+          0,
+          battle.altarIntegrity - (battle.maxAltarIntegrity * effectivePercent) / 100
+        );
         if (battle.altarIntegrity <= 0) completeBossBattle(state, false);
       }
-      return { damage: 0, shattered: false, victory: false, kind, ritualSide: result.side, ritualPercent: result.percent };
+      return {
+        damage: 0,
+        shattered: false,
+        victory: false,
+        kind,
+        ritualSide: result.side,
+        ritualPercent: effectivePercent,
+      };
+    }
+  }
+
+  if (kind === 'hades_chains' && typeof rift.chainOrder === 'number') {
+    const siblings = battle.activeRifts.filter((r) => r.kind === kind && r.groupId === groupId);
+    const isLocked = siblings.some(
+      (r) => typeof r.chainOrder === 'number' && r.chainOrder < rift.chainOrder!
+    );
+    if (isLocked) {
+      const breakdown = calculateBossCombatBreakdown(state, battle.bossId);
+      const curse = getBossCurseModifiers(state, battle.bossId);
+      const lockMult =
+        curse.stacks >= BOSS_CURSE_MAX_STACKS
+          ? 1.0
+          : Math.min(1.0, 0.25 + curse.stacks * 0.16);
+      const recoil = breakdown.canWithstandBoss
+        ? Math.max(2, breakdown.altarDamageOnMiss * lockMult)
+        : breakdown.altarDamageOnMiss;
+      const before = battle.altarIntegrity;
+      battle.comboStreak = 0;
+      battle.altarIntegrity = Math.max(0, before - recoil);
+      if (battle.altarIntegrity <= 0) completeBossBattle(state, false);
+      return {
+        damage: 0,
+        shattered: false,
+        victory: false,
+        kind,
+        chainLocked: true,
+        altarDamageTaken: before - battle.altarIntegrity,
+      };
     }
   }
 
@@ -638,7 +854,7 @@ export function clickBossRift(state: BossCombatStateHost, riftId: string, pointe
       rift.scaleHigherSelected === true ||
       siblings.some((r) => (r.scaleValue ?? 0) > (rift.scaleValue ?? 0));
     if (isLower) {
-      const multiplier = rift.scaleHigherSelected ? 3 : 2;
+      const multiplier = 1.6;
       const damage = calculateBossCombatBreakdown(state, battle.bossId).altarDamageOnMiss * multiplier;
       const before = battle.altarIntegrity;
       battle.activeRifts = battle.activeRifts.filter((r) => !siblings.includes(r));
@@ -655,9 +871,12 @@ export function clickBossRift(state: BossCombatStateHost, riftId: string, pointe
         scaleDamageMultiplier: multiplier,
       };
     }
-    // Keep the lower balloon clickable, but harmless if its window expires.
+    // Keep the lower pan briefly clickable to catch blind double-clicking, then expire harmlessly.
     siblings.forEach((r) => {
-      if (r !== rift) r.scaleHigherSelected = true;
+      if (r !== rift) {
+        r.scaleHigherSelected = true;
+        r.remainingSec = Math.min(r.remainingSec, 0.75);
+      }
     });
   }
 
@@ -669,27 +888,79 @@ export function clickBossRift(state: BossCombatStateHost, riftId: string, pointe
 
   let specialBonusTriggered = false;
   const miracleAwakened = false;
-  const siblingsRemaining = groupId
-    ? battle.activeRifts.filter((r) => r.groupId === groupId).length
+  const remainingSameGroup = groupId
+    ? battle.activeRifts.filter((r) => r.groupId === groupId && !r.scaleHigherSelected).length
     : 0;
 
-  if (kind === 'hades_chains' && siblingsRemaining === 0) {
+  if (kind === 'hades_chains' && remainingSameGroup === 0) {
+    battle.riftSpawnTimerSec += 0.65;
     specialBonusTriggered = true;
   } else if (kind === 'odin_raven') {
     battle.riftSpawnTimerSec += 1.4;
     specialBonusTriggered = true;
-  } else if (kind === 'chaos_orbit' && siblingsRemaining === 0) {
+  } else if (kind === 'chaos_orbit' && remainingSameGroup === 0) {
+    battle.riftSpawnTimerSec += 0.8;
+    specialBonusTriggered = true;
+  } else if (kind === 'demiurge_ritual') {
+    battle.riftSpawnTimerSec += 1.2;
     specialBonusTriggered = true;
   }
 
+  // Parrying NEVER heals the Sphere. Under Curse, completing a parry wave unleashes a Gnostic Riposte against the Boss!
+  let riposteDamage = 0;
+  let riposteHpPercent: number | undefined;
+  const curse = getBossCurseModifiers(state, battle.bossId);
+  if (remainingSameGroup === 0 && curse.stacks > 0) {
+    const breakdown = calculateBossCombatBreakdown(state, battle.bossId);
+    if (breakdown.canDamageBoss) {
+      const baseRiposte =
+        kind !== 'standard' ? BOSS_CURSE_RIPOSTE_SPECIAL_HP : BOSS_CURSE_RIPOSTE_STANDARD_HP;
+      const comboMult = Math.min(
+        BOSS_CURSE_RIPOSTE_MAX_COMBO_MULT,
+        1 + Math.max(0, nextCombo - 1) * 0.08
+      );
+      const hpFraction = baseRiposte * comboMult;
+      riposteHpPercent = hpFraction * 100;
+      riposteDamage = battle.bossMaxHp * hpFraction;
+      battle.bossHp = Math.max(0, battle.bossHp - riposteDamage);
+      battle.phase = getBossPhase(state);
+      if (battle.bossHp <= 0) {
+        completeBossBattle(state, true);
+        return {
+          damage: riposteDamage,
+          shattered: true,
+          victory: true,
+          comboStreak: nextCombo,
+          kind,
+          specialBonusTriggered,
+          miracleAwakened,
+          riposteHpPercent,
+        };
+      }
+      if (checkAndApplyBossPhaseTransitions(state)) {
+        return {
+          damage: riposteDamage,
+          shattered: true,
+          victory: false,
+          comboStreak: nextCombo,
+          kind,
+          specialBonusTriggered,
+          miracleAwakened,
+          riposteHpPercent,
+        };
+      }
+    }
+  }
+
   return {
-    damage: 0,
+    damage: riposteDamage,
     shattered: true,
     victory: false,
     comboStreak: nextCombo,
     kind,
     specialBonusTriggered,
     miracleAwakened,
+    riposteHpPercent,
   };
 }
 
@@ -705,6 +976,8 @@ export function defeatBossForTesting(state: BossCombatStateHost, bossId: string)
   } else {
     state.defeatedBosses.add(bossId);
     state.bossCurseTimerSec = 0;
+    state.bossCurseStacks = 0;
+    state.bossCurseBossId = null;
   }
   return true;
 }
@@ -721,19 +994,51 @@ export function completeBossBattle(state: BossCombatStateHost, victory: boolean)
     state.demiurge.phase = victory || isRematch ? 'defeated' : 'walking';
     state.demiurge.elapsed = 0;
   }
+
+  let cursePurified = false;
   if (victory && boss) {
+    const foughtCurseStacks = getBossCurseModifiers(state, boss.id).stacks;
+    if (foughtCurseStacks >= BOSS_CURSE_MAX_STACKS) {
+      state.maxCurseDefeatedBosses?.add(boss.id);
+    }
+    const cleanseBoss = getBossCurseCleanseBoss(state);
+    if (
+      getBossCurseStacks(state) > 0 &&
+      (boss.id === cleanseBoss?.id || boss.id === state.bossCurseBossId)
+    ) {
+      state.bossCurseStacks = 0;
+      state.bossCurseBossId = null;
+      cursePurified = true;
+    }
     state.defeatedBosses.add(boss.id);
     state.bossCurseTimerSec = 0;
     const prevBest = state.bestBossTimesSec[boss.id];
     if (durationSec > 0 && (typeof prevBest !== 'number' || durationSec < prevBest)) {
       state.bestBossTimesSec[boss.id] = Number(durationSec.toFixed(1));
     }
-  } else if (!isRematch) {
-    state.bossCurseTimerSec = BOSS_CURSE_DURATION_SEC;
+  } else if (!victory && boss) {
+    state.bossCurseTimerSec = 0;
+    if (isBossSubjectToCurse(boss.id)) {
+      state.bossCurseStacks = Math.min(BOSS_CURSE_MAX_STACKS, getBossCurseStacks(state) + 1);
+      const currentIdx = state.bossCurseBossId
+        ? COMBAT_BOSSES.findIndex((b) => b.id === state.bossCurseBossId)
+        : -1;
+      const lostIdx = COMBAT_BOSSES.findIndex((b) => b.id === boss.id);
+      if (lostIdx >= currentIdx) {
+        state.bossCurseBossId = boss.id;
+      }
+    }
   }
 
   if (boss && state.onBossBattleFinished) {
-    state.onBossBattleFinished({ boss, victory, isRematch, durationSec });
+    state.onBossBattleFinished({
+      boss,
+      victory,
+      isRematch,
+      durationSec,
+      cursePurified,
+      curseStacks: getBossCurseStacks(state),
+    });
   }
 }
 
@@ -747,6 +1052,7 @@ export function tickBossBattle(state: BossCombatStateHost, deltaSec: number): vo
   battle.elapsedCombatSec = (battle.elapsedCombatSec ?? 0) + deltaSec;
   battle.sphereCooldownSec = Math.max(0, battle.sphereCooldownSec - deltaSec);
   const breakdown = calculateBossCombatBreakdown(state, battle.bossId);
+  const curse = getBossCurseModifiers(state, battle.bossId);
 
   // Check if external HP manipulation crossed a phase boundary before ticking rifts
   if (checkAndApplyBossPhaseTransitions(state)) {
@@ -777,12 +1083,18 @@ export function tickBossBattle(state: BossCombatStateHost, deltaSec: number): vo
       }
       battle.riftsMissed += 1;
       battle.comboStreak = 0;
-      const missMult =
+      const baseMissMult =
         rift.kind === 'hades_chains'
-          ? 0.5
+          ? rift.chainTotal === 3
+            ? 0.42
+            : 0.55
           : rift.kind === 'chaos_orbit'
-            ? 0.4
+            ? 0.45
             : 1.0;
+      const missMult =
+        curse.stacks >= BOSS_CURSE_MAX_STACKS
+          ? 1.0
+          : Math.min(1.0, baseMissMult + curse.stacks * 0.14);
       battle.altarIntegrity = Math.max(
         0,
         battle.altarIntegrity - breakdown.altarDamageOnMiss * (breakdown.canWithstandBoss ? missMult : 1)
@@ -832,14 +1144,28 @@ export function tickBossBattle(state: BossCombatStateHost, deltaSec: number): vo
     }
   }
 
-  if (battle.activeRifts.some(r => r.kind === 'demiurge_ritual') || (battle.ritualOutcome?.remainingSec ?? 0) > 0) return;
+  // Hold new attack waves while any signature Guardian mechanic is active so UI & focus stay crystal clear
+  const hasActiveSpecial = battle.activeRifts.some(
+    (r) => (r.kind ?? 'standard') !== 'standard' && !r.scaleHigherSelected
+  );
+  if (hasActiveSpecial || (battle.ritualOutcome?.remainingSec ?? 0) > 0) {
+    battle.riftSpawnTimerSec = Math.max(battle.riftSpawnTimerSec, 0.45);
+    return;
+  }
 
-  // 3. Spawn new rifts periodically (faster in Phase 2 & 3 as the guardian grows desperate)
+  // 3. Spawn new rifts periodically (faster in Phase 2 & 3 and under Curse fury)
   const phaseIntervalScale = phase === 3 ? 0.78 : phase === 2 ? 0.88 : 1.0;
   battle.riftSpawnTimerSec -= deltaSec;
   if (battle.riftSpawnTimerSec <= 0) {
-    battle.riftSpawnTimerSec += boss.riftIntervalSec * phaseIntervalScale;
-    if (battle.activeRifts.length < 3) {
+    const nextWave = (battle.attackWaveCounter ?? 0) + 1;
+    const nextWillBeSpecial = nextWave >= 2 && nextWave % 2 === 0;
+    const blockingRifts = battle.activeRifts.filter((r) => !r.scaleHigherSelected);
+    if (nextWillBeSpecial && blockingRifts.length > 0) {
+      battle.riftSpawnTimerSec = 0.2;
+      return;
+    }
+    battle.riftSpawnTimerSec += (boss.riftIntervalSec * phaseIntervalScale) / curse.attackCadenceMult;
+    if (blockingRifts.length < 3) {
       spawnBossRift(state);
     }
   }

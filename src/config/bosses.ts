@@ -1,10 +1,22 @@
 import type { GnoseBoss } from '../types.js';
 
-/** Duration (in seconds) of the mild -25% Faith/s & Fervor/s penalty when Altar Integrity reaches 0% */
+/** Duration (in seconds) of legacy production curse timer (kept for save compatibility) */
 export const BOSS_CURSE_DURATION_SEC = 20;
 
-/** Multiplier applied to Faith/s & Fervor/s while cursed after a boss defeat (0.75 = -25% penalty) */
+/** Legacy production multiplier while bossCurseTimerSec > 0 */
 export const BOSS_CURSE_MULTIPLIER = 0.75;
+
+/** Stacking Boss Curse applied on defeat starting from Hades (removed by defeating the previous boss) */
+export const BOSS_CURSE_MAX_STACKS = 5;
+export const BOSS_CURSE_DAMAGE_TAKEN_REDUCTION_PER_STACK = 0.1;
+export const BOSS_CURSE_MAX_DAMAGE_TAKEN_REDUCTION = 0.5;
+export const BOSS_CURSE_EXTRA_DAMAGE_PER_STACK = 0.6;
+export const BOSS_CURSE_MAX_EXTRA_DAMAGE = 3.0;
+export const BOSS_CURSE_ATTACK_SPEED_PER_STACK = 0.05;
+export const BOSS_CURSE_WINDOW_TIGHTEN_PER_STACK = 0.025;
+export const BOSS_CURSE_RIPOSTE_STANDARD_HP = 0.017;
+export const BOSS_CURSE_RIPOSTE_SPECIAL_HP = 0.029;
+export const BOSS_CURSE_RIPOSTE_MAX_COMBO_MULT = 1.6;
 
 /** Maximum Altar Integrity percentage */
 export const BOSS_MAX_ALTAR_INTEGRITY = 100;

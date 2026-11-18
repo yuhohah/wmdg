@@ -1,17 +1,19 @@
 import { odinParryCue } from '../systems/odinParry.js';
+import { ritualJudgement, ritualPointer } from '../systems/demiurgeRitual.js';
 import { summonDemiurge, tickDemiurge, challengeDemiurge } from '../systems/demiurge.js';
 import { ElapsedTimeCredit } from '../systems/elapsedTime.js';
 import type { SaveData } from '../systems/saveSystem.js';
 import { GameStateManager } from '../core/GameState.js';
 import { INCARNATION_STAGES, BLESSING_SECONDS_PER_PRESS } from '../config/incarnation.js';
 import { GNOSE_UPGRADES } from '../config/gnose.js';
-import { GNOSE_BOSSES } from '../config/bosses.js';
+import { COMBAT_BOSSES, GNOSE_BOSSES } from '../config/bosses.js';
 import { calculateMiracleReward } from '../systems/calculations.js';
 import { PLAYER_BEHAVIORS, createSeededRandom, describeBehavior, manualBlessingAllowed, manualSphereAllowed, routineClicksAvailable, VisitSchedule } from './behavior.js';
 import { CampaignMetrics } from './CampaignMetrics.js';
 import { ProgressTracker } from './ProgressTracker.js';
 import { formatDuration } from './reporters.js';
 import type { ArchetypeBenchmarkResult, BenchmarkReport, ManualAction, MilestoneRecord, PlayerArchetype, SimulationOptions } from './types.js';
+import type { ActiveBossBattle, BossRift } from '../types.js';
 
 interface Decision {
   key: string;
@@ -19,8 +21,12 @@ interface Decision {
   execute: () => boolean;
 }
 
+type RiftPlan = 'parry' | 'mistime' | 'ignore';
+
 const DEFAULT_SEED = 0xc0172;
 const DEFAULT_HORIZON_SEC = 72 * 3600;
+const PROCESSION_DURATION_SEC = 6;
+const DEMIURGE_APPROACH_SEC = 2.75;
 const EPSILON = 1e-8;
 
 class Simulation {
@@ -29,6 +35,7 @@ class Simulation {
   private readonly visits: VisitSchedule;
   private readonly randomMiracles: () => number;
   private readonly randomClicks: () => number;
+  private readonly randomCombat: () => number;
   private readonly progress = new ProgressTracker();
   private readonly metrics = new CampaignMetrics();
   private readonly seed: number;
@@ -40,6 +47,7 @@ class Simulation {
   private presentTime = 0;
   private tickSeconds = 0;
   private tickOffset = 0;
+  private processionSec = 0;
   private nextInteraction = 0;
   private nextSphere = 0;
   private pending: { decision: Decision; due: number } | null = null;
@@ -48,6 +56,9 @@ class Simulation {
   private miracle: { born: number; expires: number; willing: boolean } | null = null;
   private lastBossMiracleId: string | null = null;
   private lastBossMiracleWilling = false;
+  private readonly riftPlans = new Map<string, RiftPlan>();
+  private readonly seenSpecialWaves = new Map<string, number>();
+  private readonly bossFailuresThisCycle = new Map<string, number>();
   private readonly bossLossReadiness = new Map<string, number>();
   private miraclesSpawned = 0;
   private miraclesCaught = 0;
@@ -75,14 +86,26 @@ class Simulation {
     this.visits = new VisitSchedule(this.behavior, createSeededRandom(this.seed ^ 0x513a));
     this.randomMiracles = createSeededRandom(this.seed ^ 0xa117);
     this.randomClicks = createSeededRandom(this.seed ^ 0xc11c);
+    this.randomCombat = createSeededRandom(this.seed ^ 0x7b93);
     if (options.initialSave) this.game.applySaveData(options.initialSave);
     this.game.onBossBattleFinished = result => {
-      this.metrics.finishCombat(this.time + this.tickOffset, result.victory ? 'won' : 'lost');
+      this.processionSec = 0;
+      this.riftPlans.clear();
+      this.metrics.finishCombat(this.time + this.tickOffset, result.victory ? 'won' : 'lost', Boolean(result.cursePurified));
       if (result.victory) {
         this.bossLossReadiness.delete(result.boss.id);
-      } else {
+        this.bossFailuresThisCycle.delete(result.boss.id);
+      } else if (!result.isRematch && result.boss.id !== 'boss_demiurge') {
+        const failures = (this.bossFailuresThisCycle.get(result.boss.id) ?? 0) + 1;
+        this.bossFailuresThisCycle.set(result.boss.id, failures);
         const readiness = this.game.getBossCombatBreakdown(result.boss.id).cultReadiness;
-        this.bossLossReadiness.set(result.boss.id, Math.min(2, Math.max(1.2, readiness + 0.15)));
+        if (result.boss.id === 'boss_anubis') {
+          if (this.game.totalGnoseEarned > 0 || failures >= 2) {
+            this.bossLossReadiness.set(result.boss.id, Math.min(1.15, Math.max(0.85, readiness + (failures >= 3 ? 0.08 : 0))));
+          }
+        } else if (failures >= 2) {
+          this.bossLossReadiness.set(result.boss.id, Math.min(1.35, readiness + 0.08));
+        }
       }
     };
     this.recordMilestones();
@@ -94,6 +117,10 @@ class Simulation {
       // Every elapsed interval advances the same state, including visits and reaction delays.
       const dt = Math.min(this.step, this.horizon - this.time, this.visits.nextTransitionSec - this.time);
       if (dt > EPSILON) {
+        if (this.visits.present && this.game.activeBossBattle?.combatStarted === false) {
+          this.processionSec = Math.max(0, this.processionSec - dt);
+          if (this.processionSec <= EPSILON) this.game.beginBossCombat();
+        }
         const battle = this.game.activeBossBattle;
         const hpBefore = battle?.bossHp ?? 0;
         this.tickOffset = dt;
@@ -103,10 +130,16 @@ class Simulation {
         if (this.visits.present && !this.game.activeBossBattle) {
           summonDemiurge(this.game);
           tickDemiurge(this.game, dt);
+          if (this.game.demiurge.phase === 'approaching') {
+            this.game.demiurge.elapsed += dt;
+            if (this.game.demiurge.elapsed + EPSILON >= DEMIURGE_APPROACH_SEC) {
+              this.startCombatWithProcession('boss_demiurge', false, this.time + dt);
+            }
+          }
         }
         if (this.game.demiurge.phase === 'lost') { this.blockedReason = 'O Demiurgo consumiu toda a Gnose.'; break; }
         this.tickOffset = 0;
-        if (battle) {
+        if (battle && battle.combatStarted !== false) {
           const totalTickDamage = Math.max(0, hpBefore - battle.bossHp);
           const autoClickDamage = Math.min(totalTickDamage, gains.autoClickBossDamage ?? 0);
           const passiveDamage = Math.max(0, totalTickDamage - autoClickDamage);
@@ -120,6 +153,7 @@ class Simulation {
         this.metrics.addIncome('clicks', autoClickFaith);
         if (!this.absenceCredit) this.tickSeconds += dt;
         this.progress.advance(dt, this.visits.present);
+        this.metrics.advancePresence(dt, this.visits.present);
         if (this.visits.present) this.presentTime += dt;
         this.time += dt;
         if (!this.absenceCredit) this.updateMiracle(dt);
@@ -129,8 +163,14 @@ class Simulation {
       if (transition) {
         if (transition === 'arrive') this.creditAbsence();
         else {
+          this.processionSec = 0;
+          this.riftPlans.clear();
           this.metrics.finishCombat(this.time, 'retreated');
           this.game.retreatBossBattle();
+          if (this.game.demiurge.phase === 'approaching') {
+            this.game.demiurge.phase = 'walking';
+            this.game.demiurge.elapsed = 0;
+          }
           if (this.options.absenceMode && this.options.absenceMode !== 'visible') {
             this.absenceSave = this.game.buildSaveData();
             this.absenceCredit = new ElapsedTimeCredit(this.time * 1000);
@@ -169,6 +209,7 @@ class Simulation {
     this.recordMilestones();
     this.options.onSnapshot?.(this.time, this.game.buildSaveData());
     this.progress.finish();
+    const progression = this.metrics.finish(this.time);
     const completed = this.completed();
     const score = !completed ? 'Incompleto'
       : this.progress.deadZones.length > 3 || this.progress.maxPresentIdleSec > 14400 ? 'Gargalo Crítico'
@@ -176,7 +217,7 @@ class Simulation {
           : this.progress.maxPresentIdleSec < 300 && this.time < 5 * 3600 ? 'Excelente' : 'Balanceado';
     const absenceMode = this.options.absenceMode ?? 'visible';
     return {
-      progression: this.metrics.finish(this.time),
+      progression,
       absenceMode,
       status: completed ? 'completed' : this.blockedReason ? 'blocked' : 'time_limit', completed, seed: this.seed,
       blockedReason: this.blockedReason,
@@ -261,18 +302,138 @@ class Simulation {
     }
   }
 
+  private startCombatWithProcession(bossId: string, isRematch: boolean, startedSec = this.time): boolean {
+    const started = this.game.startBossBattle(bossId, { awaitProcession: true, isRematch });
+    if (started) {
+      this.processionSec = PROCESSION_DURATION_SEC;
+      this.riftPlans.clear();
+      this.metrics.startCombat(startedSec, this.game);
+    }
+    return started;
+  }
+
+  private canStartFightNow(): boolean {
+    const timeLeftInVisit = this.visits.nextTransitionSec - this.time;
+    return !Number.isFinite(timeLeftInVisit) || timeLeftInVisit > 75;
+  }
+
+  private isCultBuiltForFight(bossId: string): boolean {
+    const breakdown = this.game.getBossCombatBreakdown(bossId);
+    if (!(bossId === 'boss_anubis' ? breakdown.canDamageBoss : breakdown.canWithstandBoss)) return false;
+    const clickCps = manualSphereAllowed(this.behavior, this.time)
+      ? Math.min(this.behavior.combatClickCps, 5)
+      : this.game.getSphereAutoclickRate();
+    const effectiveHpPerSec = breakdown.passiveHpFractionPerSec + breakdown.clickHpFraction * clickCps;
+    return effectiveHpPerSec >= (breakdown.canWithstandBoss ? 1 / 160 : 1 / 110);
+  }
+
+  private selectRiftAttempt(battle: ActiveBossBattle): { rift: BossRift; pointer?: number } | undefined {
+    const candidates: Array<{ rift: BossRift; pointer?: number; priority: number }> = [];
+    for (const r of battle.activeRifts) {
+      if (r.scaleHigherSelected) continue;
+      const elapsed = r.maxSec - r.remainingSec;
+      if (elapsed + EPSILON < this.behavior.riftResponseSec) continue;
+      const kind = r.kind ?? 'standard';
+      const waveKey = r.groupId ?? r.id;
+      let plan = this.riftPlans.get(waveKey);
+      if (!plan) {
+        let accuracy = this.behavior.parryAccuracy;
+        if (kind !== 'standard') {
+          const seen = this.seenSpecialWaves.get(battle.bossId) ?? 0;
+          this.seenSpecialWaves.set(battle.bossId, seen + 1);
+          if (seen < 4) {
+            const firstRead = accuracy >= 0.95 ? 0.68 : 0.30;
+            accuracy *= firstRead + (1 - firstRead) * (seen / 4);
+          }
+        }
+        plan = this.randomCombat() < accuracy
+          ? 'parry'
+          : (this.randomCombat() < 0.65 ? 'mistime' : 'ignore');
+        this.riftPlans.set(waveKey, plan);
+      }
+      if (plan === 'ignore') {
+        if (kind === 'chaos_orbit') {
+          const remainingInWave = battle.activeRifts.filter(o => o.groupId === r.groupId).length;
+          if (remainingInWave > 2) candidates.push({ rift: r, priority: r.remainingSec });
+        }
+        continue;
+      }
+      if (plan === 'mistime') {
+        if (kind === 'anubis_scales') {
+          const isLower = battle.activeRifts.some(o =>
+            o.kind === 'anubis_scales' && o.groupId === r.groupId && (o.scaleValue ?? 0) > (r.scaleValue ?? 0));
+          if (isLower) candidates.push({ rift: r, priority: r.remainingSec });
+        } else if (kind === 'hades_chains') {
+          const isLocked = typeof r.chainOrder === 'number' && battle.activeRifts.some(o =>
+            o.kind === 'hades_chains' && o.groupId === r.groupId && typeof o.chainOrder === 'number' && o.chainOrder < r.chainOrder!);
+          if (isLocked) candidates.push({ rift: r, priority: r.remainingSec });
+        } else if (kind === 'odin_raven') {
+          if (odinParryCue(r).readySoon) candidates.push({ rift: r, priority: r.remainingSec });
+        } else if (kind === 'demiurge_ritual') {
+          const ptr = ritualPointer(elapsed);
+          if (ritualJudgement(ptr).side !== 'center' && Math.abs(ptr) <= 0.45) {
+            candidates.push({ rift: r, pointer: ptr, priority: r.remainingSec });
+          }
+        } else if (kind === 'chaos_orbit') {
+          const remainingInWave = battle.activeRifts.filter(o => o.groupId === r.groupId).length;
+          if (remainingInWave > 1) candidates.push({ rift: r, priority: r.remainingSec });
+        }
+        continue;
+      }
+      if (kind === 'odin_raven') {
+        if (odinParryCue(r).green) candidates.push({ rift: r, priority: r.remainingSec });
+      } else if (kind === 'demiurge_ritual') {
+        const ptr = ritualPointer(elapsed);
+        if (ritualJudgement(ptr).side === 'center') candidates.push({ rift: r, pointer: ptr, priority: r.remainingSec });
+      } else if (kind === 'hades_chains') {
+        const isUnlocked = typeof r.chainOrder !== 'number' || !battle.activeRifts.some(o =>
+          o.kind === 'hades_chains' && o.groupId === r.groupId && typeof o.chainOrder === 'number' && o.chainOrder < r.chainOrder!);
+        if (isUnlocked) candidates.push({ rift: r, priority: r.chainOrder ?? r.remainingSec });
+      } else if (kind === 'anubis_scales') {
+        const isHigher = !battle.activeRifts.some(o =>
+          o.kind === 'anubis_scales' && o.groupId === r.groupId && (o.scaleValue ?? 0) > (r.scaleValue ?? 0));
+        if (isHigher) candidates.push({ rift: r, priority: r.remainingSec });
+      } else {
+        candidates.push({ rift: r, priority: r.remainingSec });
+      }
+    }
+    candidates.sort((a, b) => a.priority - b.priority);
+    const chosen = candidates[0];
+    if (chosen && chosen.rift.kind === 'hades_chains') {
+      const waveKey = chosen.rift.groupId ?? chosen.rift.id;
+      if (this.riftPlans.get(waveKey) === 'mistime') {
+        this.riftPlans.set(waveKey, 'parry');
+      }
+    }
+    return chosen ? { rift: chosen.rift, pointer: chosen.pointer } : undefined;
+  }
+
   private interact(): void {
     const g = this.game;
-    if (['announced', 'walking', 'draining', 'approaching'].includes(g.demiurge.phase)) {
+    if (g.activeBossBattle?.combatStarted === false || g.demiurge.phase === 'approaching') return;
+    if (!g.activeBossBattle && ['announced', 'walking', 'draining'].includes(g.demiurge.phase)) {
       if (this.time + EPSILON < this.nextInteraction) return;
-      if (g.demiurge.phase === 'announced') g.demiurge.phase = 'walking';
-      else if (g.demiurge.phase === 'approaching') { g.startBossBattle('boss_demiurge'); }
-      else if (challengeDemiurge(g)) {
+      if (g.getBossCurseStacks() >= this.behavior.cursePurifyThreshold && this.canStartFightNow()) {
+        const cleanseBoss = g.getBossCurseCleanseBoss();
+        if (cleanseBoss && g.canChallengeBoss(cleanseBoss.id, { isRematch: true }) && this.startCombatWithProcession(cleanseBoss.id, true)) {
+          this.actions.challenge = (this.actions.challenge ?? 0) + 1;
+          this.nextInteraction = this.nextSlot(this.nextInteraction, 1 / this.behavior.maxInteractionCps);
+          this.emit('action', 'challenge');
+          return;
+        }
+      }
+      if (g.demiurge.phase === 'announced') {
+        if (!this.canStartFightNow()) return;
+        g.demiurge.phase = 'walking';
+        g.demiurge.elapsed = 0;
         this.actions.demiurge = (this.actions.demiurge ?? 0) + 1;
+        this.nextInteraction = this.time + Math.min(this.behavior.decisionDelaySec, 3);
+        this.emit('action', 'demiurge');
+      } else if (challengeDemiurge(g)) {
+        this.actions.demiurge = (this.actions.demiurge ?? 0) + 1;
+        this.nextInteraction = this.nextSlot(this.nextInteraction, 1 / this.behavior.maxInteractionCps);
         this.emit('action', 'demiurge');
       }
-      this.nextInteraction = this.time + Math.max(this.behavior.decisionDelaySec,
-        1 / Math.max(0.1, Math.min(this.behavior.combatClickCps, this.behavior.maxInteractionCps)));
       return;
     }
     if (!this.pending && !g.activeBossBattle) {
@@ -294,24 +455,25 @@ class Simulation {
       this.lastBossMiracleId = bossMiracle.id;
       this.lastBossMiracleWilling = this.randomMiracles() < this.behavior.miracleCatchChance;
     }
-    const rift = !this.awaitingConfirmation && battleBeforeRift?.activeRifts.find(r => {
-      if (r.maxSec - r.remainingSec + EPSILON < this.behavior.riftResponseSec) return false;
-      if (r.kind === 'odin_raven') return odinParryCue(r).green;
-      if (r.kind !== 'anubis_scales') return true;
-      // Pick only the higher weight; its remaining sibling must expire untouched.
-      return !r.scaleHigherSelected && !battleBeforeRift.activeRifts.some(other =>
-        other.kind === 'anubis_scales' && other.groupId === r.groupId
-        && (other.scaleValue ?? 0) > (r.scaleValue ?? 0));
-    });
+    const riftAttempt = !this.awaitingConfirmation && battleBeforeRift
+      ? this.selectRiftAttempt(battleBeforeRift)
+      : undefined;
     const hpBeforeRift = battleBeforeRift?.bossHp ?? 0;
-    const riftHit = rift ? g.clickBossRift(rift.id) : undefined;
+    const riftHit = riftAttempt ? g.clickBossRift(riftAttempt.rift.id, riftAttempt.pointer) : undefined;
     if (riftHit) {
       // A real attempt consumes its slot even if the domain rejects the parry.
-      if (riftHit.shattered && battleBeforeRift) this.metrics.damageCombat('rift', Math.min(hpBeforeRift, riftHit.damage), battleBeforeRift.bossMaxHp);
+      if (riftHit.shattered && battleBeforeRift) {
+        if (riftHit.damage > 0) {
+          this.metrics.damageCombat('rift', Math.min(hpBeforeRift, riftHit.damage), battleBeforeRift.bossMaxHp);
+        } else {
+          this.metrics.recordCombatInteraction();
+        }
+      } else {
+        this.metrics.recordCombatInteraction();
+      }
       action = 'rift';
     } else if (!this.awaitingConfirmation && bossMiracle
       && this.lastBossMiracleWilling
-      && manualSphereAllowed(this.behavior, this.time)
       && bossMiracle.maxSec - bossMiracle.remainingSec + EPSILON >= this.behavior.riftResponseSec) {
       if (g.clickBossMiracle().triggered) {
         this.metrics.recordCombatInteraction();
@@ -348,7 +510,8 @@ class Simulation {
       }
     } else if (!this.awaitingConfirmation && manualBlessingAllowed(this.behavior, this.time)
       && g.isIncarnationUnlocked() && !g.hasGnoseUpgrade('gn_bencao_eterna')
-      && ((this.behavior.blessingMode === 'maintain'
+      && (((this.behavior.blessingMode === 'maintain'
+        || (this.behavior.blessingMode === 'burst' && routineClicksAvailable(this.behavior, this.time, this.visits.visitStartedAtSec)))
         && g.incarnationBoostTimer <= Math.max(0, this.behavior.blessingTargetSec - BLESSING_SECONDS_PER_PRESS) + EPSILON)
         || this.occasionalBlessingPresses > 0)) {
       g.addIncarnationBoost(BLESSING_SECONDS_PER_PRESS);
@@ -376,7 +539,8 @@ class Simulation {
     if (action) {
       if (action === 'sphere') this.lastSphereClickSec = this.time;
       if (action === 'blessing') this.lastManualBlessingSec = this.time;
-      if (this.behavior.blessingMode === 'after_purchase' && manualBlessingAllowed(this.behavior, this.time)
+      if ((this.behavior.blessingMode === 'after_purchase' || this.behavior.blessingMode === 'burst')
+        && manualBlessingAllowed(this.behavior, this.time)
         && ['follower', 'fervor', 'relic', 'unlock', 'incarnation', 'gnose_upgrade'].includes(action)) {
         this.occasionalBlessingPresses = Math.max(0,
           Math.ceil((this.behavior.blessingTargetSec - g.incarnationBoostTimer) / BLESSING_SECONDS_PER_PRESS));
@@ -389,7 +553,8 @@ class Simulation {
 
   /** Allow ready purchase to complete if superseded by an unrelated currency/upgrade. */
   private canDecisionsCoexist(ready: ManualAction, current: ManualAction): boolean {
-    if (current === 'gnose_upgrade') return ['follower', 'fervor', 'relic'].includes(ready);
+    if (current === 'gnose_upgrade') return ['follower', 'fervor', 'relic', 'automation_toggle'].includes(ready);
+    if (ready === 'automation_toggle') return true;
     if (ready === 'relic') return ['follower', 'fervor', 'unlock', 'incarnation'].includes(current);
     if (ready === 'fervor') return ['follower', 'relic', 'incarnation'].includes(current);
     if (ready === 'follower') return ['fervor', 'relic'].includes(current);
@@ -422,11 +587,19 @@ class Simulation {
       const result = g.performGnoseReset();
       if (result.success) {
         this.gnoseResets++;
-        this.bossLossReadiness.clear();
+        this.bossFailuresThisCycle.clear();
       }
       return result.success;
     };
     if (this.awaitingConfirmation) return decision('gnose-confirm', 'gnose_confirm', ascend);
+    if (g.hasGnoseUpgrade('gn_memoria_selos') && (!g.bulkFervorEnabled || !g.bulkRelicsEnabled)) {
+      return decision('enable-bulk', 'automation_toggle', () => {
+        if (!g.hasGnoseUpgrade('gn_memoria_selos') || (g.bulkFervorEnabled && g.bulkRelicsEnabled)) return false;
+        g.bulkFervorEnabled = true;
+        g.bulkRelicsEnabled = true;
+        return true;
+      });
+    }
     const follower = g.followers[0];
     const buyFollower = () => g.isConvertMaxUnlocked() ? g.buyMaxFollowers().success : g.buyOneFollower();
     if (g.getTotalFollowersCount() === 0 && g.faithPoints >= g.getItemCost(follower)) {
@@ -441,9 +614,10 @@ class Simulation {
           : u.cost <= maxChoiceCost && this.options.purchasePriority === 'production' && /init_faith|followers_syn|init_fervor|followers_cubic|gnose_mult|fu1_boost|empyrean_fire/.test(u.id) ? u.cost / 5 : u.cost;
         return score(a) - score(b);
       })[0];
-    const remainingGnose = Math.max(1, (nextGnose?.cost ?? 1) - g.gnosePoints);
+    const readinessTargetGnose = Math.max(1, Math.ceil(g.totalGnoseEarned * 0.25));
+    const remainingGnose = nextGnose ? Math.max(1, nextGnose.cost - g.gnosePoints) : readinessTargetGnose;
     const desiredGnose = this.options.resetPolicy === 'immediate' ? 1 : Math.max(1, Math.ceil(
-      this.options.resetPolicy === 'short' ? Math.min(remainingGnose, (nextGnose?.cost ?? 1) * 0.9)
+      this.options.resetPolicy === 'short' ? Math.min(remainingGnose, (nextGnose?.cost ?? readinessTargetGnose) * 0.9)
         : remainingGnose * (this.options.resetPolicy === 'long' ? 1.05 : 1)));
     if (nextGnose && g.canBuyGnoseUpgrade(nextGnose)) {
       return decision(nextGnose.id, 'gnose_upgrade', () => g.buyGnoseUpgrade(nextGnose.id));
@@ -456,28 +630,31 @@ class Simulation {
     if (incarnation && g.isIncarnationUnlocked() && g.canAccessIncarnationStage(incarnation.stage) && g.faithPoints >= g.getIncarnationStageCost(incarnation)) {
       return decision(`incarnation-${incarnation.stage}`, 'incarnation', () => g.upgradeIncarnation());
     }
-    const timeLeftInVisit = this.visits.nextTransitionSec - this.time;
-    const boss = (!Number.isFinite(timeLeftInVisit) || timeLeftInVisit > 15)
+    const canStartFight = this.canStartFightNow();
+    if (canStartFight && g.getBossCurseStacks() >= this.behavior.cursePurifyThreshold) {
+      const cleanseBoss = g.getBossCurseCleanseBoss();
+      if (cleanseBoss && g.canChallengeBoss(cleanseBoss.id, { isRematch: true }) && this.isCultBuiltForFight(cleanseBoss.id)) {
+        return decision(cleanseBoss.id, 'challenge', () => this.startCombatWithProcession(cleanseBoss.id, true));
+      }
+    }
+    const boss = canStartFight
       ? GNOSE_BOSSES.find(b => {
-          if (!g.canChallengeBoss(b.id)) return false;
+          if (!g.canChallengeBoss(b.id) || !this.isCultBuiltForFight(b.id)) return false;
           const breakdown = g.getBossCombatBreakdown(b.id);
-          const canAttempt = b.id === 'boss_anubis' ? breakdown.canDamageBoss : breakdown.canWithstandBoss;
-          return canAttempt && breakdown.cultReadiness >= (this.bossLossReadiness.get(b.id) ?? 0);
+          return breakdown.cultReadiness >= (this.bossLossReadiness.get(b.id) ?? 0);
         })
       : undefined;
     if (boss && g.bossCurseTimerSec === 0) {
-      return decision(boss.id, 'challenge', () => {
-        const started = g.startBossBattle(boss.id);
-        if (started) this.metrics.startCombat(this.time, g);
-        return started;
-      });
+      return decision(boss.id, 'challenge', () => this.startCombatWithProcession(boss.id, false));
     }
     // With all available tiers bought (or Tier I still sealed), readiness can
     // only improve through lifetime Gnose. Do not wait for production to fix it.
     const needsGuardianGnose = !nextGnose && GNOSE_BOSSES.some(b => {
       if (!g.canChallengeBoss(b.id)) return false;
       const readiness = g.getBossCombatBreakdown(b.id);
-      return !readiness.canWithstandBoss
+      const needsSuddenDeathDefense = b.id === 'boss_anubis' && !readiness.canWithstandBoss && !this.isCultBuiltForFight(b.id);
+      return (!readiness.canWithstandBoss && b.id !== 'boss_anubis')
+        || needsSuddenDeathDefense
         || readiness.cultReadiness < (this.bossLossReadiness.get(b.id) ?? 0);
     });
     if ((nextGnose || needsGuardianGnose) && g.getGnoseToGet() >= desiredGnose) {
@@ -499,13 +676,13 @@ class Simulation {
       ? 1e15 * Math.max(1, desiredGnose) ** (1 / g.getGnoseGainExponent()) : Infinity;
     const savingForGnose = fps > 0 && (ascensionTarget - g.faithPoints) / fps < 180;
     const relic = g.isRelicsUnlocked() && !(g.hasGnoseUpgrade('gn_relic_automation') && g.autoRelicUpgradesEnabled) ? g.relicUpgrades.find(r => r.level < g.getRelicMaxLevel(r) && g.relicPoints >= g.getRelicUpgradeCost(r)) : undefined;
-    if (relic) return decision(relic.id, 'relic', () => g.hasGnoseUpgrade('gn_memoria_selos') ? g.buyMaxRelicUpgrade(relic) > 0 : g.buyRelicUpgrade(relic));
+    if (relic) return decision(relic.id, 'relic', () => g.bulkRelicsEnabled && g.hasGnoseUpgrade('gn_memoria_selos') ? g.buyMaxRelicUpgrade(relic) > 0 : g.buyRelicUpgrade(relic));
     if (g.isFervorUpgradesUnlocked() && !(g.hasGnoseUpgrade('gn_ritual_automation') && g.autoFervorEnabled)) {
       const clickRelevant = manualSphereAllowed(this.behavior, this.time) || g.getSphereAutoclickProgress() !== null;
       const fervorSortCost = (u: typeof g.fervorUpgrades[number]) => g.getFervorUpgradeCost(u) * (u.id === 'fu_click' && !clickRelevant ? 10 : 1);
       const rito = g.fervorUpgrades.filter(u => (u.id !== 'fu_relics' || g.isPhoenixRelicUnlocked()) && g.fervorPoints >= g.getFervorUpgradeCost(u))
         .sort((a, b) => fervorSortCost(a) - fervorSortCost(b))[0];
-      if (rito) return decision(rito.id, 'fervor', () => g.hasGnoseUpgrade('gn_memoria_selos') ? g.buyMaxFervorUpgrade(rito) > 0 : g.buyFervorUpgrade(rito));
+      if (rito) return decision(rito.id, 'fervor', () => g.bulkFervorEnabled && g.hasGnoseUpgrade('gn_memoria_selos') ? g.buyMaxFervorUpgrade(rito) > 0 : g.buyFervorUpgrade(rito));
     }
     const draupnirLevel = g.relicUpgrades.find(r => r.id === 'relic_draupnir')?.level ?? 0;
     const passiveRelics = (g.hasGnoseUpgrade('gn_omniscience') && g.autoRelicsEnabled) || draupnirLevel > 0;
@@ -547,7 +724,7 @@ class Simulation {
     record('first_gnose_upgrade', '1º Upgrade da Gnose', g.unlockedGnoseUpgrades.size > 0, [...g.unlockedGnoseUpgrades][0]);
     for (const upg of GNOSE_UPGRADES) record(`gnose_node_${upg.id}`, upg.name, g.hasGnoseUpgrade(upg.id), `${upg.cost} Gnose · Tier ${upg.tier}`);
     record('gnose_tree_complete', `Árvore da Gnose (${GNOSE_UPGRADES.length}/${GNOSE_UPGRADES.length})`, g.unlockedGnoseUpgrades.size === GNOSE_UPGRADES.length);
-    for (const boss of GNOSE_BOSSES) record(boss.id, boss.name, g.isBossDefeated(boss.id));
+    for (const boss of COMBAT_BOSSES) record(boss.id, boss.name, g.isBossDefeated(boss.id));
   }
 }
 

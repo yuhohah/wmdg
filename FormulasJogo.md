@@ -388,7 +388,7 @@ As fórmulas são calculadas em `getBossCombatBreakdown`. `H` é o HP máximo do
 | Odin / `boss_odin` | 1e38 | 2.3 | ×1.5 e Tier III |
 | Caos Primordial / `boss_tiamat` | 1e42 | 3.2 | ×10 e Tier IV |
 
-Os multiplicadores acumulam: ×33.75 com as quatro vitórias, afetando também Fé por clique. Anúbis exige acesso à Gnose; Hades exige os 6 nós do Tier I; Odin exige os 6 nós do Tier II; Caos exige os 4 nós do Tier III. Saldo de Gnose ou quantidade de Ascensões não substituem a conclusão dos tiers. Uma luta ativa impede iniciar outra. Guardiões derrotados só podem ser enfrentados em revanche.
+Os multiplicadores acumulam: ×33.75 com as quatro vitórias, afetando também Fé por clique. Anúbis exige acesso à Gnose; Hades exige ao menos 1 nó do Tier I; Odin exige ao menos 1 nó do Tier II; Caos exige ao menos 1 nó do Tier III (o Demiurgo continua exigindo Caos derrotado e todos os nós da Árvore assimilados). Saldo de Gnose ou quantidade de Ascensões não substituem o requisito de tier. Uma luta ativa impede iniciar outra. Guardiões derrotados só podem ser enfrentados em revanche.
 
 | Referência de 100% | Anúbis | Hades | Odin | Caos |
 | --- | --- | --- | --- | --- |
@@ -474,7 +474,7 @@ pressao=max(0.06,pressaoOriginal/(1+2.2*defesa))
 
 O tick desconta `pressao*dt` da integridade. Com proteção suficiente, fendas de balanças/correntes usam metade do dano por erro; selos orbitais usam 40%. Sem proteção suficiente, qualquer erro tira 100, sem essa redução.
 
-A integridade inicial é 100. O milagre da roda dura 1.5 s e cura `min(10,100-integridade)`. Surge periodicamente em intervalos de 10–14 s e é garantido nas transições de fase se não houver outro ativo. O campo legado `altarHealOnRift=min(16,4*bn+5*br+4*bs)` ainda é calculado, mas não concede cura ao aparar.
+A integridade inicial é 100. O milagre da roda dura 1.5 s, exige sempre clique manual (a coleta automática de `ach_f_7777` vale apenas fora de combate) e cura `min(10,100-integridade)`. Surge periodicamente em intervalos de 10–14 s e é garantido nas transições de fase se não houver outro ativo. O campo legado `altarHealOnRift=min(16,4*bn+5*br+4*bs)` ainda é calculado, mas não concede cura ao aparar.
 
 ```text
 estimativaVitoriaPassiva=H/DPS se DPS>0; infinito senão

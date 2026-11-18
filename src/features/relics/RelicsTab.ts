@@ -17,12 +17,21 @@ export interface RelicsTabOptions {
   onUpgradePurchased?: () => void;
 }
 
+interface RelicCardRefs {
+  cardEl: HTMLDivElement;
+  badgeEl: HTMLElement | null;
+  promptSpanEl: HTMLElement | null;
+  costSpanEl: HTMLElement | null;
+  benefitEl: HTMLElement | null;
+}
+
 export class RelicsTab {
   private options: RelicsTabOptions;
   private renderedStructure: string = '';
   private bulkToggle: AutomationToggle;
   private relicAutomation: AutomationToggle;
   private transmutationAutomation: AutomationToggle;
+  private cardRefs = new Map<string, RelicCardRefs>();
 
   private hudDividerEl: HTMLElement | null = null;
   private hudItemEl: HTMLElement | null = null;
@@ -100,14 +109,22 @@ export class RelicsTab {
     }
   }
 
+  private computeStructureKey(keepRelics: boolean): string {
+    let key = `${DISPLAY_CONFIG.showEmojisAndSymbols ? 1 : 0}:${keepRelics ? 1 : 0}`;
+    const relics = this.options.gameState.relicUpgrades;
+    for (let i = 0; i < relics.length; i++) {
+      const r = relics[i];
+      const maxLevel = this.options.gameState.getRelicMaxLevel(r);
+      key += `|${r.id}:${Number.isFinite(maxLevel) ? maxLevel : 'inf'}`;
+    }
+    return key;
+  }
+
   public renderList(): void {
     this.bulkToggle.update();
     if (!this.relicUpgradesListEl) return;
-    const structure = JSON.stringify([
-      DISPLAY_CONFIG.showEmojisAndSymbols,
-      this.options.gameState.hasGnoseUpgrade('gn_keep_relics'),
-      this.options.gameState.relicUpgrades.map(r => [r.id, this.options.gameState.getRelicMaxLevel(r)]),
-    ]);
+    const keepRelics = this.options.gameState.hasGnoseUpgrade('gn_keep_relics');
+    const structure = this.computeStructureKey(keepRelics);
     if (structure === this.renderedStructure) {
       this.updateButtonStates();
       return;
@@ -115,12 +132,15 @@ export class RelicsTab {
     this.renderedStructure = structure;
     const finiteRelicsOpen = this.relicUpgradesListEl.querySelector<HTMLDetailsElement>('.finite-relics')?.open ?? false;
     this.relicUpgradesListEl.innerHTML = '';
+    this.cardRefs.clear();
 
     const relicPoints = this.options.gameState.relicPoints;
+    const peakRelics = Math.max(relicPoints, this.options.gameState.relicPeakThisRun);
+    const bulkEnabled = this.isBulkEnabled();
 
     // Keep the two eternal relics directly accessible; finite relics remain expandable.
     let finiteRelics: HTMLDetailsElement | null = null;
-    if (this.options.gameState.hasGnoseUpgrade('gn_keep_relics')) {
+    if (keepRelics) {
       finiteRelics = document.createElement('details');
       finiteRelics.className = 'finite-relics';
       finiteRelics.open = finiteRelicsOpen;
@@ -130,11 +150,11 @@ export class RelicsTab {
     }
 
     this.options.gameState.relicUpgrades.forEach((relic, index) => {
-      const isMax = relic.level >= this.options.gameState.getRelicMaxLevel(relic);
-      const { count, cost } = this.purchasePreview(relic);
-      const canAfford = relicPoints >= cost && (!this.isBulkEnabled() || count > 0);
       const maxLevel = this.options.gameState.getRelicMaxLevel(relic);
-      const effectDesc = relic.effectText(relic.level, Math.max(relicPoints, this.options.gameState.relicPeakThisRun), maxLevel);
+      const isMax = relic.level >= maxLevel;
+      const { count, cost } = this.purchasePreview(relic, bulkEnabled);
+      const canAfford = relicPoints >= cost && (!bulkEnabled || count > 0);
+      const effectDesc = relic.effectText(relic.level, peakRelics, maxLevel);
 
       const card = document.createElement('div');
       card.className = `cult-action-card relic-action-card ${isMax ? 'maxed' : (canAfford ? '' : 'unaffordable')}`;
@@ -153,7 +173,7 @@ export class RelicsTab {
              <span class="card-status-badge maxed-badge">NÍVEL MÁXIMO</span>
            </div>`
         : `<div class="card-click-prompt">
-             <span class="card-click-hint relic-hint">${this.purchaseHint(count)}</span>
+             <span class="card-click-hint relic-hint">${this.purchaseHint(count, bulkEnabled)}</span>
            </div>`;
 
       card.innerHTML = `
@@ -181,6 +201,14 @@ export class RelicsTab {
       card.addEventListener('click', () => {
         const current = this.options.gameState.relicUpgrades.find(item => item.id === relic.id);
         if (current) this.buyRelicUpgrade(current);
+      });
+
+      this.cardRefs.set(relic.id, {
+        cardEl: card,
+        badgeEl: card.querySelector<HTMLElement>('.relic-level-badge'),
+        promptSpanEl: card.querySelector<HTMLElement>('.card-click-prompt span'),
+        costSpanEl: card.querySelector<HTMLElement>('.relic-cost-tag span:last-child'),
+        benefitEl: card.querySelector<HTMLElement>('.relic-benefit-text'),
       });
 
       const container = finiteRelics && Number.isFinite(maxLevel) ? finiteRelics : this.relicUpgradesListEl!;
@@ -216,50 +244,54 @@ export class RelicsTab {
 
   public updateButtonStates(): void {
     const relicPoints = this.options.gameState.relicPoints;
-    this.options.gameState.relicUpgrades.forEach((relic) => {
-      const isMax = relic.level >= this.options.gameState.getRelicMaxLevel(relic);
-      const { count, cost } = this.purchasePreview(relic);
-      const canAfford = relicPoints >= cost && (!this.isBulkEnabled() || count > 0);
-      const card = document.getElementById(`card-${relic.id}`);
-      if (card) {
-        const maxLevel = this.options.gameState.getRelicMaxLevel(relic);
-        const badge = card.querySelector('.relic-level-badge');
-        setText(badge, `(${formatNumber(relic.level)}/${Number.isFinite(maxLevel) ? maxLevel : '∞'})`);
-        badge?.classList.toggle('maxed', isMax);
-        const prompt = card.querySelector('.card-click-prompt span');
-        setText(prompt, isMax ? 'NÍVEL MÁXIMO' : this.purchaseHint(count));
-        const promptClass = isMax ? 'card-status-badge maxed-badge' : 'card-click-hint relic-hint';
-        if (prompt && prompt.className !== promptClass) prompt.className = promptClass;
-        card.classList.toggle('maxed', isMax);
-        const costEl = card.querySelector('.relic-cost-tag span:last-child');
-        setText(costEl, isMax ? 'CONCLUÍDO' : `${Number.isFinite(cost) ? formatNumber(cost) : '∞'} Fragmentos`);
-        if (isMax) {
-          if (card.classList.contains('unaffordable')) card.classList.remove('unaffordable');
-        } else if (canAfford) {
-          if (card.classList.contains('unaffordable')) card.classList.remove('unaffordable');
-        } else {
-          if (!card.classList.contains('unaffordable')) card.classList.add('unaffordable');
-        }
-        const benefitEl = card.querySelector('.relic-benefit-text');
-        if (benefitEl) {
-          setText(benefitEl, relic.effectText(relic.level, Math.max(relicPoints, this.options.gameState.relicPeakThisRun), maxLevel));
-        }
+    const peakRelics = Math.max(relicPoints, this.options.gameState.relicPeakThisRun);
+    const bulkEnabled = this.isBulkEnabled();
+    const relics = this.options.gameState.relicUpgrades;
+    for (let i = 0; i < relics.length; i++) {
+      const relic = relics[i];
+      const refs = this.cardRefs.get(relic.id);
+      if (!refs) continue;
+      const maxLevel = this.options.gameState.getRelicMaxLevel(relic);
+      const isMax = relic.level >= maxLevel;
+      const { count, cost } = this.purchasePreview(relic, bulkEnabled);
+      const canAfford = relicPoints >= cost && (!bulkEnabled || count > 0);
+      const card = refs.cardEl;
+
+      setText(refs.badgeEl, `(${formatNumber(relic.level)}/${Number.isFinite(maxLevel) ? maxLevel : '∞'})`);
+      if (refs.badgeEl && refs.badgeEl.classList.contains('maxed') !== isMax) {
+        refs.badgeEl.classList.toggle('maxed', isMax);
       }
-    });
+      setText(refs.promptSpanEl, isMax ? 'NÍVEL MÁXIMO' : this.purchaseHint(count, bulkEnabled));
+      const promptClass = isMax ? 'card-status-badge maxed-badge' : 'card-click-hint relic-hint';
+      if (refs.promptSpanEl && refs.promptSpanEl.className !== promptClass) {
+        refs.promptSpanEl.className = promptClass;
+      }
+      if (card.classList.contains('maxed') !== isMax) {
+        card.classList.toggle('maxed', isMax);
+      }
+      setText(refs.costSpanEl, isMax ? 'CONCLUÍDO' : `${Number.isFinite(cost) ? formatNumber(cost) : '∞'} Fragmentos`);
+      const shouldBeUnaffordable = !isMax && !canAfford;
+      if (card.classList.contains('unaffordable') !== shouldBeUnaffordable) {
+        card.classList.toggle('unaffordable', shouldBeUnaffordable);
+      }
+      if (refs.benefitEl) {
+        setText(refs.benefitEl, relic.effectText(relic.level, peakRelics, maxLevel));
+      }
+    }
   }
 
   private isBulkEnabled(): boolean {
     return this.options.gameState.bulkRelicsEnabled && this.options.gameState.hasGnoseUpgrade('gn_memoria_selos');
   }
 
-  private purchasePreview(relic: RelicUpgrade): { count: number; cost: number } {
+  private purchasePreview(relic: RelicUpgrade, bulkEnabled = this.isBulkEnabled()): { count: number; cost: number } {
     const game = this.options.gameState;
-    const count = this.isBulkEnabled() ? game.getMaxRelicUpgradeCount(relic) : 1;
+    const count = bulkEnabled ? game.getMaxRelicUpgradeCount(relic) : 1;
     return { count, cost: getRelicUpgradeBulkCost(relic, Math.max(1, count)) };
   }
 
-  private purchaseHint(count: number): string {
-    return this.isBulkEnabled() ? `RESTAURAR MÁXIMO (${formatNumber(count)})` : 'CLIQUE PARA RESTAURAR';
+  private purchaseHint(count: number, bulkEnabled = this.isBulkEnabled()): string {
+    return bulkEnabled ? `RESTAURAR MÁXIMO (${formatNumber(count)})` : 'CLIQUE PARA RESTAURAR';
   }
 
   public setHudVisibility(unlocked: boolean): void {

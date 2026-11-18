@@ -24,6 +24,7 @@ export function canUseGameplayShortcut(event: KeyboardEvent, options: { allowedC
 interface ShortcutActions {
   gameState: GameStateManager;
   focusCard?: (cardId: string) => void;
+  buyUnlock?: () => void;
   buyFollower: () => void;
   buyMaxFollowers: () => void;
   buyFervor: (index: number) => void;
@@ -45,6 +46,7 @@ export function createGameplayShortcutActions(actions: ShortcutActions): Record<
     return true;
   };
   const bindings: Record<string, () => void> = {
+    '.': outsideCombat(() => actions.buyUnlock?.()),
     z: outsideCombat(actions.buyFollower),
     x: outsideCombat(() => { if (game.isConvertMaxUnlocked()) actions.buyMaxFollowers(); }),
     capslock: outsideCombat(() => { if (game.isRelicsUnlocked()) actions.transmute(); }),

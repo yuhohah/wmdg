@@ -37,9 +37,9 @@ export class CampaignEnding {
     dialog.setAttribute('aria-labelledby', 'ending-title');
     dialog.innerHTML = `
       <div class="ending-theatre">
-        <canvas class="ending-ritual-canvas" role="img" aria-label="Ritual de conclusão: os quatro guardiões se reúnem ao redor da Esfera, os fiéis se ajoelham e o Avatar Solar conduz a homenagem. Ao fim, todos desaparecem."></canvas>
+        <canvas class="ending-ritual-canvas" role="img" aria-label="Ritual de conclusão: os quatro guardiões e o Demiurgo convergem ao santuário hermético ao redor da Esfera, os fiéis se ajoelham em prece e o Avatar Solar conduz a apoteose final. Ao fim, todos se dissolvem na luz da Esfera."></canvas>
         <section class="ending-caption" aria-live="polite"></section>
-        <div class="ending-credits" hidden><p class="ending-eyebrow">EQUIPE DE DESENVOLVIMENTO</p>
+        <div class="ending-credits" hidden><p class="ending-eyebrow">✧ EQUIPE DE DESENVOLVIMENTO ✧</p>
           <p>Luan de Paula · Rafael Machado<br>Arthur Rezendo · Pedro Santana</p>
           <span>Obrigado por dar vida a este universo.</span></div>
         <button class="ending-skip" type="button">Pular ritual</button>
@@ -82,9 +82,9 @@ export class CampaignEnding {
     if (phase !== 'vanishing') credits.hidden = phase !== 'gratitude';
     if (phase === 'vanishing') return;
     const messages: Partial<Record<RitualPhase, string>> = {
-      gathering: `<p class="ending-eyebrow">OPUS CONSUMMATUM · A ÚLTIMA PROCISSÃO</p><h1 id="ending-title">Todos os caminhos retornam à Esfera.</h1><p>Quatro guardiões. Um só círculo. O culto se reúne uma última vez.</p>`,
-      invocation: `<p class="ending-eyebrow">O SELO DA CRIAÇÃO</p><h1 id="ending-title">A criação reconhece sua luz.</h1><p>Os antigos adversários oferecem seus selos. Os fiéis erguem sua última prece.</p>`,
-      gratitude: `<p class="ending-eyebrow">VOCÊ COMPLETOU O JOGO</p><h1 id="ending-title">Obrigado por chegar até aqui.</h1><p>Da primeira centelha ao domínio do Caos, sua devoção deu vida à Esfera.<br>Esta homenagem é para você.</p>`,
+      gathering: `<div class="ending-caption-inner"><p class="ending-eyebrow">OPUS CONSUMMATUM · A ÚLTIMA PROCISSÃO</p><h1 id="ending-title">Todos os caminhos retornam à Esfera.</h1><p>Os quatro guardiões e o próprio Demiurgo convergem ao santuário. O culto se reúne uma última vez.</p></div>`,
+      invocation: `<div class="ending-caption-inner"><p class="ending-eyebrow">O SELO DO PLEROMA</p><h1 id="ending-title">Até o falso criador curva seu cetro.</h1><p>Sol, Lua e os antigos domínios entregam seus selos à Esfera enquanto os fiéis erguem sua última prece.</p></div>`,
+      gratitude: `<div class="ending-caption-inner"><p class="ending-eyebrow">APOTEOSE · VOCÊ COMPLETOU A GRANDE OBRA</p><h1 id="ending-title">Obrigado por chegar até aqui.</h1><p>Da primeira centelha ao triunfo sobre o Demiurgo, sua devoção conduziu a Esfera à plenitude.<br>Esta homenagem é para você.</p></div>`,
     };
     caption.innerHTML = messages[phase] ?? '<h1 id="ending-title" class="ending-sr-only">O ritual se encerra</h1>';
   }

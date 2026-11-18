@@ -1,6 +1,6 @@
 import type { GameStateManager } from '../core/GameState.js';
 import { GNOSE_PACING } from '../config/gnose.js';
-import { GNOSE_BOSSES } from '../config/bosses.js';
+import { COMBAT_BOSSES } from '../config/bosses.js';
 
 export interface GnoseTierCadence {
   tier: number;
@@ -8,19 +8,36 @@ export interface GnoseTierCadence {
   startedSec: number | null;
   completedSec: number | null;
   durationSec: number | null;
+  presentDurationSec: number | null;
   ascensions: number | null;
   timeInTarget: boolean;
   ascensionsInTarget: boolean;
 }
 
+export interface CampaignCombatRecord {
+  bossId: string;
+  startSec: number;
+  endSec: number | null;
+  result: 'active' | 'won' | 'lost' | 'retreated';
+  isRematch: boolean;
+  curseStacks: number;
+  cursePurified: boolean;
+  readiness: number;
+  avatar: number;
+  passiveHpFraction: number;
+  sphereHpFraction: number;
+  riftHpFraction: number;
+  interactions: number;
+}
+
 export interface CampaignMetricsResult {
   version: 2;
-  combat: Array<{ bossId: string; startSec: number; endSec: number | null; result: 'active' | 'won' | 'lost' | 'retreated'; readiness: number; avatar: number; passiveHpFraction: number; sphereHpFraction: number; riftHpFraction: number; interactions: number }>;
+  combat: CampaignCombatRecord[];
   purchases: { followers: number; rituals: number; relics: number };
   goals: Array<{ label: string; chosenSec: number; predictedSec: number | null; reachedSec: number | null; cancelled: boolean }>;
   income: { passive: number; clicks: number; miracles: number };
   miracleShareMeanPct: number;
-  advances: Array<{ timeSec: number; category: 'permanent' | 'unlock' | 'avatar' | 'boss' | 'production'; id: string }>;
+  advances: Array<{ timeSec: number; presentSec: number; category: 'permanent' | 'unlock' | 'avatar' | 'boss' | 'production'; id: string }>;
   maxPermanentGapSec: number;
   maxRelevantGapSec: number;
   recoveries: Array<{ resetSec: number; previousCycleSec: number; targetFps: number; recoveredAfterSec: number | null; gnosePerMinute: number }>;
@@ -33,11 +50,12 @@ export class CampaignMetrics {
   public passiveFaith = 0;
   public clickFaith = 0;
   public miracleFaith = 0;
+  private presentTime = 0;
   private cycleIncomeByKind = { passive: 0, clicks: 0, miracles: 0 };
   private cycleMiracleShares: number[] = [];
   private purchases = { followers: 0, rituals: 0, relics: 0 };
   private previousCounts = { followers: 0, rituals: 0, relics: 0 };
-  private combat: CampaignMetricsResult['combat'] = [];
+  private combat: CampaignCombatRecord[] = [];
   private goals: CampaignMetricsResult['goals'] = [];
   private advances: CampaignMetricsResult['advances'] = [];
   private seen = new Set<string>();
@@ -49,6 +67,10 @@ export class CampaignMetrics {
   private lastReset = 0;
   private productionAnchor = 0;
   private cycleIncome = 0;
+
+  public advancePresence(deltaSec: number, isPresent: boolean): void {
+    if (isPresent && deltaSec > 0) this.presentTime += deltaSec;
+  }
 
   public addIncome(kind: 'passive' | 'clicks' | 'miracles', amount: number): void {
     if (amount <= 0 || !Number.isFinite(amount)) return;
@@ -75,20 +97,39 @@ export class CampaignMetrics {
   }
 
   public startCombat(time: number, game: GameStateManager): void {
-    const bossId = game.activeBossBattle?.bossId;
-    if (!bossId) return;
-    this.combat.push({ bossId, startSec: time, endSec: null, result: 'active', readiness: game.getBossCombatBreakdown(bossId).cultReadiness,
-      avatar: game.incarnationStage, passiveHpFraction: 0, sphereHpFraction: 0, riftHpFraction: 0, interactions: 0 });
+    const battle = game.activeBossBattle;
+    if (!battle) return;
+    const bossId = battle.bossId;
+    const breakdown = game.getBossCombatBreakdown(bossId);
+    this.combat.push({
+      bossId,
+      startSec: time,
+      endSec: null,
+      result: 'active',
+      isRematch: battle.isRematch === true,
+      curseStacks: breakdown.curseStacks ?? 0,
+      cursePurified: false,
+      readiness: breakdown.cultReadiness,
+      avatar: game.incarnationStage,
+      passiveHpFraction: 0,
+      sphereHpFraction: 0,
+      riftHpFraction: 0,
+      interactions: 0,
+    });
   }
 
-  public finishCombat(time: number, result: 'won' | 'lost' | 'retreated'): void {
+  public finishCombat(time: number, result: 'won' | 'lost' | 'retreated', cursePurified = false): void {
     const combat = this.combat.at(-1);
-    if (combat?.result === 'active') { combat.endSec = time; combat.result = result; }
+    if (combat?.result === 'active') {
+      combat.endSec = time;
+      combat.result = result;
+      combat.cursePurified = cursePurified;
+    }
   }
 
   public damageCombat(kind: 'passive' | 'sphere' | 'rift', damage: number, maxHp: number, countInteraction = true): void {
     const combat = this.combat.at(-1);
-    if (!combat) return;
+    if (!combat || combat.result !== 'active' || maxHp <= 0) return;
     if (kind === 'passive') combat.passiveHpFraction += damage / maxHp;
     if (kind === 'sphere') {
       combat.sphereHpFraction += damage / maxHp;
@@ -102,7 +143,7 @@ export class CampaignMetrics {
 
   public recordCombatInteraction(): void {
     const combat = this.combat.at(-1);
-    if (combat) combat.interactions++;
+    if (combat?.result === 'active') combat.interactions++;
   }
 
   public observe(time: number, game: GameStateManager): void {
@@ -120,7 +161,8 @@ export class CampaignMetrics {
     if (this.sampleHead > 1200) { this.samples = this.samples.slice(this.sampleHead); this.sampleHead = 0; }
     const record = (category: CampaignMetricsResult['advances'][number]['category'], id: string) => {
       if (this.seen.has(id)) return;
-      this.seen.add(id); this.advances.push({ timeSec: time, category, id });
+      this.seen.add(id);
+      this.advances.push({ timeSec: time, presentSec: this.presentTime, category, id });
     };
     for (const id of game.unlockedGnoseUpgrades) record('permanent', id);
     for (const id of game.defeatedBosses) record('boss', id);
@@ -130,7 +172,7 @@ export class CampaignMetrics {
     const average = this.average(time);
     if (time - this.lastReset >= 60 && average > 0 && average >= this.productionAnchor * 1.25) {
       this.productionAnchor = average;
-      this.advances.push({ timeSec: time, category: 'production', id: `production-${average}` });
+      this.advances.push({ timeSec: time, presentSec: this.presentTime, category: 'production', id: `production-${average}` });
     }
     const recovery = this.resets.at(-1);
     const settleSec = recovery ? Math.min(15, Math.max(2, recovery.previousCycleSec * 0.15)) : 60;
@@ -180,23 +222,47 @@ export class CampaignMetrics {
       for (const event of events.filter(e => e.timeSec >= start)) { max = Math.max(max, event.timeSec - last); last = event.timeSec; }
       return Math.max(max, time - last);
     };
-    let tierStart: number | null = this.resets[0]?.resetSec ?? null;
-    const gnoseTiers = GNOSE_BOSSES.map((boss, i): GnoseTierCadence => {
-      const completedSec = this.advances.find(e => e.category === 'boss' && e.id === boss.id)?.timeSec ?? null;
+    // Tier I opens at Gnose seal / Anúbis; Tiers I..IV conclude with Hades, Odin, Caos Primordial, and Demiurgo.
+    const gnoseSealEvent = this.advances.find(e => e.category === 'unlock' && e.id === 'unlock_gnose');
+    const anubisEvent = this.advances.find(e => e.category === 'boss' && e.id === 'boss_anubis');
+    const firstGnoseCandidates = [gnoseSealEvent, anubisEvent].filter((e): e is NonNullable<typeof e> => Boolean(e));
+    const firstStartEvent = firstGnoseCandidates.sort((a, b) => a.timeSec - b.timeSec)[0] ?? null;
+    let tierStart: number | null = firstStartEvent?.timeSec ?? this.resets[0]?.resetSec ?? null;
+    let tierStartPresent: number | null = firstStartEvent?.presentSec ?? (tierStart !== null ? 0 : null);
+    const tierGateBosses = COMBAT_BOSSES.slice(1);
+    const gnoseTiers = tierGateBosses.map((boss, i): GnoseTierCadence => {
+      const completedEvent = this.advances.find(e => e.category === 'boss' && e.id === boss.id) ?? null;
+      const completedSec = completedEvent?.timeSec ?? null;
       const durationSec = tierStart !== null && completedSec !== null && completedSec >= tierStart ? completedSec - tierStart : null;
-      const ascensions = durationSec !== null
-        ? this.resets.filter(r => r.resetSec <= completedSec! && (i === 0 ? r.resetSec >= tierStart! : r.resetSec > tierStart!)).length
+      const presentDurationSec = durationSec !== null && tierStartPresent !== null && completedEvent
+        ? Math.max(0, completedEvent.presentSec - tierStartPresent)
         : null;
-      const result = { tier: i + 1, bossId: boss.id, startedSec: tierStart, completedSec, durationSec, ascensions,
-        timeInTarget: durationSec !== null && durationSec >= GNOSE_PACING.minTierSec && durationSec <= GNOSE_PACING.maxTierSec,
-        ascensionsInTarget: ascensions !== null && ascensions >= GNOSE_PACING.minAscensions && ascensions <= GNOSE_PACING.maxAscensions };
+      const ascensions = durationSec !== null
+        ? this.resets.filter(r => r.resetSec <= completedSec! && (i === 0 ? r.resetSec >= 0 : r.resetSec > tierStart!)).length
+        : null;
+      const activeSpan = presentDurationSec ?? durationSec;
+      const result: GnoseTierCadence = {
+        tier: i + 1,
+        bossId: boss.id,
+        startedSec: tierStart,
+        completedSec,
+        durationSec,
+        presentDurationSec,
+        ascensions,
+        timeInTarget: activeSpan !== null && activeSpan >= GNOSE_PACING.minTierSec && activeSpan <= GNOSE_PACING.maxTierSec,
+        ascensionsInTarget: ascensions !== null && ascensions >= GNOSE_PACING.minAscensions && ascensions <= GNOSE_PACING.maxAscensions,
+      };
       tierStart = completedSec;
+      tierStartPresent = completedEvent?.presentSec ?? null;
       return result;
     });
+    const gnosePhaseStart = tierGateBosses.length > 0
+      ? (firstStartEvent?.timeSec ?? this.resets[0]?.resetSec ?? time)
+      : time;
     return { version: 2, combat: this.combat, purchases: this.purchases, goals: this.goals,
       income: { passive: this.passiveFaith, clicks: this.clickFaith, miracles: this.miracleFaith },
       miracleShareMeanPct, advances: this.advances,
-      maxPermanentGapSec: gap(this.advances.filter(e => e.category === 'permanent' || e.category === 'boss'), this.resets[0]?.resetSec ?? time),
+      maxPermanentGapSec: gap(this.advances.filter(e => e.category === 'permanent' || e.category === 'boss'), gnosePhaseStart),
       maxRelevantGapSec: gap(this.advances, 0), recoveries: this.resets, productionDrops: this.drops, gnoseTiers };
   }
 }

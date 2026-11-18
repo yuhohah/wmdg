@@ -50,6 +50,7 @@ export interface SaveData {
     nerdsEnabled?: boolean;
     hideGuidance?: boolean;
     showHotkeys?: boolean;
+    targetFps?: 30 | 60;
     convertMaxUnlocked?: boolean;
     bulkFervorEnabled?: boolean;
     bulkRelicsEnabled?: boolean;
@@ -81,6 +82,7 @@ export function isValidSaveData(value: unknown): value is SaveData {
   if (!['fervorPeakThisRun', 'relicPeakThisRun', 'totalFervorGenerated', 'totalRelicsGenerated', 'incarnationBoostTimer', 'gameStartedAtMs']
     .every(key => optional(stats, key, nonnegative))) return false;
   if (!['hasSeenIntro', 'nerdsEnabled', 'hideGuidance', 'showHotkeys', 'convertMaxUnlocked', 'bulkFervorEnabled', 'bulkRelicsEnabled'].every(key => optional(stats, key, v => typeof v === 'boolean'))) return false;
+  if (!optional(stats, 'targetFps', v => v === 30 || v === 60)) return false;
   if (!optional(stats, 'seenCardTutorials', strings) || !optional(stats, 'campaignEnding', v => typeof v === 'string' && ['pending', 'completed', 'freeplay'].includes(v))) return false;
   for (const [key, field] of [['followers', 'count'], ['fervorUpgrades', 'level'], ['relicUpgrades', 'level']]) {
     const items = value[key];
@@ -92,7 +94,8 @@ export function isValidSaveData(value: unknown): value is SaveData {
     const gnose = value.gnose;
     if (!['gnosePoints', 'totalGnoseEarned', 'bossCurseTimerSec', 'automationAccumulatorSec', 'autoFollowersBudget', 'autoFervorBudget']
       .every(key => optional(gnose, key, nonnegative)) || !optional(gnose, 'gnoseResets', integer)) return false;
-    if (!['unlockedUpgrades', 'defeatedBosses'].every(key => optional(gnose, key, strings))) return false;
+    if (!optional(gnose, 'bossCurseStacks', integer) || !optional(gnose, 'bossCurseBossId', v => v === null || typeof v === 'string')) return false;
+    if (!['unlockedUpgrades', 'defeatedBosses', 'maxCurseDefeatedBosses'].every(key => optional(gnose, key, strings))) return false;
     if (!['confirmReset', 'autoFollowersEnabled', 'autoFervorEnabled', 'autoRelicsEnabled', 'autoRelicUpgradesEnabled']
       .every(key => optional(gnose, key, v => typeof v === 'boolean'))) return false;
     if (!optional(gnose, 'bestBossTimesSec', times => record(times) && Object.values(times).every(time => nonnegative(time) && time > 0))) return false;
@@ -104,6 +107,7 @@ export class SaveSystem {
   public static readonly CURRENT_VERSION = 1;
   private static readonly STORAGE_KEY = 'cult_of_the_sphere_save_v1';
   private static readonly BACKUP_KEY = 'cult_of_the_sphere_save_backup';
+  private static lastValidatedJson: string | null = null;
 
   /**
    * Serializes the save data to a JSON string.
@@ -137,10 +141,11 @@ export class SaveSystem {
       const json = this.serialize(data);
       // Backup current valid save before overwriting
       const existing = localStorage.getItem(this.STORAGE_KEY);
-      if (existing && this.deserialize(existing)) {
+      if (existing && (existing === this.lastValidatedJson || this.deserialize(existing))) {
         localStorage.setItem(this.BACKUP_KEY, existing);
       }
       localStorage.setItem(this.STORAGE_KEY, json);
+      this.lastValidatedJson = json;
       return true;
     } catch (err) {
       console.error('Erro ao salvar no localStorage:', err);
@@ -156,7 +161,10 @@ export class SaveSystem {
       const raw = localStorage.getItem(this.STORAGE_KEY);
       if (raw) {
         const parsed = this.deserialize(raw);
-        if (parsed) return parsed;
+        if (parsed) {
+          this.lastValidatedJson = raw;
+          return parsed;
+        }
       }
 
       // Try fallback backup if primary save is absent or corrupt
@@ -164,7 +172,10 @@ export class SaveSystem {
       if (backup) {
         console.warn('Recuperando save a partir do backup...');
         const parsedBackup = this.deserialize(backup);
-        if (parsedBackup) return parsedBackup;
+        if (parsedBackup) {
+          this.lastValidatedJson = backup;
+          return parsedBackup;
+        }
       }
     } catch (err) {
       console.error('Erro ao carregar dados do save:', err);
@@ -198,6 +209,7 @@ export class SaveSystem {
    * Clears all save keys from localStorage.
    */
   public static resetSave(): void {
+    this.lastValidatedJson = null;
     try {
       localStorage.removeItem(this.STORAGE_KEY);
       localStorage.removeItem(this.BACKUP_KEY);
@@ -227,6 +239,7 @@ export interface SaveStateHost {
   seenCardTutorials: Set<string>;
   hideGuidance: boolean;
   showHotkeys: boolean;
+  targetFps: 30 | 60;
   convertMaxUnlocked: boolean;
   bulkFervorEnabled: boolean;
   bulkRelicsEnabled: boolean;
@@ -241,8 +254,11 @@ export interface SaveStateHost {
   gnoseResets: number;
   unlockedGnoseUpgrades: Set<string>;
   defeatedBosses: Set<string>;
+  maxCurseDefeatedBosses: Set<string>;
   bestBossTimesSec: Record<string, number>;
   bossCurseTimerSec: number;
+  bossCurseStacks: number;
+  bossCurseBossId: string | null;
   gnoseAutoAccumulatorSec: number;
   sphereAutoAccumulatorSec: number;
   confirmGnoseReset: boolean;
@@ -286,6 +302,7 @@ export function buildSaveDataFromState(state: SaveStateHost): SaveData {
       seenCardTutorials: Array.from(state.seenCardTutorials),
       hideGuidance: state.hideGuidance,
       showHotkeys: state.showHotkeys,
+      targetFps: state.targetFps,
       convertMaxUnlocked: state.isConvertMaxUnlocked(),
       bulkFervorEnabled: state.bulkFervorEnabled,
       bulkRelicsEnabled: state.bulkRelicsEnabled,
@@ -302,8 +319,11 @@ export function buildSaveDataFromState(state: SaveStateHost): SaveData {
       gnoseResets: state.gnoseResets,
       unlockedUpgrades: Array.from(state.unlockedGnoseUpgrades),
       defeatedBosses: Array.from(state.defeatedBosses),
+      maxCurseDefeatedBosses: Array.from(state.maxCurseDefeatedBosses),
       bestBossTimesSec: { ...state.bestBossTimesSec },
       bossCurseTimerSec: state.bossCurseTimerSec,
+      bossCurseStacks: state.bossCurseStacks,
+      bossCurseBossId: state.bossCurseBossId,
       automationAccumulatorSec: state.gnoseAutoAccumulatorSec,
       sphereAutoAccumulatorSec: state.sphereAutoAccumulatorSec,
       confirmReset: state.confirmGnoseReset,
@@ -363,6 +383,9 @@ export function applySaveDataToState(state: SaveStateHost, save: SaveData): void
   state.nerdsEnabled = save.stats.nerdsEnabled === true;
   state.hideGuidance = save.stats.hideGuidance === true;
   state.showHotkeys = save.stats.showHotkeys !== false;
+  if (save.stats.targetFps === 60 || save.stats.targetFps === 30) {
+    state.targetFps = save.stats.targetFps;
+  }
   state.convertMaxUnlocked = save.stats.convertMaxUnlocked === true;
   state.bulkFervorEnabled = save.stats.bulkFervorEnabled === true;
   state.bulkRelicsEnabled = save.stats.bulkRelicsEnabled === true;
@@ -430,6 +453,11 @@ export function applySaveDataToState(state: SaveStateHost, save: SaveData): void
     } else {
       state.defeatedBosses.clear();
     }
+    if (Array.isArray(save.gnose.maxCurseDefeatedBosses)) {
+      state.maxCurseDefeatedBosses = new Set(save.gnose.maxCurseDefeatedBosses);
+    } else {
+      state.maxCurseDefeatedBosses.clear();
+    }
     state.bestBossTimesSec = {};
     if (save.gnose.bestBossTimesSec && typeof save.gnose.bestBossTimesSec === 'object') {
       for (const [k, v] of Object.entries(save.gnose.bestBossTimesSec)) {
@@ -463,6 +491,14 @@ export function applySaveDataToState(state: SaveStateHost, save: SaveData): void
     migrateGnoseUpgrades(state);
     state.bossCurseTimerSec =
       typeof save.gnose.bossCurseTimerSec === 'number' ? Math.max(0, save.gnose.bossCurseTimerSec) : 0;
+    state.bossCurseStacks =
+      typeof save.gnose.bossCurseStacks === 'number'
+        ? Math.max(0, Math.min(5, Math.floor(save.gnose.bossCurseStacks)))
+        : 0;
+    state.bossCurseBossId =
+      state.bossCurseStacks > 0 && typeof save.gnose.bossCurseBossId === 'string'
+        ? save.gnose.bossCurseBossId
+        : null;
     state.sphereAutoAccumulatorSec = Number.isFinite(save.gnose.sphereAutoAccumulatorSec)
       ? Math.max(0, Math.min(1, save.gnose.sphereAutoAccumulatorSec!))
       : 0;
@@ -486,8 +522,18 @@ export function applySaveDataToState(state: SaveStateHost, save: SaveData): void
     state.gnoseResets = 0;
     state.unlockedGnoseUpgrades.clear();
     state.defeatedBosses.clear();
+    state.maxCurseDefeatedBosses.clear();
     state.bestBossTimesSec = {};
     state.bossCurseTimerSec = 0;
+    state.bossCurseStacks = 0;
+    state.bossCurseBossId = null;
+  }
+  if (Array.isArray(save.achievements)) {
+    state.achievements.forEach((a) => {
+      if (a.id.startsWith('ach_curse_') && a.check(state.getSnapshot())) {
+        a.unlocked = true;
+      }
+    });
   }
 
   if (Array.isArray(save.relicUpgrades)) {

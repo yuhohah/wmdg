@@ -153,38 +153,83 @@
   100% { transform: rotate(0deg); }
 }
 
-/* Earned Gnose moon: a small engraved armillary globe around the playable Sphere. */
+/* Earned Gnose moon(s): 60fps Hermetic armillary satellite(s) orbiting & striking the Sphere. */
+.sphere-autoclick-fx {
+  position: absolute;
+  inset: -15%;
+  width: 130%;
+  height: 130%;
+  z-index: 4;
+  pointer-events: none;
+}
+.sphere-autoclick-fx[hidden] { display: none; }
+
 .sphere-autoclick-satellite {
   position: absolute;
   left: 50%;
   top: 50%;
-  z-index: 5;
-  width: 30px;
-  height: 30px;
-  margin: -15px 0 0 -15px;
+  z-index: 6;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  color: #e6d3a3;
   will-change: transform;
   pointer-events: none;
-  transition: transform 100ms linear;
 }
 .sphere-autoclick-satellite[hidden] { display: none; }
-.autoclick-orb {
+.sphere-autoclick-satellite.is-twin {
+  color: #dcdfe9;
+}
+.sphere-autoclick-satellite.is-accelerated {
+  color: #f4dfaa;
+}
+.sphere-autoclick-satellite.is-crit-flash {
+  color: #ffe89e;
+}
+
+.autoclick-halo {
+  position: absolute;
+  inset: -11px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(246, 220, 154, 0.42) 0%, rgba(217, 184, 110, 0.14) 48%, rgba(0, 0, 0, 0) 74%);
+  opacity: 0.35;
+  pointer-events: none;
+}
+.sphere-autoclick-satellite.is-twin .autoclick-halo {
+  background: radial-gradient(circle, rgba(226, 232, 248, 0.38) 0%, rgba(190, 200, 226, 0.12) 48%, rgba(0, 0, 0, 0) 74%);
+}
+
+.autoclick-body {
+  position: relative;
   display: block;
   width: 100%;
   height: 100%;
-  border: 1px solid #c5c6c7;
-  border-radius: 50%;
-  background: #090a0f url('/assets/sphere/progression/engraved-globe.png') center / 145% no-repeat;
-  box-shadow: 0 0 0 3px #090a0f88, 0 0 8px #c5c6c733;
+  transform-origin: 50% 50%;
+  will-change: transform;
 }
-.autoclick-orb::before, .autoclick-orb::after {
-  content: '';
+
+.autoclick-orb {
   position: absolute;
-  inset: -4px;
-  border: 1px solid #c5c6c799;
+  inset: 4px;
+  display: block;
+  border: 1.2px solid currentColor;
   border-radius: 50%;
-  transform: rotate(-30deg) scaleY(.35);
+  background:
+    radial-gradient(circle at 36% 32%, rgba(255, 244, 210, 0.24), rgba(9, 10, 15, 0.62) 72%),
+    #090a0f url('/assets/sphere/progression/engraved-globe.png') center / 148% no-repeat;
+  box-shadow:
+    0 0 0 2px rgba(9, 10, 15, 0.72),
+    0 0 12px rgba(246, 220, 154, 0.32),
+    inset 0 0 6px rgba(255, 242, 204, 0.28);
 }
-.autoclick-orb::after { transform: rotate(55deg) scaleY(.4); }
-@media (prefers-reduced-motion: reduce) {
-  .sphere-autoclick-satellite { transition: none; }
+
+.autoclick-gimbal {
+  position: absolute;
+  inset: -6px;
+  width: calc(100% + 12px);
+  height: calc(100% + 12px);
+  overflow: visible;
+  filter: drop-shadow(0 0 4px rgba(10, 9, 12, 0.85));
+  pointer-events: none;
 }
+
