@@ -5,6 +5,7 @@ import { icon } from './icons.js';
 import { hudBottom } from './dom.js';
 import { CARD_TUTORIALS, cardTutorialKey, type CardTutorial } from '../config/cardTutorials.js';
 import { events, GameEvents } from '../core/EventBus.js';
+import type { BoardCamera } from './BoardManager.js';
 
 const BOARD_ARRANGE_KEY = 'board-arrange';
 
@@ -43,10 +44,17 @@ export class OnboardingGuide {
   private skipBtn: HTMLButtonElement | null = null;
 
   private currentStep: SpotlightStep = 'sphere';
+  // shortcut: kept in memory only, so a reload mid-intro shows the Sphere step again; save it if that matters.
+  private sphereStepSkipped: boolean = false;
   private isDismissed: boolean = false;
   private isPositioning: boolean = false;
   private cardTutorial: CardTutorial | null = null;
   private canPresent: boolean = false;
+
+  // The player's camera from before a row of tutorials; 'lost' once a modal, battle or hidden tips cut the row.
+  private savedCamera: BoardCamera | 'lost' | null = null;
+  private getCamera?: () => BoardCamera;
+  private restoreCamera?: (camera: BoardCamera) => void;
 
   constructor(options: OnboardingGuideOptions) {
     this.gameState = options.gameState;
@@ -69,6 +77,20 @@ export class OnboardingGuide {
 
   public setOnFocusCard(cb: (cardId: string, immediate?: boolean, targetSelector?: string) => void): void {
     this.onFocusCard = cb;
+  }
+
+  public setCamera(get: () => BoardCamera, restore: (camera: BoardCamera) => void): void {
+    this.getCamera = get;
+    this.restoreCamera = restore;
+  }
+
+  private focusCard(...args: Parameters<NonNullable<OnboardingGuideOptions['onFocusCard']>>): void {
+    if (this.savedCamera === null && this.getCamera) this.savedCamera = this.getCamera();
+    this.onFocusCard?.(...args);
+  }
+
+  private loseCamera(): void {
+    if (this.savedCamera) this.savedCamera = 'lost';
   }
 
   // Cached static DOM references & layout dirty state
@@ -110,7 +132,11 @@ export class OnboardingGuide {
   private bindEvents(): void {
     this.skipBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.dismiss();
+      // Skipping the Sphere step only moves on to converting the first Faithful.
+      if (!this.cardTutorial && this.currentStep === 'sphere') {
+        this.sphereStepSkipped = true;
+        this.update();
+      } else this.dismiss();
     });
 
     // When clicking any of the gray backdrop panels, nudge the balloon
@@ -158,6 +184,8 @@ export class OnboardingGuide {
     this.cardTutorial = null;
     this.isDismissed = false;
     this.currentStep = 'sphere';
+    this.sphereStepSkipped = false;
+    this.savedCamera = null;
     this.lastLayoutSig = '';
     this.update();
   }
@@ -187,6 +215,7 @@ export class OnboardingGuide {
     this.canPresent = false;
     if (!this.overlayEl) return;
     if (this.gameState.hideGuidance) {
+      this.loseCamera();
       this.hideOverlay();
       return;
     }
@@ -199,6 +228,9 @@ export class OnboardingGuide {
 
     // This runs on every game tick: with nothing to present, skip searching the page.
     if (this.isDismissed && !this.cardTutorial && !CARD_TUTORIALS.some(tutorial => this.isTutorialAvailable(tutorial))) {
+      // The row of tutorials is over: hand the camera back to the player.
+      if (this.savedCamera && this.savedCamera !== 'lost') this.restoreCamera?.(this.savedCamera);
+      this.savedCamera = null;
       this.hideOverlay();
       return;
     }
@@ -213,6 +245,7 @@ export class OnboardingGuide {
 
     // Do not show spotlight overlay while any full modal is visibly open
     if (this.gameState.activeBossBattle || document.querySelector('.modal-overlay.open, .modal-overlay.active, dialog[open]')) {
+      this.loseCamera();
       this.setStyleIfChanged(this.overlayEl, 'display', 'none');
       this.lastLayoutSig = '';
       return;
@@ -236,7 +269,7 @@ export class OnboardingGuide {
     const prevStep = this.currentStep;
 
     // Condition 2: Step 1 vs Step 2
-    if (faith < targetFaith) {
+    if (faith < targetFaith && !this.sphereStepSkipped) {
       this.currentStep = 'sphere';
     } else {
       this.currentStep = 'buy_follower';
@@ -251,7 +284,7 @@ export class OnboardingGuide {
 
     // If step just transitioned to buy_follower, pan the board camera to card-followers!
     if (prevStep !== this.currentStep && this.currentStep === 'buy_follower') {
-      this.onFocusCard?.('card-followers', true);
+      this.focusCard('card-followers', true);
       setTimeout(() => { this.lastLayoutSig = ''; this.updatePosition(); }, 60);
       setTimeout(() => { this.lastLayoutSig = ''; this.updatePosition(); }, 200);
     }
@@ -282,8 +315,8 @@ export class OnboardingGuide {
     this.setTextIfChanged(this.skipBtn, 'Pular');
     const tracker = this.trackerEl ?? (this.trackerEl = document.getElementById('spotlight-balloon-tracker'));
     this.setStyleIfChanged(tracker, 'display', '');
+    const percent = Math.min(100, Math.floor((faith / targetFaith) * 100));
     if (this.currentStep === 'sphere') {
-      const percent = Math.min(100, Math.floor((faith / targetFaith) * 100));
 
       this.setIconIfChanged('orb');
       this.setTextIfChanged(this.badgeEl, 'ETAPA 1/2 • O DESPERTAR');
@@ -301,9 +334,11 @@ export class OnboardingGuide {
       this.setTextIfChanged(this.titleEl, 'Converta seu primeiro fiel');
       this.setTextIfChanged(this.descEl, 'Um mortal ouviu o chamado da Esfera. Converta-o para o Pátio dos Fiéis para gerar Fé. Atenda aos pedidos dos fiéis oferecendo Milagres para ganhar Fé extra.');
       this.setTextIfChanged(this.trackerMetaEl, `Custo: ${formatNumber(targetFaith)} Fé`);
-      this.setTextIfChanged(this.trackerValEl, 'Pronto para converter!');
-      this.setStyleIfChanged(this.trackerFillEl, 'width', '100%');
-      this.setStyleIfChanged(this.trackerFillEl, 'background', 'linear-gradient(90deg, #22c55e, #86efac)');
+      // After skipping the Sphere step the Faith may still fall short, so show what is missing.
+      const ready = faith >= targetFaith;
+      this.setTextIfChanged(this.trackerValEl, ready ? 'Pronto para converter!' : `${formatNumber(faith)} / ${formatNumber(targetFaith)} Fé (${percent}%)`);
+      this.setStyleIfChanged(this.trackerFillEl, 'width', `${ready ? 100 : percent}%`);
+      this.setStyleIfChanged(this.trackerFillEl, 'background', ready ? 'linear-gradient(90deg, #22c55e, #86efac)' : 'linear-gradient(90deg, #f59e0b, #fef08a)');
       this.setTextIfChanged(this.actionTipEl, 'Clique em “CONVERTER FIEL” para iniciar a produção de Fé.');
     }
   }
@@ -336,8 +371,8 @@ export class OnboardingGuide {
     this.cardTutorial = tutorial;
     if (entering) {
       this.lastLayoutSig = '';
-      if ('targetSelector' in tutorial) this.onFocusCard?.(tutorial.cardId, true, tutorial.targetSelector);
-      else this.onFocusCard?.(tutorial.cardId, true);
+      if ('targetSelector' in tutorial) this.focusCard(tutorial.cardId, true, tutorial.targetSelector);
+      else this.focusCard(tutorial.cardId, true);
     }
     this.setIconIfChanged(tutorial.icon);
     this.setTextIfChanged(this.badgeEl, 'CONHEÇA A MECÂNICA');
@@ -383,8 +418,8 @@ export class OnboardingGuide {
     ) {
       const targetCardId = this.cardTutorial?.cardId ?? (this.currentStep === 'sphere' ? 'card-altar-sphere' : 'card-followers');
       if (this.cardTutorial && 'targetSelector' in this.cardTutorial) {
-        this.onFocusCard?.(targetCardId, true, this.cardTutorial.targetSelector);
-      } else this.onFocusCard?.(targetCardId, true);
+        this.focusCard(targetCardId, true, this.cardTutorial.targetSelector);
+      } else this.focusCard(targetCardId, true);
       rect = targetEl.getBoundingClientRect();
     }
 

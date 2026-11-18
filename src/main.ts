@@ -326,6 +326,7 @@ class AppManager {
     this.onboardingGuide.setOnFocusCard((cardId, immediate, targetSelector) => {
       this.board.centerOnCard(cardId, immediate, targetSelector);
     });
+    this.onboardingGuide.setCamera(() => this.board.getCamera(), camera => this.board.restoreCamera(camera));
     this.demiurge = new DemiurgeEncounter(
       this.gameState,
       () => this.persistence.saveProgress(),

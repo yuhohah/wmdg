@@ -9,6 +9,13 @@ interface FollowMeasure {
   worldHeight: number;
 }
 
+export interface BoardCamera {
+  panX: number;
+  panY: number;
+  zoom: number;
+  focusedCardId: string;
+}
+
 export class BoardManager {
   private viewportEl: HTMLElement | null = null;
   private worldEl: HTMLElement | null = null;
@@ -641,6 +648,26 @@ export class BoardManager {
       return;
     }
 
+    this.animateTo(targetPanX, targetPanY, targetZoom);
+  }
+
+  /** Where the camera rests, or is heading if a move is still animating. */
+  public getCamera(): BoardCamera {
+    const moving = this.isCameraTransitioning;
+    return {
+      panX: moving ? this.targetPanX : this.panX,
+      panY: moving ? this.targetPanY : this.panY,
+      zoom: moving ? this.targetZoom : this.zoom,
+      focusedCardId: this.currentFocusedCardId,
+    };
+  }
+
+  public restoreCamera(camera: BoardCamera): void {
+    this.currentFocusedCardId = camera.focusedCardId;
+    this.animateTo(camera.panX, camera.panY, camera.zoom);
+  }
+
+  private animateTo(targetPanX: number, targetPanY: number, targetZoom: number): void {
     this.targetPanX = targetPanX;
     this.targetPanY = targetPanY;
     this.targetZoom = targetZoom;
