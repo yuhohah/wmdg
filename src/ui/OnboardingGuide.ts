@@ -4,6 +4,9 @@ import { formatNumber } from '../systems/calculations.js';
 import { icon } from './icons.js';
 import { hudBottom } from './dom.js';
 import { CARD_TUTORIALS, cardTutorialKey, type CardTutorial } from '../config/cardTutorials.js';
+import { events, GameEvents } from '../core/EventBus.js';
+
+const BOARD_ARRANGE_KEY = 'board-arrange';
 
 export interface OnboardingGuideOptions {
   gameState: GameStateManager;
@@ -54,6 +57,14 @@ export class OnboardingGuide {
 
     this.initElements();
     this.bindEvents();
+    // Moving any card proves the player knows how, so the arranging tip is done for good.
+    events.on(GameEvents.CARD_ARRANGED, () => {
+      this.gameState.seenCardTutorials.add(BOARD_ARRANGE_KEY);
+      if (this.cardTutorial && cardTutorialKey(this.cardTutorial) === BOARD_ARRANGE_KEY) {
+        this.cardTutorial = null;
+        this.hideOverlay();
+      }
+    });
   }
 
   public setOnFocusCard(cb: (cardId: string, immediate?: boolean, targetSelector?: string) => void): void {
@@ -300,6 +311,7 @@ export class OnboardingGuide {
   private isTutorialAvailable(tutorial: CardTutorial): boolean {
     if (this.gameState.seenCardTutorials.has(cardTutorialKey(tutorial))) return false;
     if ('requiresIntro' in tutorial) return !this.gameState.hasSeenIntro;
+    if ('afterIntro' in tutorial) return this.gameState.hasSeenIntro;
     if ('requiresBoss' in tutorial && !this.gameState.canChallengeBoss(tutorial.requiresBoss)) return false;
     if ('unlockId' in tutorial) {
       return this.gameState.unlocks.some(u => u.id === tutorial.unlockId && u.unlocked);

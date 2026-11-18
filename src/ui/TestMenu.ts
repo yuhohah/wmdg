@@ -43,6 +43,7 @@ export const DEV_SAVE_PROFILES: readonly DevSaveProfile[] = [
         hasSeenIntro: true,
         seenCardTutorials: [
           'guidance-settings',
+          'board-arrange',
           'card-unlocks',
           'card-incarnation',
           'card-fervor',

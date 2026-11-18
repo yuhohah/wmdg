@@ -94,7 +94,6 @@ class AppManager {
   // Save & System State
   public isResetting: boolean = false;
   private isHapticsEnabled: boolean = true;
-  private startTipsEl: HTMLElement | null = null;
 
   constructor() {
     // 0. Fill static [data-icon] placeholders with the game's engraved icon set
@@ -405,8 +404,6 @@ class AppManager {
   }
 
   public updateUnlockedTabsVisibility(): void {
-    const tips = (this.startTipsEl ??= document.querySelector<HTMLElement>('.start-game-tips'));
-    if (tips && tips.hidden !== this.gameState.hideGuidance) tips.hidden = this.gameState.hideGuidance;
     document.body.classList.toggle('hide-hotkeys', !this.gameState.showHotkeys);
     const inc = this.gameState.isIncarnationUnlocked();
     const ferv = this.gameState.isFervorUpgradesUnlocked();

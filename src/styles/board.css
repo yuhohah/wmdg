@@ -1526,6 +1526,28 @@ body.is-playing .bg-landscape-layer {
   transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
 }
 
+/* Pixel grip (2x3 dots): the header is where a card is picked up. The dots hang off a 3px box, hence the shift. */
+#dodeca-board-world .dodeca-card.is-draggable-card .dodeca-card-header::before {
+  content: '';
+  flex: none;
+  width: 3px;
+  height: 3px;
+  margin-right: 5px;
+  transform: translateY(-5px);
+  background: var(--gold);
+  box-shadow: 5px 0 var(--gold), 0 5px var(--gold), 5px 5px var(--gold), 0 10px var(--gold), 5px 10px var(--gold);
+  opacity: 0.55;
+  transition: opacity 0.15s ease;
+}
+
+#dodeca-board-world .dodeca-card.is-draggable-card .dodeca-card-header:hover::before {
+  opacity: 1;
+}
+
+#dodeca-board-world .dodeca-card.is-draggable-card .dodeca-card-title-group {
+  margin-right: auto;
+}
+
 #dodeca-board-world .dodeca-card.is-draggable-card.is-lifted {
   z-index: 40;
   will-change: transform;

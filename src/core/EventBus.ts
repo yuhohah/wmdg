@@ -43,5 +43,6 @@ export const GameEvents = {
   ACHIEVEMENT_UNLOCKED: 'achievement:unlocked',
   MIRACLE_GRANTED: 'miracle:granted',
   STATE_CHANGED: 'state:changed',
+  CARD_ARRANGED: 'board:card-arranged',
   GAME_TICK: 'game:tick'
 } as const;

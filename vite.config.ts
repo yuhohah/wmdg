@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { readdirSync, rmSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
@@ -26,5 +27,8 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true
+  },
+  test: {
+    include: ['src/**/*.test.ts']
   }
 });

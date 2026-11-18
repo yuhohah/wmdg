@@ -6,6 +6,12 @@ export const CARD_TUTORIALS = [
     basics: 'Para desativar as dicas e os tutoriais, abra Configurações na engrenagem do canto superior direito e marque “Ocultar dicas e tutoriais”. Desmarque para voltar a vê-los.',
   },
   {
+    cardId: 'card-followers', seenKey: 'board-arrange', afterIntro: true,
+    icon: 'scroll', title: 'Monte seu quadro',
+    lore: 'O santuário se molda à vontade da Esfera. Disponha os altares como preferir.',
+    basics: 'Arraste um card pelo título para mudá-lo de lugar. No celular, toque e segure o título antes de arrastar. Arraste o fundo para mover o quadro e use a roda do mouse ou a pinça para o zoom.',
+  },
+  {
     cardId: 'card-unlocks', icon: 'unlock', title: 'Os Selos Sagrados',
     lore: 'Os antigos guardiões repartiram o poder da Esfera e o prenderam atrás de selos. Cada ruptura devolve ao culto uma parte do que foi esquecido.',
     basics: 'Gaste a Fé indicada para romper cada Selo e liberar uma nova mecânica.',

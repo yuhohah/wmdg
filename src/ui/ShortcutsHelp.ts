@@ -21,8 +21,9 @@ export class ShortcutsHelp {
         <details><summary>Ver cada atalho</summary><dl>${names.map((name, i) => row(keys[i].toUpperCase(), name)).join('')}</dl></details>
         ${actionRows ? `<dl>${actionRows}</dl>` : ''}
       </section>`;
-    this.panel.innerHTML = `<h2>Atalhos de teclado</h2>
+    this.panel.innerHTML = `<h2>Atalhos e controles</h2>
       ${sequence(CARD_NAV_SHORTCUTS.map(({ key }) => key), CARD_NAV_SHORTCUTS.map(({ label }) => label), 'Navegação', 'Ir para os cards na ordem da lista')}
+      ${group('Quadro', row('Arrastar título', 'Mover um card') + row('Arrastar fundo', 'Mover o quadro') + row('Roda do mouse', 'Aproximar ou afastar'))}
       ${group('Esfera', row('Espaço', 'Tocar a Esfera'))}
       ${group('Fiéis', row('Z', 'Comprar um Fiel') + row('X', 'Comprar o máximo, quando liberado') + row('M', 'Coletar milagre disponível, inclusive em duelo'))}
       ${group('Desbloqueios', row('.', 'Desbloquear a mecânica atual'))}

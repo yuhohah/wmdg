@@ -1,6 +1,8 @@
 // Drag & drop layout for the board cards (n8n-style): cards are picked up by their header,
 // snap to predefined slots or to a coarse grid, and never overlap each other.
 
+import { events, GameEvents } from '../core/EventBus.js';
+
 interface Rect {
   x: number;
   y: number;
@@ -321,6 +323,7 @@ export class BoardLayout {
     if (!cancelled) {
       this.saved[d.card.id] = final;
       this.persist();
+      events.emit(GameEvents.CARD_ARRANGED);
     }
     // The dropped card keeps its spot; anything it might now touch makes room
     this.resolveOverlaps(d.card.id);
