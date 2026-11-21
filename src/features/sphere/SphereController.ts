@@ -1,7 +1,7 @@
 import { canUseGameplayShortcut } from '../../ui/GameplayShortcuts.js';
 import { GameStateManager } from '../../core/GameState.js';
 import { AudioManager } from '../../systems/audio.js';
-import { calculateMiracleReward, formatNumber } from '../../systems/calculations.js';
+import { formatNumber } from '../../systems/calculations.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 import { effectEasing } from '../../ui/visualTiming.js';
 import { AutoclickSatelliteVisual } from './AutoclickSatellite.js';
@@ -179,11 +179,8 @@ export class SphereController {
     setTimeout(() => this.audio.playTone(783.99, 'sine', 0.2), 120);
     setTimeout(() => this.audio.playTone(1046.50, 'triangle', 0.3), 180);
 
-    const fps = this.gameState.getFaithPerSecond();
-    const currentFaith = this.gameState.faithPoints;
-
-    // Maior entre 30 Fé, 15 cliques e 30 segundos de produção; o saldo não entra no cálculo.
-    const finalReward = calculateMiracleReward(currentFaith, this.gameState.getFaithPerClick(), fps);
+    // Fórmula escala gradualmente com as conquistas de fiéis; o saldo não entra no cálculo.
+    const finalReward = this.gameState.getMiracleReward();
 
     this.gameState.faithPoints += finalReward;
     this.gameState.totalFaithAccumulated += finalReward;

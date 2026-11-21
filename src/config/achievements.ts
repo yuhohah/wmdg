@@ -1,7 +1,7 @@
 import { formatNumber } from '../systems/numberFormat.js';
 import { GNOSE_UPGRADES } from './gnose.js';
 import { BOSS_CURSE_MAX_STACKS, GNOSE_BOSSES } from './bosses.js';
-import type { Achievement, BuffType, GameState } from '../types.js';
+import type { Achievement, AchievementBuff, BuffType, GameState } from '../types.js';
 
 export const SPHERE_CRITICAL = {
   chanceMilestones: [250, 1000, 5000, 10000],
@@ -23,6 +23,7 @@ interface ThresholdAchievementSpec {
   buffText?: string;
   buffType?: BuffType;
   buffVal?: number;
+  extraBuffs?: readonly AchievementBuff[];
 }
 
 function createThresholdAchievement(spec: ThresholdAchievementSpec): Achievement {
@@ -37,6 +38,7 @@ function createThresholdAchievement(spec: ThresholdAchievementSpec): Achievement
     buffText = 'Sem bônus',
     buffType = 'none',
     buffVal = 0,
+    extraBuffs,
   } = spec;
   return {
     id,
@@ -48,6 +50,7 @@ function createThresholdAchievement(spec: ThresholdAchievementSpec): Achievement
     buffText,
     buffType,
     buffVal,
+    ...(extraBuffs ? { extraBuffs } : {}),
     check: (s: GameState) => s[metric] >= target,
     getProgress: (s: GameState) => {
       const value = s[metric];
@@ -83,9 +86,9 @@ export const initialAchievements: Achievement[] = [
     metric: 'clicks',
     target: 25,
     targetLabel: '25 cliques',
-    buffText: '+1 à base de Fé por clique',
+    buffText: '+0,3 à base de Fé por clique',
     buffType: 'fpc_base',
-    buffVal: 1,
+    buffVal: 0.3,
   }),
   createThresholdAchievement({
     id: 'ach_click_250',
@@ -95,9 +98,13 @@ export const initialAchievements: Achievement[] = [
     metric: 'clicks',
     target: 250,
     targetLabel: '250 cliques',
-    buffText: '5% de chance de receber 2× Fé por clique',
+    buffText: '+0,3 à base de Fé por clique · +0,5% da Fé/s por clique · 5% de chance de 2× Fé por clique',
     buffType: 'critical_chance',
     buffVal: 0.05,
+    extraBuffs: [
+      { type: 'fpc_base', val: 0.3 },
+      { type: 'fpc_fps_pct', val: 0.005 },
+    ],
   }),
   createThresholdAchievement({
     id: 'ach_click_1000',
@@ -107,9 +114,13 @@ export const initialAchievements: Achievement[] = [
     metric: 'clicks',
     target: 1000,
     targetLabel: '1.000 cliques',
-    buffText: '+5% de chance de crítico de Fé',
+    buffText: '+0,4 à base de Fé por clique · +0,5% da Fé/s por clique · +5% de chance de crítico de Fé',
     buffType: 'critical_chance',
     buffVal: 0.05,
+    extraBuffs: [
+      { type: 'fpc_base', val: 0.4 },
+      { type: 'fpc_fps_pct', val: 0.005 },
+    ],
   }),
   createThresholdAchievement({
     id: 'ach_click_5000',
@@ -119,9 +130,12 @@ export const initialAchievements: Achievement[] = [
     metric: 'clicks',
     target: 5000,
     targetLabel: '5.000 cliques',
-    buffText: '+5% de chance de crítico de Fé',
+    buffText: '+0,75% da Fé/s por clique · +5% de chance de crítico de Fé',
     buffType: 'critical_chance',
     buffVal: 0.05,
+    extraBuffs: [
+      { type: 'fpc_fps_pct', val: 0.0075 },
+    ],
   }),
   createThresholdAchievement({
     id: 'ach_click_10000',
@@ -131,9 +145,12 @@ export const initialAchievements: Achievement[] = [
     metric: 'clicks',
     target: 10000,
     targetLabel: '10.000 cliques',
-    buffText: '+5% de chance de crítico de Fé',
+    buffText: '+0,75% da Fé/s por clique · +5% de chance de crítico de Fé',
     buffType: 'critical_chance',
     buffVal: 0.05,
+    extraBuffs: [
+      { type: 'fpc_fps_pct', val: 0.0075 },
+    ],
   }),
   createThresholdAchievement({
     id: 'ach_click_50000',
@@ -143,9 +160,12 @@ export const initialAchievements: Achievement[] = [
     metric: 'clicks',
     target: 50000,
     targetLabel: '50.000 cliques',
-    buffText: 'O crítico também aplica 2× dano por clique nos bosses',
+    buffText: '+1% da Fé/s por clique · O crítico também aplica 2× dano por clique nos bosses',
     buffType: 'boss_critical',
     buffVal: 0,
+    extraBuffs: [
+      { type: 'fpc_fps_pct', val: 0.01 },
+    ],
   }),
 
   // --- Followers Milestones ---
@@ -169,7 +189,7 @@ export const initialAchievements: Achievement[] = [
     metric: 'followers',
     target: 10,
     targetLabel: '10 fiéis',
-    buffText: 'Desbloqueia os Milagres',
+    buffText: 'Desbloqueia os Milagres (10s de Fé/s ou 8× clique)',
     buffType: 'miracles_unlock',
     buffVal: 0,
   }),
@@ -181,9 +201,12 @@ export const initialAchievements: Achievement[] = [
     metric: 'followers',
     target: 100,
     targetLabel: '100 fiéis',
-    buffText: '+8% de Fé dos fiéis',
+    buffText: '+8% de Fé dos fiéis · Milagres +50% (15s de Fé/s)',
     buffType: 'fps_mult',
     buffVal: 0.08,
+    extraBuffs: [
+      { type: 'miracle_mult', val: 0.5 },
+    ],
   }),
   createThresholdAchievement({
     id: 'ach_f_500',
@@ -193,9 +216,12 @@ export const initialAchievements: Achievement[] = [
     metric: 'followers',
     target: 500,
     targetLabel: '500 fiéis',
-    buffText: '-5% no custo dos fiéis',
+    buffText: '-5% no custo dos fiéis · Milagres +50% (20s de Fé/s)',
     buffType: 'cost_discount',
     buffVal: 0.05,
+    extraBuffs: [
+      { type: 'miracle_mult', val: 0.5 },
+    ],
   }),
   createThresholdAchievement({
     id: 'ach_f_1000',
@@ -205,9 +231,12 @@ export const initialAchievements: Achievement[] = [
     metric: 'followers',
     target: 1000,
     targetLabel: '1.000 fiéis',
-    buffText: '-10% no custo dos fiéis',
+    buffText: '-10% no custo dos fiéis · Milagres +50% (25s de Fé/s)',
     buffType: 'cost_discount',
     buffVal: 0.1,
+    extraBuffs: [
+      { type: 'miracle_mult', val: 0.5 },
+    ],
   }),
   createThresholdAchievement({
     id: 'ach_f_3000',
@@ -217,9 +246,12 @@ export const initialAchievements: Achievement[] = [
     metric: 'followers',
     target: 3000,
     targetLabel: '3.000 fiéis',
-    buffText: '+20% de Fé dos fiéis',
+    buffText: '+20% de Fé dos fiéis · Milagres +50% (30s de Fé/s)',
     buffType: 'fps_mult',
     buffVal: 0.2,
+    extraBuffs: [
+      { type: 'miracle_mult', val: 0.5 },
+    ],
   }),
   createThresholdAchievement({
     id: 'ach_f_7777',
@@ -229,9 +261,12 @@ export const initialAchievements: Achievement[] = [
     metric: 'followers',
     target: 7777,
     targetLabel: '7.777 fiéis',
-    buffText: 'Milagres fora de combate são coletados automaticamente assim que aparecem',
+    buffText: 'Milagres fora de combate são coletados automaticamente · Milagres +100% (40s de Fé/s)',
     buffType: 'miracles_auto',
     buffVal: 0,
+    extraBuffs: [
+      { type: 'miracle_mult', val: 1 },
+    ],
   }),
 
   // --- Total Faith Milestones ---

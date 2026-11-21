@@ -1,8 +1,23 @@
 import { PROGRESSION_BALANCE } from '../config/gnose.js';
-import type { BuyableItem, FervorUpgrade, Achievement } from '../types.js';
+import type { BuyableItem, FervorUpgrade, Achievement, BuffType } from '../types.js';
 
-export function calculateMiracleReward(_faith: number, faithPerClick: number, faithPerSecond: number): number {
-  return Math.max(30, faithPerClick * 15, Math.floor(30 * faithPerSecond));
+export const MIRACLE_BASE = {
+  minFaith: 15,
+  clickMultiplier: 8,
+  fpsSeconds: 10,
+} as const;
+
+export function calculateMiracleReward(
+  _faith: number,
+  faithPerClick: number,
+  faithPerSecond: number,
+  miracleMultiplier: number = 1
+): number {
+  const mult = Math.max(1, miracleMultiplier);
+  const minReward = Math.floor(MIRACLE_BASE.minFaith * mult);
+  const clickReward = faithPerClick * (MIRACLE_BASE.clickMultiplier * mult);
+  const passiveReward = Math.floor(faithPerSecond * (MIRACLE_BASE.fpsSeconds * mult));
+  return Math.max(minReward, clickReward, passiveReward);
 }
 
 export function calculateItemCost(
@@ -75,6 +90,8 @@ export interface AchievementBuffTotals {
   globalMult: number;
   costDiscount: number;
   fpcBase: number;
+  fpcFpsPct: number;
+  miracleMult: number;
   sphereAutoclick: number;
   nonClickCritChance: number;
   hasBossCrit: boolean;
@@ -114,6 +131,8 @@ export function getAchievementBuffTotals(achievements: Achievement[]): Achieveme
       globalMult: 0,
       costDiscount: 0,
       fpcBase: 0,
+      fpcFpsPct: 0,
+      miracleMult: 0,
       sphereAutoclick: 0,
       nonClickCritChance: 0,
       hasBossCrit: false,
@@ -132,6 +151,8 @@ export function getAchievementBuffTotals(achievements: Achievement[]): Achieveme
     globalMult: 0,
     costDiscount: 0,
     fpcBase: 0,
+    fpcFpsPct: 0,
+    miracleMult: 0,
     sphereAutoclick: 0,
     nonClickCritChance: 0,
     hasBossCrit: false,
@@ -146,38 +167,56 @@ function computeAchievementTotalsInto(achievements: Achievement[], out: Achievem
   let globalMult = 0;
   let costDiscount = 0;
   let fpcBase = 0;
+  let fpcFpsPct = 0;
+  let miracleMult = 0;
   let sphereAutoclick = 0;
   let nonClickCritChance = 0;
   let hasBossCrit = false;
 
-  for (let i = 0; i < achievements.length; i++) {
-    const ach = achievements[i];
-    if (!ach.unlocked) continue;
-    switch (ach.buffType) {
+  const applyBuff = (achId: string, buffType: BuffType, buffVal: number): void => {
+    switch (buffType) {
       case 'fpc_mult':
-        fpcMult += ach.buffVal;
+        fpcMult += buffVal;
         break;
       case 'fps_mult':
-        fpsMult += ach.buffVal;
+        fpsMult += buffVal;
         break;
       case 'global_mult':
-        globalMult += ach.buffVal;
+        globalMult += buffVal;
         break;
       case 'cost_discount':
-        costDiscount += ach.buffVal;
+        costDiscount += buffVal;
         break;
       case 'fpc_base':
-        fpcBase += ach.buffVal;
+        fpcBase += buffVal;
+        break;
+      case 'fpc_fps_pct':
+        fpcFpsPct += buffVal;
+        break;
+      case 'miracle_mult':
+        miracleMult += buffVal;
         break;
       case 'sphere_autoclick':
-        sphereAutoclick += ach.buffVal;
+        sphereAutoclick += buffVal;
         break;
       case 'critical_chance':
-        if (!ach.id.startsWith('ach_click_')) nonClickCritChance += ach.buffVal;
+        if (!achId.startsWith('ach_click_')) nonClickCritChance += buffVal;
         break;
       case 'boss_critical':
         hasBossCrit = true;
         break;
+    }
+  };
+
+  for (let i = 0; i < achievements.length; i++) {
+    const ach = achievements[i];
+    if (!ach.unlocked) continue;
+    applyBuff(ach.id, ach.buffType, ach.buffVal);
+    if (ach.extraBuffs) {
+      for (let j = 0; j < ach.extraBuffs.length; j++) {
+        const extra = ach.extraBuffs[j];
+        applyBuff(ach.id, extra.type, extra.val);
+      }
     }
   }
 
@@ -186,6 +225,8 @@ function computeAchievementTotalsInto(achievements: Achievement[], out: Achievem
   out.globalMult = globalMult;
   out.costDiscount = costDiscount;
   out.fpcBase = fpcBase;
+  out.fpcFpsPct = fpcFpsPct;
+  out.miracleMult = miracleMult;
   out.sphereAutoclick = sphereAutoclick;
   out.nonClickCritChance = nonClickCritChance;
   out.hasBossCrit = hasBossCrit;
@@ -206,6 +247,10 @@ export function calculateGlobalBuffMultiplier(achievements: Achievement[]): numb
 export function calculateCostDiscountMultiplier(achievements: Achievement[]): number {
   const discount = Math.min(MAX_ACHIEVEMENT_COST_DISCOUNT, getAchievementBuffTotals(achievements).costDiscount);
   return 1 - discount;
+}
+
+export function calculateMiracleMultiplier(achievements: Achievement[]): number {
+  return 1 + getAchievementBuffTotals(achievements).miracleMult;
 }
 
 export function calculateIncarnationFollowerMultiplier(fervorPoints: number, stage: number): number {
@@ -234,9 +279,13 @@ export function calculateFaithPerClick(
   globalBuffMult: number,
   fervorClickMult: number,
   fervorFaithBonus: number,
-  base: number = 1
+  base: number = 1,
+  faithPerSecond: number = 0,
+  fpsToClickPct: number = 0
 ): number {
-  const fpc = base * clickBuffMult * globalBuffMult * fervorClickMult * fervorFaithBonus;
+  const directClick = base * globalBuffMult * fervorClickMult * fervorFaithBonus;
+  const passiveSynergy = Math.max(0, faithPerSecond) * Math.max(0, fpsToClickPct);
+  const fpc = (directClick + passiveSynergy) * clickBuffMult;
   // Sem arredondar para baixo: senão bônus pequenos (+10%, +20%) sumiriam no início do jogo
   return Math.max(1, fpc);
 }

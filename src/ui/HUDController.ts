@@ -142,7 +142,7 @@ export class HUDController {
         if (nerds) {
           stats.push(
             'Fé/s = Fiéis × Rito_Fiéis × Avatar × Fervor × Conquistas × Relíquias × Gnose × Bênção',
-            'Clique = base × Rito_Clique × Fervor × Conquistas × Gnose'
+            'Clique = (base × Rito_Clique × Fervor × Gnose + %Fé/s) × Conq_Clique'
           );
         }
         return {

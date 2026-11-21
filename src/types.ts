@@ -6,12 +6,19 @@ export type BuffType =
   | 'sphere_autoclick'
   | 'none'
   | 'fpc_base'
+  | 'fpc_fps_pct'
+  | 'miracle_mult'
   | 'critical_chance'
   | 'boss_critical'
   | 'fpc_mult'
   | 'fps_mult'
   | 'global_mult'
   | 'cost_discount';
+
+export interface AchievementBuff {
+  type: BuffType;
+  val: number;
+}
 
 export interface BuyableItem {
   id: string;
@@ -76,6 +83,7 @@ export interface Achievement {
   buffText: string;
   buffType: BuffType;
   buffVal: number;
+  extraBuffs?: readonly AchievementBuff[];
   check: (state: GameState) => boolean;
   getProgress: (state: GameState) => AchievementProgress;
 }

@@ -7,7 +7,6 @@ import { GameStateManager } from '../core/GameState.js';
 import { INCARNATION_STAGES, BLESSING_SECONDS_PER_PRESS } from '../config/incarnation.js';
 import { GNOSE_UPGRADES } from '../config/gnose.js';
 import { COMBAT_BOSSES, GNOSE_BOSSES } from '../config/bosses.js';
-import { calculateMiracleReward } from '../systems/calculations.js';
 import { PLAYER_BEHAVIORS, createSeededRandom, describeBehavior, manualBlessingAllowed, manualSphereAllowed, routineClicksAvailable, VisitSchedule } from './behavior.js';
 import { CampaignMetrics } from './CampaignMetrics.js';
 import { ProgressTracker } from './ProgressTracker.js';
@@ -320,7 +319,7 @@ class Simulation {
       this.miraclesSpawned++;
       this.emit('miracle_spawn');
       if (this.game.areMiraclesAutoCollected()) {
-        const reward = calculateMiracleReward(this.game.faithPoints, this.game.getFaithPerClick(), this.game.getFaithPerSecond());
+        const reward = this.game.getMiracleReward();
         this.metrics.addIncome('miracles', reward);
         this.game.faithPoints += reward;
         this.game.totalFaithAccumulated += reward;
@@ -511,7 +510,7 @@ class Simulation {
         action = 'boss_miracle';
       }
     } else if (!this.awaitingConfirmation && !g.activeBossBattle && this.miracle?.willing && this.time + EPSILON >= this.miracle.born + this.behavior.miracleResponseSec) {
-      const reward = calculateMiracleReward(g.faithPoints, g.getFaithPerClick(), g.getFaithPerSecond());
+      const reward = g.getMiracleReward();
       this.metrics.addIncome('miracles', reward);
       g.faithPoints += reward;
       g.totalFaithAccumulated += reward;

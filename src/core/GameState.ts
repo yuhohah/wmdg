@@ -24,6 +24,7 @@ import {
   BOSS_SPHERE_COOLDOWN_SEC,
 } from '../config/bosses.js';
 import {
+  calculateMiracleReward,
   calculateItemCost,
   calculateFervorUpgradeCost,
   getFervorUpgradeMultiplier,
@@ -340,7 +341,9 @@ export class GameStateManager {
   private hasUnlockedAchievementBuff(buffType: Achievement['buffType']): boolean {
     for (let i = 0; i < this.achievements.length; i++) {
       const ach = this.achievements[i];
-      if (ach.unlocked && ach.buffType === buffType) return true;
+      if (!ach.unlocked) continue;
+      if (ach.buffType === buffType) return true;
+      if (ach.extraBuffs?.some((b) => b.type === buffType)) return true;
     }
     return false;
   }
@@ -351,6 +354,19 @@ export class GameStateManager {
 
   public areMiraclesAutoCollected(): boolean {
     return this.hasUnlockedAchievementBuff('miracles_auto');
+  }
+
+  public getMiracleMultiplier(): number {
+    return 1 + getAchievementBuffTotals(this.achievements).miracleMult;
+  }
+
+  public getMiracleReward(): number {
+    return calculateMiracleReward(
+      this.faithPoints,
+      this.getFaithPerClick(),
+      this.getFaithPerSecond(),
+      this.getMiracleMultiplier()
+    );
   }
 
   public spawnBossMiracle(preferredSlot?: number): void {
@@ -532,7 +548,16 @@ export class GameStateManager {
     const fervorFaithBonus = calculateFervorFaithBonus(Math.max(this.fervorPoints, this.fervorPeakThisRun), fervorEffectMult) * this.getFervorResonanceMultiplier();
 
     const base = 1 + achBuffs.fpcBase;
-    return calculateFaithPerClick(clickBuff, globalBuff, fervorClickMult, fervorFaithBonus, base);
+    const fps = achBuffs.fpcFpsPct > 0 ? this.getFaithPerSecond() : 0;
+    return calculateFaithPerClick(
+      clickBuff,
+      globalBuff,
+      fervorClickMult,
+      fervorFaithBonus,
+      base,
+      fps,
+      achBuffs.fpcFpsPct
+    );
   }
 
   public getFaithPerSecond(): number {
