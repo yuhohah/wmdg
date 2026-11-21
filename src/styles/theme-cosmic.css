@@ -64,8 +64,8 @@ body {
 }
 
 .dodeca-board-viewport {
-  height: 100vh !important;
-  height: 100dvh !important;
+  width: 100%;
+  height: 100% !important;
 }
 
 /* ---------------------------------------------------
@@ -1015,14 +1015,17 @@ input[type='range']::-webkit-slider-thumb {
 }
 
 @media (max-width: 860px) {
-  /* Compact HUD: five counters plus three buttons must fit a phone, wrapping if needed */
+  /* Compact floating HUD: utility controls stay horizontal while counters wrap into at most 2 tight rows */
   .top-hud-bar {
+    position: fixed !important;
     top: calc(6px + env(safe-area-inset-top, 0px)) !important;
-    left: 6px !important;
-    width: calc(100% - 12px) !important;
+    left: calc(6px + env(safe-area-inset-left, 0px)) !important;
+    right: calc(6px + env(safe-area-inset-right, 0px)) !important;
+    width: auto !important;
     height: auto !important;
     padding: 0 !important;
     display: flex !important;
+    flex-wrap: wrap !important;
     align-items: flex-start !important;
     gap: 4px !important;
   }
@@ -1034,49 +1037,55 @@ input[type='range']::-webkit-slider-thumb {
 
   .resources-hud-row {
     flex-wrap: wrap !important;
+    align-items: stretch !important;
     gap: 4px !important;
   }
 
   .resource-item {
     min-width: 0 !important;
-    flex: 1 1 64px !important;
-    grid-template-columns: 18px auto !important;
-    grid-template-rows: 18px 12px !important;
-    gap: 0 5px !important;
-    padding: 1px 5px 1px 3px !important;
-    border-width: 5px !important;
-    border-image-width: 5px !important;
+    flex: 1 1 88px !important;
+    grid-template-columns: 16px minmax(0, 1fr) !important;
+    grid-template-rows: 12px 18px 14px !important;
+    gap: 0 4px !important;
+    padding: 2px 5px 2px 3px !important;
+    border-width: 3px !important;
+    border-image-width: 3px !important;
+    overflow: hidden;
   }
 
   .res-name {
-    width: 18px !important;
-    height: 18px !important;
-  }
-
-  .resource-item {
-    grid-template-rows: 10px 18px 11px !important;
-  }
-
-  .res-name {
+    width: 16px !important;
+    height: 16px !important;
     grid-row: 1 / 4 !important;
   }
 
   .res-label {
-    font-size: 10px;
-    letter-spacing: 0.5px;
+    font-size: 9.5px;
+    letter-spacing: 0.3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .res-num {
-    font-size: 19px !important;
+    font-size: 16px !important;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .res-rate {
-    font-size: 12px !important;
+    font-size: 11px !important;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .top-right-group {
-    flex-direction: column !important;
+    flex-direction: row !important;
     gap: 4px !important;
+    flex-shrink: 0;
   }
 
   .icon-btn-gold {
@@ -1091,11 +1100,89 @@ input[type='range']::-webkit-slider-thumb {
     height: 18px;
   }
 
+  /* Keep the start screen clear of the floating HUD and sized for compact phones */
+  #start-screen {
+    box-sizing: border-box;
+    overflow-y: auto;
+    align-items: flex-start;
+    padding: calc(108px + env(safe-area-inset-top, 0px)) calc(12px + env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) calc(12px + env(safe-area-inset-left, 0px));
+  }
+
+  .slide-card {
+    margin: auto 0;
+    padding: 20px 16px;
+    border-width: 6px;
+    border-image-width: 6px;
+  }
+
+  .slide-card-header {
+    margin-bottom: 14px;
+  }
+
+  .slide-title {
+    font-size: clamp(30px, 9.5vw, 48px);
+    margin-bottom: 6px;
+  }
+
+  .start-sphere-emblem {
+    margin: 10px 0 18px;
+  }
+
+  .start-sphere-img {
+    width: clamp(128px, 42vw, 220px) !important;
+    height: clamp(128px, 42vw, 220px) !important;
+    max-width: 34dvh;
+    max-height: 34dvh;
+  }
+
+  .play-btn-container {
+    justify-content: center;
+  }
+
+  .btn-slide-play {
+    width: 100%;
+    max-width: 280px;
+    justify-content: center;
+    padding: 12px 20px;
+  }
+
   /* The sphere has to fit a phone-width viewport at ~100% zoom */
   #card-altar-sphere .sphere-wrapper,
   #card-altar-sphere .sphere-wrapper .divine-sphere-btn {
     width: 320px !important;
     height: 320px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  #cult-status-btn {
+    order: 1;
+  }
+
+  .top-right-group {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .resources-hud-card {
+    order: 3;
+    flex: 1 0 100% !important;
+    width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .resource-item {
+    flex: 1 1 82px !important;
+    padding: 1px 4px 1px 2px !important;
+  }
+
+  .res-num {
+    font-size: 15px !important;
+  }
+
+  .res-rate {
+    font-size: 10.5px !important;
   }
 }
 

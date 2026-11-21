@@ -3,6 +3,7 @@
   inset: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   pointer-events: none;
   z-index: 88;
 }
@@ -75,8 +76,8 @@
 .demiurge-status {
   position: fixed;
   z-index: 89;
-  right: 12px;
-  bottom: 66px;
+  right: calc(18px + env(safe-area-inset-right, 0px));
+  bottom: calc(116px + env(safe-area-inset-bottom, 0px));
   display: grid;
   gap: 5px;
   min-width: min(290px, calc(100vw - 24px));
@@ -125,8 +126,8 @@
 .demiurge-challenge {
   position: fixed;
   z-index: 90;
-  right: 12px;
-  bottom: 18px;
+  right: calc(18px + env(safe-area-inset-right, 0px));
+  bottom: calc(66px + env(safe-area-inset-bottom, 0px));
   padding: 9px 16px;
   border: 1px solid #c9a65c;
   border-radius: 9px;
@@ -206,15 +207,17 @@
 
 @media (max-width: 860px) {
   .demiurge-status {
-    right: 10px;
-    bottom: 112px;
-    padding: 8px 12px;
+    right: calc(8px + env(safe-area-inset-right, 0px));
+    bottom: calc(164px + env(safe-area-inset-bottom, 0px));
+    padding: 7px 10px;
+    max-width: calc(100vw - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
   }
 
   .demiurge-challenge {
-    right: 10px;
-    bottom: 66px;
-    padding: 8px 14px;
-    font-size: 12.5px;
+    right: calc(8px + env(safe-area-inset-right, 0px));
+    bottom: calc(116px + env(safe-area-inset-bottom, 0px));
+    padding: 7px 12px;
+    font-size: 12px;
+    max-width: calc(100vw - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
   }
 }

@@ -132,7 +132,7 @@ body.is-ending-active > :not(.campaign-ending) { visibility: hidden !important; 
 .ending-actions button:first-child { border-color: #b99b56; color: #ddc99a; }
 .ending-actions button:hover, .ending-launcher:hover, .ending-skip:hover { background: #27282e; }
 .ending-actions button:focus-visible, .ending-launcher:focus-visible, .ending-records summary:focus-visible, .ending-skip:focus-visible { outline: 2px solid #ddc99a; outline-offset: 3px; }
-.ending-launcher { position: fixed; bottom: 68px; left: 16px; z-index: 50; font-size: 11px; }
+.ending-launcher { position: fixed; bottom: calc(68px + env(safe-area-inset-bottom, 0px)); left: calc(16px + env(safe-area-inset-left, 0px)); z-index: 50; font-size: 11px; }
 .ending-launcher[hidden] { display: none; }
 .ending-records { text-align: left; margin: 20px auto; max-width: 490px; border-block: 1px solid #37383e; padding: 12px 0; }
 .ending-records summary { cursor: pointer; color: #ddc99a; }
@@ -146,13 +146,21 @@ body.is-ending-active > :not(.campaign-ending) { visibility: hidden !important; 
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+@media (max-width: 860px) {
+  .ending-launcher {
+    bottom: calc(116px + env(safe-area-inset-bottom, 0px));
+    left: calc(6px + env(safe-area-inset-left, 0px));
+    max-width: calc(100vw - 12px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+    padding: 8px 12px;
+  }
+}
 @media (max-width: 540px) {
   .ending-theatre::before { inset: 8px; }
   .ending-caption { top: max(18px, env(safe-area-inset-top)); left: 14px; right: 14px; }
   .ending-caption-inner { padding: 6px 10px 8px; }
   .ending-caption h1 { font-size: 23px; }
   .ending-caption p { font-size: 12px; }
-  .ending-credits { bottom: 76px; left: 12px; right: 12px; }
+  .ending-credits { bottom: calc(74px + env(safe-area-inset-bottom, 0px)); left: 12px; right: 12px; }
   .ending-credits > p:not(.ending-eyebrow) { font-size: 16px; }
   .ending-skip { right: 14px; bottom: max(14px, env(safe-area-inset-bottom)); padding: 9px 14px; }
   .ending-panel { padding: 24px 18px; }

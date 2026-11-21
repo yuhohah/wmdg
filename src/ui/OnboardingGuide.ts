@@ -307,7 +307,7 @@ export class OnboardingGuide {
     this.balloonContentDirty = true;
   }
 
-  private setStyleIfChanged(el: HTMLElement | null, prop: 'top' | 'left' | 'width' | 'height' | 'display' | 'opacity' | 'borderRadius' | 'background', value: string): void {
+  private setStyleIfChanged(el: HTMLElement | null, prop: 'top' | 'left' | 'width' | 'height' | 'maxHeight' | 'display' | 'opacity' | 'borderRadius' | 'background', value: string): void {
     if (el && el.style[prop] !== value) el.style[prop] = value;
   }
 
@@ -476,18 +476,36 @@ export class OnboardingGuide {
     }
 
     if (this.balloonEl) {
-      const balloonW = Math.min(356, vw - 20);
+      const balloonW = Math.min(356, Math.max(220, vw - 16));
       this.setStyleIfChanged(this.balloonEl, 'width', `${balloonW}px`);
-
-      const bRect = this.balloonEl.getBoundingClientRect();
-      const balloonH = bRect.height || 185;
 
       const hudBar = this.hudBarEl ?? (this.hudBarEl = document.querySelector<HTMLElement>('.top-hud-bar'));
       const hud = hudBottom(hudBar);
       const topSafe = hud > 0 ? Math.round(hud + 6) : 52;
       const navBar = this.quickNavBarEl ?? (this.quickNavBarEl = document.getElementById('board-quicknav-bar'));
-      const navRect = navBar?.getBoundingClientRect();
-      const bottomLimit = navRect && navRect.height > 0 ? Math.round(navRect.top - 8) : vh - 56;
+      const zoomControls = document.querySelector<HTMLElement>('.board-zoom-controls');
+      let bottomLimit = vh - 56;
+      let foundBottomChrome = false;
+      for (const el of [navBar, zoomControls]) {
+        if (!el) continue;
+        const elRect = el.getBoundingClientRect();
+        if (elRect.height <= 0 || elRect.width <= 0) continue;
+        if (typeof window.getComputedStyle === 'function') {
+          const cs = window.getComputedStyle(el);
+          if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) continue;
+        }
+        const candidate = Math.round(elRect.top - 8);
+        if (!foundBottomChrome || candidate < bottomLimit) {
+          bottomLimit = candidate;
+          foundBottomChrome = true;
+        }
+      }
+
+      const maxBalloonH = Math.max(120, bottomLimit - topSafe);
+      this.setStyleIfChanged(this.balloonEl, 'maxHeight', `${maxBalloonH}px`);
+
+      const bRect = this.balloonEl.getBoundingClientRect();
+      const balloonH = Math.min(bRect.height || 185, maxBalloonH);
 
       let bTop = 0;
       let bLeft = 0;
@@ -507,22 +525,24 @@ export class OnboardingGuide {
       } else if (spaceAbove >= balloonH + 12 && spaceAbove >= spaceBelow) {
         bTop = spotTop - balloonH - 10;
         arrowDir = 'arrow-bottom';
-        bLeft = Math.max(10, Math.min(vw - balloonW - 10, targetCenterX - balloonW / 2));
+        bLeft = Math.max(8, Math.min(vw - balloonW - 8, targetCenterX - balloonW / 2));
       } else if (spaceBelow >= balloonH + 12) {
         bTop = spotBottom + 10;
         arrowDir = 'arrow-top';
-        bLeft = Math.max(10, Math.min(vw - balloonW - 10, targetCenterX - balloonW / 2));
+        bLeft = Math.max(8, Math.min(vw - balloonW - 8, targetCenterX - balloonW / 2));
       } else if (spaceAbove >= spaceBelow) {
         bTop = Math.max(topSafe, spotTop - balloonH - 8);
         arrowDir = 'arrow-bottom';
-        bLeft = Math.max(10, Math.min(vw - balloonW - 10, targetCenterX - balloonW / 2));
+        bLeft = Math.max(8, Math.min(vw - balloonW - 8, targetCenterX - balloonW / 2));
       } else {
         bTop = Math.min(bottomLimit - balloonH, spotBottom + 8);
         arrowDir = 'arrow-top';
-        bLeft = Math.max(10, Math.min(vw - balloonW - 10, targetCenterX - balloonW / 2));
+        bLeft = Math.max(8, Math.min(vw - balloonW - 8, targetCenterX - balloonW / 2));
       }
 
-      bTop = Math.max(8, Math.min(vh - balloonH - 8, Math.round(bTop)));
+      const minTop = Math.min(topSafe, Math.max(8, vh - balloonH - 8));
+      const maxTop = Math.max(minTop, Math.min(bottomLimit - balloonH, vh - balloonH - 8));
+      bTop = Math.max(minTop, Math.min(maxTop, Math.round(bTop)));
       bLeft = Math.round(bLeft);
 
       this.setStyleIfChanged(this.balloonEl, 'top', `${bTop}px`);

@@ -27,7 +27,35 @@ const DEFAULT_SEED = 0xc0172;
 const DEFAULT_HORIZON_SEC = 72 * 3600;
 const PROCESSION_DURATION_SEC = 6;
 const DEMIURGE_APPROACH_SEC = 2.75;
+const STALL_ASCENSION_ETA_SEC = 600;
 const EPSILON = 1e-8;
+
+const PRODUCTION_GNOSE_IDS = new Set([
+  'gn_init_faith',
+  'gn_keep_relics',
+  'gn_bencao_eterna',
+  'gn_init_fervor',
+  'gn_relic_gain',
+  'gn_followers_syn',
+  'gn_followers_economy',
+  'gn_followers_cubic',
+  'gn_gnose_mult',
+  'gn_eternal_memory',
+  'gn_relic_refinement',
+  'gn_fu1_boost',
+  'gn_apotheosis',
+  'gn_empyrean_fire',
+  'gn_perfect_opus',
+]);
+
+const COMFORT_GNOSE_IDS = new Set([
+  'gn_memoria_selos',
+  'gn_automation',
+  'gn_seal_automation',
+  'gn_ritual_automation',
+  'gn_relic_automation',
+  'gn_omniscience',
+]);
 
 class Simulation {
   private readonly game = new GameStateManager();
@@ -101,10 +129,10 @@ class Simulation {
         const readiness = this.game.getBossCombatBreakdown(result.boss.id).cultReadiness;
         if (result.boss.id === 'boss_anubis') {
           if (this.game.totalGnoseEarned > 0 || failures >= 2) {
-            this.bossLossReadiness.set(result.boss.id, Math.min(1.15, Math.max(0.85, readiness + (failures >= 3 ? 0.08 : 0))));
+            this.bossLossReadiness.set(result.boss.id, Math.min(1.25, Math.max(0.85, readiness + (failures >= 3 ? 0.08 : 0))));
           }
         } else if (failures >= 2) {
-          this.bossLossReadiness.set(result.boss.id, Math.min(1.35, readiness + 0.08));
+          this.bossLossReadiness.set(result.boss.id, Math.min(1.45, readiness + 0.08));
         }
       }
     };
@@ -241,7 +269,7 @@ class Simulation {
       bottleneckNotes: [
         absenceMode !== 'visible' ? `Ausência real via ${absenceMode}, com teto de 24 h e sem ações manuais.` : 'Jogo aberto e visível: a produção continua durante a ausência do jogador; combates recuam ao sair.',
         describeBehavior(this.archetype),
-        'Gnose por menor custo entre nós elegíveis; Auto-Fiéis compra conforme o saldo disponível no jogo. Não é uma prova de estratégia ótima.',
+        'Gnose prioriza nós de produção primeiro e segura a run apenas se o próximo marco/ponto de Gnose ou upgrade da Encarnação estiver a menos de 10 min. Não é uma prova de estratégia ótima.',
         ...(this.blockedReason ? [this.blockedReason] : !completed ? [`Campanha não concluída no limite de ${formatDuration(this.horizon)}.`] : []),
       ],
     };
@@ -324,7 +352,10 @@ class Simulation {
       ? Math.min(this.behavior.combatClickCps, 5)
       : this.game.getSphereAutoclickRate();
     const effectiveHpPerSec = breakdown.passiveHpFractionPerSec + breakdown.clickHpFraction * clickCps;
-    return effectiveHpPerSec >= (breakdown.canWithstandBoss ? 1 / 160 : 1 / 110);
+    const minHpPerSec = breakdown.canWithstandBoss
+      ? (this.behavior.parryAccuracy < 0.75 ? 1 / 75 : 1 / 160)
+      : 1 / 110;
+    return effectiveHpPerSec >= minHpPerSec;
   }
 
   private selectRiftAttempt(battle: ActiveBossBattle): { rift: BossRift; pointer?: number } | undefined {
@@ -338,7 +369,7 @@ class Simulation {
       let plan = this.riftPlans.get(waveKey);
       if (!plan) {
         let accuracy = this.behavior.parryAccuracy;
-        if (kind !== 'standard') {
+        if (kind !== 'standard' && accuracy < 1) {
           const seen = this.seenSpecialWaves.get(battle.bossId) ?? 0;
           this.seenSpecialWaves.set(battle.bossId, seen + 1);
           if (seen < 4) {
@@ -346,7 +377,7 @@ class Simulation {
             accuracy *= firstRead + (1 - firstRead) * (seen / 4);
           }
         }
-        plan = this.randomCombat() < accuracy
+        plan = accuracy >= 1 || this.randomCombat() < accuracy
           ? 'parry'
           : (this.randomCombat() < 0.65 ? 'mistime' : 'ignore');
         this.riftPlans.set(waveKey, plan);
@@ -525,13 +556,18 @@ class Simulation {
           : routineClicksAvailable(this.behavior, this.time, this.visits.visitStartedAtSec) ? this.behavior.routineClickCps : 0;
       if (cps > 0 && this.time + EPSILON >= this.nextSphere) {
         const battle = g.activeBossBattle;
-        const hpBefore = battle?.bossHp ?? 0;
-        const result = g.addClick(this.randomClicks);
-        if (battle) this.metrics.damageCombat('sphere', Math.min(hpBefore, result.bossClickDamage), battle.bossMaxHp);
-        this.metrics.addIncome('clicks', result.fpc);
-        this.clicks++;
-        if (recovery) this.recoveryClicks++;
-        if (result.isCrit) this.criticalClicks++;
+        if (battle) {
+          const hpBefore = battle.bossHp;
+          const result = g.attackBossClick(this.randomClicks);
+          this.metrics.damageCombat('sphere', Math.min(hpBefore, result.bossClickDamage), battle.bossMaxHp);
+          if (result.bossIsCrit) this.criticalClicks++;
+        } else {
+          const result = g.addClick(this.randomClicks);
+          this.metrics.addIncome('clicks', result.fpc);
+          this.clicks++;
+          if (recovery) this.recoveryClicks++;
+          if (result.isCrit) this.criticalClicks++;
+        }
         this.nextSphere = this.nextSlot(this.nextSphere, 1 / cps);
         action = 'sphere';
       }
@@ -605,20 +641,31 @@ class Simulation {
     if (g.getTotalFollowersCount() === 0 && g.faithPoints >= g.getItemCost(follower)) {
       return decision('bootstrap', 'follower', buyFollower);
     }
+    const purchasePriority = this.options.purchasePriority ?? 'production';
     const eligibleGnose = GNOSE_UPGRADES.filter(u => !g.hasGnoseUpgrade(u.id)
       && g.isGnoseTierUnlocked(u.tier));
-    const cheapestGnoseCost = Math.min(...eligibleGnose.map(u => u.cost));
-    const maxChoiceCost = Math.max(cheapestGnoseCost + 1, cheapestGnoseCost * 1.25);
-    const nextGnose = eligibleGnose.sort((a, b) => {
-        const score = (u: typeof a) => u.cost <= maxChoiceCost && this.options.purchasePriority === 'comfort' && /automation|keep_relics|bencao|followers_economy|eternal_memory|apotheosis/.test(u.id) ? u.cost / 5
-          : u.cost <= maxChoiceCost && this.options.purchasePriority === 'production' && /init_faith|followers_syn|init_fervor|followers_cubic|gnose_mult|fu1_boost|empyrean_fire/.test(u.id) ? u.cost / 5 : u.cost;
-        return score(a) - score(b);
-      })[0];
+    const orderedGnose = [...eligibleGnose].sort((a, b) => {
+      if (purchasePriority === 'production') {
+        const aProd = PRODUCTION_GNOSE_IDS.has(a.id) ? 0 : 1;
+        const bProd = PRODUCTION_GNOSE_IDS.has(b.id) ? 0 : 1;
+        if (aProd !== bProd) return aProd - bProd;
+        return a.cost - b.cost;
+      }
+      if (purchasePriority === 'comfort') {
+        const aComf = COMFORT_GNOSE_IDS.has(a.id) ? 0 : 1;
+        const bComf = COMFORT_GNOSE_IDS.has(b.id) ? 0 : 1;
+        if (aComf !== bComf) return aComf - bComf;
+        return a.cost - b.cost;
+      }
+      return a.cost - b.cost;
+    });
+    const nextGnose = orderedGnose[0];
+    const resetPolicy = this.options.resetPolicy ?? 'stall';
     const readinessTargetGnose = Math.max(1, Math.ceil(g.totalGnoseEarned * 0.25));
     const remainingGnose = nextGnose ? Math.max(1, nextGnose.cost - g.gnosePoints) : readinessTargetGnose;
-    const desiredGnose = this.options.resetPolicy === 'immediate' ? 1 : Math.max(1, Math.ceil(
-      this.options.resetPolicy === 'short' ? Math.min(remainingGnose, (nextGnose?.cost ?? readinessTargetGnose) * 0.9)
-        : remainingGnose * (this.options.resetPolicy === 'long' ? 1.05 : 1)));
+    const desiredGnose = resetPolicy === 'immediate' ? 1 : Math.max(1, Math.ceil(
+      resetPolicy === 'short' ? Math.min(remainingGnose, (nextGnose?.cost ?? readinessTargetGnose) * 0.9)
+        : remainingGnose * (resetPolicy === 'long' ? 1.05 : 1)));
     if (nextGnose && g.canBuyGnoseUpgrade(nextGnose)) {
       return decision(nextGnose.id, 'gnose_upgrade', () => g.buyGnoseUpgrade(nextGnose.id));
     }
@@ -647,6 +694,15 @@ class Simulation {
     if (boss && g.bossCurseTimerSec === 0) {
       return decision(boss.id, 'challenge', () => this.startCombatWithProcession(boss.id, false));
     }
+    const routineDuty = Number.isFinite(this.behavior.routineBurstEverySec) && this.behavior.routineBurstEverySec > 0
+      ? Math.min(1, Math.max(0, this.behavior.routineBurstDurationSec / this.behavior.routineBurstEverySec))
+      : (this.behavior.routineBurstDurationSec > 0 ? 1 : 0);
+    const routineCps = manualSphereAllowed(this.behavior, this.time) ? this.behavior.routineClickCps * routineDuty : 0;
+    const fps = g.getFaithPerSecond() + routineCps * g.getFaithPerClick();
+    const draupnirLevel = g.relicUpgrades.find(r => r.id === 'relic_draupnir')?.level ?? 0;
+    const passiveRelics = (g.hasGnoseUpgrade('gn_omniscience') && g.autoRelicsEnabled) || draupnirLevel > 0;
+    const gnoseToGet = g.getGnoseToGet();
+    const gnoseExp = g.getGnoseGainExponent();
     // With all available tiers bought (or Tier I still sealed), readiness can
     // only improve through lifetime Gnose. Do not wait for production to fix it.
     const needsGuardianGnose = !nextGnose && GNOSE_BOSSES.some(b => {
@@ -657,24 +713,60 @@ class Simulation {
         || needsSuddenDeathDefense
         || readiness.cultReadiness < (this.bossLossReadiness.get(b.id) ?? 0);
     });
-    if ((nextGnose || needsGuardianGnose) && g.getGnoseToGet() >= desiredGnose) {
+    let affordableCount = 0;
+    let remainingPool = g.gnosePoints + gnoseToGet;
+    let nextUnboughtUpgrade: typeof orderedGnose[number] | undefined = orderedGnose[0];
+    for (const u of orderedGnose) {
+      if (remainingPool >= u.cost) {
+        remainingPool -= u.cost;
+        affordableCount++;
+        nextUnboughtUpgrade = undefined;
+      } else {
+        nextUnboughtUpgrade = u;
+        break;
+      }
+    }
+    const gnoseNeededForMilestone = nextUnboughtUpgrade
+      ? gnoseToGet + Math.max(1, nextUnboughtUpgrade.cost - remainingPool)
+      : Infinity;
+    const etaToNextGnoseMilestoneSec = Number.isFinite(gnoseNeededForMilestone)
+      ? (fps > 0 ? Math.max(0, (1e15 * Math.pow(gnoseNeededForMilestone, 1 / gnoseExp) - g.faithPoints) / fps) : Infinity)
+      : Infinity;
+    const nextGnoseStepTarget = gnoseToGet + Math.max(1, Math.ceil(gnoseToGet * 0.1));
+    const faithForNextGnoseStep = 1e15 * Math.pow(Math.max(1, nextGnoseStepTarget), 1 / gnoseExp);
+    const nextGnoseStepEtaSec = fps > 0 ? Math.max(0, (faithForNextGnoseStep - g.faithPoints) / fps) : Infinity;
+    const incarnationEtaSec = incarnation && g.isIncarnationUnlocked() && g.canAccessIncarnationStage(incarnation.stage)
+      ? (fps > 0 ? Math.max(0, (g.getIncarnationStageCost(incarnation) - g.faithPoints) / fps) : Infinity)
+      : Infinity;
+    let shouldAscend = false;
+    if ((nextGnose || needsGuardianGnose) && gnoseToGet >= 1) {
+      if (resetPolicy === 'stall') {
+        const waitForStep = affordableCount === 0 && nextGnoseStepEtaSec < STALL_ASCENSION_ETA_SEC;
+        const waitForMilestone = etaToNextGnoseMilestoneSec < STALL_ASCENSION_ETA_SEC;
+        const waitForIncarnation = incarnationEtaSec < STALL_ASCENSION_ETA_SEC;
+        shouldAscend = !waitForStep && !waitForMilestone && !waitForIncarnation;
+      } else {
+        shouldAscend = gnoseToGet >= desiredGnose;
+      }
+    }
+    if (shouldAscend) {
       return decision('gnose', 'gnose', () => {
         if (!g.confirmGnoseReset) return ascend();
         this.awaitingConfirmation = true;
         return true;
       });
     }
-    const routineDuty = Number.isFinite(this.behavior.routineBurstEverySec) && this.behavior.routineBurstEverySec > 0
-      ? Math.min(1, Math.max(0, this.behavior.routineBurstDurationSec / this.behavior.routineBurstEverySec))
-      : (this.behavior.routineBurstDurationSec > 0 ? 1 : 0);
-    const routineCps = manualSphereAllowed(this.behavior, this.time) ? this.behavior.routineClickCps * routineDuty : 0;
-    const fps = g.getFaithPerSecond() + routineCps * g.getFaithPerClick();
     const savingForUnlock = unlock?.costCurrency === 'faith' && fps > 0 && (unlock.cost - g.faithPoints) / fps < 180;
     const savingForIncarnation = incarnation && g.canAccessIncarnationStage(incarnation.stage) && g.isIncarnationUnlocked() && fps > 0
       && (g.getIncarnationStageCost(incarnation) - g.faithPoints) / fps < 180;
     const ascensionTarget = nextGnose && g.isGnoseUnlocked()
-      ? 1e15 * Math.max(1, desiredGnose) ** (1 / g.getGnoseGainExponent()) : Infinity;
-    const savingForGnose = fps > 0 && (ascensionTarget - g.faithPoints) / fps < 180;
+      ? 1e15 * Math.max(1, desiredGnose) ** (1 / gnoseExp) : Infinity;
+    const savingForGnose = resetPolicy === 'stall'
+      ? (g.isGnoseUnlocked() && (
+        (nextGnose ? affordableCount > 0 || etaToNextGnoseMilestoneSec < STALL_ASCENSION_ETA_SEC : needsGuardianGnose && gnoseToGet >= 1)
+        || (passiveRelics && gnoseToGet >= 1)
+      ))
+      : (fps > 0 && (ascensionTarget - g.faithPoints) / fps < 180);
     const relic = g.isRelicsUnlocked() && !(g.hasGnoseUpgrade('gn_relic_automation') && g.autoRelicUpgradesEnabled) ? g.relicUpgrades.find(r => r.level < g.getRelicMaxLevel(r) && g.relicPoints >= g.getRelicUpgradeCost(r)) : undefined;
     if (relic) return decision(relic.id, 'relic', () => g.bulkRelicsEnabled && g.hasGnoseUpgrade('gn_memoria_selos') ? g.buyMaxRelicUpgrade(relic) > 0 : g.buyRelicUpgrade(relic));
     if (g.isFervorUpgradesUnlocked() && !(g.hasGnoseUpgrade('gn_ritual_automation') && g.autoFervorEnabled)) {
@@ -684,8 +776,6 @@ class Simulation {
         .sort((a, b) => fervorSortCost(a) - fervorSortCost(b))[0];
       if (rito) return decision(rito.id, 'fervor', () => g.bulkFervorEnabled && g.hasGnoseUpgrade('gn_memoria_selos') ? g.buyMaxFervorUpgrade(rito) > 0 : g.buyFervorUpgrade(rito));
     }
-    const draupnirLevel = g.relicUpgrades.find(r => r.id === 'relic_draupnir')?.level ?? 0;
-    const passiveRelics = (g.hasGnoseUpgrade('gn_omniscience') && g.autoRelicsEnabled) || draupnirLevel > 0;
     const transmute = g.getRelicsToGet();
     if (!savingForUnlock && !savingForIncarnation && !savingForGnose && g.isRelicsUnlocked() && g.relicConvertCooldown === 0 && transmute >= 15
       && ((!passiveRelics && transmute >= Math.max(20, g.relicPoints * 1.5)) || g.bestRelicsToGet === 0)) {
@@ -695,7 +785,10 @@ class Simulation {
         return result.success;
       });
     }
-    if (!savingForUnlock && !savingForIncarnation && !savingForGnose && !(g.hasGnoseUpgrade('gn_automation') && g.autoFollowersEnabled)
+    const followerBlockedBySaving = resetPolicy === 'stall'
+      ? (savingForUnlock || savingForIncarnation || (!g.isGnoseUnlocked() && savingForGnose))
+      : (savingForUnlock || savingForIncarnation || savingForGnose);
+    if (!followerBlockedBySaving && !(g.hasGnoseUpgrade('gn_automation') && g.autoFollowersEnabled)
       && g.faithPoints >= g.getItemCost(follower) && (g.gnoseResets === 0 || (fps > 0 && g.getItemCost(follower) / fps < 8))) {
       return decision('follower', 'follower', buyFollower);
     }
@@ -735,7 +828,6 @@ export class ProgressionSimulator {
 
   public static runFullBenchmark(options: SimulationOptions = {}): BenchmarkReport {
     return { timestamp: Date.now(), results: {
-      reference: this.runArchetype('reference', options),
       active: this.runArchetype('active', options),
       casual: this.runArchetype('casual', options),
       afk: this.runArchetype('afk', options),

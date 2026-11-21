@@ -1338,26 +1338,42 @@
 
 @media (max-width: 860px) {
   .board-quicknav-bar {
-    left: 6px;
-    right: 6px;
+    left: calc(6px + env(safe-area-inset-left, 0px));
+    right: calc(6px + env(safe-area-inset-right, 0px));
     bottom: calc(6px + env(safe-area-inset-bottom, 0px));
     transform: none;
-    width: calc(100vw - 12px);
+    width: auto;
     max-width: none;
-    padding: 4px;
-    gap: 3px;
-    overflow-x: hidden;
+    border-width: 4px !important;
+    border-image-width: 4px !important;
+    padding: 3px;
+    gap: 2px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
     box-sizing: border-box;
   }
 
+  .board-quicknav-bar::-webkit-scrollbar {
+    display: none;
+  }
+
   .quicknav-btn {
-    flex: 1 1 0;
-    min-width: 0;
+    flex: 1 0 46px;
+    min-width: 44px;
+    min-height: 40px;
     flex-direction: column;
     justify-content: center;
-    padding: 4px 2px;
+    padding: 3px 2px;
     gap: 1px;
-    font-size: 13px;
+    font-size: 11px;
+    line-height: 1.15;
+  }
+
+  .quicknav-ico {
+    width: 16px;
+    height: 16px;
   }
 
   .quicknav-btn > span:not(.quicknav-ico) {
@@ -1367,15 +1383,21 @@
   }
 
   .board-zoom-controls {
-    bottom: calc(62px + env(safe-area-inset-bottom, 0px));
-    right: 6px;
-    padding: 3px 5px;
-    gap: 3px;
+    bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    right: calc(6px + env(safe-area-inset-right, 0px));
+    border-width: 4px !important;
+    border-image-width: 4px !important;
+    padding: 2px 4px;
+    gap: 2px;
+  }
+
+  body.is-boss-battle-active .board-zoom-controls {
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
   }
 
   .board-zoom-btn {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
   }
 
   #card-followers,
@@ -1397,7 +1419,15 @@
   }
 
   .btn-unlock-mechanic {
-    min-width: 280px;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+  }
+
+  .unlock-btn-main {
+    flex-wrap: wrap;
+    gap: 6px 10px;
   }
 
   .gnose-top-bar {
@@ -1428,6 +1458,25 @@
 
   .incarnation-altar-lore {
     text-align: left;
+  }
+}
+
+@media (max-width: 420px) {
+  .board-zoom-btn {
+    width: 26px;
+    height: 26px;
+  }
+
+  .board-zoom-level {
+    min-width: 36px;
+    font-size: 12px;
+    padding: 0 2px;
+  }
+}
+
+@media (max-width: 540px) and (max-height: 740px) {
+  #card-followers .followers-walk-canvas {
+    height: 165px;
   }
 }
 

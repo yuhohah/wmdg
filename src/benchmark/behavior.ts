@@ -28,34 +28,23 @@ export interface PlayerBehavior {
   absenceMaxSec: number;
 }
 
-const INTENSE_BEHAVIOR: Readonly<PlayerBehavior> = {
+export const ACTIVE_BEHAVIOR: Readonly<PlayerBehavior> = {
   name: 'Ativo (presença contínua)', initialClickCps: 5, routineClickCps: 2,
   combatClickCps: 5, maxInteractionCps: 5, decisionDelaySec: 2.5,
-  miracleCatchChance: 0.95, miracleResponseSec: 1, riftResponseSec: 0.28,
-  parryAccuracy: 0.97, cursePurifyThreshold: 3,
+  miracleCatchChance: 0.7, miracleResponseSec: 1, riftResponseSec: 0.28,
+  parryAccuracy: 1, cursePurifyThreshold: 3,
   blessingTargetSec: 60, blessingMode: 'maintain', sphereManualUntilSec: Infinity, postGnoseRecoveryClicks: false, blessingManualUntilSec: Infinity,
   routineBurstEverySec: Infinity, routineBurstDurationSec: Infinity,
   initialVisitDurationSec: Infinity, visitDurationSec: Infinity, absenceMinSec: 0, absenceMaxSec: 0,
 };
 
-/** Moderate active baseline: periodic bursts instead of uninterrupted 100% Blessing spam. */
-export const REFERENCE_BEHAVIOR: Readonly<PlayerBehavior> = {
-  ...INTENSE_BEHAVIOR, name: 'Ativo de referência', initialClickCps: 2,
-  routineClickCps: 2, combatClickCps: 2.5, maxInteractionCps: 3, decisionDelaySec: 4,
-  routineBurstEverySec: 60, routineBurstDurationSec: 10,
-  miracleCatchChance: 0.65, miracleResponseSec: 1.8, riftResponseSec: 0.42,
-  parryAccuracy: 0.9, cursePurifyThreshold: 2,
-  blessingTargetSec: 30, blessingMode: 'burst',
-};
-
 export const PLAYER_BEHAVIORS: Record<PlayerArchetype, Readonly<PlayerBehavior>> = {
-  reference: REFERENCE_BEHAVIOR,
-  active: INTENSE_BEHAVIOR,
+  active: ACTIVE_BEHAVIOR,
   casual: {
     name: 'Casual (8 min de jogo a cada 20 min)', initialClickCps: 2, routineClickCps: 1,
     combatClickCps: 2, maxInteractionCps: 2.5, decisionDelaySec: 5,
-    miracleCatchChance: 0.4, miracleResponseSec: 3, riftResponseSec: 0.75,
-    parryAccuracy: 0.82, cursePurifyThreshold: 2,
+    miracleCatchChance: 0.8, miracleResponseSec: 3, riftResponseSec: 0.75,
+    parryAccuracy: 0.85, cursePurifyThreshold: 2,
     blessingTargetSec: 15, blessingMode: 'after_purchase', sphereManualUntilSec: Infinity, postGnoseRecoveryClicks: false, blessingManualUntilSec: Infinity,
     routineBurstEverySec: Infinity, routineBurstDurationSec: Infinity,
     // Sessions start at 0, 20, 40… minutes: 8 minutes present, then 12 away.
@@ -65,7 +54,7 @@ export const PLAYER_BEHAVIORS: Record<PlayerArchetype, Readonly<PlayerBehavior>>
     name: 'AFK (10 min ativos, recuperação e aparadas)', initialClickCps: 2, routineClickCps: 1,
     combatClickCps: 0, maxInteractionCps: 2, decisionDelaySec: 12,
     miracleCatchChance: 0, miracleResponseSec: 0, riftResponseSec: 0.6,
-    parryAccuracy: 0.86, cursePurifyThreshold: 2,
+    parryAccuracy: 0.5, cursePurifyThreshold: 2,
     blessingTargetSec: 60, blessingMode: 'maintain', sphereManualUntilSec: 600, postGnoseRecoveryClicks: true, blessingManualUntilSec: 600,
     routineBurstEverySec: Infinity, routineBurstDurationSec: Infinity,
     initialVisitDurationSec: Infinity, visitDurationSec: Infinity, absenceMinSec: 0, absenceMaxSec: 0,
@@ -89,10 +78,9 @@ export function routineClicksAvailable(behavior: Readonly<PlayerBehavior>, nowSe
 }
 
 export function describeBehavior(profile: PlayerArchetype): string {
-  if (profile === 'reference') return 'Referência: rajadas de 10 s/min (2 cliques/s, Bênção até 30 s nas rajadas/compras), 65% dos milagres e 90% de precisão em APARAR (purifica com 2 acúmulos).';
-  if (profile === 'active') return 'Ativo intenso: presença contínua, 5 cliques/s nos combates, manutenção contínua do 2×, 95% dos milagres e 97% de precisão em APARAR (purifica com 3 acúmulos).';
-  if (profile === 'casual') return 'Casual: sessões de 8 min a cada 20 min (12 min ausente); 1 clique/s presente, Bênção até 15 s após compras, 40% dos milagres e 82% de precisão em APARAR.';
-  return 'AFK: compras/prestígios a cada 12 s; Esfera e 2× manuais só nos primeiros 10 min (com clique mínimo pós-Ascensão se travar sem Fé inicial); 86% de precisão em APARAR, sem milagres manuais.';
+  if (profile === 'active') return 'Ativo: presença contínua, 5 cliques/s nos combates, manutenção contínua do 2×, 70% dos milagres e 100% de precisão em APARAR (purifica com 3 acúmulos).';
+  if (profile === 'casual') return 'Casual: sessões de 8 min a cada 20 min (12 min ausente); 1 clique/s presente, Bênção até 15 s após compras, 80% dos milagres nas janelas presentes e 85% de precisão em APARAR.';
+  return 'AFK: compras/prestígios a cada 12 s; Esfera e 2× manuais só nos primeiros 10 min (com clique mínimo pós-Ascensão se travar sem Fé inicial); 50% de precisão em APARAR, sem milagres manuais.';
 }
 
 /** Separate random streams keep scheduling independent from critical-click draws. */

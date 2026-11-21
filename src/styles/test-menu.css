@@ -39,14 +39,14 @@
 
 @media (max-width: 860px) {
   .test-menu-launcher {
-    bottom: calc(112px + env(safe-area-inset-bottom, 0px)) !important;
+    bottom: calc(116px + env(safe-area-inset-bottom, 0px)) !important;
     left: auto !important;
-    right: calc(8px + env(safe-area-inset-right, 0px)) !important;
+    right: calc(6px + env(safe-area-inset-right, 0px)) !important;
     padding: 4px 10px !important;
     font-size: 11.5px !important;
     gap: 5px !important;
     border-radius: 14px !important;
-    height: 44px !important;
+    height: 36px !important;
     touch-action: manipulation;
     box-sizing: border-box !important;
   }
@@ -91,7 +91,8 @@
   visibility: hidden;
   pointer-events: none;
   transition: opacity 0.18s ease, visibility 0s linear 0.18s;
-  padding: 16px;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) calc(10px + env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) calc(10px + env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
 }
 
 .test-menu-overlay.visible {
@@ -110,6 +111,7 @@
   width: 100%;
   max-width: 540px;
   max-height: 88vh;
+  max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.9), 0 0 24px rgba(196, 152, 80, 0.25);
@@ -304,11 +306,27 @@
   }
 }
 
+@media (max-width: 440px) {
+  .test-resource-row {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .test-resource-label {
+    grid-column: 1 / -1;
+  }
+}
+
 /* Grid & Buttons */
 .test-speed-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
+}
+
+@media (max-width: 440px) {
+  .test-speed-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .test-grid {

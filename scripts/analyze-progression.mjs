@@ -10,7 +10,7 @@ if (!['baseline', 'no-miracles', 'short-resets', 'no-auto-pause'].includes(mode)
 if (!Number.isFinite(hours) || hours <= 0) throw new Error('Horas devem ser positivas');
 const profile = process.argv[4] ?? 'active';
 const seed = Number(process.argv[5] ?? 0xc0172);
-if (!['reference', 'active', 'casual', 'afk'].includes(profile)) throw new Error('Perfil inválido');
+if (!['active', 'casual', 'afk'].includes(profile)) throw new Error('Perfil inválido');
 if (!Number.isInteger(seed)) throw new Error('Seed deve ser inteira');
 const server = await createServer({ server: { middlewareMode: true, hmr: false }, appType: 'custom', plugins: [{
   name: 'analysis-only-policy', enforce: 'pre', transform(source, id) {

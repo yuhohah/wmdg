@@ -145,7 +145,8 @@ export class DemiurgeEncounter {
     this.actorPrompt.setAttribute('aria-hidden', 'true');
     this.actor.append(this.actorPrompt);
 
-    const challenge = () => {
+    const challenge = (event: MouseEvent) => {
+      if (!event.isTrusted) return;
       if (this.hasBlockingModal() || !this.ready()) return;
       const prevPhase = this.gs.demiurge.phase;
       const prevTarget = this.gs.demiurge.target;

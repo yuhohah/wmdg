@@ -76,11 +76,13 @@ export class FollowersTab {
   }
 
   private bindEvents(): void {
-    this.btnConvertOneEl?.addEventListener('click', () => {
+    this.btnConvertOneEl?.addEventListener('click', (e) => {
+      if (!e.isTrusted) return;
       this.buyOneFollower();
     });
 
-    this.btnConvertMaxEl?.addEventListener('click', () => {
+    this.btnConvertMaxEl?.addEventListener('click', (e) => {
+      if (!e.isTrusted) return;
       this.buyMaxFollowers();
     });
   }

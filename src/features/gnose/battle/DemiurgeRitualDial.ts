@@ -64,6 +64,7 @@ export class DemiurgeRitualDial {
     b.addEventListener('pointerdown', (event) => event.stopPropagation());
     b.addEventListener('click', (event) => {
       event.stopPropagation();
+      if (!event.isTrusted) return;
       b.disabled = true;
       resolve(this.position);
     });

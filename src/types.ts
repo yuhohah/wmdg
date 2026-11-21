@@ -259,6 +259,7 @@ export interface GnoseSaveData {
   bossCurseStacks?: number;
   bossCurseBossId?: string | null;
   confirmReset: boolean;
+  skipBossProcession?: boolean;
   autoFollowersEnabled: boolean;
   autoFervorEnabled: boolean;
   /** Passive transmutation unlocked by Olho do Infinito. */

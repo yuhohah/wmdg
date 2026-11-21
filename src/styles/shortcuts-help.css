@@ -45,14 +45,37 @@ body.is-ending-active .shortcuts-help { display: none; }
 .shortcuts-help-panel dd { margin: 0; }
 .shortcuts-help-panel kbd { font: inherit; color: #e7cf8e; }
 .shortcuts-help-panel p { font: inherit; color: #b8ae95; border-top: 1px solid #534527; padding-top: 10px; margin: 10px 0 0; }
-@media (max-width: 760px) {
-  .shortcuts-help { left: 8px; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
-  .shortcuts-help-panel { max-height: calc(100dvh - 145px); }
+@media (max-width: 860px) {
+  .shortcuts-help {
+    left: calc(6px + env(safe-area-inset-left, 0px));
+    bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+  }
+  .shortcuts-help > button {
+    padding: 6px 8px;
+  }
+  .shortcuts-help-panel {
+    width: min(340px, calc(100vw - 12px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+    max-height: calc(100dvh - 190px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
+  body.is-boss-battle-active .shortcuts-help {
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
 }
-/* Keep the local developer launcher clear of the shortcut button. */
+@media (max-width: 860px) and (hover: none) and (pointer: coarse) {
+  body.is-playing .shortcuts-help {
+    display: none;
+  }
+  .hotkey-badge {
+    display: none;
+  }
+}
+/* Keep the local developer launcher clear of the shortcut button and zoom controls. */
 body.is-playing #test-menu-launcher { left: auto; right: 18px; bottom: 70px; }
-@media (max-width: 760px) {
-  body.is-playing #test-menu-launcher { bottom: 112px; }
+@media (max-width: 860px) {
+  body.is-playing #test-menu-launcher {
+    right: calc(6px + env(safe-area-inset-right, 0px));
+    bottom: calc(116px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 .shortcuts-help-group + .shortcuts-help-group { margin-top: 10px; padding-top: 10px; border-top: 1px solid #534527; }
@@ -91,13 +114,6 @@ body.hide-hotkeys .hotkey-badge {
     position: relative;
   }
   .quicknav-btn .hotkey-badge {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    min-width: 14px;
-    height: 14px;
-    padding: 0 3px;
-    margin-left: 0;
-    font-size: 9px;
+    display: none;
   }
 }

@@ -69,7 +69,7 @@ const METRICS: Array<[string, (result: ArchetypeBenchmarkResult) => string]> = [
 ];
 
 function rows(report: BenchmarkReport): string[][] {
-  const results = [report.results.reference, report.results.active, report.results.casual, report.results.afk];
+  const results = [report.results.active, report.results.casual, report.results.afk];
   return [
     ...MILESTONES.map(([id, name]) => [name, ...results.map(r => r.milestones.find(m => m.id === id)?.formattedTime ?? 'Não atingido')]),
     ...METRICS.map(([name, value]) => [name, ...results.map(value)]),
@@ -83,15 +83,15 @@ function absenceHypothesis(absenceMode?: 'visible' | 'hidden' | 'save'): string 
 }
 
 export function formatTerminalReport(report: BenchmarkReport): string {
-  const first = report.results.reference;
+  const first = report.results.active;
   const line = '─'.repeat(112);
   const lines = [
     '\nSIMULAÇÃO DE PROGRESSÃO POR SESSÕES — CULT OF THE SPHERE',
     `Seed: ${first.seed} | passo máximo: ${first.stepSec}s | limite: ${formatDuration(first.maxDurationSec)} | ausência: ${first.absenceMode ?? 'visible'}`,
     absenceHypothesis(first.absenceMode),
-    ...(['reference', 'active', 'casual', 'afk'] as const).map(describeBehavior),
+    ...(['active', 'casual', 'afk'] as const).map(describeBehavior),
     line,
-    ['Marco / Métrica', 'Referência', 'Ativo intenso', 'Casual', 'AFK'].map((s, i) => s.padEnd(i === 0 ? 35 : 23)).join(' | '),
+    ['Marco / Métrica', 'Ativo', 'Casual', 'AFK'].map((s, i) => s.padEnd(i === 0 ? 35 : 23)).join(' | '),
     line,
     ...rows(report).map(row => row.map((s, i) => s.padEnd(i === 0 ? 35 : 23)).join(' | ')),
     line,
@@ -110,7 +110,7 @@ function escapeHtml(value: string): string {
 }
 
 export function formatHtmlReport(report: BenchmarkReport): string {
-  const first = report.results.reference;
+  const first = report.results.active;
   const cell = 'padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.15);text-align:left';
   const deadZoneNotes = Object.values(report.results).flatMap(r =>
     r.deadZones.map(z => `<p><strong>${escapeHtml(r.archetypeName)} — zona morta (${escapeHtml(z.phase)}):</strong> ${escapeHtml(z.formattedDuration)} presente sem progresso desde ${escapeHtml(formatDuration(z.startTimeSec))}.</p>`)
@@ -119,9 +119,9 @@ export function formatHtmlReport(report: BenchmarkReport): string {
     <h3>Simulação de progressão por sessões</h3>
     <p>Seed ${first.seed} · passo máximo ${first.stepSec}s · limite ${formatDuration(first.maxDurationSec)} · ausência ${escapeHtml(first.absenceMode ?? 'visible')}.</p>
     <p>${escapeHtml(absenceHypothesis(first.absenceMode))} Hipóteses de comportamento, não telemetria.</p>
-    ${(['reference', 'active', 'casual', 'afk'] as const).map(profile => `<p>${escapeHtml(describeBehavior(profile))}</p>`).join('')}
+    ${(['active', 'casual', 'afk'] as const).map(profile => `<p>${escapeHtml(describeBehavior(profile))}</p>`).join('')}
     <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">
-      <thead><tr>${['Marco / Métrica', 'Referência', 'Ativo intenso', 'Casual', 'AFK'].map(name => `<th style="${cell}">${name}</th>`).join('')}</tr></thead>
+      <thead><tr>${['Marco / Métrica', 'Ativo', 'Casual', 'AFK'].map(name => `<th style="${cell}">${name}</th>`).join('')}</tr></thead>
       <tbody>${rows(report).map(row => `<tr>${row.map(value => `<td style="${cell}">${escapeHtml(value)}</td>`).join('')}</tr>`).join('')}</tbody>
     </table></div>
     ${Object.values(report.results).filter(r => r.blockedReason).map(r => `<p><strong>${escapeHtml(r.archetypeName)} — bloqueado:</strong> ${escapeHtml(r.blockedReason!)}</p>`).join('')}

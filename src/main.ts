@@ -34,30 +34,10 @@ import { hydrateIcons } from './ui/icons.js';
 import { cultDialog } from './ui/CultDialog.js';
 import { bindStartScreen } from './ui/StartScreenController.js';
 import { CampaignEnding } from './features/ending/CampaignEnding.js';
-import { TestMenu } from './ui/TestMenu.js';
+import type { TestMenu } from './ui/TestMenu.js';
 
 export function isDevMode(): boolean {
-  if (typeof window === 'undefined') return false;
-  const hostname = window.location.hostname.toLowerCase();
-  const octets = hostname.split('.').map(Number);
-  const localIPv4 = octets.length === 4 && octets.every(n => Number.isInteger(n) && n >= 0 && n <= 255)
-    && (octets[0] === 10 || octets[0] === 127
-      // Tailscale devices use the shared address range 100.64.0.0/10.
-      || (octets[0] === 100 && octets[1] >= 64 && octets[1] <= 127)
-      || (octets[0] === 192 && octets[1] === 168)
-      || (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31));
-  const localHostname = hostname === '[::1]' || hostname.endsWith('.localhost') || hostname.endsWith('.local');
-  let enabled = false;
-  try { enabled = localStorage.getItem('cult_dev_mode') === 'true'; } catch { /* Session-only access still works. */ }
-  return (
-    Boolean(import.meta.env?.DEV) || localIPv4 || localHostname ||
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1' ||
-    window.location.hostname === '0.0.0.0' ||
-    window.location.search.includes('test') ||
-    window.location.search.includes('dev') ||
-    enabled
-  );
+  return Boolean(import.meta.env?.DEV);
 }
 
 class AppManager {
@@ -251,7 +231,7 @@ class AppManager {
     this.settingsModal = new SettingsModal({
       audio: this.audio,
       onShowChangelog: () => { void changelogModal.open(); },
-      onOpenDevMenu: () => this.openDevMenu(),
+      ...(import.meta.env.DEV ? { onOpenDevMenu: () => { void this.openDevMenu(); } } : {}),
       getLastSaveTime: () => this.persistence.lastSaveTime,
       onManualSave: () => this.persistence.manualSave(),
       onExportSave: () => this.saveDataModal.openExport(),
@@ -307,7 +287,7 @@ class AppManager {
       buyRelic: index => this.relicsTab.buyRelicUpgrade(this.gameState.relicUpgrades[index]),
       transmute: () => this.relicsTab.convertFaithToRelics(),
       collectMiracle: () => {
-        if (this.gameState.activeBossBattle) document.getElementById('boss-miracle-btn')?.click();
+        if (this.gameState.activeBossBattle) this.gnoseTab.bossBattleModal.collectActiveMiracle();
         else this.followersTab.arena?.collectAvailableMiracle();
       },
       boostIncarnation: () => this.incarnationTab.handleAltarClick(),
@@ -365,11 +345,10 @@ class AppManager {
     this.hud.update();
     this.onboardingGuide.update();
 
-    // 7. Developer-only / Localhost Test Menu & Global Window Helpers
-    if (isDevMode()) {
-      this.testMenu = new TestMenu(this);
+    // 7. Developer-only Test Menu & Global Window Helpers (stripped from production builds)
+    if (import.meta.env.DEV) {
+      void this.initDevTools();
     }
-    this.registerGlobalHelpers();
     void changelogModal.showIfUpdated();
   }
 
@@ -482,11 +461,21 @@ class AppManager {
     this.gameLoop.start();
   }
 
-  public openDevMenu(): void {
-    try { localStorage.setItem('cult_dev_mode', 'true'); } catch { /* Keep access available when storage is blocked. */ }
-    this.testMenu ??= new TestMenu(this);
-    this.registerGlobalHelpers();
-    this.testMenu.open();
+  private async initDevTools(): Promise<void> {
+    if (import.meta.env.DEV) {
+      if (!this.testMenu) {
+        const { TestMenu } = await import('./ui/TestMenu.js');
+        this.testMenu = new TestMenu(this);
+      }
+      this.registerGlobalHelpers();
+    }
+  }
+
+  public async openDevMenu(): Promise<void> {
+    if (import.meta.env.DEV) {
+      await this.initDevTools();
+      this.testMenu?.open();
+    }
   }
 
   public triggerHaptic(pattern: number | number[] = 8): void {
@@ -500,7 +489,7 @@ class AppManager {
   }
 
   private registerGlobalHelpers(): void {
-    if (this.testMenu || isDevMode()) {
+    if (import.meta.env.DEV) {
       (window as any).cultGame = this;
       (window as any).game = this;
       (window as any).testMenu = this.testMenu;

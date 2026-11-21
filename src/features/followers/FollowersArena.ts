@@ -183,6 +183,7 @@ export class FollowersArena {
 
   private setupEvents(): void {
     this.canvas.addEventListener('click', (e: MouseEvent) => {
+      if (!e.isTrusted) return;
       const rect = this.canvas.getBoundingClientRect();
       const scaleX = rect.width > 0 ? this.width / rect.width : 1;
       const scaleY = rect.height > 0 ? this.height / rect.height : 1;

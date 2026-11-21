@@ -121,6 +121,7 @@ export class GameStateManager {
   public miracleIdCounter: number = 0;
 
   public confirmGnoseReset: boolean = true;
+  public skipBossProcession: boolean = false;
   public autoFollowersEnabled: boolean = true;
   public autoFervorEnabled: boolean = true;
   public autoRelicsEnabled: boolean = true;
@@ -195,6 +196,7 @@ export class GameStateManager {
     this.miracleIdCounter = 0;
 
     this.confirmGnoseReset = true;
+    this.skipBossProcession = false;
     this.autoFollowersEnabled = true;
     this.autoFervorEnabled = true;
     this.autoRelicsEnabled = true;
@@ -749,19 +751,14 @@ export class GameStateManager {
 
     let autoClickFaithGained = 0;
     let autoClickBossDamage = 0;
-    // Automatic Sphere clicks use the same rewards, criticals and lifetime counter as manual clicks.
+    // Automatic Sphere clicks pause during boss battles since the Sphere neither generates Faith nor damages bosses.
     const autoClickRate = this.getSphereAutoclickRate();
-    if (autoClickRate > 0) {
+    if (autoClickRate > 0 && !this.activeBossBattle) {
       this.sphereAutoAccumulatorSec += deltaSec * autoClickRate;
       while (this.sphereAutoAccumulatorSec + 1e-8 >= 1) {
         this.sphereAutoAccumulatorSec = Math.max(0, this.sphereAutoAccumulatorSec - 1);
-        const battleBefore = this.activeBossBattle;
-        const hpBefore = battleBefore?.bossHp ?? 0;
         const result = this.addClick(random);
         autoClickFaithGained += result.fpc;
-        if (battleBefore) {
-          autoClickBossDamage += Math.min(hpBefore, result.bossClickDamage);
-        }
         this.lastSphereAutoclick = { fpc: result.fpc, isCrit: result.isCrit };
         faithGained += result.fpc;
       }
@@ -925,14 +922,12 @@ export class GameStateManager {
   }
 
   public addClick(random: () => number = Math.random): { fpc: number; bossClickDamage: number; isCrit: boolean; bossIsCrit: boolean } {
-    if (this.demiurge.phase === 'lost') return { fpc: 0, bossClickDamage: 0, isCrit: false, bossIsCrit: false };
+    if (this.demiurge.phase === 'lost' || this.activeBossBattle) {
+      return { fpc: 0, bossClickDamage: 0, isCrit: false, bossIsCrit: false };
+    }
     let fpc = this.getFaithPerClick();
     // The completed lifetime click milestones apply starting with the next click.
     const isCrit = random() < this.getSphereCriticalChance();
-    const bossIsCrit = isCrit && (
-      this.totalClicks >= SPHERE_CRITICAL.bossUnlockClicks ||
-      getAchievementBuffTotals(this.achievements).hasBossCrit
-    );
     if (isCrit) {
       fpc *= SPHERE_CRITICAL.multiplier;
     }
@@ -941,26 +936,38 @@ export class GameStateManager {
     this.totalFaithAccumulated += fpc;
     this.totalClicks += 1;
 
-    let bossClickDamage = 0;
+    return { fpc, bossClickDamage: 0, isCrit, bossIsCrit: false };
+  }
+
+  public attackBossClick(random: () => number = Math.random): { bossClickDamage: number; bossIsCrit: boolean } {
     if (
-      this.activeBossBattle &&
-      this.activeBossBattle.combatStarted !== false &&
-      this.activeBossBattle.sphereCooldownSec <= 1e-8
+      this.demiurge.phase === 'lost' ||
+      !this.activeBossBattle ||
+      this.activeBossBattle.combatStarted === false ||
+      this.activeBossBattle.sphereCooldownSec > 1e-8
     ) {
-      const battle = this.activeBossBattle;
-      battle.sphereCooldownSec = BOSS_SPHERE_COOLDOWN_SEC;
-      const breakdown = this.getBossCombatBreakdown(battle.bossId);
-      bossClickDamage = breakdown.clickDamage * (bossIsCrit ? SPHERE_CRITICAL.multiplier : 1);
-      battle.bossHp = Math.max(0, battle.bossHp - bossClickDamage);
-      battle.phase = this.getBossPhase();
-      if (battle.bossHp <= 0) {
-        completeBossBattle(this, true);
-      } else {
-        checkAndApplyBossPhaseTransitions(this);
-      }
+      return { bossClickDamage: 0, bossIsCrit: false };
     }
 
-    return { fpc, bossClickDamage, isCrit, bossIsCrit };
+    const battle = this.activeBossBattle;
+    const isCrit = random() < this.getSphereCriticalChance();
+    const bossIsCrit = isCrit && (
+      this.totalClicks >= SPHERE_CRITICAL.bossUnlockClicks ||
+      getAchievementBuffTotals(this.achievements).hasBossCrit
+    );
+
+    battle.sphereCooldownSec = BOSS_SPHERE_COOLDOWN_SEC;
+    const breakdown = this.getBossCombatBreakdown(battle.bossId);
+    const bossClickDamage = breakdown.clickDamage * (bossIsCrit ? SPHERE_CRITICAL.multiplier : 1);
+    battle.bossHp = Math.max(0, battle.bossHp - bossClickDamage);
+    battle.phase = this.getBossPhase();
+    if (battle.bossHp <= 0) {
+      completeBossBattle(this, true);
+    } else {
+      checkAndApplyBossPhaseTransitions(this);
+    }
+
+    return { bossClickDamage, bossIsCrit };
   }
 
   public addIncarnationBoost(seconds: number): void {

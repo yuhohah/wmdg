@@ -1,3 +1,4 @@
+import '../styles/test-menu.css';
 import { formatNumber } from '../systems/numberFormat.js';
 import { INCARNATION_STAGES } from '../config/incarnation.js';
 import { GNOSE_BOSSES } from '../config/bosses.js';
@@ -634,7 +635,7 @@ export class TestMenu {
             worker.onmessage = (event: MessageEvent<BenchmarkWorkerMessage>) => {
               const message = event.data;
               if (message.kind === 'progress') {
-                const names = { reference: 'Ativo de referência', active: 'Ativo', casual: 'Casual', afk: 'AFK' };
+                const names = { active: 'Ativo', casual: 'Casual', afk: 'AFK' };
                 container.textContent = `Simulando ${names[message.profile]}...`;
               } else {
                 if (message.kind === 'done') container.innerHTML = formatHtmlReport(message.report);

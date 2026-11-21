@@ -112,6 +112,9 @@ export class BossBattleModal {
   private phaseBannerEl: HTMLElement | null = null;
   private combatStatsEl: HTMLElement | null = null;
   private retreatBtnEl: HTMLButtonElement | null = null;
+  private processionControlsEl: HTMLElement | null = null;
+  private skipProcessionBtnEl: HTMLButtonElement | null = null;
+  private autoSkipToggleEl: HTMLInputElement | null = null;
   private returnFocusEl: HTMLElement | null = null;
   private lastRiftsMissed = 0;
   private lastPhase = 1;
@@ -333,6 +336,7 @@ export class BossBattleModal {
 
   private initDOM(): void {
     document.getElementById('gnose-boss-battle-overlay')?.remove();
+    document.getElementById('boss-procession-controls')?.remove();
     if (typeof document.querySelectorAll === 'function') {
       document.querySelectorAll('#boss-world-stage').forEach((el) => el.remove());
     } else {
@@ -420,6 +424,22 @@ export class BossBattleModal {
       }
     }
 
+    const processionControls = document.createElement('div');
+    processionControls.id = 'boss-procession-controls';
+    processionControls.className = 'boss-procession-controls';
+    processionControls.style.display = 'none';
+    processionControls.innerHTML = `
+      <button id="btn-boss-skip-procession" class="btn-boss-skip-procession" type="button">Pular procissão</button>
+      <label class="boss-auto-skip-label" title="Pula automaticamente a procissão nas próximas batalhas">
+        <input type="checkbox" id="boss-auto-skip-procession-toggle" />
+        <span>Pular automático</span>
+      </label>
+    `;
+    document.body.appendChild(processionControls);
+    this.processionControlsEl = processionControls;
+    this.skipProcessionBtnEl = processionControls.querySelector('#btn-boss-skip-procession');
+    this.autoSkipToggleEl = processionControls.querySelector('#boss-auto-skip-procession-toggle');
+
     this.bossHpPlateEl = stage.querySelector('#boss-world-hp-plate');
     this.bossWorldHpLabelEl = stage.querySelector('#boss-world-hp-label');
     this.bossHpFillEl = stage.querySelector('#boss-hp-fill');
@@ -447,33 +467,30 @@ export class BossBattleModal {
       this.close();
     });
 
+    this.skipProcessionBtnEl?.addEventListener('click', (e: MouseEvent) => {
+      e.stopPropagation();
+      if (!e.isTrusted) return;
+      this.skipProcession();
+    });
+
+    this.autoSkipToggleEl?.addEventListener('change', () => {
+      const enabled = !!this.autoSkipToggleEl?.checked;
+      this.options.gameState.skipBossProcession = enabled;
+      events.emit(GameEvents.STATE_CHANGED);
+      if (enabled) {
+        this.skipProcession();
+      }
+    });
+
     this.attackBtnEl?.addEventListener('click', (e: MouseEvent) => {
+      if (!e.isTrusted) return;
       const battle = this.options.gameState.activeBossBattle;
       if (!battle || battle.combatStarted === false) return;
-      const { fpc, bossClickDamage, bossIsCrit } = this.options.gameState.addClick();
+      const { bossClickDamage, bossIsCrit } = this.options.gameState.attackBossClick();
       const rect = this.attackBtnEl!.getBoundingClientRect();
       const x = e.detail === 0 ? rect.x + rect.width / 2 : e.clientX;
       const y = e.detail === 0 ? rect.y + rect.height / 2 : e.clientY;
-      this.onPlayerAttackHit(fpc, bossClickDamage, bossIsCrit, x, y);
-    });
-
-    // Clicking the central Divine Sphere during combat shows normal attack feedback.
-    const sphereBtn = document.getElementById('divine-sphere-btn');
-    sphereBtn?.addEventListener('click', (e: MouseEvent) => {
-      const battle = this.options.gameState.activeBossBattle;
-      if (!battle || !this.isOpen() || battle.combatStarted === false) return;
-      this.bossHitFlashSec = 0.18;
-      const breakdown = this.options.gameState.getBossCombatBreakdown(battle.bossId);
-      this.showHitFeedback(`\u2212${formatFixed(breakdown.clickHpFraction * 100, 2)}%`);
-      if (e.clientX && e.clientY) {
-        this.options.spawnFloatingText(
-          e.clientX,
-          e.clientY - 28,
-          `\u2212${formatFixed(breakdown.clickHpFraction * 100, 2)}%`,
-          true
-        );
-      }
-      this.updateUI();
+      this.onPlayerAttackHit(bossClickDamage, bossIsCrit, x, y);
     });
 
     this.options.gameState.onBossBattleFinished = ({
@@ -509,7 +526,6 @@ export class BossBattleModal {
   }
 
   private onPlayerAttackHit(
-    fpc: number,
     bossClickDamage: number,
     isCrit: boolean,
     x: number,
@@ -528,11 +544,8 @@ export class BossBattleModal {
         isCrit ? `\u2726 CRÍTICO! \u2212${pct}%` : `\u2212${pct}%`,
         true
       );
-    } else {
-      if (!this.options.gameState.getBossCombatBreakdown(battle.bossId).canDamageBoss) {
-        this.showHitFeedback(`Sem dano: Prontidão abaixo de ${BOSS_DAMAGE_READINESS_THRESHOLD * 100}%.`);
-      }
-      this.options.spawnFloatingText(x, y, `+${formatNumber(fpc)} FÉ`, true);
+    } else if (!this.options.gameState.getBossCombatBreakdown(battle.bossId).canDamageBoss) {
+      this.showHitFeedback(`Sem dano: Prontidão abaixo de ${BOSS_DAMAGE_READINESS_THRESHOLD * 100}%.`);
     }
     this.updateUI();
     events.emit(GameEvents.STATE_CHANGED);
@@ -623,11 +636,6 @@ export class BossBattleModal {
     if (this.bossWorldHpLabelEl) this.setText(this.bossWorldHpLabelEl, boss.name.toUpperCase());
     this.attackBtnEl?.setAttribute('aria-label', `Atacar ${boss.name}`);
 
-    this.setText(
-      this.combatFeedbackEl,
-      'A roda dos Fiéis está se formando...'
-    );
-
     if (this.riftsLayerEl) {
       this.riftsLayerEl.innerHTML = '';
     }
@@ -635,7 +643,16 @@ export class BossBattleModal {
 
     this.returnFocusEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
-    this.updateBattleCamera(0);
+    if (this.options.gameState.skipBossProcession) {
+      this.skipProcession();
+    } else {
+      this.setText(
+        this.combatFeedbackEl,
+        'A roda dos Fiéis está se formando...'
+      );
+      this.syncProcessionControls();
+      this.updateBattleCamera(0);
+    }
 
     this.options.audio.playBossBattleMusic?.();
     this.options.audio.playTone(320, 'triangle', 0.25);
@@ -643,6 +660,92 @@ export class BossBattleModal {
     this.drawWorldScene();
     this.startWorldLoop();
     return true;
+  }
+
+  private syncProcessionControls(): void {
+    if (!this.processionControlsEl) return;
+    const battle = this.options.gameState.activeBossBattle;
+    const inEntranceProcession =
+      this.isBattleActive &&
+      !this.climaxState &&
+      (this.bossState === 'awaiting_ritual' ||
+        this.bossState === 'walking' ||
+        battle?.combatStarted === false);
+    const inReturnProcession =
+      this.isBattleActive &&
+      !!this.climaxState &&
+      (this.incState === 'leading_return' || this.incState === 'returning_to_altar');
+    const shouldShow = inEntranceProcession || inReturnProcession;
+    const displayVal = shouldShow ? 'flex' : 'none';
+    if (this.processionControlsEl.style.display !== displayVal) {
+      this.processionControlsEl.style.display = displayVal;
+    }
+    if (this.autoSkipToggleEl) {
+      const checked = this.options.gameState.skipBossProcession;
+      if (this.autoSkipToggleEl.checked !== checked) {
+        this.autoSkipToggleEl.checked = checked;
+      }
+    }
+  }
+
+  public skipProcession(): void {
+    if (!this.isBattleActive) return;
+
+    if (this.climaxState && (this.incState === 'leading_return' || this.incState === 'returning_to_altar')) {
+      this.close();
+      return;
+    }
+
+    const battle = this.options.gameState.activeBossBattle;
+    if (!battle || this.climaxState) return;
+    if (this.bossState !== 'awaiting_ritual' && this.bossState !== 'walking' && battle.combatStarted !== false) {
+      this.syncProcessionControls();
+      return;
+    }
+
+    document.body.classList.remove('is-courtyard-visible');
+    const processionLen = polylineLength(this.processionPath);
+    const maxRequiredS =
+      this.followerActors.length > 0
+        ? Math.max(
+            ...this.followerActors.map(
+              (f) => f.stopS + (f.queueIndex + 1) * this.queueSpacing
+            )
+          )
+        : processionLen;
+    this.incOutboundS = polylineLength(this.outboundPath);
+    this.incProcessionS = Math.max(processionLen, maxRequiredS);
+    this.incX = this.incGuardSpot.x;
+    this.incY = this.incGuardSpot.y;
+    this.incFacing = BOSS_SPHERE_CENTER.x >= this.incX ? 1 : -1;
+    this.incState = 'guarding';
+    this.incCallRingProgress = 0;
+
+    for (const f of this.followerActors) {
+      const slot = samplePolylineAt(this.processionPath, f.stopS);
+      f.state = 'encircling';
+      f.trailS = f.stopS;
+      f.x = slot.x;
+      f.y = slot.y;
+      f.facing = BOSS_SPHERE_CENTER.x >= f.x ? 1 : -1;
+    }
+
+    this.bossX = BOSS_COMBAT_SPOT.x;
+    this.bossY = BOSS_COMBAT_SPOT.y;
+    this.bossState = 'idle';
+    this.bossWalkTimeSec = 0;
+    this.options.gameState.beginBossCombat();
+    battle.riftSpawnTimerSec = Math.min(battle.riftSpawnTimerSec, 0.25);
+
+    const boss = COMBAT_BOSSES.find((b) => b.id === battle.bossId);
+    this.setText(
+      this.combatFeedbackEl,
+      boss ? `${boss.name} está pronto. Prepare-se para aparar!` : ''
+    );
+    this.syncProcessionControls();
+    this.updateBattleCamera(0);
+    this.updateUI();
+    this.drawWorldScene();
   }
 
   public close(): void {
@@ -665,6 +768,7 @@ export class BossBattleModal {
     if (this.phaseBannerEl) {
       this.phaseBannerEl.style.display = 'none';
     }
+    this.syncProcessionControls();
     this.miracleBtnEl = null;
     // Give the canvas memory back: it is by far the largest allocation in the game.
     if (this.worldCanvasEl) {
@@ -1112,6 +1216,7 @@ export class BossBattleModal {
     this.attackBtnEl?.setAttribute('aria-disabled', 'true');
     if (this.attackBtnEl) this.attackBtnEl.style.display = 'none';
     if (this.bossHpPlateEl) this.bossHpPlateEl.style.display = 'none';
+    this.syncProcessionControls();
   }
 
   private updateVictoryReturn(dt: number, elapsedSec: number): void {
@@ -1166,8 +1271,11 @@ export class BossBattleModal {
       this.climaxState.remainingSec = Math.max(0, this.climaxState.remainingSec - elapsedSec);
       this.bossHitFlashSec = this.climaxState.victory ? 0.5 : 0;
       if (this.climaxState.remainingSec <= 0) {
-        if (this.climaxState.victory) this.beginVictoryReturn();
-        else this.close();
+        if (this.climaxState.victory && !this.options.gameState.skipBossProcession) {
+          this.beginVictoryReturn();
+        } else {
+          this.close();
+        }
       }
       return;
     }
@@ -1350,6 +1458,7 @@ export class BossBattleModal {
         if (battle?.bossId === 'boss_demiurge') {
           this.bossState = 'idle';
           this.options.gameState.beginBossCombat();
+          this.syncProcessionControls();
           this.updateUI();
           return;
         }
@@ -1394,6 +1503,7 @@ export class BossBattleModal {
         if (battle) {
           battle.riftSpawnTimerSec = Math.min(battle.riftSpawnTimerSec, 0.2);
         }
+        this.syncProcessionControls();
       }
     } else if (this.bossState === 'attacking') {
       this.bossAttackFrameTimeSec += dt;
@@ -1746,29 +1856,38 @@ export class BossBattleModal {
       btn.setAttribute('aria-label', 'Canalizar Milagre do Fiel: restaura +10% de Integridade da Esfera');
       btn.addEventListener('click', (e: MouseEvent) => {
         e.stopPropagation();
-        const res = this.options.gameState.clickBossMiracle();
-        if (res.triggered) {
-          this.miracleBeam = { fromX: lx, fromY: ly + 18, alpha: 1.0 };
-          this.options.audio.playChime();
-          this.showHitFeedback(`Milagre! +${res.healed.toFixed(0)}% da Esfera.`);
-          const x = e.clientX || window.innerWidth / 2;
-          const y = e.clientY || window.innerHeight / 2;
-          this.options.spawnFloatingText(x, y, '\u2726 MILAGRE! +10% ESFERA');
-          this.updateUI();
-          this.drawWorldScene();
-          events.emit(GameEvents.STATE_CHANGED);
-        }
+        if (!e.isTrusted) return;
+        this.collectActiveMiracle(e.clientX, e.clientY);
       });
       this.riftsLayerEl.appendChild(btn);
       this.miracleBtnEl = btn;
     }
 
+    this.miracleBtnEl.dataset.beamX = String(lx);
+    this.miracleBtnEl.dataset.beamY = String(ly + 18);
     this.miracleBtnEl.style.left = `${lx}px`;
     this.miracleBtnEl.style.top = `${ly}px`;
     this.setText(
       this.miracleBtnEl,
       `\u2726 MILAGRE +10% (${formatFixed(Math.max(0, miracle.remainingSec), 1)}s)`
     );
+  }
+
+  public collectActiveMiracle(clientX?: number, clientY?: number): boolean {
+    const res = this.options.gameState.clickBossMiracle();
+    if (!res.triggered) return false;
+    const fromX = Number(this.miracleBtnEl?.dataset.beamX) || Math.round(BOSS_SPHERE_CENTER.x - this.stageOriginX + SACRED_CIRCLE_RADIUS * 0.7);
+    const fromY = Number(this.miracleBtnEl?.dataset.beamY) || Math.round(BOSS_SPHERE_CENTER.y - this.stageOriginY - 162);
+    this.miracleBeam = { fromX, fromY, alpha: 1.0 };
+    this.options.audio.playChime();
+    this.showHitFeedback(`Milagre! +${res.healed.toFixed(0)}% da Esfera.`);
+    const x = clientX || window.innerWidth / 2;
+    const y = clientY || window.innerHeight / 2;
+    this.options.spawnFloatingText(x, y, '\u2726 MILAGRE! +10% ESFERA');
+    this.updateUI();
+    this.drawWorldScene();
+    events.emit(GameEvents.STATE_CHANGED);
+    return true;
   }
 
   private syncRiftsDOM(activeRifts: BossRift[]): void {
@@ -1973,6 +2092,7 @@ export class BossBattleModal {
         riftEl.addEventListener('pointerdown', (event) => event.stopPropagation());
         riftEl.addEventListener('click', (e: MouseEvent) => {
           e.stopPropagation();
+          if (!e.isTrusted) return;
           const odinDisplayed =
             kind === 'odin_raven' && this.odinTracker?.id === rift.id
               ? this.odinTracker.displayedRemaining

@@ -75,7 +75,8 @@ export class UnlocksTab {
       </div>
     `;
 
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      if (!e.isTrusted) return;
       this.buyUnlock(currentUnlock);
     });
 

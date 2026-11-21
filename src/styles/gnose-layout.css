@@ -101,6 +101,29 @@
 
 #card-gnose .gnose-guardian-readiness {
   white-space: pre-line;
+  padding: 5px 8px;
+  border-left: 2px solid rgba(173, 140, 77, 0.55);
+  background: rgba(20, 17, 14, 0.55);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+#card-gnose .gnose-guardian-readiness[data-readiness='blocked'] {
+  border-left-color: #d64b54;
+  background: rgba(74, 18, 24, 0.35);
+  color: #f3b8be;
+}
+
+#card-gnose .gnose-guardian-readiness[data-readiness='hard'] {
+  border-left-color: #f08c2e;
+  background: rgba(94, 46, 12, 0.32);
+  color: #ffd39e;
+}
+
+#card-gnose .gnose-guardian-readiness[data-readiness='ready'] {
+  border-left-color: #4db874;
+  background: rgba(20, 56, 35, 0.32);
+  color: #b7ecc8;
 }
 
 #card-gnose .gnose-guardian-readiness:empty {
@@ -108,10 +131,95 @@
 }
 
 html #card-gnose .gnose-tier-seal .btn-challenge-guardian {
-  min-height: 36px;
-  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 7px 10px;
   font-size: 15px;
   white-space: normal;
+  transition: background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, transform 0.1s ease;
+}
+
+#card-gnose .gnose-guardian-btn-main {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+#card-gnose .gnose-readiness-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  line-height: 1.25;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+}
+
+#card-gnose .gnose-readiness-pill[hidden] {
+  display: none;
+}
+
+html #card-gnose .gnose-tier-seal .btn-challenge-guardian.readiness-blocked {
+  background: linear-gradient(180deg, #42141a 0%, #260b0f 100%) !important;
+  border-color: #c8464f !important;
+  color: #ffd0d5 !important;
+  box-shadow: inset 0 0 0 1px rgba(214, 75, 84, 0.32);
+}
+
+html #card-gnose .gnose-tier-seal .btn-challenge-guardian.readiness-blocked:hover {
+  background: linear-gradient(180deg, #561a22 0%, #330e13 100%) !important;
+  border-color: #e8626b !important;
+}
+
+html #card-gnose .gnose-tier-seal .btn-challenge-guardian.readiness-blocked .gnose-readiness-pill {
+  background: rgba(214, 75, 84, 0.22);
+  border-color: rgba(232, 98, 107, 0.8);
+  color: #ff99a1;
+}
+
+html #card-gnose .gnose-tier-seal .btn-challenge-guardian.readiness-hard {
+  background: linear-gradient(180deg, #4d260b 0%, #2d1506 100%) !important;
+  border-color: #e68227 !important;
+  color: #ffe0b5 !important;
+  box-shadow: inset 0 0 0 1px rgba(240, 140, 46, 0.38);
+}
+
+html #card-gnose .gnose-tier-seal .btn-challenge-guardian.readiness-hard:hover {
+  background: linear-gradient(180deg, #63310e 0%, #3b1b08 100%) !important;
+  border-color: #ff9e42 !important;
+}
+
+html #card-gnose .gnose-tier-seal .btn-challenge-guardian.readiness-hard .gnose-readiness-pill {
+  background: rgba(240, 140, 46, 0.24);
+  border-color: rgba(255, 166, 77, 0.85);
+  color: #ffbd70;
+}
+
+html #card-gnose .gnose-tier-seal .btn-challenge-guardian.readiness-ready {
+  background: linear-gradient(180deg, #173624 0%, #0e2217 100%) !important;
+  border-color: #4db874 !important;
+  color: #defae7 !important;
+  box-shadow: inset 0 0 0 1px rgba(92, 196, 128, 0.35);
+}
+
+html #card-gnose .gnose-tier-seal .btn-challenge-guardian.readiness-ready:hover {
+  background: linear-gradient(180deg, #1f4830 0%, #142f1f 100%) !important;
+  border-color: #6cd692 !important;
+}
+
+html #card-gnose .gnose-tier-seal .btn-challenge-guardian.readiness-ready .gnose-readiness-pill {
+  background: rgba(77, 184, 116, 0.22);
+  border-color: rgba(108, 214, 146, 0.8);
+  color: #93f2b4;
 }
 
 #card-gnose .gnose-guardian-requirement {
@@ -123,6 +231,14 @@ html #card-gnose .gnose-tier-seal .btn-challenge-guardian {
   gap: 6px;
   padding: 8px;
   margin-bottom: 12px;
+}
+
+#card-gnose .gnose-controls-row {
+  flex-wrap: wrap;
+}
+
+#card-gnose .gnose-toggles-group {
+  flex-wrap: wrap;
 }
 
 #card-gnose .gnose-reset-section p {

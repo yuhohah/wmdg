@@ -4,11 +4,11 @@
 
 @media (max-width: 860px) {
   .main-content {
-    padding: 8px 10px calc(76px + env(safe-area-inset-bottom, 0px)) 10px;
+    padding: calc(12px + env(safe-area-inset-top, 0px)) calc(10px + env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) calc(10px + env(safe-area-inset-left, 0px));
   }
 
   #gameplay-screen {
-    padding: 6px 10px calc(78px + env(safe-area-inset-bottom, 0px)) 10px !important;
+    padding: 0 !important;
     height: 100% !important;
     box-sizing: border-box !important;
     overflow: hidden !important;

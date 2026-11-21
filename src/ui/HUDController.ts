@@ -117,6 +117,12 @@ export class HUDController {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') this.hideTooltip();
     });
+    document.addEventListener('pointerdown', (e) => {
+      if (!this.activeAnchorEl || !this.tooltipEl || this.tooltipEl.hidden) return;
+      const target = e.target as Node | null;
+      if (target && (this.activeAnchorEl.contains(target) || this.tooltipEl.contains(target))) return;
+      this.hideTooltip();
+    });
     window.addEventListener('blur', () => this.hideTooltip());
     window.addEventListener('resize', () => this.hideTooltip());
   }
@@ -280,8 +286,13 @@ export class HUDController {
       const anchorRect = this.activeAnchorEl.getBoundingClientRect();
       const tipRect = this.tooltipEl.getBoundingClientRect();
       this.cachedTipWidth = tipRect.width;
-      const leftStr = `${Math.max(8, Math.min(window.innerWidth - this.cachedTipWidth - 8, anchorRect.left))}px`;
-      const topStr = `${Math.max(8, anchorRect.bottom + 8)}px`;
+      const leftStr = `${Math.round(Math.max(8, Math.min(window.innerWidth - this.cachedTipWidth - 8, anchorRect.left)))}px`;
+      const maxTop = Math.max(8, window.innerHeight - tipRect.height - 8);
+      const preferredTop = anchorRect.bottom + 8;
+      const topPx = preferredTop <= maxTop
+        ? preferredTop
+        : Math.max(8, Math.min(maxTop, anchorRect.top - tipRect.height - 8));
+      const topStr = `${Math.round(topPx)}px`;
       if (this.lastTooltipLeft !== leftStr) {
         this.lastTooltipLeft = leftStr;
         this.tooltipEl.style.left = leftStr;

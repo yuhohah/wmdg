@@ -9,6 +9,12 @@
   left: 0;
   width: 100%;
   height: 100%;
+  padding:
+    calc(10px + env(safe-area-inset-top, 0px))
+    calc(10px + env(safe-area-inset-right, 0px))
+    calc(10px + env(safe-area-inset-bottom, 0px))
+    calc(10px + env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
   background: rgba(5, 7, 13, 0.85);
   backdrop-filter: blur(12px);
   z-index: 100;
@@ -29,14 +35,33 @@
   background: var(--bg-panel);
   border: 2px solid var(--border-mid);
   border-radius: 12px;
-  width: 90%;
+  width: 100%;
   max-width: 520px;
-  max-height: 88vh;
+  max-height: calc(100dvh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 32px;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.9);
   transform: translateY(20px);
   transition: transform 0.3s ease;
+}
+
+.achievement-modal-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.achievement-modal-card .modal-header {
+  flex-shrink: 0;
+}
+
+.achievement-modal-card #tab-achievements {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none !important;
+  overscroll-behavior: contain;
 }
 
 .modal-overlay.open .modal-slide-card {
@@ -579,15 +604,17 @@
 
 @media (max-width: 600px) {
   .achievements-popup-container {
-    top: 14px;
-    right: 12px;
-    left: 12px;
+    top: calc(10px + env(safe-area-inset-top, 0px));
+    right: calc(10px + env(safe-area-inset-right, 0px));
+    left: calc(10px + env(safe-area-inset-left, 0px));
+    max-width: none;
     align-items: center;
   }
   .ach-popup-toast,
   .ach-popup-square {
     width: 100%;
     max-width: 100%;
+    box-sizing: border-box;
   }
 }
 
@@ -657,8 +684,10 @@
   position: fixed;
   pointer-events: auto;
   z-index: 860;
-  min-width: 290px;
-  max-width: 380px;
+  min-width: 0;
+  max-width: min(380px, calc(100vw - 16px));
+  max-height: calc(100dvh - 16px);
+  box-sizing: border-box;
   background: linear-gradient(150deg, #111827 0%, #080c16 100%);
   border: 2.5px solid #f59e0b;
   border-radius: 14px;

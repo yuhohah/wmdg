@@ -400,7 +400,7 @@
                       </button>
                       <div class="gnose-stats-grid">
                         <div class="gnose-stat-box">
-                          <span class="gnose-stat-label">GNOSE</span>
+                          <span class="gnose-stat-label">GNOSE TOTAL</span>
                           <span id="gnose-balance-val" class="gnose-stat-val">0</span>
                         </div>
                         <div class="gnose-stat-box">
@@ -417,6 +417,10 @@
                         <label class="gnose-toggle-label">
                           <input type="checkbox" id="gnose-confirm-toggle" checked />
                           <span>Confirmar Ascensão</span>
+                        </label>
+                        <label class="gnose-toggle-label" title="Pula automaticamente a procissão de entrada e retorno nas batalhas contra Guardiões">
+                          <input type="checkbox" id="gnose-skip-procession-toggle" />
+                          <span>Pular procissão</span>
                         </label>
                       </div>
                     </div>
@@ -774,13 +778,6 @@
                 <div class="setting-desc">Acompanhe as novidades e o histórico do jogo.</div>
               </div>
               <button id="btn-show-changelog" class="btn-setting-action">Ver novidades</button>
-            </div>
-            <div class="setting-item">
-              <div>
-                <div class="setting-name">Menu de desenvolvimento</div>
-                <div class="setting-desc">Controles de teste, recursos e velocidade do jogo.</div>
-              </div>
-              <button id="btn-open-dev-menu" class="btn-setting-action" type="button">Abrir menu dev</button>
             </div>
           </div>
         </section>

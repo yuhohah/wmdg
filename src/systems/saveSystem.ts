@@ -1,4 +1,5 @@
 import { isDemiurgeState, type DemiurgeState } from './demiurge.js';
+import { computeSaveSignature, verifySaveSignature } from './saveSignature.js';
 // --- Save System for Cult of the Sphere ---
 
 import type {
@@ -96,33 +97,62 @@ export function isValidSaveData(value: unknown): value is SaveData {
       .every(key => optional(gnose, key, nonnegative)) || !optional(gnose, 'gnoseResets', integer)) return false;
     if (!optional(gnose, 'bossCurseStacks', integer) || !optional(gnose, 'bossCurseBossId', v => v === null || typeof v === 'string')) return false;
     if (!['unlockedUpgrades', 'defeatedBosses', 'maxCurseDefeatedBosses'].every(key => optional(gnose, key, strings))) return false;
-    if (!['confirmReset', 'autoFollowersEnabled', 'autoFervorEnabled', 'autoRelicsEnabled', 'autoRelicUpgradesEnabled']
+    if (!['confirmReset', 'skipBossProcession', 'autoFollowersEnabled', 'autoFervorEnabled', 'autoRelicsEnabled', 'autoRelicUpgradesEnabled']
       .every(key => optional(gnose, key, v => typeof v === 'boolean'))) return false;
     if (!optional(gnose, 'bestBossTimesSec', times => record(times) && Object.values(times).every(time => nonnegative(time) && time > 0))) return false;
   }
   return true;
 }
 
+interface SignedSaveEnvelope {
+  v: number;
+  payload: string;
+  sig: string;
+}
+
+function isSignedSaveEnvelope(value: unknown): value is SignedSaveEnvelope {
+  return (
+    record(value) &&
+    value.v === 1 &&
+    typeof value.payload === 'string' &&
+    typeof value.sig === 'string'
+  );
+}
+
 export class SaveSystem {
   public static readonly CURRENT_VERSION = 1;
+  private static readonly ENVELOPE_VERSION = 1;
   private static readonly STORAGE_KEY = 'cult_of_the_sphere_save_v1';
   private static readonly BACKUP_KEY = 'cult_of_the_sphere_save_backup';
   private static lastValidatedJson: string | null = null;
 
   /**
-   * Serializes the save data to a JSON string.
+   * Serializes the save data into a signed JSON envelope.
    */
   public static serialize(data: SaveData): string {
     if (!isValidSaveData(data)) throw new TypeError('Dados de progresso inválidos.');
-    return JSON.stringify(data);
+    const payload = JSON.stringify(data);
+    const envelope: SignedSaveEnvelope = {
+      v: this.ENVELOPE_VERSION,
+      payload,
+      sig: computeSaveSignature(payload),
+    };
+    return JSON.stringify(envelope);
   }
 
   /**
-   * Deserializes and validates a JSON string into SaveData.
+   * Verifies the integrity signature and deserializes a signed JSON envelope into SaveData.
    */
   public static deserialize(jsonStr: string): SaveData | null {
     try {
-      const parsed = JSON.parse(jsonStr);
+      const envelope = JSON.parse(jsonStr);
+      if (!isSignedSaveEnvelope(envelope)) {
+        return null;
+      }
+      if (!verifySaveSignature(envelope.payload, envelope.sig)) {
+        return null;
+      }
+      const parsed = JSON.parse(envelope.payload);
       if (!isValidSaveData(parsed)) {
         return null;
       }
@@ -262,6 +292,7 @@ export interface SaveStateHost {
   gnoseAutoAccumulatorSec: number;
   sphereAutoAccumulatorSec: number;
   confirmGnoseReset: boolean;
+  skipBossProcession: boolean;
   autoFollowersEnabled: boolean;
   autoFervorEnabled: boolean;
   autoRelicsEnabled: boolean;
@@ -327,6 +358,7 @@ export function buildSaveDataFromState(state: SaveStateHost): SaveData {
       automationAccumulatorSec: state.gnoseAutoAccumulatorSec,
       sphereAutoAccumulatorSec: state.sphereAutoAccumulatorSec,
       confirmReset: state.confirmGnoseReset,
+      skipBossProcession: state.skipBossProcession,
       autoFollowersEnabled: state.autoFollowersEnabled,
       autoFervorEnabled: state.autoFervorEnabled,
       autoRelicsEnabled: state.autoRelicsEnabled,
@@ -506,6 +538,8 @@ export function applySaveDataToState(state: SaveStateHost, save: SaveData): void
       ? Math.max(0, Math.min(1, save.gnose.automationAccumulatorSec!))
       : 0;
     state.confirmGnoseReset = typeof save.gnose.confirmReset === 'boolean' ? save.gnose.confirmReset : true;
+    state.skipBossProcession =
+      typeof save.gnose.skipBossProcession === 'boolean' ? save.gnose.skipBossProcession : false;
     state.autoFollowersEnabled =
       typeof save.gnose.autoFollowersEnabled === 'boolean' ? save.gnose.autoFollowersEnabled : true;
     state.autoFervorEnabled =

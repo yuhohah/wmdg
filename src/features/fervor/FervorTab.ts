@@ -140,7 +140,8 @@ export class FervorTab {
         </div>
       `;
 
-      card.addEventListener('click', () => {
+      card.addEventListener('click', (e) => {
+        if (!e.isTrusted) return;
         const current = this.options.gameState.fervorUpgrades.find(item => item.id === upg.id);
         if (current) this.buyUpgrade(current);
       });

@@ -1,6 +1,6 @@
 .changelog-dialog {
-  width: min(760px, calc(100vw - 24px));
-  max-height: calc(100dvh - 32px);
+  width: min(760px, calc(100vw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+  max-height: calc(100dvh - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
   overflow: hidden;
   color: var(--text-main);

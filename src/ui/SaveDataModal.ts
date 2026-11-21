@@ -152,7 +152,7 @@ export class SaveDataModal {
         );
         this.close();
       } else if (success === false) {
-        await cultDialog('Registro inválido', 'Código de save inválido ou incompatível.');
+        await cultDialog('Registro inválido', 'Código de save inválido, adulterado ou incompatível.');
       }
     }
   }

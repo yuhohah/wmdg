@@ -67,7 +67,8 @@ export class IncarnationTab {
   }
 
   private bindEvents(): void {
-    this.btnUpgradeEl?.addEventListener('click', () => {
+    this.btnUpgradeEl?.addEventListener('click', (e) => {
+      if (!e.isTrusted) return;
       this.upgradeIncarnation();
     });
   }

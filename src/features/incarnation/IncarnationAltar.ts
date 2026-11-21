@@ -106,6 +106,7 @@ export class IncarnationAltar {
 
   private setupEvents(): void {
     this.container?.addEventListener('click', (e: MouseEvent) => {
+      if (!e.isTrusted) return;
       this.triggerAltarClick(e);
     });
   }

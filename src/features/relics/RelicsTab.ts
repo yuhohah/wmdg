@@ -77,7 +77,8 @@ export class RelicsTab {
   }
 
   private bindEvents(): void {
-    this.btnConvertRelicsEl?.addEventListener('click', () => {
+    this.btnConvertRelicsEl?.addEventListener('click', (e) => {
+      if (!e.isTrusted) return;
       this.convertFaithToRelics();
     });
   }
@@ -198,7 +199,8 @@ export class RelicsTab {
         </div>
       `;
 
-      card.addEventListener('click', () => {
+      card.addEventListener('click', (e) => {
+        if (!e.isTrusted) return;
         const current = this.options.gameState.relicUpgrades.find(item => item.id === relic.id);
         if (current) this.buyRelicUpgrade(current);
       });

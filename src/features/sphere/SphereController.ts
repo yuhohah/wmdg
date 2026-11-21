@@ -90,14 +90,18 @@ export class SphereController {
   }
 
   private handleKeyDown = (event: KeyboardEvent): void => {
+    if (this.gameState.activeBossBattle) return;
     if ((event.code !== 'Space' && event.key !== ' ') || !this.divineSphereBtn
       || !canUseGameplayShortcut(event, { allowedControl: this.divineSphereBtn })) return;
-    // One click per press, with the same feedback and combat listeners as the mouse.
+    // One click per press, with the same feedback as the mouse.
     event.preventDefault();
-    if (!event.repeat) this.divineSphereBtn.click();
+    if (!event.repeat) this.onSphereClicked();
   };
 
-  private handleClick = (e: MouseEvent): void => this.onSphereClicked(e);
+  private handleClick = (e: MouseEvent): void => {
+    if (!e.isTrusted || this.gameState.activeBossBattle) return;
+    this.onSphereClicked(e);
+  };
 
   public syncProgress = (): void => {
     this.sphereAnimation?.setProgress(this.gameState.isIncarnationUnlocked(), this.gameState.incarnationStage);
@@ -138,6 +142,7 @@ export class SphereController {
   }
 
   public onSphereClicked(e?: MouseEvent): void {
+    if (this.gameState.activeBossBattle) return;
     this.audio.init();
     this.triggerHaptic(8);
     const { fpc, isCrit } = this.gameState.addClick();

@@ -99,10 +99,27 @@ export class SettingsModal {
   }
 
   private bindEvents(): void {
-    document.getElementById('btn-open-dev-menu')?.addEventListener('click', () => {
-      this.close();
-      this.options.onOpenDevMenu?.();
-    });
+    if (import.meta.env.DEV && this.options.onOpenDevMenu) {
+      const systemGroup = document
+        .getElementById('settings-heading-system')
+        ?.parentElement?.querySelector('.settings-group');
+      if (systemGroup && !document.getElementById('btn-open-dev-menu')) {
+        const item = document.createElement('div');
+        item.className = 'setting-item';
+        item.innerHTML = `
+          <div>
+            <div class="setting-name">Menu de desenvolvimento</div>
+            <div class="setting-desc">Controles de teste, recursos e velocidade do jogo.</div>
+          </div>
+          <button id="btn-open-dev-menu" class="btn-setting-action" type="button">Abrir menu dev</button>
+        `;
+        systemGroup.appendChild(item);
+      }
+      document.getElementById('btn-open-dev-menu')?.addEventListener('click', () => {
+        this.close();
+        this.options.onOpenDevMenu?.();
+      });
+    }
     document.getElementById('btn-replay-tutorials')?.addEventListener('click', () => {
       this.close();
       this.options.onReplayTutorials?.();

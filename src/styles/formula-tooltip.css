@@ -46,6 +46,8 @@
   position: fixed;
   z-index: 12000;
   width: min(360px, calc(100vw - 16px));
+  max-height: calc(100dvh - 16px);
+  overflow-y: auto;
   box-sizing: border-box;
   padding: 10px 14px;
   border: 1px solid var(--line-strong);

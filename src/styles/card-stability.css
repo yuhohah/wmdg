@@ -23,3 +23,14 @@ html :is(.fervor-upgrade-card, .relic-action-card):is(:hover, :active) {
 :is(.fervor-upgrade-card, .relic-action-card) {
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
+
+@media (max-width: 480px) {
+  #card-followers .followers-production-summary {
+    width: auto;
+    max-width: 55%;
+  }
+
+  #card-followers .followers-rate-badge {
+    font-size: 17px;
+  }
+}

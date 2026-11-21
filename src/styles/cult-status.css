@@ -5,7 +5,7 @@
 
 #cult-status-modal {
   width: min(560px, calc(100vw - 24px));
-  max-height: calc(100dvh - 24px);
+  max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
   overflow-y: auto;
 }
@@ -19,11 +19,13 @@
 }
 
 #cult-status-modal .stat-box {
-  gap: 16px;
+  gap: 6px 16px;
+  flex-wrap: wrap;
 }
 
 #cult-status-modal .stat-val {
   text-align: right;
+  margin-left: auto;
 }
 
 @media (max-width: 860px) {

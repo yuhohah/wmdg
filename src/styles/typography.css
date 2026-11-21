@@ -168,13 +168,50 @@ html :is(.btn-setting-action, .btn-setting-danger, .btn-slide-play,
 
 @media (max-width: 860px) {
   .resource-item {
-    /* The sans-serif counters need more room than the former narrow pixel type. */
-    flex: 1 1 120px !important;
-    grid-template-rows: minmax(12px, auto) minmax(21px, auto) minmax(15px, auto) !important;
+    flex: 1 1 88px !important;
+    grid-template-rows: minmax(12px, auto) minmax(18px, auto) minmax(14px, auto) !important;
   }
 
   .res-label {
-    font-size: 10px;
+    font-size: 9.5px;
     letter-spacing: 0;
+  }
+
+  .quicknav-btn {
+    font-size: 11px;
+    line-height: 1.15;
+  }
+}
+
+@media (max-width: 600px) {
+  .spotlight-balloon {
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .spotlight-balloon-title {
+    font-size: 19px;
+  }
+
+  .spotlight-balloon-desc,
+  .spotlight-balloon-action-tip {
+    font-size: 13.5px;
+    line-height: 1.35;
+  }
+
+  .spotlight-balloon-badge,
+  .spotlight-tracker-meta,
+  .spotlight-tracker-val {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .resource-item {
+    flex: 1 1 82px !important;
+  }
+
+  .quicknav-btn {
+    font-size: 10.5px;
   }
 }

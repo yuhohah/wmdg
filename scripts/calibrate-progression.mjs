@@ -14,21 +14,21 @@ try {
   const { PROGRESSION_BALANCE } = await server.ssrLoadModule('/src/config/gnose.ts');
   if (process.env.PROGRESSION_BALANCE) Object.assign(PROGRESSION_BALANCE, JSON.parse(process.env.PROGRESSION_BALANCE));
   const { ProgressionSimulator } = await server.ssrLoadModule('/src/benchmark/ProgressionSimulator.ts');
-  const { REFERENCE_BEHAVIOR } = await server.ssrLoadModule('/src/benchmark/behavior.ts');
+  const { ACTIVE_BEHAVIOR } = await server.ssrLoadModule('/src/benchmark/behavior.ts');
   const scenarios = [
-    { id: 'reference', profile: 'reference' },
-    { id: 'no-miracles', profile: 'reference', behavior: { ...REFERENCE_BEHAVIOR, miracleCatchChance: 0 } },
+    { id: 'active', profile: 'active' },
+    { id: 'no-miracles', profile: 'active', behavior: { ...ACTIVE_BEHAVIOR, miracleCatchChance: 0 } },
     ...(suite === 'final' ? [
-      { id: 'intense', profile: 'active' },
-      { id: 'comfort', profile: 'reference', purchasePriority: 'comfort' },
-      { id: 'production', profile: 'reference', purchasePriority: 'production' },
-      { id: 'immediate', profile: 'reference', resetPolicy: 'immediate' },
-      { id: 'short', profile: 'reference', resetPolicy: 'short' },
-      { id: 'long', profile: 'reference', resetPolicy: 'long' },
+      { id: 'comfort', profile: 'active', purchasePriority: 'comfort' },
+      { id: 'cost', profile: 'active', purchasePriority: 'cost' },
+      { id: 'immediate', profile: 'active', resetPolicy: 'immediate' },
+      { id: 'short', profile: 'active', resetPolicy: 'short' },
+      { id: 'long', profile: 'active', resetPolicy: 'long' },
       { id: 'casual', profile: 'casual' },
       { id: 'casual-hidden', profile: 'casual', absenceMode: 'hidden' },
       { id: 'casual-save', profile: 'casual', absenceMode: 'save' },
-      { id: 'absence', profile: 'reference', absenceMode: 'save', behavior: { ...REFERENCE_BEHAVIOR, initialVisitDurationSec: 600, visitDurationSec: 0, absenceMinSec: Infinity, absenceMaxSec: Infinity } },
+      { id: 'afk', profile: 'afk' },
+      { id: 'absence', profile: 'active', absenceMode: 'save', behavior: { ...ACTIVE_BEHAVIOR, initialVisitDurationSec: 600, visitDurationSec: 0, absenceMinSec: Infinity, absenceMaxSec: Infinity } },
     ] : []),
   ];
   const { GNOSE_UPGRADES, GNOSE_PACING } = await server.ssrLoadModule('/src/config/gnose.ts');

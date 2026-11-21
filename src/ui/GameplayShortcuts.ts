@@ -12,7 +12,7 @@ export const FERVOR_SHORTCUTS = ['q', 'w', 'e', 'r', 't', 'y'] as const;
 export const RELIC_SHORTCUTS = ['a', 's', 'd', 'f', 'g', 'h'] as const;
 
 export function canUseGameplayShortcut(event: KeyboardEvent, options: { allowedControl?: HTMLElement | null; allowButtonFocus?: boolean } = {}): boolean {
-  if (event.defaultPrevented || event.isComposing || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) return false;
+  if (!event.isTrusted || event.defaultPrevented || event.isComposing || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) return false;
   if (document.hidden || !document.querySelector('#gameplay-screen.active')) return false;
   if (document.querySelector('dialog[open], .modal-overlay.open, #test-menu-overlay.visible')) return false;
   const target = event.target as HTMLElement | null;

@@ -1,4 +1,4 @@
-export type PlayerArchetype = 'reference' | 'active' | 'casual' | 'afk';
+export type PlayerArchetype = 'active' | 'casual' | 'afk';
 
 export type ManualAction = 'demiurge' | 'sphere' | 'blessing' | 'miracle' | 'rift' | 'boss_miracle' | 'follower'
   | 'fervor' | 'relic' | 'unlock' | 'incarnation' | 'transmutation' | 'gnose' | 'gnose_confirm' | 'gnose_upgrade' | 'challenge' | 'automation_toggle';
@@ -15,7 +15,7 @@ export interface SimulationOptions {
   behavior?: Partial<import('./behavior.js').PlayerBehavior>;
   absenceMode?: 'visible' | 'hidden' | 'save';
   stopAfterUpgrade?: string;
-  resetPolicy?: 'immediate' | 'short' | 'medium' | 'long';
+  resetPolicy?: 'stall' | 'immediate' | 'short' | 'medium' | 'long';
   purchasePriority?: 'cost' | 'comfort' | 'production';
   onSnapshot?: (timeSec: number, save: import('../systems/saveSystem.js').SaveData) => void;
   maxDurationSec?: number;

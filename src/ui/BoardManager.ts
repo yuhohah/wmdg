@@ -5,6 +5,7 @@ interface FollowMeasure {
   width: number;
   height: number;
   top: number;
+  bottom: number;
   worldWidth: number;
   worldHeight: number;
 }
@@ -516,11 +517,12 @@ export class BoardManager {
     this.isCameraTransitioning = false;
     if (elapsedSec <= 0) this.invalidateFollowMeasure();
     const measure = this.followMeasure ??= this.measureFollow(this.viewportEl, this.worldEl);
-    const { width, height, top } = measure;
-    const bottom = 100;
-    const zoom = Math.max(this.minZoom, Math.min(1.1, (width - 64) / target.width, (height - top - bottom) / target.height));
+    const { width, height, top, bottom } = measure;
+    const sidePad = width <= 860 ? 24 : 64;
+    const availH = Math.max(120, height - top - bottom);
+    const zoom = Math.max(this.minZoom, Math.min(1.1, Math.max(120, width - sidePad) / target.width, availH / target.height));
     const panX = width / 2 - target.x * zoom;
-    const panY = top + (height - top - bottom) / 2 - target.y * zoom;
+    const panY = top + availH / 2 - target.y * zoom;
     const blend = elapsedSec <= 0 ? 1 : 1 - Math.exp(-6 * Math.min(0.1, elapsedSec));
     let nextPanX = this.panX + (panX - this.panX) * blend;
     let nextPanY = this.panY + (panY - this.panY) * blend;
@@ -547,13 +549,41 @@ export class BoardManager {
     this.followMeasure = null;
   }
 
+  private measureBottomSafe(viewHeight: number, isMobile: boolean): number {
+    let minTop = viewHeight;
+    let foundVisible = false;
+    const controls = [
+      document.getElementById('board-quicknav-bar'),
+      document.querySelector<HTMLElement>('.board-zoom-controls'),
+    ];
+    for (const el of controls) {
+      if (!el) continue;
+      const rect = el.getBoundingClientRect();
+      if (rect.height <= 0 || rect.width <= 0) continue;
+      const computed = window.getComputedStyle(el);
+      if (computed.display === 'none' || computed.visibility === 'hidden' || parseFloat(computed.opacity) === 0) {
+        continue;
+      }
+      foundVisible = true;
+      if (rect.top < minTop) minTop = rect.top;
+    }
+    if (!foundVisible) {
+      return isMobile ? 54 : 32;
+    }
+    return Math.min(Math.round(viewHeight * 0.45), Math.max(16, Math.round(viewHeight - minTop + 10)));
+  }
+
   private measureFollow(viewportEl: HTMLElement, worldEl: HTMLElement): FollowMeasure {
     this.recoverNativeScroll();
+    const width = viewportEl.clientWidth || window.innerWidth;
+    const height = viewportEl.clientHeight || window.innerHeight;
+    const isMobile = width <= 860;
     const hud = hudBottom(document.querySelector('.top-hud-bar'));
     return {
-      width: viewportEl.clientWidth || window.innerWidth,
-      height: viewportEl.clientHeight || window.innerHeight,
-      top: Math.max(90, hud + 12),
+      width,
+      height,
+      top: Math.min(Math.round(height * 0.45), Math.max(isMobile ? 54 : 90, Math.round(hud + 10))),
+      bottom: this.measureBottomSafe(height, isMobile),
       worldWidth: worldEl.offsetWidth,
       worldHeight: worldEl.offsetHeight,
     };
@@ -571,19 +601,17 @@ export class BoardManager {
     const viewHeight = this.viewportEl.clientHeight || window.innerHeight;
     const isMobile = viewWidth <= 860;
 
-    // Safe viewport margins accounting for Top HUD and Bottom QuickNav + Utility Row
+    // Safe viewport margins accounting for Top HUD and visible Bottom Controls
     const hud = hudBottom(document.querySelector('.top-hud-bar'));
     const topSafe = hud > 0
-      ? Math.min(viewHeight / 2, Math.round(hud + 8))
+      ? Math.min(Math.round(viewHeight * 0.45), Math.round(hud + 8))
       : (isMobile ? 54 : 76);
 
-    const navEl = document.getElementById('board-quicknav-bar');
-    const navH = navEl && navEl.offsetHeight > 0 ? navEl.offsetHeight : 44;
-    const bottomSafe = isMobile ? navH + 54 : navH + 26;
+    const bottomSafe = this.measureBottomSafe(viewHeight, isMobile);
 
     const sidePad = isMobile ? 8 : 28;
-    const availW = Math.max(200, viewWidth - sidePad * 2);
-    const availH = Math.max(200, viewHeight - topSafe - bottomSafe);
+    const availW = Math.max(180, viewWidth - sidePad * 2);
+    const availH = Math.max(120, viewHeight - topSafe - bottomSafe);
 
     const style = window.getComputedStyle(card);
     const cardLeft = card.offsetLeft || parseFloat(style.left) || 1490;
@@ -609,7 +637,7 @@ export class BoardManager {
           cardCenterY = cardTop + cardHeight * 0.62;
         }
         targetZoom = isMobile
-          ? Math.max(0.82, Math.min(0.98, availW / 340, availH / 410))
+          ? Math.max(this.minZoom, Math.min(0.98, availW / 340, availH / (unlockVisible ? 430 : 350)))
           : Math.max(0.85, Math.min(1.0, availH / 540));
       }
     } else {
