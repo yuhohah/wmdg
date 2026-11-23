@@ -76,7 +76,7 @@ export function ascensionSummary(gs: GameStateManager): string {
   const lost = ['Fé', 'Fiéis', 'Fervor', 'Ritos', 'Avatar', 'Fragmentos', ...(keepRelics ? [`${formatNumber(100 - gs.getEternalRelicRetention() * 100)}% dos níveis de Cornucópia e Tocha`] : ['Relíquias']), 'Selos'];
   const kept = [
     'Gnose', 'nós da Árvore', 'Guardiões derrotados', 'conquistas',
-    ...(keepRelics ? [`Relíquias com limite e ${formatNumber(gs.getEternalRelicRetention() * 100)}% dos níveis de Cornucópia e Tocha (arredondados para baixo)`] : []),
+    ...(keepRelics ? [`demais Relíquias e ${formatNumber(gs.getEternalRelicRetention() * 100)}% dos níveis de Cornucópia e Tocha (arredondados para baixo)`] : []),
     ...(keepEncarnacao ? ['Selo da Encarnação'] : []),
   ];
   return `Seu culto recomeça do início e você recebe +${formatNumber(gs.getGnoseToGet())} Gnose.\n\nVocê perde: ${joinList(lost)}.\nVocê mantém: ${joinList(kept)}.`;

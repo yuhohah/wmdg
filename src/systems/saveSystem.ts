@@ -16,6 +16,7 @@ import { GNOSE_BOSSES } from '../config/bosses.js';
 import {
   GNOSE_UPGRADES,
   LEGACY_GNOSE_AUTOMATIONS,
+  LEGACY_GNOSE_RITUAL_RELIC_AUTOMATIONS,
   LEGACY_GNOSE_SEAL_AUTOMATIONS,
   PROGRESSION_OLD_PRICES,
   PROGRESSION_REVISION,
@@ -24,6 +25,7 @@ import {
   PROGRESSION_REVISION_3_PRICES,
   PROGRESSION_REVISION_4_PRICES,
   PROGRESSION_REVISION_5_PRICES,
+  PROGRESSION_REVISION_6_PRICES,
   RETIRED_GNOSE_UPGRADES,
 } from '../config/gnose.js';
 
@@ -498,11 +500,12 @@ export function applySaveDataToState(state: SaveStateHost, save: SaveData): void
         }
       }
     }
-    if ((save.progressionRevision ?? 0) < PROGRESSION_REVISION) {
+    const revision = save.progressionRevision ?? 0;
+    let paidPrices: Readonly<Record<string, number>> | undefined;
+    if (revision < PROGRESSION_REVISION) {
       // Unversioned saves only have known historical prices for a few nodes.
       // Never assume they paid the later, much higher revision 1 prices.
-      const revision = save.progressionRevision ?? 0;
-      const paidPrices =
+      paidPrices =
         revision < 1
           ? PROGRESSION_OLD_PRICES
           : revision < 2
@@ -513,14 +516,17 @@ export function applySaveDataToState(state: SaveStateHost, save: SaveData): void
                 ? PROGRESSION_REVISION_3_PRICES
                 : revision < 5
                   ? PROGRESSION_REVISION_4_PRICES
-                  : PROGRESSION_REVISION_5_PRICES;
+                  : revision < 6
+                    ? PROGRESSION_REVISION_5_PRICES
+                    : PROGRESSION_REVISION_6_PRICES;
       for (const [id, paid] of Object.entries(paidPrices)) {
-        if (state.hasGnoseUpgrade(id)) {
-          state.gnosePoints += Math.max(0, paid - GNOSE_UPGRADES.find((u) => u.id === id)!.cost);
+        const current = GNOSE_UPGRADES.find((u) => u.id === id);
+        if (current && state.hasGnoseUpgrade(id)) {
+          state.gnosePoints += Math.max(0, paid - current.cost);
         }
       }
     }
-    migrateGnoseUpgrades(state);
+    migrateGnoseUpgrades(state, revision, paidPrices);
     state.bossCurseTimerSec =
       typeof save.gnose.bossCurseTimerSec === 'number' ? Math.max(0, save.gnose.bossCurseTimerSec) : 0;
     state.bossCurseStacks =
@@ -587,7 +593,11 @@ export function applySaveDataToState(state: SaveStateHost, save: SaveData): void
   }
 }
 
-export function migrateGnoseUpgrades(state: SaveStateHost): void {
+export function migrateGnoseUpgrades(
+  state: SaveStateHost,
+  revision = PROGRESSION_REVISION,
+  paidPrices?: Readonly<Record<string, number>>
+): void {
   for (const upgrade of RETIRED_GNOSE_UPGRADES) {
     if (!state.unlockedGnoseUpgrades.delete(upgrade.id)) continue;
     state.gnosePoints += upgrade.cost;
@@ -621,6 +631,33 @@ export function migrateGnoseUpgrades(state: SaveStateHost): void {
       const guardian = GNOSE_BOSSES.find((boss) => boss.unlocksTier === upgrade.tier);
       if (guardian) state.defeatedBosses.add(guardian.id);
     }
+  }
+  const ritualRelicAutomations = LEGACY_GNOSE_RITUAL_RELIC_AUTOMATIONS.filter((upgrade) =>
+    state.unlockedGnoseUpgrades.delete(upgrade.id)
+  );
+  if (ritualRelicAutomations.length > 0) {
+    const replacement = GNOSE_UPGRADES.find((upgrade) => upgrade.id === 'gn_ritual_relic_automation')!;
+    const paid = ritualRelicAutomations.reduce(
+      (sum, upgrade) => sum + (paidPrices?.[upgrade.id] ?? upgrade.cost),
+      0
+    );
+    const tier2Guardian = GNOSE_BOSSES.find((boss) => boss.unlocksTier === 2);
+    const hasTier2Access =
+      (tier2Guardian ? state.defeatedBosses.has(tier2Guardian.id) : false) ||
+      GNOSE_UPGRADES.some((u) => u.tier >= 2 && state.unlockedGnoseUpgrades.has(u.id));
+    if (hasTier2Access) {
+      state.gnosePoints += state.hasGnoseUpgrade(replacement.id)
+        ? paid
+        : Math.max(0, paid - replacement.cost);
+      state.unlockedGnoseUpgrades.add(replacement.id);
+    } else {
+      // Player had not reached Tier 2 yet; refund so Hades is not bypassed.
+      state.gnosePoints += paid;
+    }
+  }
+  if (revision < 7 && state.hasGnoseUpgrade('gn_keep_relics')) {
+    // Prior to revision 7, Cripta Eterna also removed the cap on Cornucópia and Tocha.
+    state.unlockedGnoseUpgrades.add('gn_unlimited_relics');
   }
   const validIds = new Set(GNOSE_UPGRADES.map((upgrade) => upgrade.id));
   state.unlockedGnoseUpgrades = new Set(

@@ -69,26 +69,15 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     effectText: 'Abre Selos automaticamente a cada 1 s · paga os custos exigidos',
   },
   {
-    id: 'gn_ritual_automation',
-    name: 'Liturgia Autônoma',
-    title: 'Ritos sem Vigília',
-    desc: 'A cada segundo, compra Ritos seguindo a opção Máximo do painel de Fervor: desativada, compra um nível de cada Rito; ativada, compra o máximo disponível. Prioriza o maior ganho por Fervor e reserva o custo de Selos ainda fechados. O Rito de Fragmentos exige a Fênix. Pode ser pausada no painel.',
-    lore: 'Os cânticos mantêm a chama sem aguardar a mão da Esfera.',
-    icon: 'gear',
-    tier: 1,
-    cost: 9,
-    effectText: 'Ritos automáticos a cada 1 s · respeita a opção Máximo do painel',
-  },
-  {
-    id: 'gn_relic_automation',
-    name: 'Oficina Autônoma',
-    title: 'Artífices da Transmutação',
-    desc: 'A cada segundo, restaura Relíquias seguindo a opção Máximo do painel: desativada, compra um nível de cada Relíquia; ativada, compra o máximo disponível. Prioriza a primeira Fênix e depois o maior retorno por Fragmento. Respeita os limites de nível e pode usar todo o saldo. Pode ser pausada no painel.',
-    lore: 'As cinzas transmutadas encontram seu lugar nas obras dos antigos deuses.',
-    icon: 'gear',
+    id: 'gn_unlimited_relics',
+    name: 'Relíquias Ilimitadas',
+    title: 'Transbordo do Opus',
+    desc: 'Remove o limite de nível da Cornucópia de Amalteia e da Tocha de Prometeu. Os primeiros 20 níveis mantêm o preço original; a partir do 21º nível, cada compra custa 15% a mais. As demais Relíquias mantêm seus limites. Não preserva níveis após a Ascensão.',
+    lore: 'O chifre não seca e o fogo roubado não se apaga; bastava romper o selo que os continha.',
+    icon: 'ouroboros',
     tier: 1,
     cost: 10,
-    effectText: 'Relíquias automáticas a cada 1 s · respeita a opção Máximo do painel',
+    effectText: 'Cornucópia e Tocha sem limite de nível (+15% custo após o 20º)',
   },
   {
     id: 'gn_init_faith',
@@ -105,12 +94,23 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     id: 'gn_keep_relics',
     name: 'Cripta Eterna',
     title: 'Preservação do Opus Magnum',
-    desc: 'Preserva todos os níveis das Relíquias com limite após cada Ascensão. Cornucópia de Amalteia e Tocha de Prometeu ficam sem limite de nível e mantêm 50% dos níveis a cada Ascensão, arredondados para baixo.',
+    desc: 'Preserva 100% dos níveis das demais Relíquias após cada Ascensão. Cornucópia de Amalteia e Tocha de Prometeu mantêm 50% dos níveis a cada Ascensão, arredondados para baixo.',
     lore: 'As relíquias dos deuses esquecidos foram fundidas ao próprio núcleo da Esfera, tornando-se imunes à dissolução dos ciclos.',
     icon: 'urn',
     tier: 2,
     cost: 25,
-    effectText: 'Relíquias com limite preservadas · Cornucópia e Tocha ilimitadas, com 50% dos níveis mantidos',
+    effectText: 'Demais Relíquias preservadas · Cornucópia e Tocha mantêm 50% dos níveis',
+  },
+  {
+    id: 'gn_ritual_relic_automation',
+    name: 'Liturgia e Oficina Autônomas',
+    title: 'Ritos e Artífices sem Vigília',
+    desc: 'A cada segundo, compra Ritos e restaura Relíquias seguindo a opção Máximo de cada painel: desativada, compra um nível por item; ativada, compra o máximo disponível. Nos Ritos, prioriza o maior ganho por Fervor e reserva o custo de Selos ainda fechados (o Rito de Fragmentos exige a Fênix). Nas Relíquias, prioriza a primeira Fênix e depois o maior retorno por Fragmento, respeitando os limites de nível. Cada automação pode ser pausada no respectivo painel.',
+    lore: 'Os cânticos mantêm a chama e as cinzas transmutadas encontram seu lugar nas obras dos antigos deuses, sem aguardar a mão da Esfera.',
+    icon: 'gear',
+    tier: 2,
+    cost: 30,
+    effectText: 'Ritos e Relíquias automáticos a cada 1 s · respeita a opção Máximo de cada painel',
   },
   {
     id: 'gn_bencao_eterna',
@@ -193,7 +193,7 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     id: 'gn_eternal_memory',
     name: 'Memória do Opus',
     title: 'Herança dos Artífices',
-    desc: 'Com Cripta Eterna, aumenta de 50% para 80% a preservação dos níveis da Cornucópia de Amalteia e da Tocha de Prometeu em cada Ascensão. Os níveis preservados são arredondados para baixo. Não remove limites nem preserva Relíquias sem Cripta Eterna.',
+    desc: 'Com Cripta Eterna, aumenta de 50% para 80% a preservação dos níveis da Cornucópia de Amalteia e da Tocha de Prometeu em cada Ascensão. Os níveis preservados são arredondados para baixo. Não preserva Relíquias sem Cripta Eterna.',
     lore: 'O fogo dos artífices grava na matéria aquilo que nem os ciclos conseguem apagar.',
     icon: 'urn',
     tier: 3,
@@ -291,13 +291,44 @@ export const LEGACY_GNOSE_SEAL_AUTOMATIONS = [
   { id: 'gn_relics_seal', cost: 12, tier: 2 },
 ] as const;
 
+/** Separate ritual and relic automations are merged in Tier 2. */
+export const LEGACY_GNOSE_RITUAL_RELIC_AUTOMATIONS = [
+  { id: 'gn_ritual_automation', cost: 9 },
+  { id: 'gn_relic_automation', cost: 10 },
+] as const;
+
 /** Prices paid before progression revision 1; refund only the difference, never lifetime Gnose. */
 export const PROGRESSION_OLD_PRICES: Readonly<Record<string, number>> = {
   gn_automation: 8, gn_ritual_automation: 15, gn_relic_automation: 20, gn_keep_relics: 78,
 };
 
 /** Current economy revision persisted in saves for one-time price refunds. */
-export const PROGRESSION_REVISION = 6;
+export const PROGRESSION_REVISION = 7;
+
+/** Prices before merging ritual/relic automations into Tier 2 and splitting unlimited relics into Tier 1. */
+export const PROGRESSION_REVISION_6_PRICES: Readonly<Record<string, number>> = {
+  gn_memoria_selos: 2,
+  gn_automation: 3,
+  gn_seal_automation: 8,
+  gn_ritual_automation: 9,
+  gn_relic_automation: 10,
+  gn_init_faith: 20,
+  gn_keep_relics: 25,
+  gn_bencao_eterna: 48,
+  gn_init_fervor: 60,
+  gn_relic_gain: 120,
+  gn_followers_syn: 150,
+  gn_followers_economy: 1200,
+  gn_followers_cubic: 1500,
+  gn_gnose_mult: 36000,
+  gn_eternal_memory: 45000,
+  gn_relic_refinement: 200000,
+  gn_fu1_boost: 240000,
+  gn_apotheosis: 600000,
+  gn_empyrean_fire: 660000,
+  gn_perfect_opus: 720000,
+  gn_omniscience: 2200000,
+};
 
 /** Prices before reordering tiers and pairing choices in 0.12.2. */
 export const PROGRESSION_REVISION_5_PRICES: Readonly<Record<string, number>> = {

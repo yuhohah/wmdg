@@ -83,13 +83,13 @@ const gnoseBonuses: Record<string, string> = {
     '• Ciclo (1s): rompe Selos fechados em ordem quando Fé ≥ Custo',
     '• Selo da Gnose abre ao atingir 1e15 Fé sem consumir saldo',
   ].join('\n'),
-  gn_ritual_automation: [
-    '• Ciclo (1s): compra Ritos por maior ganho relativo / custo',
-    '• Máximo desligado: 1 nível por Rito; ligado: compra máxima do painel (até 100 níveis)',
+  gn_unlimited_relics: [
+    '• Limite de nível da Cornucópia e Tocha: 20 → ∞',
+    `• Custo após o ${ETERNAL_RELIC_FIXED_LEVELS}º nível: base × (${coefficient(ETERNAL_RELIC_COST_GROWTH)})^max(0, nível − ${ETERNAL_RELIC_FIXED_LEVELS - 1})`,
   ].join('\n'),
-  gn_relic_automation: [
-    '• Ciclo (1s): prioriza Fênix e compra Relíquias por maior retorno / custo',
-    '• Máximo desligado: 1 nível por Relíquia; ligado: compra máxima do painel',
+  gn_ritual_relic_automation: [
+    '• Ciclo (1s) Ritos: compra por maior ganho relativo / custo (1 nível ou máximo do painel, até 100)',
+    '• Ciclo (1s) Relíquias: prioriza Fênix e compra por maior retorno / custo (1 nível ou máximo do painel)',
   ].join('\n'),
   gn_followers_syn: [
     `• Sinergia dos Fiéis na Fé: M_sinergia = 1 + Fiéis^${coefficient(PROGRESSION_BALANCE.congregationExponent)} (expoente 0,5 → 1)`,
@@ -98,8 +98,8 @@ const gnoseBonuses: Record<string, string> = {
     '• Bênção da Encarnação permanente: M_Bênção = ×2 Fé/s (mantém 60s ativos)',
   ].join('\n'),
   gn_keep_relics: [
-    '• Preserva 100% dos níveis das Relíquias com limite; Cornucópia e Tocha mantêm ⌊nível × 0,50⌋',
-    '• Limite de nível da Cornucópia e Tocha: 20 → ∞ (custo ×1,15^max(0, L − 19))',
+    '• Preserva 100% dos níveis das demais Relíquias após cada Ascensão',
+    '• Cornucópia e Tocha mantêm ⌊nível × 0,50⌋ em cada Ascensão',
   ].join('\n'),
   gn_eternal_memory: '• Com Cripta Eterna: Cornucópia e Tocha mantêm ⌊nível × 0,80⌋ em cada Ascensão (50% + 30 pontos percentuais)',
   gn_followers_economy: [

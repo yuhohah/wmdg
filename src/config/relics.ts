@@ -1,7 +1,7 @@
 import { formatNumber } from '../systems/numberFormat.js';
 import type { RelicUpgrade } from '../types.js';
 
-/** Cripta Eterna removes the purchase cap for these relics. */
+/** Relíquias Ilimitadas removes the purchase cap for these relics; Cripta Eterna preserves a fraction of their levels. */
 export const ETERNAL_RELIC_COST_GROWTH = 1.15;
 export const ETERNAL_RELIC_FIXED_LEVELS = 20;
 export const ETERNAL_RELIC_IDS: readonly string[] = ['relic_cornucopia', 'relic_torch'];

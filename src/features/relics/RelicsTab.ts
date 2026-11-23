@@ -44,7 +44,7 @@ export class RelicsTab {
   constructor(options: RelicsTabOptions) {
     this.options = options;
     this.relicAutomation = new AutomationToggle('auto-relic-upgrades', {
-      isUnlocked: () => options.gameState.hasGnoseUpgrade('gn_relic_automation'),
+      isUnlocked: () => options.gameState.hasGnoseUpgrade('gn_ritual_relic_automation'),
       isEnabled: () => options.gameState.autoRelicUpgradesEnabled,
       setEnabled: enabled => { options.gameState.autoRelicUpgradesEnabled = enabled; },
     });
@@ -124,8 +124,9 @@ export class RelicsTab {
   public renderList(): void {
     this.bulkToggle.update();
     if (!this.relicUpgradesListEl) return;
-    const keepRelics = this.options.gameState.hasGnoseUpgrade('gn_keep_relics');
-    const structure = this.computeStructureKey(keepRelics);
+    const foldFiniteRelics = this.options.gameState.hasGnoseUpgrade('gn_keep_relics')
+      && this.options.gameState.hasGnoseUpgrade('gn_unlimited_relics');
+    const structure = this.computeStructureKey(foldFiniteRelics);
     if (structure === this.renderedStructure) {
       this.updateButtonStates();
       return;
@@ -139,9 +140,9 @@ export class RelicsTab {
     const peakRelics = Math.max(relicPoints, this.options.gameState.relicPeakThisRun);
     const bulkEnabled = this.isBulkEnabled();
 
-    // Keep the two eternal relics directly accessible; finite relics remain expandable.
+    // Keep the two eternal relics directly accessible; finite relics remain expandable once preserved.
     let finiteRelics: HTMLDetailsElement | null = null;
-    if (keepRelics) {
+    if (foldFiniteRelics) {
       finiteRelics = document.createElement('details');
       finiteRelics.className = 'finite-relics';
       finiteRelics.open = finiteRelicsOpen;

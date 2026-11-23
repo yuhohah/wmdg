@@ -30,6 +30,7 @@ const STALL_ASCENSION_ETA_SEC = 600;
 const EPSILON = 1e-8;
 
 const PRODUCTION_GNOSE_IDS = new Set([
+  'gn_unlimited_relics',
   'gn_init_faith',
   'gn_keep_relics',
   'gn_bencao_eterna',
@@ -51,8 +52,7 @@ const COMFORT_GNOSE_IDS = new Set([
   'gn_memoria_selos',
   'gn_automation',
   'gn_seal_automation',
-  'gn_ritual_automation',
-  'gn_relic_automation',
+  'gn_ritual_relic_automation',
   'gn_omniscience',
 ]);
 
@@ -296,8 +296,8 @@ class Simulation {
   private signature(): string {
     const g = this.game;
     const autoFollowers = g.hasGnoseUpgrade('gn_automation') && g.autoFollowersEnabled;
-    const autoFervor = g.hasGnoseUpgrade('gn_ritual_automation') && g.autoFervorEnabled;
-    const autoRelics = g.hasGnoseUpgrade('gn_relic_automation') && g.autoRelicUpgradesEnabled;
+    const autoFervor = g.hasGnoseUpgrade('gn_ritual_relic_automation') && g.autoFervorEnabled;
+    const autoRelics = g.hasGnoseUpgrade('gn_ritual_relic_automation') && g.autoRelicUpgradesEnabled;
     return `${autoFollowers ? 'auto' : g.getTotalFollowersCount()}/${autoFervor ? 'auto' : g.fervorUpgrades.reduce((s, u) => s + u.level, 0)}/${autoRelics ? 'auto' : g.relicUpgrades.reduce((s, r) => s + r.level, 0)}/${g.unlocks.filter(u => u.unlocked).length}/${g.incarnationStage}/${g.gnoseResets}/${g.unlockedGnoseUpgrades.size}/${g.defeatedBosses.size}`;
   }
 
@@ -766,9 +766,9 @@ class Simulation {
         || (passiveRelics && gnoseToGet >= 1)
       ))
       : (fps > 0 && (ascensionTarget - g.faithPoints) / fps < 180);
-    const relic = g.isRelicsUnlocked() && !(g.hasGnoseUpgrade('gn_relic_automation') && g.autoRelicUpgradesEnabled) ? g.relicUpgrades.find(r => r.level < g.getRelicMaxLevel(r) && g.relicPoints >= g.getRelicUpgradeCost(r)) : undefined;
+    const relic = g.isRelicsUnlocked() && !(g.hasGnoseUpgrade('gn_ritual_relic_automation') && g.autoRelicUpgradesEnabled) ? g.relicUpgrades.find(r => r.level < g.getRelicMaxLevel(r) && g.relicPoints >= g.getRelicUpgradeCost(r)) : undefined;
     if (relic) return decision(relic.id, 'relic', () => g.bulkRelicsEnabled && g.hasGnoseUpgrade('gn_memoria_selos') ? g.buyMaxRelicUpgrade(relic) > 0 : g.buyRelicUpgrade(relic));
-    if (g.isFervorUpgradesUnlocked() && !(g.hasGnoseUpgrade('gn_ritual_automation') && g.autoFervorEnabled)) {
+    if (g.isFervorUpgradesUnlocked() && !(g.hasGnoseUpgrade('gn_ritual_relic_automation') && g.autoFervorEnabled)) {
       const clickRelevant = manualSphereAllowed(this.behavior, this.time) || g.getSphereAutoclickProgress() !== null;
       const fervorSortCost = (u: typeof g.fervorUpgrades[number]) => g.getFervorUpgradeCost(u) * (u.id === 'fu_click' && !clickRelevant ? 10 : 1);
       const rito = g.fervorUpgrades.filter(u => (u.id !== 'fu_relics' || g.isPhoenixRelicUnlocked()) && g.fervorPoints >= g.getFervorUpgradeCost(u))

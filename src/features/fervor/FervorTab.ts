@@ -36,7 +36,7 @@ export class FervorTab {
   constructor(options: FervorTabOptions) {
     this.options = options;
     this.automation = new AutomationToggle('auto-fervor', {
-      isUnlocked: () => options.gameState.hasGnoseUpgrade('gn_ritual_automation'),
+      isUnlocked: () => options.gameState.hasGnoseUpgrade('gn_ritual_relic_automation'),
       isEnabled: () => options.gameState.autoFervorEnabled,
       setEnabled: enabled => { options.gameState.autoFervorEnabled = enabled; },
     });

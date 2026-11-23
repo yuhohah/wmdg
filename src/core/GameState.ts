@@ -852,7 +852,7 @@ export class GameStateManager {
       this.recruitMaxFollowers(0, free);
     }
 
-    if (this.hasGnoseUpgrade('gn_ritual_automation') && this.autoFervorEnabled && this.isFervorUpgradesUnlocked()) {
+    if (this.hasGnoseUpgrade('gn_ritual_relic_automation') && this.autoFervorEnabled && this.isFervorUpgradesUnlocked()) {
       let boughtMask = 0;
       let reserved = 0;
       for (let i = 0; i < this.unlocks.length; i++) {
@@ -890,7 +890,7 @@ export class GameStateManager {
       }
     }
 
-    if (this.hasGnoseUpgrade('gn_relic_automation') && this.autoRelicUpgradesEnabled && this.isRelicsUnlocked()) {
+    if (this.hasGnoseUpgrade('gn_ritual_relic_automation') && this.autoRelicUpgradesEnabled && this.isRelicsUnlocked()) {
       // Save for the first Phoenix before buying repeated minor upgrades.
       const fastPhoenix = this.relicUpgrades[2];
       const phoenix = fastPhoenix && fastPhoenix.id === 'relic_phoenix'
@@ -1127,7 +1127,7 @@ export class GameStateManager {
   }
 
   public getRelicMaxLevel(relic: RelicUpgrade): number {
-    return this.hasGnoseUpgrade('gn_keep_relics') && ETERNAL_RELIC_IDS.includes(relic.id)
+    return this.hasGnoseUpgrade('gn_unlimited_relics') && ETERNAL_RELIC_IDS.includes(relic.id)
       ? Infinity : relic.maxLevel;
   }
 
