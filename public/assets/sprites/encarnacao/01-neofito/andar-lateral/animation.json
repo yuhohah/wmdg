@@ -1,0 +1,16 @@
+{
+  "stage": 1,
+  "file": "01-neofito",
+  "direction": "east",
+  "concept_job_id": "3a48085c-3db5-4096-b9b4-b8ccaacd9061",
+  "id": "79db1e4e-eb95-4463-aadc-f0eb24e8ce19",
+  "action": "Walk slowly in place, strict orthographic side view profile facing right, seamless 8-frame full walking cycle. Alternate feet stepping clearly forward and back beneath the robe hem along a uniform floor baseline, gently shift body weight, cloth folds and cloak hem sway naturally. Keep both hands steadily holding the sphere in front, preserve identity, proportions, outfit, pixel style and all existing ornaments. Fixed orthographic side camera, no translation, no zoom. No halo, no background circles or new effects.",
+  "frame_width": 128,
+  "frame_height": 128,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 120,
+  "layout": "horizontal",
+  "transparent": true
+}

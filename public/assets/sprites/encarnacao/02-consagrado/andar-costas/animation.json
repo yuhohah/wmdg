@@ -1,0 +1,16 @@
+{
+  "stage": 2,
+  "file": "02-consagrado",
+  "direction": "north",
+  "concept_job_id": "4e5a312d-d62a-4385-b052-50032d0c2121",
+  "id": "51d71a4d-a9e3-4723-9a5d-ccfdd3701730",
+  "action": "Walk slowly in place facing straight away from the viewer (strict orthographic back view, seen from behind), seamless 8-frame full walking cycle. Alternate feet and heels stepping clearly forward and back beneath the robe hem along a uniform floor baseline, subtle natural hip and shoulder weight shift, back cloth folds and cloak hem sway gently. Preserve identity, proportions, outfit, pixel style and all existing ornaments. Fixed orthographic back camera, no turning around, no translation, no zoom. No halo, no background circles or new effects.",
+  "frame_width": 128,
+  "frame_height": 128,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 120,
+  "layout": "horizontal",
+  "transparent": true
+}

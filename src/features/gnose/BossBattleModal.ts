@@ -8,9 +8,17 @@ import { formatNumber } from '../../systems/calculations.js';
 import { formatFixed } from '../../systems/numberFormat.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 import type { ActiveBossMiracle, BossRift, GnoseBoss } from '../../types.js';
+import { canUseGameplayShortcut } from '../../ui/GameplayShortcuts.js';
 import { icon } from '../../ui/icons.js';
 import { effectEasing, visualFrameScale, VisualFrameClock } from '../../ui/visualTiming.js';
-import { loadFollowerSprites } from '../followers/followerVisuals.js';
+import {
+  BLESSING_DURATION,
+  FOLLOWER_IDLE_FRAME_SEC,
+  RISE_DURATION,
+  loadFollowerSprites,
+  resolveWalkDirection,
+  type WalkDirection,
+} from '../followers/followerVisuals.js';
 import { incarnationStageIndex } from '../incarnation/incarnationSprites.js';
 import {
   BOSS_SPRITE_FOLDERS,
@@ -129,6 +137,9 @@ export class BossBattleModal {
   private bossY = BOSS_DISTANT_SPAWN.y;
   private bossState: 'awaiting_ritual' | 'walking' | 'attacking' | 'idle' = 'awaiting_ritual';
   private bossWalkTimeSec = 0;
+  private bossIdleTimeSec = 0;
+  private bossHurtTimeSec: number | undefined = undefined;
+  private bossHurtDurationSec = 0.65;
   private bossAttackIndex = 0;
   private bossAttackFrameTimeSec = 0;
   private bossHitFlashSec = 0;
@@ -151,10 +162,12 @@ export class BossBattleModal {
   private incX = INCARNATION_FALLBACK_SPAWN.x;
   private incY = INCARNATION_FALLBACK_SPAWN.y;
   private incFacing: 1 | -1 = 1;
+  private incWalkDir: WalkDirection = 'side';
   private incState: 'walking_to_patio' | 'gathering_at_patio' | 'leading_procession' | 'guarding' | 'leading_return' | 'returning_to_altar' =
     'walking_to_patio';
   private incTimerSec = 0;
   private incWalkCycle = 0;
+  private incAnimTimeSec = 0;
   private incCallRingProgress = 0;
   private incGuardSpot = {
     x: BOSS_SPHERE_CENTER.x + SACRED_CIRCLE_RADIUS,
@@ -361,7 +374,7 @@ export class BossBattleModal {
     stage.innerHTML = `
       <canvas id="boss-world-canvas" class="boss-world-canvas" width="1" height="1" aria-hidden="true"></canvas>
       <div class="boss-arena-stage boss-world-interactive" id="boss-arena-stage">
-        <button id="boss-arena-attack-btn" class="boss-attack-target boss-world-hitbox" type="button" aria-label="Atacar o guardião" aria-describedby="boss-attack-damage">
+        <button id="boss-arena-attack-btn" class="boss-attack-target boss-world-hitbox" type="button" aria-label="Atacar o guardião" aria-describedby="boss-attack-damage" aria-keyshortcuts="Space">
           <img id="boss-arena-portrait" class="boss-portrait" alt="" draggable="false" hidden>
           <span id="boss-arena-fallback" class="boss-portrait-fallback" aria-hidden="true" hidden></span>
           <span class="boss-attack-caption" aria-hidden="true">ATACAR <span id="boss-attack-damage"></span></span>
@@ -484,13 +497,9 @@ export class BossBattleModal {
 
     this.attackBtnEl?.addEventListener('click', (e: MouseEvent) => {
       if (!e.isTrusted) return;
-      const battle = this.options.gameState.activeBossBattle;
-      if (!battle || battle.combatStarted === false) return;
-      const { bossClickDamage, bossIsCrit } = this.options.gameState.attackBossClick();
-      const rect = this.attackBtnEl!.getBoundingClientRect();
-      const x = e.detail === 0 ? rect.x + rect.width / 2 : e.clientX;
-      const y = e.detail === 0 ? rect.y + rect.height / 2 : e.clientY;
-      this.onPlayerAttackHit(bossClickDamage, bossIsCrit, x, y);
+      const x = e.detail === 0 ? undefined : e.clientX;
+      const y = e.detail === 0 ? undefined : e.clientY;
+      this.performBossAttack(x, y);
     });
 
     this.options.gameState.onBossBattleFinished = ({
@@ -521,8 +530,45 @@ export class BossBattleModal {
         event.stopImmediatePropagation();
         this.options.gameState.retreatBossBattle();
         this.close();
+        return;
+      }
+      if (event.code === 'Space' || event.key === ' ') {
+        const battle = this.options.gameState.activeBossBattle;
+        if (!battle || battle.combatStarted === false) return;
+        if (!canUseGameplayShortcut(event, { allowedControl: this.attackBtnEl })) return;
+        event.preventDefault();
+        if (!event.repeat) {
+          this.performBossAttack();
+        }
       }
     }, true);
+
+    document.addEventListener('keyup', (event) => {
+      if (!this.isOpen()) return;
+      if ((event.code === 'Space' || event.key === ' ') && event.target === this.attackBtnEl) {
+        event.preventDefault();
+      }
+    }, true);
+  }
+
+  private performBossAttack(clientX?: number, clientY?: number): void {
+    const battle = this.options.gameState.activeBossBattle;
+    if (!battle || battle.combatStarted === false) return;
+    const { bossClickDamage, bossIsCrit } = this.options.gameState.attackBossClick();
+    const rect = this.attackBtnEl?.getBoundingClientRect();
+    const x =
+      typeof clientX === 'number' && clientX !== 0
+        ? clientX
+        : rect
+          ? rect.x + rect.width / 2
+          : window.innerWidth / 2;
+    const y =
+      typeof clientY === 'number' && clientY !== 0
+        ? clientY
+        : rect
+          ? rect.y + rect.height / 2
+          : window.innerHeight / 2;
+    this.onPlayerAttackHit(bossClickDamage, bossIsCrit, x, y);
   }
 
   private onPlayerAttackHit(
@@ -535,6 +581,15 @@ export class BossBattleModal {
     if (!battle) return;
     if (bossClickDamage > 0) {
       this.bossHitFlashSec = 0.18;
+      if (this.bossState === 'idle') {
+        if (isCrit) {
+          this.bossHurtTimeSec = 0;
+          this.bossHurtDurationSec = 0.54;
+        } else if (this.bossHurtTimeSec === undefined || this.bossHurtTimeSec > 0.18) {
+          this.bossHurtTimeSec = 0.06;
+          this.bossHurtDurationSec = 0.36;
+        }
+      }
       this.options.audio.playTone(640 + Math.random() * 140, 'sine', 0.08);
       const pct = formatFixed((bossClickDamage / battle.bossMaxHp) * 100, 2);
       this.showHitFeedback(`${isCrit ? 'Crítico! ' : ''}\u2212${pct}%`);
@@ -642,6 +697,7 @@ export class BossBattleModal {
     this.miracleBtnEl = null;
 
     this.returnFocusEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    this.returnFocusEl?.blur();
 
     if (this.options.gameState.skipBossProcession) {
       this.skipProcession();
@@ -676,6 +732,9 @@ export class BossBattleModal {
       !!this.climaxState &&
       (this.incState === 'leading_return' || this.incState === 'returning_to_altar');
     const shouldShow = inEntranceProcession || inReturnProcession;
+    if (!shouldShow && this.processionControlsEl.contains(document.activeElement)) {
+      (document.activeElement as HTMLElement).blur();
+    }
     const displayVal = shouldShow ? 'flex' : 'none';
     if (this.processionControlsEl.style.display !== displayVal) {
       this.processionControlsEl.style.display = displayVal;
@@ -718,6 +777,7 @@ export class BossBattleModal {
     this.incX = this.incGuardSpot.x;
     this.incY = this.incGuardSpot.y;
     this.incFacing = BOSS_SPHERE_CENTER.x >= this.incX ? 1 : -1;
+    this.incWalkDir = 'side';
     this.incState = 'guarding';
     this.incCallRingProgress = 0;
 
@@ -728,12 +788,17 @@ export class BossBattleModal {
       f.x = slot.x;
       f.y = slot.y;
       f.facing = BOSS_SPHERE_CENTER.x >= f.x ? 1 : -1;
+      f.prayCycle = 0;
+      f.riseTimerSec = 0;
+      f.blessingTimerSec = 0;
     }
 
     this.bossX = BOSS_COMBAT_SPOT.x;
     this.bossY = BOSS_COMBAT_SPOT.y;
     this.bossState = 'idle';
     this.bossWalkTimeSec = 0;
+    this.bossIdleTimeSec = 0;
+    this.bossHurtTimeSec = undefined;
     this.options.gameState.beginBossCombat();
     battle.riftSpawnTimerSec = Math.min(battle.riftSpawnTimerSec, 0.25);
 
@@ -810,6 +875,9 @@ export class BossBattleModal {
     this.bossY = spawn.y;
     this.bossState = 'awaiting_ritual';
     this.bossWalkTimeSec = 0;
+    this.bossIdleTimeSec = 0;
+    this.bossHurtTimeSec = undefined;
+    this.bossHurtDurationSec = 0.65;
     this.bossAttackIndex = 0;
     this.bossAttackFrameTimeSec = 0;
     this.bossParryRecoverySec = 0;
@@ -834,10 +902,12 @@ export class BossBattleModal {
     this.incX = incBox.x + incBox.w * 0.5;
     this.incY = incBox.y + incBox.h - 12;
     this.incFacing = fBox.x >= this.incX ? 1 : -1;
+    this.incWalkDir = 'side';
     this.incState = 'walking_to_patio';
     document.body.classList.add('is-courtyard-visible');
     this.incTimerSec = 0;
     this.incWalkCycle = 0;
+    this.incAnimTimeSec = 0;
     this.incCallRingProgress = 0;
     this.returnPath = [];
     this.returnS = 0;
@@ -930,6 +1000,7 @@ export class BossBattleModal {
       || (this.options.gameState.activeBossBattle?.ritualOutcome?.remainingSec ?? 0) > 0) return;
     this.bossState = 'attacking';
     this.bossAttackFrameTimeSec = 0;
+    this.bossHurtTimeSec = undefined;
     if (this.options.gameState.activeBossBattle?.bossId === 'boss_demiurge') {
       this.bossAttackIndex = 0;
     } else if (typeof rift?.attackIndex === 'number') {
@@ -950,18 +1021,22 @@ export class BossBattleModal {
     if (outcome.side === 'center') {
       this.bossState = 'idle';
       this.bossHitFlashSec = 0.28;
+      this.bossHurtTimeSec = 0;
+      this.bossHurtDurationSec = 0.65;
       this.options.audio.playChime();
       this.showHitFeedback('Equilíbrio perfeito! Ritual aparado.');
     } else if (outcome.side === 'moon') {
       this.bossState = 'attacking';
       this.bossAttackIndex = 2; // 'ataque-ritual' — celestial light beam self-heal
       this.bossHitFlashSec = 0;
+      this.bossHurtTimeSec = undefined;
       this.options.audio.playTone(432, 'sine', 0.24);
       this.showHitFeedback(`Lua: cura do Demiurgo +${outcome.percent.toFixed(1)}%`);
     } else {
       this.bossState = 'attacking';
       this.bossAttackIndex = 0; // 'ataque-esfera' — dark orb hurled at the Sphere
       this.bossHitFlashSec = 0;
+      this.bossHurtTimeSec = undefined;
       this.options.audio.playTone(210, 'sawtooth', 0.18);
       this.showHitFeedback(`Sol: dano à Esfera \u2212${outcome.percent.toFixed(1)}%`);
     }
@@ -1132,6 +1207,9 @@ export class BossBattleModal {
       stageOriginY: this.stageOriginY,
       bossState: this.bossState,
       bossWalkTimeSec: this.bossWalkTimeSec,
+      bossIdleTimeSec: this.bossIdleTimeSec,
+      bossHurtTimeSec: this.bossHurtTimeSec,
+      bossHurtDurationSec: this.bossHurtDurationSec,
       bossAttackIndex: this.bossAttackIndex,
       bossAttackFrameTimeSec: this.bossAttackFrameTimeSec,
       channelingRitualElapsedSec,
@@ -1197,6 +1275,7 @@ export class BossBattleModal {
     document.body.classList.add('is-courtyard-visible');
     this.incCallRingProgress = 0;
     this.bossHitFlashSec = 0;
+    this.bossHurtTimeSec = undefined;
     // The guard station is also the circle entrance. Retrace its approach to the patio.
     const approach = this.processionPath.filter(p => p.s <= this.circleStartS + 0.01).reverse();
     this.returnPath = buildPolyline([{ x: this.incX, y: this.incY }, ...approach]);
@@ -1210,6 +1289,8 @@ export class BossBattleModal {
         { x: f.startX, y: f.startY }
       ]);
       this.followerReturnPaths.set(f.id, { path, s: 0 });
+      f.riseTimerSec = f.state === 'encircling' ? RISE_DURATION : 0;
+      f.blessingTimerSec = 0;
       f.state = 'returning_to_patio';
     }
     this.setText(this.combatFeedbackEl, 'Vitória! A Encarnação conduz os Fiéis de volta ao pátio.');
@@ -1220,21 +1301,31 @@ export class BossBattleModal {
   }
 
   private updateVictoryReturn(dt: number, elapsedSec: number): void {
+    this.incAnimTimeSec += dt;
     this.returnS = Math.min(polylineLength(this.returnPath), this.returnS + PROCESSION_QUEUE_SPEED * dt);
     const sample = samplePolylineAt(this.returnPath, this.returnS);
     this.incX = sample.x;
     this.incY = sample.y;
+    this.incWalkDir = resolveWalkDirection(sample.dx, sample.dy, this.incWalkDir);
     if (Math.abs(sample.dx) > 0.2) this.incFacing = sample.dx >= 0 ? 1 : -1;
     this.incWalkCycle += dt / 0.15;
 
     if (this.incState === 'leading_return') {
       for (const f of this.followerActors) {
         const route = this.followerReturnPaths.get(f.id);
-        if (!route || f.state === 'waiting_in_patio') continue;
+        if (!route || f.state === 'waiting_in_patio') {
+          f.idleCycle += dt / FOLLOWER_IDLE_FRAME_SEC;
+          continue;
+        }
+        if (f.riseTimerSec > 0) {
+          f.riseTimerSec = Math.max(0, f.riseTimerSec - dt);
+          continue;
+        }
         route.s = Math.min(polylineLength(route.path), route.s + PROCESSION_QUEUE_SPEED * dt);
         const point = samplePolylineAt(route.path, route.s);
         f.x = point.x;
         f.y = point.y;
+        f.walkDir = resolveWalkDirection(point.dx, point.dy, f.walkDir);
         if (Math.abs(point.dx) > 0.2) f.facing = point.dx >= 0 ? 1 : -1;
         f.walkCycle += dt / 0.14;
         if (route.s >= polylineLength(route.path)) {
@@ -1267,7 +1358,11 @@ export class BossBattleModal {
     }
 
     if (this.climaxState) {
-      this.followerActors.forEach(f => { f.prayCycle = (f.prayCycle + elapsedSec) % 3.3; });
+      this.incAnimTimeSec += elapsedSec;
+      for (const f of this.followerActors) {
+        f.prayCycle += elapsedSec;
+        if (f.blessingTimerSec > 0) f.blessingTimerSec = Math.max(0, f.blessingTimerSec - elapsedSec);
+      }
       this.climaxState.remainingSec = Math.max(0, this.climaxState.remainingSec - elapsedSec);
       this.bossHitFlashSec = this.climaxState.victory ? 0.5 : 0;
       if (this.climaxState.remainingSec <= 0) {
@@ -1317,6 +1412,7 @@ export class BossBattleModal {
 
     // 1. Update Incarnation
     this.incTimerSec += dt;
+    this.incAnimTimeSec += dt;
     const outboundLen = polylineLength(this.outboundPath);
     const processionLen = polylineLength(this.processionPath);
 
@@ -1325,6 +1421,7 @@ export class BossBattleModal {
       const sample = samplePolylineAt(this.outboundPath, this.incOutboundS);
       this.incX = sample.x;
       this.incY = sample.y;
+      this.incWalkDir = resolveWalkDirection(sample.dx, sample.dy, this.incWalkDir);
       if (Math.abs(sample.dx) > 0.2) {
         this.incFacing = sample.dx >= 0 ? 1 : -1;
       }
@@ -1358,6 +1455,7 @@ export class BossBattleModal {
         const sample = samplePolylineAt(this.processionPath, this.incProcessionS);
         this.incX = sample.x;
         this.incY = sample.y;
+        this.incWalkDir = resolveWalkDirection(sample.dx, sample.dy, this.incWalkDir);
         if (Math.abs(sample.dx) > 0.2) {
           this.incFacing = sample.dx >= 0 ? 1 : -1;
         }
@@ -1391,13 +1489,16 @@ export class BossBattleModal {
       this.incState === 'leading_procession' || this.incState === 'guarding';
 
     for (const f of this.followerActors) {
+      if (f.blessingTimerSec > 0) {
+        f.blessingTimerSec = Math.max(0, f.blessingTimerSec - dt);
+      }
       if (!queueActive) {
         f.state = 'waiting_in_patio';
         f.trailS = 0;
         f.x = f.startX;
         f.y = f.startY;
         f.facing = this.incX >= f.x ? 1 : -1;
-        f.prayCycle = (f.prayCycle + dt * 0.35) % 3.3;
+        f.idleCycle += dt / FOLLOWER_IDLE_FRAME_SEC;
         continue;
       }
 
@@ -1409,18 +1510,21 @@ export class BossBattleModal {
 
       if (rawDesiredS >= f.stopS) {
         const slot = samplePolylineAt(this.processionPath, f.stopS);
+        const justEntered = f.state !== 'encircling';
         f.state = 'encircling';
+        if (justEntered) f.prayCycle = 0;
         f.trailS = f.stopS;
         f.x = slot.x;
         f.y = slot.y;
         f.facing = BOSS_SPHERE_CENTER.x >= f.x ? 1 : -1;
-        f.prayCycle = (f.prayCycle + dt * 0.55) % 3.3;
+        f.prayCycle += dt;
       } else if (rawDesiredS > 0) {
         const sample = samplePolylineAt(this.processionPath, rawDesiredS);
         f.state = 'following_in_line';
         f.trailS = rawDesiredS;
         f.x = sample.x;
         f.y = sample.y;
+        f.walkDir = resolveWalkDirection(sample.dx, sample.dy, f.walkDir);
         if (Math.abs(sample.dx) > 0.2) {
           f.facing = sample.dx >= 0 ? 1 : -1;
         }
@@ -1430,6 +1534,8 @@ export class BossBattleModal {
         const nextX = f.startX + (this.patioGatherSpot.x - f.startX) * u;
         const nextY = f.startY + (this.patioGatherSpot.y - f.startY) * u;
         const dx = nextX - f.x;
+        const dy = nextY - f.y;
+        f.walkDir = resolveWalkDirection(dx, dy, f.walkDir);
         if (Math.abs(dx) > 0.1) {
           f.facing = dx >= 0 ? 1 : -1;
         }
@@ -1444,19 +1550,21 @@ export class BossBattleModal {
         f.x = f.startX;
         f.y = f.startY;
         f.facing = this.patioGatherSpot.x >= f.x ? 1 : -1;
-        f.prayCycle = (f.prayCycle + dt * 0.35) % 3.3;
+        f.idleCycle += dt / FOLLOWER_IDLE_FRAME_SEC;
       }
     }
 
     // 3. Update Boss
     if (this.bossState === 'awaiting_ritual') {
       this.bossWalkTimeSec += dt * 0.58;
+      this.bossHurtTimeSec = undefined;
       const allEncircling =
         this.followerActors.length === 0 ||
         this.followerActors.every((f) => f.state === 'encircling');
       if (this.incState === 'guarding' && allEncircling) {
         if (battle?.bossId === 'boss_demiurge') {
           this.bossState = 'idle';
+          this.bossIdleTimeSec = 0;
           this.options.gameState.beginBossCombat();
           this.syncProcessionControls();
           this.updateUI();
@@ -1479,6 +1587,7 @@ export class BossBattleModal {
         this.setText(this.combatStatsEl, this.formatRitualStatsLabel());
       }
     } else if (this.bossState === 'walking') {
+      this.bossHurtTimeSec = undefined;
       // Hold rift spawning while the Boss is descending toward the Sphere
       if (battle) {
         battle.riftSpawnTimerSec = Math.max(battle.riftSpawnTimerSec, 0.25);
@@ -1499,6 +1608,7 @@ export class BossBattleModal {
         this.bossX = BOSS_COMBAT_SPOT.x;
         this.bossY = BOSS_COMBAT_SPOT.y;
         this.bossState = 'idle';
+        this.bossIdleTimeSec = 0;
         this.options.gameState.beginBossCombat();
         if (battle) {
           battle.riftSpawnTimerSec = Math.min(battle.riftSpawnTimerSec, 0.2);
@@ -1525,6 +1635,13 @@ export class BossBattleModal {
       // Boss is in 'idle' stance at the Sphere: "APARAR" appears first, then after RIFT_TELEGRAPH_BEFORE_ATTACK_SEC the Boss swings!
       const idleRate = (battle?.bossId ?? this.activeBossIdForScene) === 'boss_demiurge' ? 0.65 : 0.35;
       this.bossWalkTimeSec += dt * idleRate;
+      this.bossIdleTimeSec += dt;
+      if (this.bossHurtTimeSec !== undefined) {
+        this.bossHurtTimeSec += dt;
+        if (this.bossHurtTimeSec >= this.bossHurtDurationSec) {
+          this.bossHurtTimeSec = undefined;
+        }
+      }
       if (battle && this.bossParryRecoverySec <= 0) {
         for (const rift of battle.activeRifts) {
           if (this.attackedRiftIds.has(rift.id)) continue;
@@ -1577,8 +1694,10 @@ export class BossBattleModal {
       incX: this.incX,
       incY: this.incY,
       incFacing: this.incFacing,
+      incWalkDir: this.incWalkDir,
       incState: this.incState,
       incWalkCycle: this.incWalkCycle,
+      incAnimTimeSec: this.incAnimTimeSec,
       incCallRingProgress: this.incCallRingProgress,
       incGuardSpot: this.incGuardSpot,
       returnPath: this.returnPath,
@@ -1640,7 +1759,7 @@ export class BossBattleModal {
         const extraDmgPct = Math.round(mods.extraDamageRatio * 100);
         const hitkillTag = curseStacks >= 5 ? ' (HITKILL ao errar aparo)' : '';
         const cleanseHint = cleanseBoss ? ` Derrote ${cleanseBoss.name} para purificar.` : '';
-        cursePrefix = `Maldição (${curseStacks}/5): −${dmgRedPct}% dano ao chefe, +${extraDmgPct}% dano sofrido e Riposte ao aparar${hitkillTag}.${cleanseHint}`;
+        cursePrefix = `Maldição (${curseStacks}/5): −${dmgRedPct}% dano ao chefe e +${extraDmgPct}% dano sofrido${hitkillTag}.${cleanseHint}`;
       } else {
         cursePrefix = 'Derrota sem Maldição.';
       }
@@ -1725,9 +1844,11 @@ export class BossBattleModal {
       this.options.audio.playTone(210, 'sawtooth', 0.14);
       // Miss feedback must never restart a swing that a successful parry just cancelled.
       if (this.bossParryRecoverySec <= 0) this.spherePulseAlpha = 0.9;
+      const missDmg = battle.lastMissDamage ?? breakdown.altarDamageOnMiss;
+      const missPrefix = battle.lastMissWasSpecial ? 'Golpe especial não aparado!' : 'Golpe não aparado!';
       this.setText(
         this.combatFeedbackEl,
-        `Golpe não aparado! −${breakdown.altarDamageOnMiss.toFixed(0)}% da Esfera.`
+        `${missPrefix} −${missDmg.toFixed(0)}% da Esfera.`
       );
     } else if (phase > this.lastPhase) {
       this.lastPhase = phase;
@@ -1767,8 +1888,8 @@ export class BossBattleModal {
     }
 
     if (this.attackBtnEl) {
-      const cooling = battle.sphereCooldownSec > 1e-8 || battle.combatStarted === false || !breakdown.canDamageBoss;
-      const disabledStr = String(cooling);
+      const disabled = battle.combatStarted === false || !breakdown.canDamageBoss;
+      const disabledStr = String(disabled);
       if (this.lastAttackDisabled !== disabledStr) {
         this.lastAttackDisabled = disabledStr;
         this.attackBtnEl.setAttribute('aria-disabled', disabledStr);
@@ -1808,7 +1929,7 @@ export class BossBattleModal {
         const activeCurseStacks = breakdown.curseStacks ?? 0;
         const curseInfo =
           activeCurseStacks > 0
-            ? `Maldição ${activeCurseStacks}/5 (−${Math.round((breakdown.curseDamageReduction ?? 0) * 100)}% dano · +${Math.round((breakdown.curseExtraDamageRatio ?? 0) * 100)}% sofrido · Riposte no aparo)`
+            ? `Maldição ${activeCurseStacks}/5 (−${Math.round((breakdown.curseDamageReduction ?? 0) * 100)}% dano · +${Math.round((breakdown.curseExtraDamageRatio ?? 0) * 100)}% sofrido)`
             : '';
         const chainsWarning = battle.activeRifts.some((r) => r.kind === 'hades_chains')
           ? 'Grilhões ativos: dano reduzido!'
@@ -1874,8 +1995,15 @@ export class BossBattleModal {
   }
 
   public collectActiveMiracle(clientX?: number, clientY?: number): boolean {
+    const miracleActor = resolveMiracleFollowerActor(
+      this.followerActors,
+      this.options.gameState.activeBossBattle?.activeMiracle
+    );
     const res = this.options.gameState.clickBossMiracle();
     if (!res.triggered) return false;
+    if (miracleActor) {
+      miracleActor.blessingTimerSec = BLESSING_DURATION;
+    }
     const fromX = Number(this.miracleBtnEl?.dataset.beamX) || Math.round(BOSS_SPHERE_CENTER.x - this.stageOriginX + SACRED_CIRCLE_RADIUS * 0.7);
     const fromY = Number(this.miracleBtnEl?.dataset.beamY) || Math.round(BOSS_SPHERE_CENTER.y - this.stageOriginY - 162);
     this.miracleBeam = { fromX, fromY, alpha: 1.0 };
@@ -1942,33 +2070,13 @@ export class BossBattleModal {
       this.smoothCombatSec || (this.options.gameState.activeBossBattle?.elapsedCombatSec ?? 0);
     const besideSphere = this.isLandscapePromptLayout();
 
-    const activeBattle = this.options.gameState.activeBossBattle;
-    const riftBreakdown = activeBattle
-      ? this.options.gameState.getBossCombatBreakdown(activeBattle.bossId)
-      : null;
-
     activeRifts.forEach((rift) => {
       const kind = rift.kind ?? 'standard';
       if (kind === 'demiurge_ritual') {
         if (this.ritualDial?.id !== rift.id) {
           this.ritualDial = new DemiurgeRitualDial(rift.id, (position) => {
-            const res = this.options.gameState.clickBossRift(rift.id, position);
+            this.options.gameState.clickBossRift(rift.id, position);
             this.syncRitualOutcome();
-            if (res.shattered && res.riposteHpPercent && res.riposteHpPercent > 0) {
-              this.bossHitFlashSec = 0.34;
-              this.options.audio.playTone(940, 'triangle', 0.2);
-              this.showHitFeedback(
-                `Riposte Gnóstico! −${formatFixed(res.riposteHpPercent, 1)}% HP do Demiurgo (Combo ×${formatNumber(res.comboStreak ?? 1)})`
-              );
-              const rect = this.ritualDial?.element.getBoundingClientRect();
-              const cx = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
-              const cy = rect ? rect.top + rect.height / 3 : window.innerHeight / 2;
-              this.options.spawnFloatingText(
-                cx,
-                cy,
-                `\u2726 RIPOSTE −${formatFixed(res.riposteHpPercent, 1)}% HP!`
-              );
-            }
             this.updateUI();
             this.drawWorldScene();
             events.emit(GameEvents.STATE_CHANGED);
@@ -2040,10 +2148,7 @@ export class BossBattleModal {
                   ? 'ÚLTIMO SELO!'
                   : `SELO (${chaosRemaining} REST.)`
                 : 'APARAR';
-      const standardDetail =
-        riftBreakdown && riftBreakdown.riftHpFraction > 0
-          ? `Riposte −${formatFixed(riftBreakdown.riftHpFraction * 100, 1)}% HP`
-          : 'Ataque aparado';
+      const standardDetail = 'Ataque aparado';
       const detailText =
         kind === 'anubis_scales'
           ? isDismissedScale
@@ -2146,12 +2251,13 @@ export class BossBattleModal {
             this.drawWorldScene();
             events.emit(GameEvents.STATE_CHANGED);
           } else if (res.shattered) {
-            // Parry interrupts/cancels the Boss's attack swing and flashes the Boss sprite
-            const hasRiposte = (res.riposteHpPercent ?? 0) > 0;
+            // Parry interrupts/cancels the Boss's attack swing, flashes and staggers the Boss sprite
             this.attackedRiftIds.add(rift.id);
-            this.bossHitFlashSec = hasRiposte ? 0.34 : 0.28;
+            this.bossHitFlashSec = 0.28;
             this.bossState = 'idle';
             this.bossAttackFrameTimeSec = 0;
+            this.bossHurtTimeSec = 0;
+            this.bossHurtDurationSec = 0.65;
             this.bossParryRecoverySec = PARRY_RECOVERY_SEC;
             this.spherePulseAlpha = 0;
             this.lastRiftsMissed =
@@ -2162,9 +2268,6 @@ export class BossBattleModal {
             );
             const comboTag =
               (res.comboStreak ?? 1) > 1 ? ` Combo ×${formatNumber(res.comboStreak ?? 1)} ·` : '';
-            const riposteTag = hasRiposte
-              ? ` · Riposte −${formatFixed(res.riposteHpPercent ?? 0, 1)}% HP!`
-              : '';
             let specialMsg =
               res.kind === 'anubis_scales'
                 ? 'Balança julgada! Evite tocar no prato menor.'
@@ -2186,17 +2289,11 @@ export class BossBattleModal {
                 ).length ?? 0;
               specialMsg = leftCount > 0 ? `Selo dissipado! Faltam ${leftCount}.` : 'Colapso revertido!';
             }
-            this.showHitFeedback(`Aparado!${comboTag} ${specialMsg}${riposteTag}`);
-            this.options.audio.playTone(hasRiposte ? 940 : 880, 'triangle', hasRiposte ? 0.2 : 0.16);
+            this.showHitFeedback(`Aparado!${comboTag} ${specialMsg}`);
+            this.options.audio.playTone(880, 'triangle', 0.16);
             const x = e.clientX || window.innerWidth / 2;
             const y = e.clientY || window.innerHeight / 2;
-            this.options.spawnFloatingText(
-              x,
-              y,
-              hasRiposte
-                ? `\u2726 RIPOSTE −${formatFixed(res.riposteHpPercent ?? 0, 1)}% HP!`
-                : '\u2726 APARADO!'
-            );
+            this.options.spawnFloatingText(x, y, '\u2726 APARADO!');
             this.updateUI();
             this.drawWorldScene();
             events.emit(GameEvents.STATE_CHANGED);

@@ -1,16 +1,16 @@
-import { loadIncarnationSprites } from '../../incarnation/incarnationSprites.js';
+import { loadIncarnationSprites, type IncarnationSprite } from '../../incarnation/incarnationSprites.js';
 
 export interface BossLateralSprites {
   idle: HTMLImageElement;
+  idleLoop?: HTMLImageElement;
   walk: HTMLImageElement;
   attacks: HTMLImageElement[];
+  hurt: HTMLImageElement;
+  reverence: HTMLImageElement;
   defeat: HTMLImageElement;
 }
 
-export interface IncarnationWalkSprite {
-  still: HTMLImageElement;
-  walk: HTMLImageElement;
-}
+export type IncarnationWalkSprite = IncarnationSprite;
 
 export interface SpriteFrameBounds {
   minX: number;
@@ -39,6 +39,8 @@ export interface BossSpriteConfig {
   attacks: [string, string, ...string[]];
   walkFrameSec?: number;
   attackFrameSec?: number;
+  idleFrameSec?: number;
+  hasIdleSheet?: boolean;
   animateIdle?: boolean;
   drawOffsetX?: number;
 }
@@ -55,9 +57,24 @@ export const BOSS_SPRITE_FOLDERS: Record<string, BossSpriteConfig> = {
     attackFrameSec: 0.1,
     animateIdle: true,
   },
-  boss_anubis: { folder: 'lateral/01-anubis', attacks: ['ataque-bastao', 'ataque-balanca'] },
-  boss_cronos: { folder: 'lateral/02-hades', attacks: ['ataque-duplo', 'ataque-correntes'] },
-  boss_odin: { folder: 'lateral/03-odin', attacks: ['ataque-lanca', 'ataque-corvo'] },
+  boss_anubis: {
+    folder: 'lateral/01-anubis',
+    attacks: ['ataque-bastao', 'ataque-balanca'],
+    hasIdleSheet: true,
+    idleFrameSec: 0.14,
+  },
+  boss_cronos: {
+    folder: 'lateral/02-hades',
+    attacks: ['ataque-duplo', 'ataque-correntes'],
+    hasIdleSheet: true,
+    idleFrameSec: 0.14,
+  },
+  boss_odin: {
+    folder: 'lateral/03-odin',
+    attacks: ['ataque-lanca', 'ataque-corvo'],
+    hasIdleSheet: true,
+    idleFrameSec: 0.14,
+  },
   boss_tiamat: {
     folder: 'caos-referencia-v2',
     attacks: ['ataque-esferas', 'ataque-circulos'],
@@ -78,10 +95,7 @@ export const BOSS_DEFAULT_BOUNDS: Record<string, SpriteFrameBounds> = {
   boss_tiamat: { minX: 23, minY: 3, maxX: 166, maxY: 180 },
 };
 
-const INCARNATION_FILES = ['01-neofito', '02-consagrado', '03-ancestral', '04-eclipse', '05-solar'] as const;
-
 const cachedBossSprites = new Map<string, BossLateralSprites>();
-const cachedIncarnationWalkSprites = new Map<number, IncarnationWalkSprite>();
 const spriteFrameBoundsCache = new WeakMap<HTMLImageElement, Array<SpriteFrameBounds | undefined>>();
 let boundsProbeCanvas: HTMLCanvasElement | null = null;
 let boundsProbeCtx: CanvasRenderingContext2D | null | undefined;
@@ -182,26 +196,29 @@ export function loadBossSprites(bossId: string): BossLateralSprites | undefined 
   const cfg = BOSS_SPRITE_FOLDERS[bossId];
   if (!cfg) return undefined;
   const base = `${import.meta.env.BASE_URL}assets/sprites/bosses/`;
-  const load = (rel: string) => {
+  const load = (rel: string, prewarm = true) => {
     const img = new Image();
     img.addEventListener(
       'load',
       () => {
-        prewarmBossSheetBounds(img, bossId);
+        if (prewarm) prewarmBossSheetBounds(img, bossId);
         notifyBossSpriteLoaded();
       },
       { once: true }
     );
     img.src = `${base}${cfg.folder}/${rel}`;
-    if (img.complete && img.naturalWidth >= BOSS_SRC_W) {
+    if (prewarm && img.complete && img.naturalWidth >= BOSS_SRC_W) {
       prewarmBossSheetBounds(img, bossId);
     }
     return img;
   };
   const sprites: BossLateralSprites = {
     idle: load('idle.png'),
+    ...(cfg.hasIdleSheet ? { idleLoop: load('idle/spritesheet.png') } : {}),
     walk: load('andar/spritesheet.png'),
-    defeat: load('derrota/spritesheet.png'),
+    hurt: load('dano/spritesheet.png', false),
+    reverence: load('reverencia/spritesheet.png', false),
+    defeat: load('derrota/spritesheet.png', false),
     attacks: cfg.attacks.map(attack => load(`${attack}/spritesheet.png`)),
   };
   cachedBossSprites.set(bossId, sprites);
@@ -214,10 +231,12 @@ export function bossSheetFrameCount(sheet: HTMLImageElement | undefined): number
     : 17;
 }
 
-/** 17-frame PixelLab walk sheets include frame 16 identical to frame 00 ("Return to initial pose"). */
+/** 17-frame and 9-frame PixelLab loop sheets append a final frame identical to frame 00 ("Return to initial pose"). */
 export function bossLoopFrameCount(sheet: HTMLImageElement | undefined): number {
   const total = bossSheetFrameCount(sheet);
-  return total === 17 ? 16 : total;
+  if (total === 17) return 16;
+  if (total === 9) return 8;
+  return total;
 }
 
 /** Smoothly raises the Sun/Moon staff, oscillates at peak channeling, and lowers at the end. */
@@ -236,22 +255,9 @@ export function demiurgeChannelingFrame(elapsedSec: number, durationSec = 4): nu
 }
 
 export function loadIncarnationProcessionSprite(stageIndex: number): IncarnationWalkSprite | undefined {
-  const clamped = Math.max(0, Math.min(INCARNATION_FILES.length - 1, stageIndex));
-  const cached = cachedIncarnationWalkSprites.get(clamped);
-  if (cached) return cached;
-  const file = INCARNATION_FILES[clamped];
-  const base = `${import.meta.env.BASE_URL}assets/`;
-  const sharedStill = loadIncarnationSprites()[clamped]?.still;
-  const still = sharedStill ?? (() => {
-    const img = new Image();
-    img.src = `${base}concepts/encarnacao/${file}.png`;
-    return img;
-  })();
-  const walk = new Image();
-  walk.src = `${base}sprites/encarnacao/${file}/andar/spritesheet.png`;
-  const entry = { still, walk };
-  cachedIncarnationWalkSprites.set(clamped, entry);
-  return entry;
+  const all = loadIncarnationSprites();
+  const clamped = Math.max(0, Math.min(all.length - 1, stageIndex));
+  return all[clamped];
 }
 
 export interface ResolveBossFrameParams {
@@ -262,8 +268,11 @@ export interface ResolveBossFrameParams {
   stageOriginY: number;
   bossState: 'awaiting_ritual' | 'walking' | 'attacking' | 'idle';
   bossWalkTimeSec: number;
+  bossIdleTimeSec?: number;
   bossAttackIndex: number;
   bossAttackFrameTimeSec: number;
+  bossHurtTimeSec?: number;
+  bossHurtDurationSec?: number;
   channelingRitualElapsedSec?: number;
   channelingRitualDurationSec?: number;
   climaxVictory?: boolean;
@@ -280,8 +289,11 @@ export function resolveBossRenderFrame(params: ResolveBossFrameParams): BossRend
     stageOriginY,
     bossState,
     bossWalkTimeSec,
+    bossIdleTimeSec = bossWalkTimeSec,
     bossAttackIndex,
     bossAttackFrameTimeSec,
+    bossHurtTimeSec,
+    bossHurtDurationSec = 0.65,
     channelingRitualElapsedSec,
     channelingRitualDurationSec,
     climaxVictory,
@@ -302,8 +314,14 @@ export function resolveBossRenderFrame(params: ResolveBossFrameParams): BossRend
   const bossSprites = loadBossSprites(bossId);
   let candidateSheet: HTMLImageElement | null = null;
   let frame = 0;
+  let isHurtActive = false;
 
   if (bossSprites) {
+    const isChannelingDemiurge =
+      bossId === 'boss_demiurge' &&
+      channelingRitualElapsedSec !== undefined &&
+      bossState !== 'attacking';
+
     if (climaxVictory && bossSprites.defeat.complete && bossSprites.defeat.naturalWidth > 0) {
       candidateSheet = bossSprites.defeat;
       const progress = 1 - climaxRemainingSec / climaxTotalSec;
@@ -311,12 +329,22 @@ export function resolveBossRenderFrame(params: ResolveBossFrameParams): BossRend
       // Play once across the existing victory interval, never wrap to the standing pose.
       frame = Math.min(totalFrames - 1, Math.max(0, Math.floor(progress * totalFrames)));
     } else if (
-      bossId === 'boss_demiurge' &&
-      channelingRitualElapsedSec !== undefined &&
-      bossState !== 'attacking'
+      bossHurtTimeSec !== undefined &&
+      bossHurtDurationSec > 0 &&
+      bossHurtTimeSec < bossHurtDurationSec &&
+      bossState === 'idle' &&
+      !isChannelingDemiurge &&
+      bossSprites.hurt.complete &&
+      bossSprites.hurt.naturalWidth >= BOSS_SRC_W
     ) {
+      isHurtActive = true;
+      candidateSheet = bossSprites.hurt;
+      const totalFrames = bossSheetFrameCount(candidateSheet);
+      const progress = Math.max(0, Math.min(0.9999, bossHurtTimeSec / bossHurtDurationSec));
+      frame = Math.min(totalFrames - 1, Math.floor(progress * totalFrames));
+    } else if (isChannelingDemiurge) {
       candidateSheet = bossSprites.attacks[1] ?? bossSprites.attacks[0];
-      frame = demiurgeChannelingFrame(channelingRitualElapsedSec, channelingRitualDurationSec ?? 6.3);
+      frame = demiurgeChannelingFrame(channelingRitualElapsedSec!, channelingRitualDurationSec ?? 6.3);
     } else if (
       bossState === 'walking' ||
       ((bossState === 'idle' || bossState === 'awaiting_ritual') && config?.animateIdle)
@@ -328,6 +356,10 @@ export function resolveBossRenderFrame(params: ResolveBossFrameParams): BossRend
       candidateSheet = bossSprites.attacks[bossAttackIndex] ?? bossSprites.attacks[0];
       const totalFrames = bossSheetFrameCount(candidateSheet);
       frame = Math.min(totalFrames - 1, Math.floor(bossAttackFrameTimeSec / (config?.attackFrameSec ?? 0.115)));
+    } else if (bossSprites.idleLoop && bossSprites.idleLoop.complete && bossSprites.idleLoop.naturalWidth >= BOSS_SRC_W) {
+      candidateSheet = bossSprites.idleLoop;
+      const loopFrames = bossLoopFrameCount(candidateSheet);
+      frame = Math.floor(Math.max(0, bossIdleTimeSec) / (config?.idleFrameSec ?? 0.14)) % loopFrames;
     } else {
       candidateSheet = bossSprites.walk;
       frame = 0;
@@ -347,9 +379,10 @@ export function resolveBossRenderFrame(params: ResolveBossFrameParams): BossRend
     candidateSheet && candidateSheet.complete && candidateSheet.naturalWidth > 0
       ? candidateSheet
       : null;
-  // Hitboxes are inactive during climax and pre-combat procession/walk; avoid scanning every frame.
+  // Hitboxes stay rock-steady during climax, pre-combat walk, recoil flinches, and Caos projectile frames.
   const skipDynamicBoundsScan =
     Boolean(climaxVictory) ||
+    isHurtActive ||
     bossState === 'awaiting_ritual' ||
     bossState === 'walking' ||
     (bossId === 'boss_tiamat' && bossState === 'attacking');

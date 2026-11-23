@@ -1,0 +1,18 @@
+{
+  "boss": "03-odin",
+  "name": "Odin",
+  "key": "reverencia",
+  "label": "Reverência",
+  "description": "Solemn ritual reverence and sage tribute facing RIGHT toward a sacred celestial sphere. Plant the tall wooden spear butt firmly and incline the spear forward in salute while bowing the white-bearded head and cloaked shoulders solemnly forward, the black raven folding its wings quietly on his shoulder, holding the dignified reverent bow at the end. Strict side profile facing RIGHT, boots grounded on the same baseline. Preserve crisp dark hermetic pixel art, same scale and palette. Static camera, transparent background.",
+  "frame_count": 12,
+  "jobId": "b1196b8b-3487-48d7-ab05-5f5e8c4f5452",
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 13,
+  "sheet_frame_count": 13,
+  "frame_duration_ms": 120,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

@@ -1,6 +1,8 @@
 import {
-  FOLLOWER_FRAME_SIZE, PRAYER_DURATION, PRAYER_SEQUENCE_DURATION, followerAnimationFrame,
-  loadFollowerSprites, visibleFollowerTiers, type FollowerTier,
+  BLESSING_DURATION, FOLLOWER_FRAME_SIZE, FOLLOWER_IDLE_FRAME_SEC, PRAYER_DURATION,
+  PRAYER_SEQUENCE_DURATION, followerAnimationFrame, isFollowerActionMirrored,
+  loadFollowerSprites, resolveWalkDirection, visibleFollowerTiers,
+  type FollowerTier, type WalkDirection,
 } from './followerVisuals.js';
 import { scheduleVisualFrame, VisualFrameClock, visualFrameScale } from '../../ui/visualTiming.js';
 
@@ -13,6 +15,7 @@ export interface Walker {
   targetX: number;
   targetY: number;
   facing: number; // 1 = right, -1 = left
+  walkDir: WalkDirection;
   variant: FollowerTier; // Iniciado, Hierofante, Pontífice
   state: 'walk' | 'idle' | 'pray';
   stateTimer: number;
@@ -297,6 +300,7 @@ export class FollowersArena {
       targetX: pad + Math.random() * Math.max(10, this.width - pad * 2),
       targetY: minY + Math.random() * (maxY - minY),
       facing: Math.random() > 0.5 ? 1 : -1,
+      walkDir: 'side',
       variant: tier,
       state: 'walk',
       stateTimer: 60 + Math.floor(Math.random() * 120),
@@ -379,7 +383,8 @@ export class FollowersArena {
           w.vy = (dy / dist) * speed;
           w.x += w.vx;
           w.y += w.vy;
-          w.facing = w.vx >= 0 ? 1 : -1;
+          w.walkDir = resolveWalkDirection(w.vx, w.vy, w.walkDir);
+          if (Math.abs(w.vx) > 0.01) w.facing = w.vx >= 0 ? 1 : -1;
           w.walkCycle += elapsedSec * Math.min(this.speedMultiplier, 5) / 0.12;
         } else {
           w.state = 'idle';
@@ -393,8 +398,8 @@ export class FollowersArena {
           this.spawnPrayerParticles(w, 1);
         }
       } else {
-        // Idle
-        w.idleCycle += 0.05 * speedScale;
+        // Idle breathing loop
+        w.idleCycle += elapsedSec * Math.min(this.speedMultiplier, 5) / FOLLOWER_IDLE_FRAME_SEC;
       }
 
       // Miracle plea updates
@@ -408,8 +413,10 @@ export class FollowersArena {
         if (w.miracleTimer <= 0) {
           w.isMiraclePlea = false;
           this.syncMiracleHighlight();
-          w.state = 'idle';
-          w.stateTimer = 60;
+          // Smoothly play the stand-up (levantar) phase before resuming idle/walk.
+          w.state = 'pray';
+          w.prayCycle = PRAYER_DURATION + BLESSING_DURATION;
+          w.stateTimer = 0;
         }
       }
 
@@ -491,19 +498,29 @@ export class FollowersArena {
   }
 
   private drawFollowerSprite(w: Walker, x: number, y: number): void {
-    const { action, frame } = followerAnimationFrame(w.state, w.walkCycle, w.prayCycle, w.isMiraclePlea);
-    const image = this.sprites[w.variant][action];
-    if (!image.complete || image.naturalWidth === 0) return;
+    const { action, frame } = followerAnimationFrame(
+      w.state, w.walkCycle, w.prayCycle, w.isMiraclePlea, w.idleCycle, w.walkDir
+    );
+    const tierSprites = this.sprites[w.variant];
+    let image = tierSprites[action];
+    let drawAction = action;
+    let drawFrame = frame;
+    if (!image.complete || image.naturalWidth === 0) {
+      image = tierSprites.andar;
+      drawAction = 'andar';
+      drawFrame = 0;
+      if (!image.complete || image.naturalWidth === 0) return;
+    }
 
     const ctx = this.ctx;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
     // Reduce the 96px sprites to 80px, keeping source row 89 at the feet.
     ctx.translate(x, y);
-    ctx.scale(w.facing, 1);
+    ctx.scale(isFollowerActionMirrored(drawAction) ? w.facing : 1, 1);
     ctx.drawImage(
       image,
-      frame * FOLLOWER_FRAME_SIZE, 0, FOLLOWER_FRAME_SIZE, FOLLOWER_FRAME_SIZE,
+      drawFrame * FOLLOWER_FRAME_SIZE, 0, FOLLOWER_FRAME_SIZE, FOLLOWER_FRAME_SIZE,
       -40, -74, 80, 80
     );
     ctx.restore();

@@ -1,0 +1,15 @@
+{
+  "model": "pontifice",
+  "action": "andar-frente",
+  "direction": "south",
+  "id": "20bebe51-1c35-4d4d-8e8f-21b989c9359a",
+  "generated_frames": 8,
+  "frame_width": 96,
+  "frame_height": 96,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 120,
+  "layout": "horizontal",
+  "transparent": true
+}

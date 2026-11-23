@@ -1,0 +1,18 @@
+{
+  "boss": "03-odin",
+  "name": "Odin",
+  "key": "dano",
+  "label": "Dano / Aparo",
+  "description": "Sharp hit-recoil and parry stagger reaction in strict side-scroller profile facing RIGHT. Struck from the right: lean torso and bearded head back from the impact, dark cloak billows backward, the perched black raven flutters its wings briefly to keep balance, wooden spear tilts slightly back as he braces his boots, then recovers firmly back to the upright combat stance on the same baseline. Preserve crisp dark hermetic pixel art, same scale and palette. Static camera, transparent background.",
+  "frame_count": 8,
+  "jobId": "b765f3d7-99ea-4299-8535-0ddfcf92e528",
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 9,
+  "sheet_frame_count": 9,
+  "frame_duration_ms": 85,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

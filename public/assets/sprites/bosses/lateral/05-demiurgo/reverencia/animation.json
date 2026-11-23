@@ -1,0 +1,18 @@
+{
+  "boss": "05-demiurgo",
+  "name": "Demiurgo",
+  "key": "reverencia",
+  "label": "Reverência",
+  "description": "Solemn royal subjugation and reverence bow facing RIGHT toward the supreme Divine Sphere. Respectfully tilt the tall sun-and-moon celestial staff forward, fold the pale tattered wings gently inward, lower the dark chained orb slightly, and incline the crowned lion head and upper torso deeply in solemn acknowledgement and tribute, holding the dignified bowed posture at the end. Strict side profile facing RIGHT, serpentine coils grounded on the same baseline. Preserve crisp dark hermetic pixel art, same scale and palette. Static camera, transparent background.",
+  "frame_count": 12,
+  "jobId": "cc93425e-7f80-4da9-ba5c-e3cf5a8b9c1c",
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 13,
+  "sheet_frame_count": 13,
+  "frame_duration_ms": 120,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

@@ -1,0 +1,16 @@
+{
+  "stage": 2,
+  "file": "02-consagrado",
+  "direction": "south",
+  "concept_job_id": "4e5a312d-d62a-4385-b052-50032d0c2121",
+  "id": "9fb016ad-5a49-4966-a4f5-6712f80a70c2",
+  "action": "Ritual summoning and channeling loop in place, facing straight towards the viewer (strict orthographic frontal camera), seamless 8-frame loop. Slowly raise both hands carrying the sphere slightly upward in solemn invocation while subtle pale luminous energy pulses around the sphere, robe sleeves and cloak edges billow gently outward from the channeling power, then smoothly settle back to start pose. Feet stay firmly planted. Preserve exact identity, proportions, outfit, pixel art style and palette. Fixed frontal camera, no translation, no zoom. No halo, no background circles.",
+  "frame_width": 128,
+  "frame_height": 128,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 120,
+  "layout": "horizontal",
+  "transparent": true
+}

@@ -14,9 +14,6 @@ export const BOSS_CURSE_EXTRA_DAMAGE_PER_STACK = 0.6;
 export const BOSS_CURSE_MAX_EXTRA_DAMAGE = 3.0;
 export const BOSS_CURSE_ATTACK_SPEED_PER_STACK = 0.05;
 export const BOSS_CURSE_WINDOW_TIGHTEN_PER_STACK = 0.025;
-export const BOSS_CURSE_RIPOSTE_STANDARD_HP = 0.017;
-export const BOSS_CURSE_RIPOSTE_SPECIAL_HP = 0.029;
-export const BOSS_CURSE_RIPOSTE_MAX_COMBO_MULT = 1.6;
 
 /** Maximum Altar Integrity percentage */
 export const BOSS_MAX_ALTAR_INTEGRITY = 100;
@@ -25,7 +22,13 @@ export const BOSS_MAX_ALTAR_INTEGRITY = 100;
 export const BOSS_MAX_PASSIVE_HP_PER_SEC = 0.018;
 export const BOSS_MAX_CLICK_HP_FRACTION = 0.0045;
 export const BOSS_MAX_RIFT_HP_FRACTION = 0.085;
-export const BOSS_SPHERE_COOLDOWN_SEC = 0.2;
+
+/** Special boss attack damage multipliers relative to a normal unparried strike (altarDamageOnMiss). */
+export const BOSS_SPECIAL_MISS_MULT = 1.75;
+export const BOSS_ANUBIS_WRONG_SCALE_MULT = 2.0;
+export const BOSS_HADES_CHAIN_2_MISS_MULT = 1.05;
+export const BOSS_HADES_CHAIN_3_MISS_MULT = 0.85;
+export const BOSS_CHAOS_SEAL_MISS_MULT = 0.85;
 
 /** Readiness depends only on lifetime Gnose, relative to each Guardian. */
 export const BOSS_DAMAGE_READINESS_THRESHOLD = 0.6;

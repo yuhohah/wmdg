@@ -1,0 +1,18 @@
+{
+  "boss": "01-anubis",
+  "name": "Anúbis",
+  "key": "reverencia",
+  "label": "Reverência",
+  "description": "Solemn ceremonial bow of reverence in strict side-scroller profile facing RIGHT. Keep the vertical staff planted firmly on the ground, gently lower the golden balance scales downward, and incline the jackal head and upper torso deeply forward in calm respectful tribute, holding the dignified bowed posture at the end. STRICTLY empty transparent space on the right — NO orbs, NO glowing objects, NO new props, NO new colors, animate only Anubis and his staff and scales. Feet planted on the same baseline, static camera, transparent background.",
+  "frame_count": 12,
+  "jobId": "66fd3f10-4abe-4486-9422-6ac155bf5582",
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 13,
+  "sheet_frame_count": 13,
+  "frame_duration_ms": 120,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

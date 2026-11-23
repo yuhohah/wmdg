@@ -1,0 +1,16 @@
+{
+  "stage": 4,
+  "file": "04-eclipse",
+  "direction": "south",
+  "concept_job_id": "090cf77d-8ac2-4700-ae1d-afb15261dd73",
+  "id": "d3212c5c-f4b3-4a64-a437-211501df4b12",
+  "action": "Ritual summoning and channeling loop in place, facing straight towards the viewer (strict orthographic frontal camera), seamless 8-frame loop. Slowly raise both hands carrying the sphere slightly upward in solemn invocation while subtle pale luminous energy pulses around the sphere, robe sleeves and cloak edges billow gently outward from the channeling power, then smoothly settle back to start pose. Feet stay firmly planted. Preserve exact identity, proportions, outfit, pixel art style and palette. Fixed frontal camera, no translation, no zoom. Keep existing head halo and large golden astrolabe circle intact behind torso.",
+  "frame_width": 128,
+  "frame_height": 128,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 120,
+  "layout": "horizontal",
+  "transparent": true
+}

@@ -1,0 +1,16 @@
+{
+  "stage": 2,
+  "file": "02-consagrado",
+  "direction": "south",
+  "concept_job_id": "4e5a312d-d62a-4385-b052-50032d0c2121",
+  "id": "63ee56a7-e0cd-47de-86a0-f9f1d6bdba23",
+  "action": "Solemn idle breathing loop in place, facing straight towards the viewer (strict orthographic frontal camera), seamless 8-frame loop. Subtle rhythmic chest breathing, gentle soft sway of robe folds and cape hem, tiny calm shimmer on the held sphere at chest, feet planted firmly on the exact same floor baseline. Preserve exact identity, proportions, outfit, pixel art style and palette. Fixed frontal camera, no walking, no translation, no zoom. No halo, no background circles.",
+  "frame_width": 128,
+  "frame_height": 128,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 160,
+  "layout": "horizontal",
+  "transparent": true
+}

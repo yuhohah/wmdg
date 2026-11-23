@@ -1,5 +1,5 @@
 import type { ActiveBossMiracle, BossRift, GnoseBoss } from '../../../types.js';
-import { visibleFollowerTiers, type FollowerTier } from '../../followers/followerVisuals.js';
+import { visibleFollowerTiers, type FollowerTier, type WalkDirection } from '../../followers/followerVisuals.js';
 import { FollowersArena } from '../../followers/FollowersArena.js';
 
 export interface BattleCameraTarget {
@@ -38,7 +38,11 @@ export interface BattleFollowerActor {
   state: 'waiting_in_patio' | 'following_in_line' | 'encircling' | 'returning_to_patio';
   walkCycle: number;
   prayCycle: number;
+  idleCycle: number;
+  riseTimerSec: number;
+  blessingTimerSec: number;
   facing: 1 | -1;
+  walkDir: WalkDirection;
 }
 
 export interface PendingBattleClimax {
@@ -495,7 +499,11 @@ export function syncBattleFollowerCohort(
       state: 'waiting_in_patio',
       walkCycle: liveW ? liveW.walkCycle : (i * 0.7) % 8,
       prayCycle: liveW ? liveW.prayCycle : (i * 0.35) % 2,
+      idleCycle: liveW ? liveW.idleCycle : (i * 0.9) % 8,
+      riseTimerSec: 0,
+      blessingTimerSec: 0,
       facing: -1,
+      walkDir: liveW ? liveW.walkDir : 'side',
     });
   }
 

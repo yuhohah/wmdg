@@ -55,11 +55,10 @@ const METRICS: Array<[string, (result: ArchetypeBenchmarkResult) => string]> = [
   ['Milagres coletados / surgidos', r => `${r.miraclesCaught} / ${r.miraclesSpawned}`],
   ['Nós da Gnose', r => `${r.gnoseUpgradesBought}/${GNOSE_UPGRADES.length}`],
   ['Chefes derrotados', r => `${r.bossesDefeated}/${COMBAT_BOSSES.length}`],
-  ['Derrotas / Purif. / Ripostes', r => {
+  ['Derrotas / Purificações', r => {
     const losses = r.progression.combat.filter(c => c.result === 'lost').length;
     const purifies = r.progression.combat.filter(c => c.cursePurified).length;
-    const ripostes = r.progression.combat.filter(c => c.riftHpFraction > 0).length;
-    return `${losses} / ${purifies} / ${ripostes}`;
+    return `${losses} / ${purifies}`;
   }],
   ['Ascensões / Transmutações', r => `${r.gnoseResets} / ${r.relicResets}`],
   ['Maior intervalo sem progresso', r => r.formattedMaxWait],

@@ -1,0 +1,18 @@
+{
+  "boss": "01-anubis",
+  "name": "Anúbis",
+  "key": "idle",
+  "label": "Idle",
+  "description": "Subtle imposing combat idle breathing loop in place, strict side-scroller profile facing RIGHT. Slow rhythmic chest breathing, slight gentle sway of the suspended golden balance scale pans on their chains, subtle tension in the jackal ears and white loincloth hem, upright staff and both feet planted solidly on the exact same floor baseline. Return cleanly to the initial standing pose. Preserve crisp dark hermetic pixel art, same scale and palette. Static camera, transparent background.",
+  "frame_count": 8,
+  "jobId": "f548339c-eb11-4575-a3a0-3ef2f41f5855",
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 9,
+  "sheet_frame_count": 9,
+  "frame_duration_ms": 140,
+  "loop": true,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

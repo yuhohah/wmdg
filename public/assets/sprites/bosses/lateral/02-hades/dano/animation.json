@@ -1,0 +1,18 @@
+{
+  "boss": "02-hades",
+  "name": "Hades",
+  "key": "dano",
+  "label": "Dano / Aparo",
+  "description": "Heavy hit-recoil and stagger reaction in strict side-scroller profile facing RIGHT. Struck from the right: massive armored torso jolts backward, spiked helmet jerks back, iron chains and ragged cloth whip back, weapon arm reels outward off-balance, then plants heavy boots and recovers steadily back to the upright combat stance on the same baseline. Preserve crisp dark hermetic pixel art, same scale and palette. Static camera, transparent background.",
+  "frame_count": 8,
+  "jobId": "78951e0b-6dd0-4a09-b02c-f92bd14dca57",
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 9,
+  "sheet_frame_count": 9,
+  "frame_duration_ms": 85,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

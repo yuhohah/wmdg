@@ -1,0 +1,16 @@
+{
+  "stage": 5,
+  "file": "05-solar",
+  "direction": "south",
+  "concept_job_id": "767146f2-518f-498a-912c-1ab3e14fbea2",
+  "id": "4fffa41c-93cd-44ac-adc2-12edc0462809",
+  "action": "Solemn idle breathing loop in place, facing straight towards the viewer (strict orthographic frontal camera), seamless 8-frame loop. Subtle rhythmic chest breathing, gentle soft sway of robe folds and cape hem, tiny calm shimmer on the held sphere at chest, feet planted firmly on the exact same floor baseline. Preserve exact identity, proportions, outfit, pixel art style and palette. Fixed frontal camera, no walking, no translation, no zoom. Keep existing head halo and large luminous golden astrolabe circle intact behind torso.",
+  "frame_width": 128,
+  "frame_height": 128,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 160,
+  "layout": "horizontal",
+  "transparent": true
+}

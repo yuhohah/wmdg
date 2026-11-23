@@ -1,0 +1,15 @@
+{
+  "model": "hierofante",
+  "action": "andar-frente",
+  "direction": "south",
+  "id": "6d2fe808-19d1-4ac7-aaf8-24e1e6e2e9ab",
+  "generated_frames": 8,
+  "frame_width": 96,
+  "frame_height": 96,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 120,
+  "layout": "horizontal",
+  "transparent": true
+}

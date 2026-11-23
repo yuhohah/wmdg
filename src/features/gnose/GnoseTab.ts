@@ -283,7 +283,10 @@ export class GnoseTab {
         ? `<button type="button" class="btn-purify-curse" data-cleanse-boss-id="${cleanseBoss.id}">⚔ Purificar contra ${cleanseBoss.name}</button>`
         : `<span class="gnose-curse-hint">Derrote o chefe anterior para purificar</span>`;
       curseBanner.innerHTML = `
-        <span class="gnose-curse-summary">${icon('warning')} <strong>Maldição dos Guardiões (${curseStacks}/5):</strong> −${dmgRedPct}% dano aos chefes, +${extraDmgPct}% dano sofrido e <em>Riposte Gnóstico</em> ao aparar${hitkillNote}</span>
+        <span class="gnose-curse-summary">
+          ${icon('warning')}
+          <span class="gnose-curse-text"><strong>Maldição dos Guardiões (${curseStacks}/5):</strong> −${dmgRedPct}% dano aos chefes e +${extraDmgPct}% dano sofrido${hitkillNote}.</span>
+        </span>
         ${purifyHtml}
       `;
       const purifyBtn = curseBanner.querySelector<HTMLButtonElement>('.btn-purify-curse');

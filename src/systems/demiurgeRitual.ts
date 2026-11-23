@@ -2,7 +2,7 @@
 export const RITUAL_LEGS = [1.65, 1.32, 1.85, 1.48] as const;
 export const RITUAL_DURATION = RITUAL_LEGS.reduce((sum, leg) => sum + leg, 0);
 export const RITUAL_SAFE_HALF_WIDTH = 0.11;
-export const RITUAL_MAX_PENALTY = 40;
+export const RITUAL_MAX_PENALTY = 55;
 export function ritualPointer(elapsed: number): number {
   let time = Math.max(0, elapsed);
   for (let i = 0; i < RITUAL_LEGS.length; i++) {

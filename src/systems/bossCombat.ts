@@ -12,6 +12,8 @@ import type {
 } from '../types.js';
 import { GNOSE_UPGRADES } from '../config/gnose.js';
 import {
+  BOSS_ANUBIS_WRONG_SCALE_MULT,
+  BOSS_CHAOS_SEAL_MISS_MULT,
   BOSS_CURSE_ATTACK_SPEED_PER_STACK,
   BOSS_CURSE_DAMAGE_TAKEN_REDUCTION_PER_STACK,
   BOSS_CURSE_EXTRA_DAMAGE_PER_STACK,
@@ -19,15 +21,15 @@ import {
   BOSS_CURSE_MAX_EXTRA_DAMAGE,
   BOSS_CURSE_MAX_STACKS,
   BOSS_CURSE_MULTIPLIER,
-  BOSS_CURSE_RIPOSTE_MAX_COMBO_MULT,
-  BOSS_CURSE_RIPOSTE_SPECIAL_HP,
-  BOSS_CURSE_RIPOSTE_STANDARD_HP,
   BOSS_CURSE_WINDOW_TIGHTEN_PER_STACK,
   BOSS_DAMAGE_READINESS_THRESHOLD,
   BOSS_DEFENSE_READINESS_THRESHOLD,
+  BOSS_HADES_CHAIN_2_MISS_MULT,
+  BOSS_HADES_CHAIN_3_MISS_MULT,
   BOSS_MAX_ALTAR_INTEGRITY,
   BOSS_MAX_CLICK_HP_FRACTION,
   BOSS_MAX_PASSIVE_HP_PER_SEC,
+  BOSS_SPECIAL_MISS_MULT,
   COMBAT_BOSSES,
 } from '../config/bosses.js';
 
@@ -99,7 +101,6 @@ export interface BossRiftClickResult {
   chainLocked?: boolean;
   ritualSide?: 'center' | 'moon' | 'sun';
   ritualPercent?: number;
-  riposteHpPercent?: number;
 }
 
 export function isBossDefeated(state: BossCombatStateHost, bossId: string): boolean {
@@ -366,18 +367,9 @@ export function calculateBossCombatBreakdown(
   const clickDamage = rawClickDamage * chainPenaltyMult * damageMultiplier * bossCurse.damageTakenMult;
   const clickHpFraction = clickDamage / bossMaxHp;
 
-  // Parrying NEVER heals the Sphere. Under Curse, parrying reflects unstable energy as a Gnostic Riposte against the Boss!
-  const currentCombo =
-    state.activeBossBattle && state.activeBossBattle.bossId === boss.id
-      ? state.activeBossBattle.comboStreak ?? 0
-      : 0;
-  const riposteComboMult = Math.min(
-    BOSS_CURSE_RIPOSTE_MAX_COMBO_MULT,
-    1 + Math.max(0, currentCombo) * 0.08
-  );
-  const riftHpFraction =
-    bossCurse.stacks > 0 && canDamageBoss ? BOSS_CURSE_RIPOSTE_STANDARD_HP * riposteComboMult : 0;
-  const riftDamage = bossMaxHp * riftHpFraction;
+  // Parrying cancels the incoming strike without healing the Sphere or dealing direct Boss damage.
+  const riftHpFraction = 0;
+  const riftDamage = 0;
 
   // Protection follows the same lifetime-Gnose curve as the readiness indicator.
   const defenseScore = Math.max(0, cultReadiness - BOSS_DAMAGE_READINESS_THRESHOLD) * 4;
@@ -401,12 +393,15 @@ export function calculateBossCombatBreakdown(
     : BOSS_MAX_ALTAR_INTEGRITY;
 
   // Continuous Sphere tension without any parry healing: hitless play survives Phase II (-15%) + Phase III (-30%) shockwaves + aura drain.
+  // Under Curse, scale aura pressure alongside damageTakenMult so the longer battle remains winnable on hitless play even at 5/5 Curse.
   const rawPressure = Math.max(
     0.06,
     (boss.altarPressurePerSec ?? 0.65) / (1 + defenseScore * 2.65)
   );
   const altarPressurePerSec =
-    bossCurse.stacks > 0 && canWithstandBoss ? Math.min(0.5, rawPressure) : rawPressure;
+    bossCurse.stacks > 0 && canWithstandBoss
+      ? Math.min(0.45, rawPressure) * bossCurse.damageTakenMult
+      : rawPressure;
   const altarHealOnRift = 0;
 
   const estimatedPassiveVictorySec =
@@ -465,7 +460,6 @@ export function startBossBattle(
     altarIntegrity: BOSS_MAX_ALTAR_INTEGRITY,
     maxAltarIntegrity: BOSS_MAX_ALTAR_INTEGRITY,
     riftSpawnTimerSec: boss.riftIntervalSec * 0.65,
-    sphereCooldownSec: 0,
     activeRifts: [],
     riftsShattered: 0,
     riftsMissed: 0,
@@ -572,6 +566,42 @@ export function clickBossMiracle(
   return { healed, triggered: true, integrityAfter: battle.altarIntegrity };
 }
 
+/**
+ * Phase-based boss attack schedule:
+ * - Phase 1 (>60% HP): normal attacks only
+ * - Phase 2 (25%..60% HP): both normal and special attacks
+ * - Phase 3 (<=25% HP): special attacks only
+ */
+export function shouldSpawnSpecialBossRift(phase: 1 | 2 | 3, wave: number): boolean {
+  if (phase === 1) return false;
+  if (phase === 3) return true;
+  return wave % 2 === 0;
+}
+
+/** Multiplier applied to breakdown.altarDamageOnMiss when an unparried rift expires. */
+export function getBossRiftMissDamageMultiplier(
+  rift: { kind?: BossRiftKind; chainTotal?: number },
+  curseStacks: number
+): number {
+  const kind = rift.kind ?? 'standard';
+  if (kind === 'standard') return 1.0;
+
+  if (kind === 'hades_chains') {
+    const base = rift.chainTotal === 3 ? BOSS_HADES_CHAIN_3_MISS_MULT : BOSS_HADES_CHAIN_2_MISS_MULT;
+    if (curseStacks >= BOSS_CURSE_MAX_STACKS) return Math.max(1.0, base);
+    return Math.min(BOSS_SPECIAL_MISS_MULT, base + curseStacks * 0.15);
+  }
+
+  if (kind === 'chaos_orbit') {
+    const base = BOSS_CHAOS_SEAL_MISS_MULT;
+    if (curseStacks >= BOSS_CURSE_MAX_STACKS) return Math.max(1.0, base);
+    return Math.min(BOSS_SPECIAL_MISS_MULT, base + curseStacks * 0.15);
+  }
+
+  // Single-target specials (Anúbis scales timeout, Odin raven timeout, etc.) hit significantly harder than normal.
+  return BOSS_SPECIAL_MISS_MULT;
+}
+
 export function spawnBossRift(
   state: BossCombatStateHost,
   options?: { forceSpecial?: boolean; forceStandard?: boolean }
@@ -591,7 +621,7 @@ export function spawnBossRift(
 
   const useSpecial =
     options?.forceSpecial === true ||
-    (!options?.forceStandard && wave >= 2 && wave % 2 === 0);
+    (!options?.forceStandard && shouldSpawnSpecialBossRift(phase, wave));
 
   const windowScale = (phase === 3 ? 0.85 : phase === 2 ? 0.92 : 1.0) * curse.windowScaleMult;
   const baseWindowSec = Math.max(1.25, boss.riftWindowSec * windowScale);
@@ -757,11 +787,14 @@ export function clickBossRift(
         ? { remainingSec: displayedRemainingSec, maxSec: rift.maxSec }
         : rift;
     if (!odinParryCue(cueRift).green) {
-      const damage = calculateBossCombatBreakdown(state, battle.bossId).altarDamageOnMiss;
+      const damage =
+        calculateBossCombatBreakdown(state, battle.bossId).altarDamageOnMiss * BOSS_SPECIAL_MISS_MULT;
       const before = battle.altarIntegrity;
       battle.activeRifts.splice(idx, 1);
       battle.riftsMissed++;
       battle.comboStreak = 0;
+      battle.lastMissDamage = damage;
+      battle.lastMissWasSpecial = true;
       battle.altarIntegrity = Math.max(0, before - damage);
       if (battle.altarIntegrity <= 0) completeBossBattle(state, false);
       return {
@@ -781,7 +814,7 @@ export function clickBossRift(
       result.side === 'sun' && curse.stacks > 0
         ? curse.stacks >= BOSS_CURSE_MAX_STACKS
           ? 100
-          : Math.min(100, Math.max(result.percent * curse.damageDealtMult, curse.stacks * 20))
+          : Math.min(100, Math.max(result.percent * curse.damageDealtMult, curse.stacks * 25))
         : result.percent;
     battle.ritualOutcome = {
       id: rift.id,
@@ -797,14 +830,16 @@ export function clickBossRift(
         battle.bossHp = Math.min(battle.bossMaxHp, battle.bossHp + (battle.bossMaxHp * result.percent) / 100);
         battle.phase = getBossPhase(state);
         if (curse.stacks >= BOSS_CURSE_MAX_STACKS) {
+          battle.lastMissDamage = battle.maxAltarIntegrity;
+          battle.lastMissWasSpecial = true;
           battle.altarIntegrity = 0;
           completeBossBattle(state, false);
         }
       } else {
-        battle.altarIntegrity = Math.max(
-          0,
-          battle.altarIntegrity - (battle.maxAltarIntegrity * effectivePercent) / 100
-        );
+        const sunDamage = (battle.maxAltarIntegrity * effectivePercent) / 100;
+        battle.lastMissDamage = sunDamage;
+        battle.lastMissWasSpecial = true;
+        battle.altarIntegrity = Math.max(0, battle.altarIntegrity - sunDamage);
         if (battle.altarIntegrity <= 0) completeBossBattle(state, false);
       }
       return {
@@ -829,10 +864,10 @@ export function clickBossRift(
       const lockMult =
         curse.stacks >= BOSS_CURSE_MAX_STACKS
           ? 1.0
-          : Math.min(1.0, 0.25 + curse.stacks * 0.16);
+          : Math.min(1.25, 0.5 + curse.stacks * 0.18);
       const recoil = breakdown.canWithstandBoss
-        ? Math.max(2, breakdown.altarDamageOnMiss * lockMult)
-        : breakdown.altarDamageOnMiss;
+        ? Math.max(4, breakdown.altarDamageOnMiss * lockMult)
+        : breakdown.altarDamageOnMiss * Math.max(1, lockMult);
       const before = battle.altarIntegrity;
       battle.comboStreak = 0;
       battle.altarIntegrity = Math.max(0, before - recoil);
@@ -854,13 +889,15 @@ export function clickBossRift(
       rift.scaleHigherSelected === true ||
       siblings.some((r) => (r.scaleValue ?? 0) > (rift.scaleValue ?? 0));
     if (isLower) {
-      const multiplier = 1.6;
+      const multiplier = BOSS_ANUBIS_WRONG_SCALE_MULT;
       const damage = calculateBossCombatBreakdown(state, battle.bossId).altarDamageOnMiss * multiplier;
       const before = battle.altarIntegrity;
       battle.activeRifts = battle.activeRifts.filter((r) => !siblings.includes(r));
       battle.altarIntegrity = Math.max(0, before - damage);
       battle.riftsMissed += 1;
       battle.comboStreak = 0;
+      battle.lastMissDamage = damage;
+      battle.lastMissWasSpecial = true;
       if (battle.altarIntegrity <= 0) completeBossBattle(state, false);
       return {
         damage: 0,
@@ -906,61 +943,14 @@ export function clickBossRift(
     specialBonusTriggered = true;
   }
 
-  // Parrying NEVER heals the Sphere. Under Curse, completing a parry wave unleashes a Gnostic Riposte against the Boss!
-  let riposteDamage = 0;
-  let riposteHpPercent: number | undefined;
-  const curse = getBossCurseModifiers(state, battle.bossId);
-  if (remainingSameGroup === 0 && curse.stacks > 0) {
-    const breakdown = calculateBossCombatBreakdown(state, battle.bossId);
-    if (breakdown.canDamageBoss) {
-      const baseRiposte =
-        kind !== 'standard' ? BOSS_CURSE_RIPOSTE_SPECIAL_HP : BOSS_CURSE_RIPOSTE_STANDARD_HP;
-      const comboMult = Math.min(
-        BOSS_CURSE_RIPOSTE_MAX_COMBO_MULT,
-        1 + Math.max(0, nextCombo - 1) * 0.08
-      );
-      const hpFraction = baseRiposte * comboMult;
-      riposteHpPercent = hpFraction * 100;
-      riposteDamage = battle.bossMaxHp * hpFraction;
-      battle.bossHp = Math.max(0, battle.bossHp - riposteDamage);
-      battle.phase = getBossPhase(state);
-      if (battle.bossHp <= 0) {
-        completeBossBattle(state, true);
-        return {
-          damage: riposteDamage,
-          shattered: true,
-          victory: true,
-          comboStreak: nextCombo,
-          kind,
-          specialBonusTriggered,
-          miracleAwakened,
-          riposteHpPercent,
-        };
-      }
-      if (checkAndApplyBossPhaseTransitions(state)) {
-        return {
-          damage: riposteDamage,
-          shattered: true,
-          victory: false,
-          comboStreak: nextCombo,
-          kind,
-          specialBonusTriggered,
-          miracleAwakened,
-          riposteHpPercent,
-        };
-      }
-    }
-  }
-
   return {
-    damage: riposteDamage,
+    damage: 0,
     shattered: true,
     victory: false,
     comboStreak: nextCombo,
     kind,
     specialBonusTriggered,
     miracleAwakened,
-    riposteHpPercent,
   };
 }
 
@@ -1050,7 +1040,6 @@ export function tickBossBattle(state: BossCombatStateHost, deltaSec: number): vo
   if (!boss) return;
 
   battle.elapsedCombatSec = (battle.elapsedCombatSec ?? 0) + deltaSec;
-  battle.sphereCooldownSec = Math.max(0, battle.sphereCooldownSec - deltaSec);
   const breakdown = calculateBossCombatBreakdown(state, battle.bossId);
   const curse = getBossCurseModifiers(state, battle.bossId);
 
@@ -1064,6 +1053,8 @@ export function tickBossBattle(state: BossCombatStateHost, deltaSec: number): vo
   if (battle.ritualOutcome) battle.ritualOutcome.remainingSec = Math.max(0, battle.ritualOutcome.remainingSec - deltaSec);
 
   // 1. Update active rifts & check for expired rifts first so defeat on expiry takes precedence over passive tick victory
+  let expiredDamage = 0;
+  let expiredSpecial = false;
   for (const rift of [...battle.activeRifts].reverse()) {
     const i = battle.activeRifts.indexOf(rift);
     if (i === -1) continue;
@@ -1083,27 +1074,25 @@ export function tickBossBattle(state: BossCombatStateHost, deltaSec: number): vo
       }
       battle.riftsMissed += 1;
       battle.comboStreak = 0;
-      const baseMissMult =
-        rift.kind === 'hades_chains'
-          ? rift.chainTotal === 3
-            ? 0.42
-            : 0.55
-          : rift.kind === 'chaos_orbit'
-            ? 0.45
-            : 1.0;
-      const missMult =
-        curse.stacks >= BOSS_CURSE_MAX_STACKS
-          ? 1.0
-          : Math.min(1.0, baseMissMult + curse.stacks * 0.14);
-      battle.altarIntegrity = Math.max(
-        0,
-        battle.altarIntegrity - breakdown.altarDamageOnMiss * (breakdown.canWithstandBoss ? missMult : 1)
-      );
+      const missMult = getBossRiftMissDamageMultiplier(rift, curse.stacks);
+      const riftDamage =
+        breakdown.altarDamageOnMiss * (breakdown.canWithstandBoss ? missMult : Math.max(1, missMult));
+      expiredDamage += riftDamage;
+      if ((rift.kind ?? 'standard') !== 'standard') {
+        expiredSpecial = true;
+      }
+      battle.altarIntegrity = Math.max(0, battle.altarIntegrity - riftDamage);
       if (battle.altarIntegrity <= 0) {
+        battle.lastMissDamage = expiredDamage;
+        battle.lastMissWasSpecial = expiredSpecial;
         completeBossBattle(state, false);
         return;
       }
     }
+  }
+  if (expiredDamage > 0) {
+    battle.lastMissDamage = expiredDamage;
+    battle.lastMissWasSpecial = expiredSpecial;
   }
 
   // 1b. Continuous pressure, mitigated only by lifetime-Gnose readiness.
@@ -1154,11 +1143,12 @@ export function tickBossBattle(state: BossCombatStateHost, deltaSec: number): vo
   }
 
   // 3. Spawn new rifts periodically (faster in Phase 2 & 3 and under Curse fury)
-  const phaseIntervalScale = phase === 3 ? 0.78 : phase === 2 ? 0.88 : 1.0;
+  const currentPhase = battle.phase;
+  const phaseIntervalScale = currentPhase === 3 ? 0.78 : currentPhase === 2 ? 0.88 : 1.0;
   battle.riftSpawnTimerSec -= deltaSec;
   if (battle.riftSpawnTimerSec <= 0) {
     const nextWave = (battle.attackWaveCounter ?? 0) + 1;
-    const nextWillBeSpecial = nextWave >= 2 && nextWave % 2 === 0;
+    const nextWillBeSpecial = shouldSpawnSpecialBossRift(currentPhase, nextWave);
     const blockingRifts = battle.activeRifts.filter((r) => !r.scaleHigherSelected);
     if (nextWillBeSpecial && blockingRifts.length > 0) {
       battle.riftSpawnTimerSec = 0.2;

@@ -79,6 +79,42 @@
           }
         ]
       }
+    },
+    {
+      "boss": "caos-referencia-v2",
+      "name": "Caos Primordial",
+      "key": "dano",
+      "label": "Dano / Aparo",
+      "description": "Cosmic hit-recoil and destabilized stagger reaction in side-scroller view. Struck from the right: the black eclipse core shudders and jolts leftward, the pale gold orbital ring tilts sharply out of plane, black ink tendrils recoil wildly and orbiting stone shards scatter outward briefly before pulling back and stabilizing into the original hovering equilibrium. Preserve crisp dark hermetic pixel art, same scale and monochrome bone-gold palette. Static camera, transparent background.",
+      "frame_count": 8,
+      "jobId": "bf980a11-4d2c-418d-a3e6-2306c5955a10",
+      "frame_width": 256,
+      "frame_height": 192,
+      "source_frame_count": 9,
+      "sheet_frame_count": 9,
+      "frame_duration_ms": 85,
+      "loop": false,
+      "direction": "east",
+      "layout": "horizontal",
+      "transparent": true
+    },
+    {
+      "boss": "caos-referencia-v2",
+      "name": "Caos Primordial",
+      "key": "reverencia",
+      "label": "Reverência",
+      "description": "Solemn cosmic reverence and harmonic pacification facing RIGHT toward a sacred celestial sphere. The swirling black ink tendrils gracefully unfurl and dip downward in deference, the pale gold orbital ring tilts gently forward in silent salute while the eclipse core dims softly and aligns calmly, holding a serene reverent suspended posture at the end. Preserve crisp dark hermetic pixel art, same scale and palette. Static camera, transparent background.",
+      "frame_count": 12,
+      "jobId": "fa060e3b-0c9a-4957-8bb1-4c5cd9df708c",
+      "frame_width": 256,
+      "frame_height": 192,
+      "source_frame_count": 13,
+      "sheet_frame_count": 13,
+      "frame_duration_ms": 120,
+      "loop": false,
+      "direction": "east",
+      "layout": "horizontal",
+      "transparent": true
     }
   ]
 }

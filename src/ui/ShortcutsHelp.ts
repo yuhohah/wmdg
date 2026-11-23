@@ -24,7 +24,7 @@ export class ShortcutsHelp {
     this.panel.innerHTML = `<h2>Atalhos e controles</h2>
       ${sequence(CARD_NAV_SHORTCUTS.map(({ key }) => key), CARD_NAV_SHORTCUTS.map(({ label }) => label), 'Navegação', 'Ir para os cards na ordem da lista')}
       ${group('Quadro', row('Arrastar título', 'Mover um card') + row('Arrastar fundo', 'Mover o quadro') + row('Roda do mouse', 'Aproximar ou afastar'))}
-      ${group('Esfera', row('Espaço', 'Tocar a Esfera'))}
+      ${group('Esfera', row('Espaço', 'Tocar a Esfera ou atacar o guardião em duelo'))}
       ${group('Fiéis', row('Z', 'Comprar um Fiel') + row('X', 'Comprar o máximo, quando liberado') + row('M', 'Coletar milagre disponível, inclusive em duelo'))}
       ${group('Desbloqueios', row('.', 'Desbloquear a mecânica atual'))}
       ${group('Encarnação', row('I', 'Carregar a Bênção') + row('U', 'Evoluir a Encarnação'))}

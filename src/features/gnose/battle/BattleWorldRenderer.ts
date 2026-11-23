@@ -1,11 +1,23 @@
 import type { ActiveBossBattle } from '../../../types.js';
 import { odinParryCue } from '../../../systems/odinParry.js';
 import {
+  BLESSING_DURATION,
   FOLLOWER_FRAME_SIZE,
+  PRAYER_DURATION,
+  RISE_DURATION,
   followerAnimationFrame,
+  isFollowerActionMirrored,
   loadFollowerSprites,
+  type WalkDirection,
 } from '../../followers/followerVisuals.js';
-import { INCARNATION_FRAME_SIZE, incarnationStageIndex } from '../../incarnation/incarnationSprites.js';
+import {
+  INCARNATION_CHANNEL_FRAME_SEC,
+  INCARNATION_FRAME_SIZE,
+  INCARNATION_FRAMES,
+  INCARNATION_IDLE_FRAME_SEC,
+  incarnationStageIndex,
+  selectIncarnationWalkSheet,
+} from '../../incarnation/incarnationSprites.js';
 import {
   BOSS_SRC_H,
   BOSS_SRC_W,
@@ -97,8 +109,10 @@ export interface BattleWorldRenderContext {
   incX: number;
   incY: number;
   incFacing: 1 | -1;
+  incWalkDir?: WalkDirection;
   incState: 'walking_to_patio' | 'gathering_at_patio' | 'leading_procession' | 'guarding' | 'leading_return' | 'returning_to_altar';
   incWalkCycle: number;
+  incAnimTimeSec?: number;
   incCallRingProgress: number;
   incGuardSpot: { x: number; y: number };
   returnPath: PathSample[];
@@ -537,21 +551,61 @@ export function renderBattleWorldScene(rc: BattleWorldRenderContext): void {
         ctx.restore();
       }
 
-      const animState =
-        f.state === 'encircling'
-          ? 'pray'
-          : f.state === 'following_in_line' || f.state === 'returning_to_patio'
-            ? 'walk'
-            : 'idle';
-      const { action, frame } = followerAnimationFrame(animState, f.walkCycle, f.prayCycle, false);
-      const sheet = followerSheets[f.tier]?.[action];
+      let resolved: { action: ReturnType<typeof followerAnimationFrame>['action']; frame: number };
+      if (f.riseTimerSec > 0) {
+        resolved = followerAnimationFrame(
+          'rise',
+          f.walkCycle,
+          Math.max(0, RISE_DURATION - f.riseTimerSec),
+          false,
+          f.idleCycle,
+          f.walkDir
+        );
+      } else if (f.state === 'encircling') {
+        if (f.blessingTimerSec > 0) {
+          resolved = followerAnimationFrame(
+            'pray',
+            f.walkCycle,
+            PRAYER_DURATION + Math.max(0, BLESSING_DURATION - f.blessingTimerSec),
+            false,
+            f.idleCycle,
+            f.walkDir
+          );
+        } else if (climax?.victory) {
+          const victorySec = Math.max(0, climax.totalSec - climax.remainingSec);
+          resolved = followerAnimationFrame(
+            'pray',
+            f.walkCycle,
+            PRAYER_DURATION + Math.min(BLESSING_DURATION - 0.01, victorySec * 0.8),
+            false,
+            f.idleCycle,
+            f.walkDir
+          );
+        } else {
+          resolved = followerAnimationFrame('pray', f.walkCycle, f.prayCycle, true, f.idleCycle, f.walkDir);
+        }
+      } else if (f.state === 'following_in_line' || f.state === 'returning_to_patio') {
+        resolved = followerAnimationFrame('walk', f.walkCycle, 0, false, f.idleCycle, f.walkDir);
+      } else {
+        resolved = followerAnimationFrame('idle', f.walkCycle, 0, false, f.idleCycle, f.walkDir);
+      }
+
+      const tierSheets = followerSheets[f.tier];
+      let sheet = tierSheets?.[resolved.action];
+      let drawAction = resolved.action;
+      let drawFrame = resolved.frame;
+      if (!sheet || !sheet.complete || sheet.naturalWidth === 0) {
+        sheet = tierSheets?.andar;
+        drawAction = 'andar';
+        drawFrame = 0;
+      }
       if (sheet && sheet.complete && sheet.naturalWidth > 0) {
         ctx.save();
         ctx.translate(lx, ly);
-        ctx.scale(f.facing, 1);
+        ctx.scale(isFollowerActionMirrored(drawAction) ? f.facing : 1, 1);
         ctx.drawImage(
           sheet,
-          frame * FOLLOWER_FRAME_SIZE,
+          drawFrame * FOLLOWER_FRAME_SIZE,
           0,
           FOLLOWER_FRAME_SIZE,
           FOLLOWER_FRAME_SIZE,
@@ -594,15 +648,36 @@ export function renderBattleWorldScene(rc: BattleWorldRenderContext): void {
           (incState === 'leading_return' && returnS < polylineLength(returnPath)) ||
           (incState === 'leading_procession' &&
             Math.hypot(incX - incGuardSpot.x, incY - incGuardSpot.y) > 4);
-        const sheet =
-          isWalking && incSprites.walk.complete && incSprites.walk.naturalWidth > 0
-            ? incSprites.walk
-            : incSprites.still;
-        const frame = sheet === incSprites.walk ? Math.floor(incWalkCycle) % 8 : 0;
-        if (sheet.complete && sheet.naturalWidth > 0) {
+        const ready = (img: HTMLImageElement) => img.complete && img.naturalWidth > 0;
+        let sheet: HTMLImageElement;
+        let frame = 0;
+        let mirror = false;
+
+        if (isWalking) {
+          const picked = selectIncarnationWalkSheet(incSprites, rc.incWalkDir ?? 'side');
+          sheet = picked.sheet;
+          mirror = picked.mirror;
+          frame = sheet !== incSprites.still ? Math.floor(Math.max(0, incWalkCycle)) % INCARNATION_FRAMES : 0;
+        } else {
+          const animSec = rc.incAnimTimeSec ?? 0;
+          const isChanneling =
+            incState === 'gathering_at_patio' || incState === 'guarding' || Boolean(climax?.victory);
+          if (isChanneling && ready(incSprites.channel)) {
+            sheet = incSprites.channel;
+            frame = Math.floor(Math.max(0, animSec) / INCARNATION_CHANNEL_FRAME_SEC) % INCARNATION_FRAMES;
+          } else if (ready(incSprites.idle)) {
+            sheet = incSprites.idle;
+            frame = Math.floor(Math.max(0, animSec) / INCARNATION_IDLE_FRAME_SEC) % INCARNATION_FRAMES;
+          } else {
+            sheet = incSprites.still;
+            frame = 0;
+          }
+        }
+
+        if (ready(sheet)) {
           ctx.save();
           ctx.translate(lx, ly);
-          ctx.scale(incFacing, 1);
+          ctx.scale(mirror ? incFacing : 1, 1);
           ctx.drawImage(
             sheet,
             frame * INCARNATION_FRAME_SIZE,

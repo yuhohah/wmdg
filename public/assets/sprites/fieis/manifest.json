@@ -62,6 +62,108 @@
       "action": "iluminacao",
       "id": "1f8e7b85-c397-400c-b6d3-1d40c8e52bb4",
       "generated_frames": 8
+    },
+    {
+      "model": "iniciado",
+      "action": "idle",
+      "id": "cc0c2143-4333-4926-b26b-a8717e6a1afd",
+      "generated_frames": 8
+    },
+    {
+      "model": "hierofante",
+      "action": "idle",
+      "id": "2672743d-76f0-46fd-9c6f-5552299c1532",
+      "generated_frames": 8
+    },
+    {
+      "model": "pontifice",
+      "action": "idle",
+      "id": "06e752ff-5e0a-4d3a-82ea-a22f9b60da9f",
+      "generated_frames": 8
+    },
+    {
+      "model": "iniciado",
+      "action": "andar-frente",
+      "id": "e526e1e7-a93b-46e5-bd94-7013995f6882",
+      "generated_frames": 8,
+      "direction": "south"
+    },
+    {
+      "model": "hierofante",
+      "action": "andar-frente",
+      "id": "6d2fe808-19d1-4ac7-aaf8-24e1e6e2e9ab",
+      "generated_frames": 8,
+      "direction": "south"
+    },
+    {
+      "model": "pontifice",
+      "action": "andar-frente",
+      "id": "20bebe51-1c35-4d4d-8e8f-21b989c9359a",
+      "generated_frames": 8,
+      "direction": "south"
+    },
+    {
+      "model": "iniciado",
+      "action": "andar-costas",
+      "id": "fbaeb045-d9a5-4579-94bf-8272f480f739",
+      "generated_frames": 8,
+      "direction": "north"
+    },
+    {
+      "model": "hierofante",
+      "action": "andar-costas",
+      "id": "e55bb4a5-ada0-4581-8993-8dfc1a89eee6",
+      "generated_frames": 8,
+      "direction": "north"
+    },
+    {
+      "model": "pontifice",
+      "action": "andar-costas",
+      "id": "582f40a0-efcd-4ee6-b856-5839464b7be0",
+      "generated_frames": 8,
+      "direction": "north"
+    },
+    {
+      "model": "iniciado",
+      "action": "rezar-loop",
+      "direction": "east",
+      "id": "2055cdf3-74c6-4545-b3b4-d470dcd87bfe",
+      "generated_frames": 6
+    },
+    {
+      "model": "hierofante",
+      "action": "rezar-loop",
+      "direction": "east",
+      "id": "10b52a5f-cba3-49a3-88af-abfec7fa72ff",
+      "generated_frames": 6
+    },
+    {
+      "model": "pontifice",
+      "action": "rezar-loop",
+      "direction": "east",
+      "id": "51cf936b-b6d8-4917-9a84-97f12c4cce71",
+      "generated_frames": 6
+    },
+    {
+      "model": "iniciado",
+      "action": "levantar",
+      "direction": "east",
+      "id": "d1602133-8543-4620-b308-e97cd419d332",
+      "generated_frames": 6
+    },
+    {
+      "model": "hierofante",
+      "action": "levantar",
+      "direction": "east",
+      "id": "9adb53c2-e24f-4153-b83e-4ab61e6bd4f0",
+      "generated_frames": 6
+    },
+    {
+      "model": "pontifice",
+      "action": "levantar",
+      "direction": "east",
+      "id": "0d9d4a5d-9285-40ef-b858-4a0cfc92abf2",
+      "generated_frames": 6
     }
   ]
 }

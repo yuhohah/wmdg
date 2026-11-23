@@ -1,5 +1,21 @@
-import { loadFollowerSprites, followerAnimationFrame, FOLLOWER_FRAME_SIZE } from '../followers/followerVisuals.js';
-import { loadIncarnationSprites, INCARNATION_FRAME_SIZE } from '../incarnation/incarnationSprites.js';
+import {
+  BLESSING_DURATION,
+  FOLLOWER_FRAME_SIZE,
+  PRAYER_DURATION,
+  followerAnimationFrame,
+  isFollowerActionMirrored,
+  loadFollowerSprites,
+  resolveWalkDirection,
+  type WalkDirection,
+} from '../followers/followerVisuals.js';
+import {
+  INCARNATION_CHANNEL_FRAME_SEC,
+  INCARNATION_FRAME_SIZE,
+  INCARNATION_FRAMES,
+  INCARNATION_IDLE_FRAME_SEC,
+  loadIncarnationSprites,
+  type IncarnationSprite,
+} from '../incarnation/incarnationSprites.js';
 import {
   BOSS_DEFAULT_BOUNDS,
   BOSS_SRC_H,
@@ -199,6 +215,8 @@ type GroundActorEntry =
       cx: number;
       devoteeIndex: number;
       tier: number;
+      walkDir: WalkDirection;
+      walkFacing: 1 | -1;
       progress: number;
       seal: number;
       fade: number;
@@ -210,7 +228,6 @@ const loadSource = (source: string) => {
   img.src = source;
   return img;
 };
-const loadAsset = (path: string) => loadSource(`${import.meta.env.BASE_URL}assets/${path}`);
 
 /** Fullscreen 60fps Hermetic cosmography finale uniting the Sphere, Solar Avatar, Devotees, Four Guardians and Demiurge. */
 export class EndingRitual {
@@ -224,8 +241,7 @@ export class EndingRitual {
   private ctx: CanvasRenderingContext2D | null = null;
 
   private followers = loadFollowerSprites();
-  private solarStill = loadIncarnationSprites()[4].still;
-  private solarWalk = loadAsset('sprites/encarnacao/05-solar/andar/spritesheet.png');
+  private solar: IncarnationSprite = loadIncarnationSprites()[4];
   private sphereMotion = Object.assign(new SphereMotion(), { form: SPHERE_FORMS.at(-1)! });
   private sphere = loadSource(this.sphereMotion.form.source);
   private sphereCanvas = document.createElement('canvas');
@@ -244,13 +260,19 @@ export class EndingRitual {
     this.ctx = canvas.getContext('2d');
     this.sphereCanvas.width = this.sphereCanvas.height = 512;
     const images: HTMLImageElement[] = [
-      this.solarStill,
-      this.solarWalk,
+      this.solar.still,
+      this.solar.idle,
+      this.solar.channel,
+      this.solar.walkSide,
+      this.solar.walkDown,
+      this.solar.walkUp,
       this.sphere,
       ...this.bossSprites.flatMap(({ spec, sprites }) => [
         sprites.idle,
+        sprites.idleLoop,
         sprites.walk,
         sprites.defeat,
+        sprites.reverence,
         sprites.attacks[spec.ritualAttackIndex],
       ]),
       ...this.followers.flatMap((f) => Object.values(f)),
@@ -318,6 +340,8 @@ export class EndingRitual {
         cx: 0,
         devoteeIndex: 0,
         tier: 0,
+        walkDir: 'side',
+        walkFacing: 1,
         progress: 0,
         seal: 0,
         fade: 0,
@@ -380,6 +404,8 @@ export class EndingRitual {
     x: number,
     y: number,
     cx: number,
+    walkDir: WalkDirection,
+    walkFacing: 1 | -1,
     progress: number,
     seal: number,
     fade: number,
@@ -392,6 +418,8 @@ export class EndingRitual {
     slot.x = x;
     slot.y = y;
     slot.cx = cx;
+    slot.walkDir = walkDir;
+    slot.walkFacing = walkFacing;
     slot.progress = progress;
     slot.seal = seal;
     slot.fade = fade;
@@ -544,13 +572,20 @@ export class EndingRitual {
       const spiralAngle = baseAngle + (1 - devProgress) * (innerRing ? 0.38 : -0.32);
       const ringScale = (innerRing ? 1.18 : 1.34) + (1 - devProgress) * 1.35;
 
+      const dAngle = innerRing ? -0.38 : 0.32;
+      const dScale = -1.35;
+      const tangX = rx * (dScale * Math.cos(spiralAngle) - ringScale * Math.sin(spiralAngle) * dAngle);
+      const tangY = ry * (dScale * Math.sin(spiralAngle) + ringScale * Math.cos(spiralAngle) * dAngle);
+      const walkDir = resolveWalkDirection(tangX, tangY, 'side');
+      const walkFacing: 1 | -1 = tangX >= 0 ? 1 : -1;
+
       let fx = cx + Math.cos(spiralAngle) * rx * ringScale;
       let fy = cy + Math.sin(spiralAngle) * ry * ringScale;
       fx += (cx - fx) * converge;
       fy += (sphereBaseY + 32 - fy) * converge;
 
       const tier = i % 7 === 0 ? 2 : i % 3 === 0 ? 1 : 0;
-      this.queueDevoteeActor(slotIdx++, i, tier, fx, fy, cx, devProgress, seal, fade, t);
+      this.queueDevoteeActor(slotIdx++, i, tier, fx, fy, cx, walkDir, walkFacing, devProgress, seal, fade, t);
     }
 
     // 4. Painter's order Y-sort so northern figures sit naturally behind southern figures
@@ -563,7 +598,20 @@ export class EndingRitual {
         const { spec, sprites } = this.bossSprites[actor.bossIndex];
         this.drawBossActor(ctx, spec, sprites, actor.x, actor.y, actor.progress, actor.seal, actor.apotheosis, actor.fade, actor.t);
       } else {
-        this.drawDevotee(ctx, actor.x, actor.y, actor.cx, actor.devoteeIndex, actor.tier, actor.progress, actor.seal, actor.fade, actor.t);
+        this.drawDevotee(
+          ctx,
+          actor.x,
+          actor.y,
+          actor.cx,
+          actor.devoteeIndex,
+          actor.tier,
+          actor.walkDir,
+          actor.walkFacing,
+          actor.progress,
+          actor.seal,
+          actor.fade,
+          actor.t
+        );
       }
     }
 
@@ -849,6 +897,37 @@ export class EndingRitual {
     const isDemiurge = spec.slot === 'demiurge';
     const walking = actorProgress < 0.995 && !this.reducedMotion;
     const ritualSheet = sprites.attacks[spec.ritualAttackIndex] ?? sprites.idle;
+    const ready = (img?: HTMLImageElement): img is HTMLImageElement =>
+      Boolean(img && img.complete && img.naturalWidth >= BOSS_SRC_W);
+
+    const resolveResting = (): { sheet: HTMLImageElement; frame: number } => {
+      if (ready(sprites.idleLoop)) {
+        return {
+          sheet: sprites.idleLoop,
+          frame: Math.floor(t / 0.14) % bossLoopFrameCount(sprites.idleLoop),
+        };
+      }
+      if (isDemiurge || spec.bossId === 'boss_tiamat') {
+        return {
+          sheet: sprites.walk,
+          frame: Math.floor(t / (isDemiurge ? 0.16 : 0.14)) % bossLoopFrameCount(sprites.walk),
+        };
+      }
+      return { sheet: sprites.idle, frame: 0 };
+    };
+
+    const resolveReverenceBow = (elapsedSec: number, bowDownSec: number, holdSec: number, riseSec: number): number => {
+      const totalFrames = bossSheetFrameCount(sprites.reverence);
+      const last = Math.max(0, totalFrames - 1);
+      if (elapsedSec < bowDownSec) {
+        return Math.min(last, Math.floor((elapsedSec / Math.max(0.05, bowDownSec)) * totalFrames));
+      }
+      if (elapsedSec < bowDownSec + holdSec || riseSec <= 0) {
+        return last;
+      }
+      const riseProgress = clamp((elapsedSec - bowDownSec - holdSec) / riseSec);
+      return Math.max(0, Math.round(last * (1 - riseProgress)));
+    };
 
     let sheet: HTMLImageElement = sprites.idle;
     let frame = 0;
@@ -859,6 +938,9 @@ export class EndingRitual {
         sheet = ritualSheet;
         frame = 8;
         channelingGlow = 0.65;
+      } else if (seal > 0.2 && ready(sprites.reverence)) {
+        sheet = sprites.reverence;
+        frame = bossSheetFrameCount(sprites.reverence) - 1;
       } else {
         sheet = sprites.idle;
         frame = 0;
@@ -870,54 +952,66 @@ export class EndingRitual {
     } else {
       const sinceRitual = t - spec.ritualStartSec;
       if (isDemiurge) {
-        // Subjugation dip (crown droops briefly before the Sphere) -> Grand Celestial Staff Ritual -> periodic reverence
-        const bowWindow = t - 7.15;
-        if (bowWindow >= 0 && bowWindow < 1.35 && sprites.defeat.complete && sprites.defeat.naturalWidth >= BOSS_SRC_W) {
-          sheet = sprites.defeat;
-          const bowWave = Math.sin((bowWindow / 1.35) * Math.PI);
-          frame = Math.min(4, Math.round(bowWave * 4));
+        // Ceremonial reverence bow before the Sphere -> Grand Celestial Staff Ritual -> periodic tribute & reverence
+        const bowWindow = t - 6.8;
+        if (bowWindow >= 0 && bowWindow < 1.8 && ready(sprites.reverence)) {
+          sheet = sprites.reverence;
+          frame = resolveReverenceBow(bowWindow, 1.15, 0.65, 0);
         } else if (sinceRitual >= 0 && sinceRitual <= spec.ritualDurationSec) {
           sheet = ritualSheet;
           frame = demiurgeChannelingFrame(sinceRitual, spec.ritualDurationSec);
           channelingGlow = Math.sin(clamp(sinceRitual / spec.ritualDurationSec) * Math.PI);
         } else if (apotheosis > 0) {
-          // During gratitude, Demiurge alternates gently between serpentine breathing and raising the celestial staff
-          const cycle = (t - RITUAL_CUES.gratitude) % 7.5;
-          if (cycle < 4.4) {
+          // During gratitude, Demiurge alternates between celestial staff tribute, ceremonial reverence, and serene floating
+          const cycle = (t - RITUAL_CUES.gratitude) % 8.4;
+          if (cycle < 4.2) {
             sheet = ritualSheet;
-            frame = demiurgeChannelingFrame(cycle, 4.4);
-            channelingGlow = Math.sin(clamp(cycle / 4.4) * Math.PI) * 0.85;
+            frame = demiurgeChannelingFrame(cycle, 4.2);
+            channelingGlow = Math.sin(clamp(cycle / 4.2) * Math.PI) * 0.85;
+          } else if (cycle < 6.4 && ready(sprites.reverence)) {
+            sheet = sprites.reverence;
+            frame = resolveReverenceBow(cycle - 4.2, 0.9, 0.7, 0.6);
           } else {
-            sheet = sprites.walk;
-            frame = Math.floor(t / 0.16) % bossLoopFrameCount(sheet);
+            const resting = resolveResting();
+            sheet = resting.sheet;
+            frame = resting.frame;
           }
         } else {
-          sheet = sprites.walk;
-          frame = Math.floor(t / 0.17) % bossLoopFrameCount(sheet);
+          const resting = resolveResting();
+          sheet = resting.sheet;
+          frame = resting.frame;
         }
       } else {
-        // Four Guardians: perform signature domain tribute during invocation, then periodic solemn waves in gratitude
+        // Four Guardians: perform signature domain tribute, kneel in reverence, then alternate tribute/reverence/idle in gratitude
         const totalFrames = bossSheetFrameCount(ritualSheet);
         if (sinceRitual >= 0 && sinceRitual <= spec.ritualDurationSec) {
           sheet = ritualSheet;
           const u = clamp(sinceRitual / spec.ritualDurationSec);
           frame = Math.min(totalFrames - 1, Math.floor(u * totalFrames));
           channelingGlow = Math.sin(u * Math.PI);
+        } else if (sinceRitual > spec.ritualDurationSec && t < RITUAL_CUES.gratitude && ready(sprites.reverence)) {
+          sheet = sprites.reverence;
+          frame = resolveReverenceBow(sinceRitual - spec.ritualDurationSec, 1.2, 10, 0);
         } else if (apotheosis > 0) {
-          const period = 8.4;
+          const period = 9.2;
           const local = (t - RITUAL_CUES.gratitude + spec.arrivalDelay * 5.2) % period;
           if (local < 2.4) {
             sheet = ritualSheet;
             const u = local / 2.4;
             frame = Math.min(totalFrames - 1, Math.floor(u * totalFrames));
             channelingGlow = Math.sin(u * Math.PI) * 0.7;
-          } else if (spec.bossId === 'boss_tiamat') {
-            sheet = sprites.walk;
-            frame = Math.floor(t / 0.14) % bossLoopFrameCount(sheet);
+          } else if (local < 5.2 && ready(sprites.reverence)) {
+            sheet = sprites.reverence;
+            frame = resolveReverenceBow(local - 2.4, 1.1, 0.9, 0.8);
           } else {
-            sheet = sprites.idle;
-            frame = 0;
+            const resting = resolveResting();
+            sheet = resting.sheet;
+            frame = resting.frame;
           }
+        } else {
+          const resting = resolveResting();
+          sheet = resting.sheet;
+          frame = resting.frame;
         }
       }
     }
@@ -1053,11 +1147,28 @@ export class EndingRitual {
       ctx.restore();
     }
 
-    const sheet =
-      walking && this.solarWalk.complete && this.solarWalk.naturalWidth > 0
-        ? this.solarWalk
-        : this.solarStill;
-    const frame = sheet === this.solarWalk ? Math.floor(t / 0.1) % 8 : 0;
+    const ready = (img: HTMLImageElement) => img.complete && img.naturalWidth > 0;
+    let sheet: HTMLImageElement = this.solar.still;
+    let frame = 0;
+
+    if (walking) {
+      if (ready(this.solar.walkSide)) {
+        sheet = this.solar.walkSide;
+        frame = Math.floor(t / 0.1) % INCARNATION_FRAMES;
+      } else if (ready(this.solar.walkDown)) {
+        sheet = this.solar.walkDown;
+        frame = Math.floor(t / 0.1) % INCARNATION_FRAMES;
+      }
+    } else if (!this.reducedMotion) {
+      if (seal > 0.05 && ready(this.solar.channel)) {
+        sheet = this.solar.channel;
+        frame = Math.floor(t / INCARNATION_CHANNEL_FRAME_SEC) % INCARNATION_FRAMES;
+      } else if (ready(this.solar.idle)) {
+        sheet = this.solar.idle;
+        frame = Math.floor(t / INCARNATION_IDLE_FRAME_SEC) % INCARNATION_FRAMES;
+      }
+    }
+
     const drawSize = 132;
     this.sprite(
       ctx,
@@ -1090,24 +1201,38 @@ export class EndingRitual {
     cx: number,
     index: number,
     tier: number,
+    walkDir: WalkDirection,
+    walkFacing: 1 | -1,
     progress: number,
     seal: number,
     fade: number,
     t: number
   ): void {
     const walking = progress < 0.995 && !this.reducedMotion;
-    const prayerStart = RITUAL_CUES.invocation - 0.4 + (index % 7) * 0.16;
-    // Loop prayer -> illumination gently during gratitude so the faithful remain alive
+    const prayerStart = RITUAL_CUES.invocation - 0.6 + (index % 7) * 0.14;
     const rawPrayerSec = Math.max(0, t - prayerStart);
-    const loopedPrayerSec =
-      t >= RITUAL_CUES.gratitude ? 1.95 + ((t - RITUAL_CUES.gratitude + index * 0.23) % 2.4) * 0.55 : rawPrayerSec;
+    const inGratitude = t >= RITUAL_CUES.gratitude - 0.5;
+    // Kneel (rezar) -> sustained prayer (rezar-loop) during invocation, then cycle illumination during gratitude
+    const prayerSec = inGratitude
+      ? PRAYER_DURATION + (((t - (RITUAL_CUES.gratitude - 0.5) + index * 0.23) * 0.55) % BLESSING_DURATION)
+      : rawPrayerSec;
     const anim = followerAnimationFrame(
       walking ? 'walk' : 'pray',
       t * 8.5 + index * 0.7,
-      this.reducedMotion ? 1.2 : loopedPrayerSec,
-      t < RITUAL_CUES.gratitude - 0.8
+      this.reducedMotion ? 1.2 : prayerSec,
+      !inGratitude,
+      t * 6 + index,
+      walkDir
     );
-    const sheet = this.followers[tier]?.[anim.action];
+    const tierSheets = this.followers[tier];
+    let sheet = tierSheets?.[anim.action];
+    let drawAction = anim.action;
+    let drawFrame = anim.frame;
+    if (!sheet || !sheet.complete || sheet.naturalWidth === 0) {
+      sheet = tierSheets?.andar;
+      drawAction = 'andar';
+      drawFrame = 0;
+    }
     if (!sheet) return;
 
     ctx.save();
@@ -1118,8 +1243,9 @@ export class EndingRitual {
     ctx.fill();
 
     ctx.translate(x, y);
-    ctx.scale(x > cx ? -1 : 1, 1);
-    this.sprite(ctx, sheet, anim.frame, FOLLOWER_FRAME_SIZE, FOLLOWER_FRAME_SIZE, -29, -50, 58, 58);
+    const facing = walking ? walkFacing : x > cx ? -1 : 1;
+    ctx.scale(isFollowerActionMirrored(drawAction) ? facing : 1, 1);
+    this.sprite(ctx, sheet, drawFrame, FOLLOWER_FRAME_SIZE, FOLLOWER_FRAME_SIZE, -29, -50, 58, 58);
     ctx.restore();
   }
 

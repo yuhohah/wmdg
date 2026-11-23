@@ -11,7 +11,7 @@ const LEFT_OUT = [
 
 const SPRITES_IN_USE = [
   /^assets\/sprites\/fieis\/[^/]+\/[^/]+\/spritesheet\.png$/,
-  /^assets\/sprites\/encarnacao\/[^/]+\/andar\/spritesheet\.png$/,
+  /^assets\/sprites\/encarnacao\/[^/]+\/[^/]+\/spritesheet\.png$/,
   // Caos Primordial is drawn from its reference folder, not from lateral/
   /^assets\/sprites\/bosses\/(lateral\/[^/]+|caos-referencia-v2)\/idle\.png$/,
   /^assets\/sprites\/bosses\/(lateral\/[^/]+|caos-referencia-v2)\/[^/]+\/spritesheet\.png$/,

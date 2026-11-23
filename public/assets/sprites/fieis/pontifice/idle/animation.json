@@ -1,0 +1,14 @@
+{
+  "model": "pontifice",
+  "action": "idle",
+  "id": "06e752ff-5e0a-4d3a-82ea-a22f9b60da9f",
+  "generated_frames": 8,
+  "frame_width": 96,
+  "frame_height": 96,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 160,
+  "layout": "horizontal",
+  "transparent": true
+}

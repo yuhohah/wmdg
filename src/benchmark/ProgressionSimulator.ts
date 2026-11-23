@@ -348,7 +348,7 @@ class Simulation {
     const breakdown = this.game.getBossCombatBreakdown(bossId);
     if (!(bossId === 'boss_anubis' ? breakdown.canDamageBoss : breakdown.canWithstandBoss)) return false;
     const clickCps = manualSphereAllowed(this.behavior, this.time)
-      ? Math.min(this.behavior.combatClickCps, 5)
+      ? this.behavior.combatClickCps
       : this.game.getSphereAutoclickRate();
     const effectiveHpPerSec = breakdown.passiveHpFractionPerSec + breakdown.clickHpFraction * clickCps;
     const minHpPerSec = breakdown.canWithstandBoss

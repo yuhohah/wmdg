@@ -1,0 +1,18 @@
+{
+  "boss": "02-hades",
+  "name": "Hades",
+  "key": "reverencia",
+  "label": "Reverência",
+  "description": "Solemn ritual reverence and submission bow facing RIGHT toward a sacred celestial sphere. Lower the curved iron sickle respectfully downward, slowly bend one heavy knee and incline the massive spiked-helm head and broad armored shoulders forward in solemn tribute, holding the bowed reverent posture at the end. Strict side profile facing RIGHT, grounded on the same baseline. Preserve crisp dark hermetic pixel art, same scale and palette. Static camera, transparent background.",
+  "frame_count": 12,
+  "jobId": "0e5bb92e-e174-4cfa-be70-0098a3e5380c",
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 13,
+  "sheet_frame_count": 13,
+  "frame_duration_ms": 120,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

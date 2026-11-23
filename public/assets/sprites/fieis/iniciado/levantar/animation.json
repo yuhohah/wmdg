@@ -1,0 +1,15 @@
+{
+  "model": "iniciado",
+  "action": "levantar",
+  "direction": "east",
+  "id": "d1602133-8543-4620-b308-e97cd419d332",
+  "generated_frames": 6,
+  "frame_width": 96,
+  "frame_height": 96,
+  "source_frame_count": 7,
+  "sheet_frame_count": 7,
+  "loop": false,
+  "frame_duration_ms": 110,
+  "layout": "horizontal",
+  "transparent": true
+}

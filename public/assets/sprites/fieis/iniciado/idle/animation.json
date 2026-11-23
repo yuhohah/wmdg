@@ -1,0 +1,14 @@
+{
+  "model": "iniciado",
+  "action": "idle",
+  "id": "cc0c2143-4333-4926-b26b-a8717e6a1afd",
+  "generated_frames": 8,
+  "frame_width": 96,
+  "frame_height": 96,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 160,
+  "layout": "horizontal",
+  "transparent": true
+}

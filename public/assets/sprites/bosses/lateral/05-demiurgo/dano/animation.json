@@ -1,0 +1,18 @@
+{
+  "boss": "05-demiurgo",
+  "name": "Demiurgo",
+  "key": "dano",
+  "label": "Dano / Aparo",
+  "description": "Purely physical recoil and parry stagger animation in strict side-scroller profile facing RIGHT. Snap the crowned lion head and upper torso backward as if knocked off balance, flare the pale tattered wings backward defensively, tense the serpentine tail coils and tilt the sun-moon staff back briefly, then regain composure and return smoothly to the upright coiled stance on the same floor baseline. STRICTLY NO slash arcs, NO yellow trails, NO impact sparks, NO floating effects or new colors — animate the character body and equipment only. Static camera, transparent background.",
+  "frame_count": 8,
+  "jobId": "8c8c92fb-f9c0-41a0-833b-f8860170b97c",
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 9,
+  "sheet_frame_count": 9,
+  "frame_duration_ms": 85,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

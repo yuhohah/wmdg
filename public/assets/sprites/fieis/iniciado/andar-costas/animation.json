@@ -1,0 +1,15 @@
+{
+  "model": "iniciado",
+  "action": "andar-costas",
+  "direction": "north",
+  "id": "fbaeb045-d9a5-4579-94bf-8272f480f739",
+  "generated_frames": 8,
+  "frame_width": 96,
+  "frame_height": 96,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 120,
+  "layout": "horizontal",
+  "transparent": true
+}

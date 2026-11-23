@@ -1,0 +1,18 @@
+{
+  "boss": "01-anubis",
+  "name": "Anúbis",
+  "key": "dano",
+  "label": "Dano / Aparo",
+  "description": "Purely physical recoil and off-balance stagger animation in strict side-scroller profile facing RIGHT. Snap torso and jackal head backward as if parried, step back slightly while bracing the vertical staff and making the golden balance scale pans swing back and forth on their chains, then regain balance and return smoothly to the upright standing stance on the same floor baseline. STRICTLY NO hit sparks, NO red flashes, NO impact stars, NO slash arcs, NO floating effects or new colors — animate the character body and equipment only. Static camera, transparent background.",
+  "frame_count": 8,
+  "jobId": "ffbefa2a-5db9-498f-b568-b3f41819619f",
+  "frame_width": 256,
+  "frame_height": 192,
+  "source_frame_count": 9,
+  "sheet_frame_count": 9,
+  "frame_duration_ms": 85,
+  "loop": false,
+  "direction": "east",
+  "layout": "horizontal",
+  "transparent": true
+}

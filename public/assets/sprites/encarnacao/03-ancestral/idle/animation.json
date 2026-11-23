@@ -1,0 +1,16 @@
+{
+  "stage": 3,
+  "file": "03-ancestral",
+  "direction": "south",
+  "concept_job_id": "fc6e796c-edbf-44f4-8e81-d1041e76aac0",
+  "id": "e04728ae-b1f5-4756-9a10-c5ed4ef76758",
+  "action": "Solemn idle breathing loop in place, facing straight towards the viewer (strict orthographic frontal camera), seamless 8-frame loop. Subtle rhythmic chest breathing, gentle soft sway of robe folds and cape hem, tiny calm shimmer on the held sphere at chest, feet planted firmly on the exact same floor baseline. Preserve exact identity, proportions, outfit, pixel art style and palette. Fixed frontal camera, no walking, no translation, no zoom. Keep existing small golden head halo intact and stable behind head, no large background circle.",
+  "frame_width": 128,
+  "frame_height": 128,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 160,
+  "layout": "horizontal",
+  "transparent": true
+}

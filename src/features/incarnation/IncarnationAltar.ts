@@ -1,6 +1,7 @@
 import { INCARNATION_STAGES, IncarnationStage } from '../../config/incarnation.js';
 import {
-  INCARNATION_FRAME_SIZE, incarnationStageIndex, incarnationParticleColors,
+  INCARNATION_CHANNEL_FRAME_SEC, INCARNATION_FRAMES, INCARNATION_FRAME_SIZE,
+  INCARNATION_IDLE_FRAME_SEC, incarnationStageIndex, incarnationParticleColors,
   loadIncarnationSprites, type IncarnationSprite,
 } from './incarnationSprites.js';
 import { scheduleVisualFrame, VisualFrameClock, visualFrameScale } from '../../ui/visualTiming.js';
@@ -37,11 +38,14 @@ export class IncarnationAltar {
 
   private particles: AltarParticle[] = [];
   private rotationAngle: number = 0;
+  private animTimeSec: number = 0;
   private pulsePhase: number = 0;
   private flashAlpha: number = 0;
   private blessingActive: boolean = false;
   private sprites: IncarnationSprite[] = [];
   private isOnScreen: boolean = true;
+  private reducedMotionQuery: MediaQueryList | null =
+    typeof window !== 'undefined' ? (window.matchMedia?.('(prefers-reduced-motion: reduce)') ?? null) : null;
   private options: IncarnationAltarOptions;
 
   constructor(containerId: string = 'incarnation-altar-container', options: IncarnationAltarOptions = {}) {
@@ -199,6 +203,7 @@ export class IncarnationAltar {
   private update(elapsedSec: number): void {
     const frameScale = visualFrameScale(elapsedSec);
     this.rotationAngle += 0.006 * frameScale;
+    this.animTimeSec += elapsedSec;
     if (this.pulsePhase > 0) {
       this.pulsePhase -= 0.03 * frameScale;
       if (this.pulsePhase < 0) this.pulsePhase = 0;
@@ -232,7 +237,21 @@ export class IncarnationAltar {
     const h = this.height;
     const art = this.sprites[this.currentStage - 1];
     if (!art) return;
-    const sprite = art.still;
+
+    const reducedMotion = !!this.reducedMotionQuery?.matches;
+    const isChanneling = this.blessingActive || this.pulsePhase > 0.15;
+    let sprite: HTMLImageElement = art.still;
+    let frame = 0;
+
+    if (!reducedMotion) {
+      if (isChanneling && art.channel.complete && art.channel.naturalWidth >= INCARNATION_FRAME_SIZE) {
+        sprite = art.channel;
+        frame = Math.floor(this.animTimeSec / INCARNATION_CHANNEL_FRAME_SEC) % INCARNATION_FRAMES;
+      } else if (art.idle.complete && art.idle.naturalWidth >= INCARNATION_FRAME_SIZE) {
+        sprite = art.idle;
+        frame = Math.floor(this.animTimeSec / INCARNATION_IDLE_FRAME_SEC) % INCARNATION_FRAMES;
+      }
+    }
 
     // The approved pixels contain their own halo and astrolabe by stage.
     // Do not draw extra auras that would change that progression.
@@ -258,8 +277,10 @@ export class IncarnationAltar {
       typeof document !== 'undefined' && document.body.classList.contains('is-boss-battle-active');
 
     if (!isBossBattleActive && sprite.complete && sprite.naturalWidth > 0) {
+      const maxFrame = Math.max(0, Math.floor(sprite.naturalWidth / INCARNATION_FRAME_SIZE) - 1);
+      const safeFrame = Math.min(frame, maxFrame);
       ctx.drawImage(sprite,
-        0, 0, INCARNATION_FRAME_SIZE, INCARNATION_FRAME_SIZE,
+        safeFrame * INCARNATION_FRAME_SIZE, 0, INCARNATION_FRAME_SIZE, INCARNATION_FRAME_SIZE,
         left, top, spriteW, spriteH);
     }
 

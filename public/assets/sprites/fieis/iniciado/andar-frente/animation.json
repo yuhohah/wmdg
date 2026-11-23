@@ -1,0 +1,15 @@
+{
+  "model": "iniciado",
+  "action": "andar-frente",
+  "direction": "south",
+  "id": "e526e1e7-a93b-46e5-bd94-7013995f6882",
+  "generated_frames": 8,
+  "frame_width": 96,
+  "frame_height": 96,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 120,
+  "layout": "horizontal",
+  "transparent": true
+}

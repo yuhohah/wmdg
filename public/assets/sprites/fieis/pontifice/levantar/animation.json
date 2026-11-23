@@ -1,0 +1,15 @@
+{
+  "model": "pontifice",
+  "action": "levantar",
+  "direction": "east",
+  "id": "0d9d4a5d-9285-40ef-b858-4a0cfc92abf2",
+  "generated_frames": 6,
+  "frame_width": 96,
+  "frame_height": 96,
+  "source_frame_count": 7,
+  "sheet_frame_count": 7,
+  "loop": false,
+  "frame_duration_ms": 110,
+  "layout": "horizontal",
+  "transparent": true
+}

@@ -189,7 +189,6 @@ export interface ActiveBossBattle {
   altarIntegrity: number;
   maxAltarIntegrity: number;
   riftSpawnTimerSec: number;
-  sphereCooldownSec: number;
   activeRifts: BossRift[];
   riftsShattered: number;
   riftsMissed: number;
@@ -209,8 +208,12 @@ export interface ActiveBossBattle {
   isRematch?: boolean;
   /** Elapsed combat duration in seconds (for recording Best Subjugation Time) */
   elapsedCombatSec?: number;
-  /** Wave counter used to alternate Attack 1 and Attack 2 in Phases II and III */
+  /** Wave counter used to mix normal and special attacks in Phase II */
   attackWaveCounter?: number;
+  /** Actual Sphere integrity damage taken on the most recent expired rift wave */
+  lastMissDamage?: number;
+  /** Whether the most recent expired rift wave included a special Guardian attack */
+  lastMissWasSpecial?: boolean;
 }
 
 export interface BossCombatBreakdown {

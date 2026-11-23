@@ -1,0 +1,16 @@
+{
+  "stage": 5,
+  "file": "05-solar",
+  "direction": "north",
+  "concept_job_id": "767146f2-518f-498a-912c-1ab3e14fbea2",
+  "id": "fec42168-7517-428f-a44f-47b50d1a9030",
+  "action": "Walk slowly in place facing straight away from the viewer (strict orthographic back view, seen from behind), seamless 8-frame full walking cycle. Alternate feet and heels stepping clearly forward and back beneath the robe hem along a uniform floor baseline, subtle natural hip and shoulder weight shift, back cloth folds and cloak hem sway gently. Preserve identity, proportions, outfit, pixel style and all existing ornaments. Fixed orthographic back camera, no turning around, no translation, no zoom. Keep existing head halo and large golden astrolabe circle intact and stable behind the walking figure, no new effects.",
+  "frame_width": 128,
+  "frame_height": 128,
+  "source_frame_count": 9,
+  "sheet_frame_count": 8,
+  "loop": true,
+  "frame_duration_ms": 120,
+  "layout": "horizontal",
+  "transparent": true
+}

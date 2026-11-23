@@ -1,8 +1,18 @@
+import type { WalkDirection } from '../followers/followerVisuals.js';
+
 const FILES = ['01-neofito', '02-consagrado', '03-ancestral', '04-eclipse', '05-solar'] as const;
 export const INCARNATION_FRAME_SIZE = 128;
+export const INCARNATION_FRAMES = 8;
+export const INCARNATION_IDLE_FRAME_SEC = 0.16;
+export const INCARNATION_CHANNEL_FRAME_SEC = 0.12;
 
 export interface IncarnationSprite {
   still: HTMLImageElement;
+  idle: HTMLImageElement;
+  channel: HTMLImageElement;
+  walkDown: HTMLImageElement;
+  walkSide: HTMLImageElement;
+  walkUp: HTMLImageElement;
 }
 
 const PALETTES = [
@@ -21,9 +31,26 @@ export function incarnationParticleColors(stage: number): readonly string[] {
   return PALETTES[incarnationStageIndex(stage)];
 }
 
+export function selectIncarnationWalkSheet(
+  sprite: IncarnationSprite,
+  dir: WalkDirection
+): { sheet: HTMLImageElement; mirror: boolean } {
+  const ready = (img: HTMLImageElement) => img.complete && img.naturalWidth > 0;
+  if (dir === 'side' && ready(sprite.walkSide)) {
+    return { sheet: sprite.walkSide, mirror: true };
+  }
+  if (dir === 'up' && ready(sprite.walkUp)) {
+    return { sheet: sprite.walkUp, mirror: false };
+  }
+  if (ready(sprite.walkDown)) {
+    return { sheet: sprite.walkDown, mirror: false };
+  }
+  return { sheet: sprite.still, mirror: false };
+}
+
 let sprites: IncarnationSprite[] | undefined;
 
-/** The altar uses only approved stills; procession art belongs to the future battle flow. */
+/** Shared stills and spritesheets for all 5 Incarnation stages across Altar, Boss Battles, and Ending. */
 export function loadIncarnationSprites(): IncarnationSprite[] {
   return sprites ??= FILES.map(file => {
     const load = (path: string) => {
@@ -33,6 +60,11 @@ export function loadIncarnationSprites(): IncarnationSprite[] {
     };
     return {
       still: load(`concepts/encarnacao/${file}.png`),
+      idle: load(`sprites/encarnacao/${file}/idle/spritesheet.png`),
+      channel: load(`sprites/encarnacao/${file}/canalizar/spritesheet.png`),
+      walkDown: load(`sprites/encarnacao/${file}/andar/spritesheet.png`),
+      walkSide: load(`sprites/encarnacao/${file}/andar-lateral/spritesheet.png`),
+      walkUp: load(`sprites/encarnacao/${file}/andar-costas/spritesheet.png`),
     };
   });
 }

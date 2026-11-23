@@ -113,6 +113,42 @@
       "layout": "horizontal",
       "transparent": true,
       "sourceFrameIncluded": true
+    },
+    {
+      "boss": "05-demiurgo",
+      "name": "Demiurgo",
+      "key": "dano",
+      "label": "Dano / Aparo",
+      "description": "Purely physical recoil and parry stagger animation in strict side-scroller profile facing RIGHT. Snap the crowned lion head and upper torso backward as if knocked off balance, flare the pale tattered wings backward defensively, tense the serpentine tail coils and tilt the sun-moon staff back briefly, then regain composure and return smoothly to the upright coiled stance on the same floor baseline. STRICTLY NO slash arcs, NO yellow trails, NO impact sparks, NO floating effects or new colors — animate the character body and equipment only. Static camera, transparent background.",
+      "frame_count": 8,
+      "jobId": "8c8c92fb-f9c0-41a0-833b-f8860170b97c",
+      "frame_width": 256,
+      "frame_height": 192,
+      "source_frame_count": 9,
+      "sheet_frame_count": 9,
+      "frame_duration_ms": 85,
+      "loop": false,
+      "direction": "east",
+      "layout": "horizontal",
+      "transparent": true
+    },
+    {
+      "boss": "05-demiurgo",
+      "name": "Demiurgo",
+      "key": "reverencia",
+      "label": "Reverência",
+      "description": "Solemn royal subjugation and reverence bow facing RIGHT toward the supreme Divine Sphere. Respectfully tilt the tall sun-and-moon celestial staff forward, fold the pale tattered wings gently inward, lower the dark chained orb slightly, and incline the crowned lion head and upper torso deeply in solemn acknowledgement and tribute, holding the dignified bowed posture at the end. Strict side profile facing RIGHT, serpentine coils grounded on the same baseline. Preserve crisp dark hermetic pixel art, same scale and palette. Static camera, transparent background.",
+      "frame_count": 12,
+      "jobId": "cc93425e-7f80-4da9-ba5c-e3cf5a8b9c1c",
+      "frame_width": 256,
+      "frame_height": 192,
+      "source_frame_count": 13,
+      "sheet_frame_count": 13,
+      "frame_duration_ms": 120,
+      "loop": false,
+      "direction": "east",
+      "layout": "horizontal",
+      "transparent": true
     }
   ]
 }

@@ -19,10 +19,7 @@ import { initialUnlocks } from '../config/unlocks.js';
 import { initialRelicUpgrades, ETERNAL_RELIC_IDS } from '../config/relics.js';
 import { INCARNATION_STAGES, BLESSING_MAX_SECONDS, type IncarnationStage } from '../config/incarnation.js';
 import { PROGRESSION_BALANCE, GNOSE_UPGRADES, GNOSE_SEAL_UPGRADES, GNOSE_FORMULAS, GNOSE_APOTHEOSIS_COSTS } from '../config/gnose.js';
-import {
-  GNOSE_BOSSES,
-  BOSS_SPHERE_COOLDOWN_SEC,
-} from '../config/bosses.js';
+import { GNOSE_BOSSES } from '../config/bosses.js';
 import {
   calculateMiracleReward,
   calculateItemCost,
@@ -968,8 +965,7 @@ export class GameStateManager {
     if (
       this.demiurge.phase === 'lost' ||
       !this.activeBossBattle ||
-      this.activeBossBattle.combatStarted === false ||
-      this.activeBossBattle.sphereCooldownSec > 1e-8
+      this.activeBossBattle.combatStarted === false
     ) {
       return { bossClickDamage: 0, bossIsCrit: false };
     }
@@ -981,7 +977,6 @@ export class GameStateManager {
       getAchievementBuffTotals(this.achievements).hasBossCrit
     );
 
-    battle.sphereCooldownSec = BOSS_SPHERE_COOLDOWN_SEC;
     const breakdown = this.getBossCombatBreakdown(battle.bossId);
     const bossClickDamage = breakdown.clickDamage * (bossIsCrit ? SPHERE_CRITICAL.multiplier : 1);
     battle.bossHp = Math.max(0, battle.bossHp - bossClickDamage);

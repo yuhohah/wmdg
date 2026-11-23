@@ -198,10 +198,19 @@ html .gnose-tier-seal .btn-challenge-guardian:disabled {
 }
 
 .gnose-curse-summary {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex: 1 1 280px;
+  min-width: 0;
+}
+
+.gnose-curse-summary .ico {
+  flex: 0 0 auto;
+}
+
+.gnose-curse-text {
+  line-height: 1.35;
 }
 
 .btn-purify-curse,
