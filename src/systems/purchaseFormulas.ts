@@ -3,12 +3,10 @@ import type { GameStateManager } from '../core/GameState.js';
 import { GNOSE_UPGRADES, GNOSE_FORMULAS, PROGRESSION_BALANCE, GNOSE_PASSIVE_FORMULA } from '../config/gnose.js';
 import { INCARNATION_STAGES, BLESSING_SECONDS_PER_PRESS, BLESSING_MAX_SECONDS } from '../config/incarnation.js';
 import {
-  calculateCostDiscountMultiplier,
   calculateExtraRelicsPerSecond,
   calculateFaithForNextGnose,
   calculateIncarnationFollowerMultiplier,
   calculateMaxAffordableFollowers,
-  calculateRelicFaithMultiplier,
   calculateTotalGnoseMultiplier,
   formatNumber,
 } from './calculations.js';
@@ -33,16 +31,15 @@ function followerBonusFormula(game: GameStateManager, bulk: boolean): string {
   const hasHarmonic = game.hasGnoseUpgrade('gn_followers_cubic');
   const hasCongregation = game.hasGnoseUpgrade('gn_followers_syn');
   const hasSynergy = hasHarmonic || hasCongregation || game.hasGnoseUpgrade('gn_init_faith');
-  const exponent = hasHarmonic
-    ? PROGRESSION_BALANCE.harmonicExponent
-    : hasCongregation
-      ? PROGRESSION_BALANCE.congregationExponent
-      : PROGRESSION_BALANCE.earlySynergyExponent;
-  const synergyScale = (hasHarmonic || hasCongregation) ? 1 : PROGRESSION_BALANCE.earlySynergyScale;
+  const exponent = hasCongregation ? PROGRESSION_BALANCE.congregationExponent : PROGRESSION_BALANCE.earlySynergyExponent;
+  const synergyScale = hasCongregation ? 1 : PROGRESSION_BALANCE.earlySynergyScale;
+  const synergyFormula = hasHarmonic
+    ? harmonicFormula('N')
+    : `1 + ${synergyScale === 1 ? '' : `${coefficient(synergyScale)} × `}N^${coefficient(exponent)}`;
 
   const follower = game.followers[0];
   const scale = game.getDevoteeBaseMultiplier();
-  const discount = calculateCostDiscountMultiplier(game.achievements);
+  const discount = game.getDevoteeCostDiscount();
   const bulkCount = bulk && follower
     ? Math.max(1, calculateMaxAffordableFollowers(follower, game.faithPoints, discount, scale).count)
     : 1;
@@ -55,12 +52,18 @@ function followerBonusFormula(game: GameStateManager, bulk: boolean): string {
       ? `• Rito_Fiéis(N) = 1 + (${ritual.level}^1,5 × N) / 50 (atual: ×${formatNumber(ritualEffect)})`
       : `• Rito_Fiéis(N) = 1 (Rito em nível 0)`,
     hasSynergy
-      ? `• Sinergia_Gnose(N) = 1 + ${synergyScale === 1 ? '' : `${coefficient(synergyScale)} × `}N^${coefficient(exponent)} (atual: ×${formatNumber(synergyEffect)})`
+      ? `• Sinergia_Gnose(N) = ${synergyFormula} (atual: ×${formatNumber(synergyEffect)})`
       : `• Sinergia_Gnose(N) = 1 (sem sinergia ativa)`,
     `ΔFé/s = P(Fiéis + ${bulk ? `n` : '1'}) − P(Fiéis) = +${formatNumber(deltaGain)} Fé/s`,
   ];
   return lines.join('\n');
 }
+
+function harmonicFormula(count: string): string {
+  return `1 + √${count} × (1 + ${GNOSE_FORMULAS.harmonicBonus} × ${count}/(${count} + ${GNOSE_FORMULAS.harmonicHalfSaturation}))`;
+}
+
+const opusFormula = `(1 + ${coefficient(GNOSE_FORMULAS.arkBonusPerLevel)} × nível)`;
 
 const gnoseBonuses: Record<string, string> = {
   gn_init_faith: [
@@ -106,40 +109,14 @@ const gnoseBonuses: Record<string, string> = {
     '• Preserva 100% dos níveis das demais Relíquias após cada Ascensão',
     '• Cornucópia e Tocha mantêm ⌊nível × 0,50⌋ em cada Ascensão',
   ].join('\n'),
-  gn_eternal_memory: '• Com Cripta Eterna: Cornucópia e Tocha mantêm ⌊nível × 0,80⌋ em cada Ascensão (50% + 30 pontos percentuais)',
-  gn_followers_economy: [
-    `• Escala de custo dos Fiéis: escala′ = escala − ${coefficient(GNOSE_FORMULAS.followerEconomyStep)} (1,09 → 1,075 antes de Hermes, piso 1,05)`,
-  ].join('\n'),
-  gn_followers_cubic: [
-    `• Sinergia dos Fiéis na Fé: M_sinergia = 1 + Fiéis^${coefficient(PROGRESSION_BALANCE.harmonicExponent)} (expoente ${coefficient(PROGRESSION_BALANCE.congregationExponent)} → ${coefficient(PROGRESSION_BALANCE.harmonicExponent)})`,
-  ].join('\n'),
-  gn_gnose_mult: [
-    `• Ganho ao ascender: Gnose = ⌊(Fé / 1e15)^${coefficient(PROGRESSION_BALANCE.enlightenedExponent)}⌋ para Fé ≥ 1e15 (expoente 0,25 → 0,28)`,
-  ].join('\n'),
-  gn_relic_refinement: [
-    `• Rito Ganho de Fragmentos: M(L) = base^(L^0,6), base 3,10 → ${coefficient(GNOSE_FORMULAS.refinedRelicProductionBase)}`,
-    `• Escala de custo do Rito: escala′ = escala − ${coefficient(GNOSE_FORMULAS.refinedRelicCostStep)} (4,90 → 4,60)`,
-  ].join('\n'),
-  gn_fu1_boost: [
-    `• Rito Produção de Fervor: M(L) = base^(L^0,6), base 2,18 → ${coefficient(GNOSE_FORMULAS.hermeticProductionBase)}`,
-  ].join('\n'),
-  gn_omniscience: [
-    '• Auto-Fiéis e Auto-Ritos não consomem Fé/Fervor (exigem saldo ≥ Custo)',
-    '• Auto-Transmutação: ΔFragmentos/s = +100% × Transmutação(Fé)',
-  ].join('\n'),
-  gn_apotheosis: [
-    `• Escala de custo de todos os Ritos: escala′ = escala − ${coefficient(GNOSE_FORMULAS.ritualCostStep)}`,
-    `• Custo do Avatar do Eclipse (Estágio 4): 1e25 → 1e20 Fé`,
-    `• Avatar Solar (Estágio 5): C_Solar = ${formatNumber(PROGRESSION_BALANCE.solarCost)} Fé (não exige este nó)`,
-  ].join('\n'),
-  gn_empyrean_fire: [
-    `• Rito Produção de Fervor: M(L) = base^(L^0,6), base 2,35 → ${coefficient(GNOSE_FORMULAS.empyreanProductionBase)}`,
-    `• Escala de custo do Rito: escala′ = escala − ${coefficient(GNOSE_FORMULAS.empyreanRitualCostStep)} (1,70 → 1,60)`,
-  ].join('\n'),
-  gn_perfect_opus: [
-    `• Rito Ganho de Fragmentos: M(L) = base^(L^0,6), base 3,40 → ${coefficient(GNOSE_FORMULAS.perfectRelicProductionBase)}`,
-    `• Escala de custo do Rito: escala′ = escala − ${coefficient(GNOSE_FORMULAS.perfectRelicCostStep)} (4,55 → 4,15)`,
-  ].join('\n'),
+  gn_eternal_memory: `• Com Cripta Eterna: Cornucópia e Tocha mantêm ⌊nível × ${coefficient(GNOSE_FORMULAS.opusRetention)}⌋ em cada Ascensão`,
+  gn_followers_economy: `• Preço unitário dos Fiéis: ×${coefficient(GNOSE_FORMULAS.followerCostFactor)}`,
+  gn_followers_cubic: `• Sinergia de Fé por clique e Fé/s: M = ${harmonicFormula('N')}, com N Fiéis`,
+  gn_gnose_mult: `• Ganho ao ascender: Gnose = ⌊(Fé / 1e15)^${coefficient(PROGRESSION_BALANCE.enlightenedExponent)}⌋ para Fé ≥ 1e15`,
+  gn_omniscience: `• Auto-Transmutação: ΔFragmentos/s = ${coefficient(GNOSE_FORMULAS.autoTransmutationFraction)} × Transmutação(Fé), além do Draupnir`,
+  gn_apotheosis: `• Preço unitário de todos os Ritos: ×${coefficient(GNOSE_FORMULAS.ritualCostFactor)}`,
+  gn_empyrean_fire: `• Fervor/s: ×(1 + ${coefficient(GNOSE_FORMULAS.empyreanBonusPerStage)} × (estágio − 1))`,
+  gn_perfect_opus: `• Arca: multiplica o efeito em Fé/s por ${opusFormula}`,
 };
 
 /** Returns only mathematical purchase information, using the live economy's coefficients. */
@@ -148,7 +125,7 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
   if (follower) {
     const N = game.getTotalFollowersCount();
     const scale = follower.id === 'f_devotee' ? game.getDevoteeBaseMultiplier() : follower.costMultiplier;
-    const discount = follower.id === 'f_devotee' ? calculateCostDiscountMultiplier(game.achievements) : 1;
+    const discount = follower.id === 'f_devotee' ? game.getDevoteeCostDiscount() : 1;
     const single = discount < 1
       ? `max(1, ⌊⌊${formatNumber(follower.baseCost)} × (${coefficient(scale)})^N⌋ × ${coefficient(discount)}⌋)`
       : `max(1, ⌊${formatNumber(follower.baseCost)} × (${coefficient(scale)})^N⌋)`;
@@ -182,14 +159,15 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
     const followersCount = game.getTotalFollowersCount();
     const currentEff = game.getFervorUpgradeEffect(ritual, followersCount, L);
     const nextEff = game.getFervorUpgradeEffect(ritual, followersCount, nextL);
-    const base = coefficient(game.getFervorUpgradeEffect(ritual, followersCount, 1));
+    const fervorBase = game.hasGnoseUpgrade('gn_init_fervor') ? GNOSE_FORMULAS.fervorProductionBase : 2;
+    const relicBase = game.hasGnoseUpgrade('gn_relic_gain') ? GNOSE_FORMULAS.relicProductionBase : 3;
     const scale = game.getFervorUpgradeCostMultiplier(ritual);
-    const single = `⌊${formatNumber(ritual.baseCost)} × (${coefficient(scale)})^nível⌋`;
+    const single = `⌊${formatNumber(game.getFervorUpgradeCostBase(ritual))} × (${coefficient(scale)})^nível⌋`;
     const totalCost = game.getFervorUpgradeBulkCost(ritual, step);
 
     const transition = `Nível ${formatNumber(L)} → ${formatNumber(nextL)}: ×${formatNumber(currentEff)} → ×${formatNumber(nextEff)}`;
     const effects: Record<string, string> = {
-      fu_prod: `M_Fervor/s(nível) = (${base})^(nível^0,6)\n${transition} Fervor/s`,
+      fu_prod: `M_Fervor/s(L) = ${coefficient(fervorBase)}^(L^0,6)\n${transition} Fervor/s`,
       fu_effect: [
         `M_efeito_Fervor(nível) = (1,25)^(nível^0,8)`,
         `Bônus na Fé = (2 × log10(pico_Fervor / 10 + 1) + 1) × M_efeito_Fervor`,
@@ -205,8 +183,8 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
         `Com Fé = ${formatNumber(Math.floor(game.faithPoints))} · ${transition} Fervor/s`,
       ].join('\n'),
       fu_relics: [
-        `M_Transmutação(nível) = (${base})^(nível^0,6)`,
-        `Fragmentos = ⌊log2(Fé + 1) × M_Transmutação(nível)⌋`,
+        `M_Rito(L) = ${coefficient(relicBase)}^(L^0,6)`,
+        `Fragmentos = ⌊log2(Fé + 1) × M_Rito(L)${game.hasGnoseUpgrade('gn_relic_gain') ? ` × ${coefficient(GNOSE_FORMULAS.relicDirectMultiplier)}` : ''}⌋`,
         `${transition} Fragmentos`,
       ].join('\n'),
     };
@@ -241,8 +219,7 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
       : formatNumber(relic.cost);
     const costNow = isMax ? 0 : (bulk ? getRelicUpgradeBulkCost(relic, step) : getRelicUpgradeCost(relic));
 
-    const gnoseFollowerDisc = (game.hasGnoseUpgrade('gn_init_faith') ? GNOSE_FORMULAS.followerCostStep : 0)
-      + (game.hasGnoseUpgrade('gn_followers_economy') ? GNOSE_FORMULAS.followerEconomyStep : 0);
+    const gnoseFollowerDisc = game.hasGnoseUpgrade('gn_init_faith') ? GNOSE_FORMULAS.followerCostStep : 0;
     const scaleAt = (lvl: number) => Math.max(1.05, 1.10 - 0.005 * lvl - gnoseFollowerDisc);
     const peakRelics = Math.max(game.relicPoints, game.relicPeakThisRun);
     const draupnirRate = 0.05 * game.getRelicsToGet();
@@ -261,7 +238,7 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
         `Desbloqueia o Rito "Ganho de Fragmentos" (Rito_Fragmentos = 1)`,
       ].join('\n'),
       relic_caduceus: [
-        `escala_Fiéis(nível) = max(1,05; 1,10 − 0,005 × nível − descontos_Gnose)`,
+        `escala_Fiéis(nível) = max(1,05; 1,10 − 0,005 × nível − redução_Emanação)`,
         `Nível ${L}${isMax ? '' : ` → ${nextL}`}: escala ${coefficient(scaleAt(L))}${isMax ? '' : ` → ${coefficient(scaleAt(nextL))}`} (piso 1,05)`,
       ].join('\n'),
       relic_draupnir: [
@@ -269,8 +246,8 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
         `Atual: +${formatNumber(draupnirRate)} Fragmentos/s (sem consumir Fé)`,
       ].join('\n'),
       relic_ark: [
-        `M_Fé/s(nível) = (log10(pico_Fragmentos + 1) + 1)^(1,2 × nível)`,
-        `Com pico = ${formatNumber(Math.floor(peakRelics))} · Nível ${L}${isMax ? '' : ` → ${nextL}`}: ×${formatNumber(calculateRelicFaithMultiplier(peakRelics, L))}${isMax ? '' : ` → ×${formatNumber(calculateRelicFaithMultiplier(peakRelics, nextL))}`} Fé/s`,
+        `M_Fé/s(nível) = (log10(pico_Fragmentos + 1) + 1)^(1,2 × nível)${game.hasGnoseUpgrade('gn_perfect_opus') ? ` × ${opusFormula}` : ''}`,
+        `Com pico = ${formatNumber(Math.floor(peakRelics))} · Nível ${L}${isMax ? '' : ` → ${nextL}`}: ×${formatNumber(game.getArkFaithMultiplier(L))}${isMax ? '' : ` → ×${formatNumber(game.getArkFaithMultiplier(nextL))}`} Fé/s`,
       ].join('\n'),
     };
 
@@ -345,11 +322,10 @@ export function getPurchaseFormulas(game: GameStateManager, id: string, bulk = f
     const peakFervor = Math.max(game.fervorPoints, game.fervorPeakThisRun);
     const curMult = game.getEffectiveIncarnationFollowerMultiplier();
     const nextMult = calculateIncarnationFollowerMultiplier(peakFervor, next.stage);
-    const discounted = next.stage === 4 && game.hasGnoseUpgrade('gn_apotheosis');
     return {
-      cost: `C(estágio ${next.stage} — ${next.name}) = ${formatNumber(game.getIncarnationStageCost(next))} Fé${discounted ? ' (desconto de Gnosis Suprema)' : ''}`,
+      cost: `C(estágio ${next.stage} — ${next.name}) = ${formatNumber(game.getIncarnationStageCost(next))} Fé`,
       bonus: [
-        `M_Fervor/s: ×${formatNumber(game.getIncarnationStageMultiplier())} → ×${formatNumber(next.multiplier)}`,
+        `M_Fervor/s: ×${formatNumber(game.getIncarnationStageMultiplier())} → ×${formatNumber(game.getIncarnationStageMultiplier(next.stage))}`,
         `M_Fiéis(estágio) = 1 + log10(1 + pico_Fervor / 150) × 1,5 × estágio`,
         `Com pico = ${formatNumber(Math.floor(peakFervor))}: ×${formatNumber(curMult)} → ×${formatNumber(nextMult)} Fé/s`,
       ].join('\n'),

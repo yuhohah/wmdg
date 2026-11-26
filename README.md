@@ -29,7 +29,7 @@ O tabuleiro reúne altares e câmaras em um céu de obsidiana, com gravuras herm
 | **Encarnação** | Cinco Avatares, geração de Fervor e Bênção temporária de 2× Fé/s. |
 | **Fervor** | Seis Ritos que fortalecem produção, cliques, Fiéis e Fragmentos. |
 | **Opus Magnum** | Transmute Fé em Fragmentos e restaure seis Relíquias. |
-| **Gnose** | Ascenda, reconstrua o culto e assimile vinte nós permanentes. |
+| **Gnose** | Ascenda, reconstrua o culto e assimile 20 nós permanentes. |
 | **Guardiões** | Enfrente Anúbis, Hades, Odin e o Caos Primordial no próprio tabuleiro. |
 
 Os Selos abrem essas camadas em sequência: **200 Fé → 5 mil Fé → 20 milhões de Fé → 1e15 Fé**. O último reconhece o limiar sem cobrar o saldo. Gastar Fervor ou Fragmentos mantém a força do pico alcançado no ciclo; a Ascensão reinicia esses picos.

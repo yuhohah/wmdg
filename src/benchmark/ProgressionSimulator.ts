@@ -41,8 +41,6 @@ const PRODUCTION_GNOSE_IDS = new Set([
   'gn_followers_cubic',
   'gn_gnose_mult',
   'gn_eternal_memory',
-  'gn_relic_refinement',
-  'gn_fu1_boost',
   'gn_apotheosis',
   'gn_empyrean_fire',
   'gn_perfect_opus',
@@ -698,7 +696,7 @@ class Simulation {
     const routineCps = manualSphereAllowed(this.behavior, this.time) ? this.behavior.routineClickCps * routineDuty : 0;
     const fps = g.getFaithPerSecond() + routineCps * g.getFaithPerClick();
     const draupnirLevel = g.relicUpgrades.find(r => r.id === 'relic_draupnir')?.level ?? 0;
-    const passiveRelics = (g.hasGnoseUpgrade('gn_omniscience') && g.autoRelicsEnabled) || draupnirLevel > 0;
+    const passiveRelics = g.getAutoRelicsFraction() > 0 || draupnirLevel > 0;
     const gnoseToGet = g.getGnoseToGet();
     const gnoseExp = g.getGnoseGainExponent();
     // With all available tiers bought (or Tier I still sealed), readiness can

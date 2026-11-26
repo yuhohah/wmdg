@@ -5,7 +5,6 @@ import { AudioManager } from '../../systems/audio.js';
 import { FollowersArena } from './FollowersArena.js';
 import {
   formatNumber,
-  calculateCostDiscountMultiplier,
   calculateMaxAffordableFollowers
 } from '../../systems/calculations.js';
 
@@ -170,7 +169,7 @@ export class FollowersTab {
         setText(this.convertMaxCostValEl, '');
       } else {
         if (this.btnConvertMaxEl.classList.contains('locked')) this.btnConvertMaxEl.classList.remove('locked');
-        const discount = calculateCostDiscountMultiplier(this.options.gameState.achievements);
+        const discount = this.options.gameState.getDevoteeCostDiscount();
         const mult = this.options.gameState.getDevoteeBaseMultiplier();
         const { count: maxCount, totalCost } = calculateMaxAffordableFollowers(
           devotee,

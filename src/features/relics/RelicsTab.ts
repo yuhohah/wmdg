@@ -66,6 +66,12 @@ export class RelicsTab {
     this.bindEvents();
   }
 
+  private relicEffectText(relic: RelicUpgrade, maxLevel: number): string {
+    return relic.id === 'relic_ark'
+      ? `Fragmentos multiplicam Fé/s • Atualmente x${formatNumber(this.options.gameState.getArkFaithMultiplier())}`
+      : relic.effectText(relic.level, undefined, maxLevel);
+  }
+
   private initElements(): void {
     this.hudDividerEl = document.getElementById('hud-relic-divider');
     this.hudItemEl = document.getElementById('hud-relic-item');
@@ -143,7 +149,6 @@ export class RelicsTab {
     this.finiteRelicsSummaryEl = null;
 
     const relicPoints = this.options.gameState.relicPoints;
-    const peakRelics = Math.max(relicPoints, this.options.gameState.relicPeakThisRun);
     const bulkEnabled = this.isBulkEnabled();
 
     // Keep the two infinite relics directly accessible; fold capped relics into a collapsible section.
@@ -173,7 +178,7 @@ export class RelicsTab {
       }
       const { count, cost } = this.purchasePreview(relic, bulkEnabled);
       const canAfford = relicPoints >= cost && (!bulkEnabled || count > 0);
-      const effectDesc = relic.effectText(relic.level, peakRelics, maxLevel);
+      const effectDesc = this.relicEffectText(relic, maxLevel);
 
       const card = document.createElement('div');
       card.className = `cult-action-card relic-action-card ${isMax ? 'maxed' : (canAfford ? '' : 'unaffordable')}`;
@@ -267,7 +272,6 @@ export class RelicsTab {
 
   public updateButtonStates(): void {
     const relicPoints = this.options.gameState.relicPoints;
-    const peakRelics = Math.max(relicPoints, this.options.gameState.relicPeakThisRun);
     const bulkEnabled = this.isBulkEnabled();
     const relics = this.options.gameState.relicUpgrades;
     let finiteTotal = 0;
@@ -305,7 +309,7 @@ export class RelicsTab {
         card.classList.toggle('unaffordable', shouldBeUnaffordable);
       }
       if (refs.benefitEl) {
-        setText(refs.benefitEl, relic.effectText(relic.level, peakRelics, maxLevel));
+        setText(refs.benefitEl, this.relicEffectText(relic, maxLevel));
       }
     }
     if (this.finiteRelicsSummaryEl) {

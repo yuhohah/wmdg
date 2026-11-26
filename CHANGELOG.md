@@ -2,6 +2,16 @@
 
 Novidades de *Cult of the Sphere*, da versão mais recente para a mais antiga.
 
+## 0.16.0 — 2026-11-26
+
+### Gnose e progressão
+
+- Rebalanceados os dez nós dos tiers III e IV. Coro Harmônico, Fogo Hermético e Alquimia Hermética agora têm ganhos que se aproximam de um limite conforme o culto cresce.
+- Convergência dos Fiéis dá 60% de desconto em cada Fiel. Olho de Trismegisto eleva o expoente da Ascensão para 0,26. Com Cripta Eterna, Memória do Opus retém 65% dos níveis da Cornucópia e da Tocha.
+- Gnosis Suprema dá 20% de desconto nos Ritos e reduz o preço do Eclipse para 10^24 Fé. Fogo Empíreo fortalece o Fervor conforme o estágio do Avatar, e Opus Perfeito fortalece a Arca conforme seu nível.
+- Olho do Infinito acrescenta 10% da Transmutação por segundo, além dos 5% do Draupnir. Compras automáticas de Fiéis e Ritos passam a consumir recursos.
+- A revisão 10 devolve uma vez a diferença de preço dos nós já comprados. Os painéis e a opção Nerds exibem os efeitos e custos da nova revisão.
+
 ## 0.15.0 — 2026-11-26
 
 ### Árvore da Gnose e Progressão

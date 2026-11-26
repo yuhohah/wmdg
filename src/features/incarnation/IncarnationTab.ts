@@ -149,7 +149,7 @@ export class IncarnationTab {
       this.altar?.evolveToStage(nextStage.stage);
       this.options.notifications.showCustomPopup(
         'A ENCARNAÇÃO RENASCE',
-        `A Encarnação renasceu como ${nextStage.name}! Fervor/s multiplicado por ${formatNumber(nextStage.multiplier)}x.`,
+        `A Encarnação renasceu como ${nextStage.name}! Fervor/s multiplicado por ${formatNumber(this.options.gameState.getIncarnationStageMultiplier(nextStage.stage))}x.`,
         'crown',
         'EVOLUÇÃO'
       );
@@ -167,7 +167,7 @@ export class IncarnationTab {
     if (this.altar && this.altar.getCurrentStage() !== stage) this.altar.setStage(stage, true);
 
     setText(this.stageBadgeEl, currentStage?.name ?? 'Encarnação');
-    setText(this.stageEffectEl, currentStage ? `Fervor/s ×${formatNumber(currentStage.multiplier)}` : '');
+    setText(this.stageEffectEl, currentStage ? `Fervor/s ×${formatNumber(this.options.gameState.getIncarnationStageMultiplier())}` : '');
     const incFollowerMult = this.options.gameState.getEffectiveIncarnationFollowerMultiplier();
     setText(this.rateBadgeEl, `x${formatNumber(incFollowerMult)}`);
 
@@ -178,7 +178,7 @@ export class IncarnationTab {
         if (this.upgradeBenefitEl) {
           setText(
             this.upgradeBenefitEl,
-            `${formatNumber(nextStage.multiplier)}x Fervor/s`
+            `${formatNumber(this.options.gameState.getIncarnationStageMultiplier(nextStage.stage))}x Fervor/s`
               + (nextStage.stage === 5 ? ' · Disponível antes do duelo com Caos Primordial' : '')
           );
           if (this.upgradeBenefitEl.style.display !== 'block') this.upgradeBenefitEl.style.display = 'block';

@@ -36,9 +36,10 @@ export function calculateItemCost(
 export function calculateFervorUpgradeCost(
   upg: FervorUpgrade,
   costMultiplier: number = upg.costMultiplier,
-  level: number = upg.level
+  level: number = upg.level,
+  baseCost: number = upg.baseCost
 ): number {
-  return Math.floor(upg.baseCost * Math.pow(costMultiplier, level));
+  return Math.floor(baseCost * Math.pow(costMultiplier, level));
 }
 
 export function getFervorUpgradeMultiplier(

@@ -13,7 +13,7 @@ A temporary plea from a devotee that rewards direct attention with **Fé**. Its 
 The sequential thresholds that open Encarnação, Ritos de Fervor, Relíquias and Gnose. The first three consume Fé; the Selo da Gnose recognizes the ascension threshold without consuming it.
 
 **Encarnação Sagrada (Avatar)**
-The divine manifestation that evolves from Neófito through Consagrado, Ancestral, Eclipse and Solar, strengthening Fervor and the Fiéis. Avatar Solar requires Gnosis Suprema.
+The divine manifestation that evolves from Neófito through Consagrado, Ancestral, Eclipse and Solar, strengthening Fervor and the Fiéis.
 
 **Bênção 2× Fé**
 A temporary blessing charged through the Altar da Encarnação that doubles passive Fé. Vigília Perpétua keeps this blessing active permanently.
@@ -25,10 +25,10 @@ Fervor is the cult’s sacred fire, which strengthens Fé and funds Ritos. Ritos
 Fragmentos are the remains of fallen divinities, obtained through Transmutação and passive production and spent restoring Relíquias. Spending Fragmentos preserves the Arca’s production strength already earned during the current ascension.
 
 **Gnose & Árvore Hermética**
-Gnose is the permanent currency earned through Ascensão Gnóstica and spent on the twenty nodes of the Árvore Hermética. Assimilated nodes strengthen production permanently; guardians, achievements and these nodes survive later ascensions.
+Gnose is the permanent currency earned through Ascensão Gnóstica and spent on the nodes of the Árvore Hermética. Assimilated nodes strengthen production permanently; guardians, achievements and these nodes survive later ascensions.
 
 **Automações Gnósticas**
-Permanent purchases that independently automate recruitment, Ritos and Relic restoration, each with its own pause control. Recruitment spends available Fé; Olho do Infinito makes automated recruitment and Ritos free and enables passive Transmutação.
+Permanent purchases that automate recruitment, Ritos, Relic restoration and other actions. Olho do Infinito enables Auto-Transmutação, a passive source of Fragmentos based on the current Transmutação yield.
 
 **Automação dos Selos**
 Ruptura Automática reopens eligible Selos after ascensions; Memória Hermética separately preserves Encarnação and enables bulk purchases. Cripta Eterna preserves restored Relic levels.

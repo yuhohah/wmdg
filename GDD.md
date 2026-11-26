@@ -50,7 +50,7 @@ Converter Máximo abre com 25 Fiéis ou Memória Hermética. Pedidos de milagre 
 | Neófito | Inicial ao romper o Selo | 1× |
 | Consagrado | 2,5 milhões | 100× |
 | Ancestral | 250 bilhões | 10.000× |
-| Eclipse | 1e25; 1e20 com Gnosis Suprema | 1e8× |
+| Eclipse | 1e25 | 1e8× |
 | Solar | 1e30; disponível após Eclipse, antes de desafiar Caos Primordial | 1e15× |
 
 O estágio também fortalece os Fiéis e o combate. Cada acionamento do Altar acrescenta 10 segundos de **Bênção 2× Fé/s**, até 60 segundos. Vigília Perpétua a mantém ativa com Encarnação aberta.
@@ -80,7 +80,7 @@ Custos por nível são fixos. O melhor resultado de Transmutação manual alimen
 
 ## Ascensão e permanência
 
-A Ascensão Gnóstica exige acesso à Gnose e pelo menos 1e15 Fé. O ganho é `floor((Fé / 1e15)^expoente)`, com expoente 0,25 ou 0,28 com Olho de Trismegisto. Não é permitida durante combate.
+A Ascensão Gnóstica exige acesso à Gnose e pelo menos 1e15 Fé. O ganho é `floor((Fé / 1e15)^expoente)`, com expoente 0,25 ou 0,26 com Olho de Trismegisto. Não é permitida durante combate.
 
 A Câmara da Gnose mostra quanta Fé falta para a próxima Gnose. A primeira Ascensão pede confirmação, listando o que se perde e o que se mantém; depois disso a confirmação fica desligada e pode ser reativada pela opção **Confirmar Ascensão**.
 
@@ -98,28 +98,26 @@ Históricos permanentes participam do combate. Os bônus econômicos de Fervor e
 
 ![Árvore Hermética](docs/screenshots/gnose.png)
 
-São **20 nós em quatro tiers (6 / 6 / 4 / 4)**. Cada nó é comprado uma vez, exige seus pré-requisitos e permanece após Ascensões. Assimilar um nó concede apenas seu efeito próprio, sem multiplicador genérico de produção. O total de Gnose obtido concede o multiplicador permanente de Fé e Fervor; gastar a moeda não o reduz. A ressonância de Fervor depende do recurso, sem depender da quantidade de nós.
+São **18 nós em quatro tiers (5 / 5 / 4 / 4)**. Cada nó exige saldo de Gnose e tier aberto, e permanece após Ascensões. Cada efeito é próprio do nó. A Gnose total obtida multiplica Fé e Fervor permanentemente, e a ressonância de Fervor depende do recurso acumulado no ciclo.
 
 | Tier | Identidade | Abertura |
 | --- | --- | --- |
-| I — Despertar & Automação | Emanação, Memória, Fiéis automáticos, Selos automáticos, Chama e Alquimia Astrais. | Acesso à Gnose. |
-| II — Persistência & Economia | Ritos e Relíquias automáticos, Cripta, sinergia e economia dos Fiéis e Bênção permanente. | Vitória sobre Anúbis. |
-| III — Poder do Culto | Coro, ganho de Gnose e refinamentos herméticos. | Vitória sobre Hades. |
-| IV — Apoteose | Olho do Infinito, Gnosis Suprema, Fogo Empíreo e Opus Perfeito. | Vitória sobre Odin. |
+| I — Despertar & Automação | Memória, Chama e Alquimia Astrais, Selos e Fiéis automáticos, Relíquias Ilimitadas. | Vitória sobre Anúbis. |
+| II — Persistência & Economia | Emanação, Cripta, Ritos e Relíquias automáticos, Bênção permanente e Congregação. | Vitória sobre Hades. |
+| III — Poder do Culto | Convergência, Coro, ganho de Gnose e Memória do Opus. | Vitória sobre Odin. |
+| IV — Apoteose | Gnosis Suprema, Fogo Empíreo, Opus Perfeito e Olho do Infinito. | Vitória sobre Caos Primordial. |
 
-Cada nó exibe nome e efeito em linguagem simples; os valores exatos ficam na opção **Nerds** das configurações. Os nós aparecem por tier e custo crescente. A revisão 5 busca 20–40 minutos de jogo ativo e 4–12 Ascensões por tier: conclua todos os nós do tier antes de desafiar o próximo Guardião. O Tier I começa na primeira Ascensão; o prólogo até a Gnose é separado. Essas faixas são metas medidas, não tempos de espera nem uma quantidade obrigatória de reinícios.
+Os nós aparecem por tier e custo crescente. A opção **Nerds** mostra as fórmulas. Olho do Infinito libera geração automática de Fragmentos equivalente a 10% da Transmutação por segundo, somada aos 5% do Draupnir. Os custos e as regras detalhadas estão em [Fórmulas do jogo](FormulasJogo.md#8-gnose-e-todos-os-upgrades). A cadência da revisão 10 está no [relatório de balanceamento](docs/progression/gnose-impacto-e-proposta-2026-11-26.md).
 
-O bônus permanente pela Gnose total usa `1 + 0,5 × √total + 7000 × total^0,35 × (total/(total+1000))²`, começando em aproximadamente 2,18× com 4 Gnose e introduzindo gradualmente a aceleração de campanha, e a ressonância de Fervor usa expoente `0,1` para conter a aceleração final. Não há multiplicador genérico por nó. No Tier IV, Gnosis Suprema precede Fogo Empíreo e Opus Perfeito; Olho do Infinito exige os dois e conclui a árvore com as automações gratuitas. As escolhas de investimento permanecem. Os custos, pré-requisitos e fórmulas estão em [FormulasJogo.md](FormulasJogo.md#8-gnose-e-todos-os-upgrades).
+A migração preserva Gnose total, upgrades ativos, vitórias e saldos acumulados. Devolve uma vez as reduções de preço e os custos conhecidos dos nós removidos. Saves avançados preservados podem atravessar os tiers mais rápido que as metas para partidas novas.
 
-A migração preserva Gnose total, upgrades, vitórias e saldos acumulados. Devolve uma vez as reduções de preço; aumentos não são cobrados retroativamente. Saves avançados preservados podem atravessar os tiers mais rápido que as metas para partidas novas.
-
-A Cripta Eterna torna permanentes os níveis de todas as Relíquias e libera níveis ilimitados para a Cornucópia de Amalteia e a Tocha de Prometeu. As outras Relíquias mantêm seus limites de compra. Cornucópia e Tocha mantêm o preço inicial nos primeiros 20 níveis; os níveis seguintes ficam 15% mais caros a cada compra, preservando o ganho linear de produção.
+A Cripta Eterna preserva os níveis das Relíquias, com retenção de 50% para Cornucópia de Amalteia e Tocha de Prometeu, ou 65% com Memória do Opus. Relíquias Ilimitadas remove o limite de compra dessas duas Relíquias. Cornucópia e Tocha mantêm o preço inicial nos primeiros 20 níveis; os níveis seguintes ficam 15% mais caros a cada compra, preservando o ganho linear de produção.
 
 ### Automações
 
 Auto-Fiéis, Auto-Ritos, Auto-Relíquias e Auto-Transmutação têm controles independentes. As compras automáticas operam em ciclos de um segundo e validam desbloqueios e saldos.
 
-Auto-Fiéis compra com toda a Fé disponível; por isso o controle permite pausá-lo para guardar Fé. Auto-Ritos escolhe retorno marginal por custo, com até 50 níveis por Rito a cada ciclo; Auto-Relíquias prioriza a primeira Fênix e depois o retorno das compras. Olho do Infinito permite Fiéis e Ritos automáticos sem gasto, mas Relíquias continuam custando Fragmentos. Ruptura Automática reabre Selos elegíveis na ordem, com a cobrança normal dos três primeiros.
+Auto-Fiéis compra com toda a Fé disponível; por isso o controle permite pausá-lo para guardar Fé. Auto-Ritos escolhe retorno marginal por custo, com até 50 níveis por Rito a cada ciclo; Auto-Relíquias prioriza a primeira Fênix e depois o retorno das compras. Ruptura Automática reabre Selos elegíveis na ordem, com a cobrança normal dos três primeiros.
 
 ## Guardiões e proteção da Esfera
 
@@ -130,7 +128,7 @@ Auto-Fiéis compra com toda a Fé disponível; por isso o controle permite paus�
 | Anúbis — O Pesador de Almas | Acesso à Gnose e os 6 nós do Tier I. | Tier II e 1,5× Fé/Fervor. |
 | Hades — O Senhor do Submundo | Tier II completo, com 6 nós. | Tier III e mais 1,5× Fé/Fervor. |
 | Odin — O Pai de Todos da Árvore Cósmica | Tier III completo, com 4 nós. | Tier IV e mais 1,5× Fé/Fervor. |
-| Caos Primordial — O Vazio Antes da Criação | Árvore completa, com 20 nós. | Mais 10× Fé/Fervor e conquista Crepúsculo dos Deuses. |
+| Caos Primordial — O Vazio Antes da Criação | Acesso à Gnose e pelo menos um nó assimilado do Tier III. | Mais 10× Fé/Fervor e conquista Crepúsculo dos Deuses. |
 
 Os multiplicadores de vitória se acumulam e também afetam Fé por clique. IDs antigos de Hades e Caos são mantidos no save por compatibilidade.
 
@@ -181,7 +179,7 @@ Com proteção insuficiente, qualquer erro é fatal, sem essas reduções. O dan
 
 HP do boss em zero concede vitória e recompensa permanente. Integridade da Esfera em zero encerra em derrota; na campanha aplica maldição de 20 segundos, reduzindo Fé/s e Fervor/s em 25%. Recuar não aplica maldição. A interface mostra um breve clímax visual. Na vitória, a Encarnação conduz os Fiéis de volta ao Pátio antes de retornar ao altar; na derrota, um aviso indica a prontidão e recomenda acumular Gnose total para aumentar a proteção.
 
-**Relembrar Duelo** repete Guardiões já subjugados, sem recompensas duplicadas nem maldição por derrota. Vitórias registram o melhor tempo. A conclusão de campanha usada pelo benchmark exige os vinte nós e o Caos Primordial derrotado. Não há sistema de New Game+ implementado.
+**Relembrar Duelo** repete Guardiões já subjugados, sem recompensas duplicadas nem maldição por derrota. Vitórias registram o melhor tempo. A conclusão de campanha usada pelo benchmark exige os 18 nós, o Avatar Solar e vitórias sobre Caos Primordial e o Demiurgo. Não há sistema de New Game+ implementado.
 
 ## Conquistas, salvamento e ausência
 

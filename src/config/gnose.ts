@@ -13,29 +13,26 @@ export const GNOSE_TIER_LABELS: Record<1 | 2 | 3 | 4, string> = {
 export const GNOSE_SEAL_UPGRADES: Readonly<Record<string, string>> = {
   gn_memoria_selos: 'unlock_incarnation',
 };
-/** Small parameter improvements; the underlying formula shapes stay unchanged. */
 export const GNOSE_FORMULAS = {
   followerCostStep: 0.01,
+  followerCostFactor: 0.4,
   fervorProductionBase: 2.18,
   fervorRitualCostStep: 0.05,
-  hermeticProductionBase: 2.35,
-  ritualCostStep: 0.05,
+  ritualCostFactor: 0.8,
   relicDirectMultiplier: 2.5,
   relicProductionBase: 3.1,
   relicCostStep: 0.1,
-  followerEconomyStep: 0.015,
-  refinedRelicProductionBase: 3.4,
-  refinedRelicCostStep: 0.3,
-  empyreanProductionBase: 2.65,
-  empyreanRitualCostStep: 0.1,
-  perfectRelicProductionBase: 3.75,
-  perfectRelicCostStep: 0.4,
+  harmonicBonus: 2,
+  harmonicHalfSaturation: 500,
+  opusRetention: 0.65,
+  empyreanBonusPerStage: 0.15,
+  arkBonusPerLevel: 0.25,
+  autoTransmutationFraction: 0.1,
 } as const;
-export const GNOSE_APOTHEOSIS_COSTS: Readonly<Record<number, number>> = { 4: 1e20, 5: 1e30 };
 
 /** Fixed campaign prices. Within each tier, cheaper nodes appear first.
  * Calibrated without generic production per node. Paired investments remain comparable;
- * free automation is the final reward. All paths stay purchasable. */
+ * the final node improves passive Transmutation. All paths stay purchasable. */
 export const GNOSE_UPGRADES: GnoseUpgrade[] = [
   {
     id: 'gn_memoria_selos',
@@ -151,123 +148,103 @@ export const GNOSE_UPGRADES: GnoseUpgrade[] = [
     id: 'gn_followers_economy',
     name: 'Convergência dos Fiéis',
     title: 'O Chamado Unificado',
-    desc: 'Reduz o aumento de custo por Fiel de 9% para 7,5%, antes do Cajado de Hermes (escala 1,09 → 1,075). Soma sua redução à da Emanação Primordial. Com o Cajado, a escala mínima continua sendo 1,05, ou +5% de custo por Fiel.',
+    desc: 'Reduz em 60% o preço de cada Fiel. O desconto se aplica às compras individuais, em lote e automáticas, mantendo a escala de custo de Emanação Primordial e do Cajado de Hermes.',
     lore: 'Cada voz reunida torna o chamado seguinte mais fácil de ouvir.',
     icon: 'followers',
     tier: 3,
-    cost: 1200,
-    effectText: 'Custo dos Fiéis: +9% → +7,5% por compra',
+    cost: 750,
+    effectText: '−60% no preço dos Fiéis',
   },
   {
     id: 'gn_followers_cubic',
     name: 'Coro Harmônico',
     title: 'Geometria Sagrada (MU10)',
-    desc: 'Melhora a sinergia dos Fiéis de 1 + √Fiéis para 1 + Fiéis, aumentando a Fé por clique e a Fé/s. Com 100 Fiéis, o multiplicador passa de 11× para 101×; com 1.000 Fiéis, passa de ~32,6× para 1.001×. O ganho cresce com a quantidade de Fiéis.',
+    desc: 'Altera a sinergia de Fé por clique e Fé/s para 1 + √N × (1 + 2N/(N + 500)), em que N é o total de Fiéis. Com 100 Fiéis, a sinergia passa de 11× para 14,33×. Em cultos maiores, o ganho sobre Congregação Esférica se aproxima de 3×.',
     lore: 'Três dimensões da mente, três oitavas do cântico: a devoção coletiva cresce a cada alma convertida.',
     icon: 'gem',
     tier: 3,
-    cost: 1500,
-    effectText: 'Sinergia de Fé: 1 + √Fiéis → 1 + Fiéis',
+    cost: 1_200,
+    effectText: 'Sinergia de Fé: 1 + √N × (1 + 2N/(N + 500))',
   },
   {
     id: 'gn_gnose_mult',
     name: 'Olho de Trismegisto',
     title: 'Tríplice Sabedoria',
-    desc: 'Aumenta o expoente do ganho de Gnose por Ascensão de 0,25 para 0,28. O cálculo passa a ser (Fé ÷ 1 quatrilhão)^0,28, arredondado para baixo. O requisito continua em 1 quatrilhão de Fé; o benefício cresce conforme a Fé acumulada para ascender.',
+    desc: 'Aumenta o expoente do ganho de Gnose por Ascensão de 0,25 para 0,26. O ganho é (Fé ÷ 10^15)^0,26, arredondado para baixo, a partir de 10^15 de Fé.',
     lore: 'Três vezes grande é aquele que enxerga simultaneamente o abismo mortal, o fogo astral e a mente divina.',
     icon: 'eye',
     tier: 3,
-    cost: 36000,
-    effectText: 'Gnose por Ascensão: expoente 0,25 → 0,28',
+    cost: 6_000,
+    effectText: 'Gnose por Ascensão: expoente 0,25 → 0,26',
   },
   {
     id: 'gn_eternal_memory',
     name: 'Memória do Opus',
     title: 'Herança dos Artífices',
-    desc: 'Com Cripta Eterna, aumenta de 50% para 80% a preservação dos níveis da Cornucópia de Amalteia e da Tocha de Prometeu em cada Ascensão. Os níveis preservados são arredondados para baixo. Não preserva Relíquias sem Cripta Eterna.',
+    desc: 'Com Cripta Eterna, aumenta de 50% para 65% a retenção de níveis da Cornucópia de Amalteia e da Tocha de Prometeu em cada Ascensão, com arredondamento para baixo.',
     lore: 'O fogo dos artífices grava na matéria aquilo que nem os ciclos conseguem apagar.',
     icon: 'urn',
     tier: 3,
-    cost: 45000,
-    effectText: 'Com Cripta Eterna: preservação de Cornucópia e Tocha de 50% → 80%',
-  },
-  {
-    id: 'gn_relic_refinement',
-    name: 'Alquimia Hermética',
-    title: 'O Cadinho Aperfeiçoado',
-    desc: 'Melhora o Rito de ganho de Fragmentos: a base do multiplicador passa de 3,10 para 3,40, e a escala de custo cai de 4,90 para 4,60, antes de Gnosis Suprema. O multiplicador continua base^(nível^0,6), e o Rito exige a Fênix.',
-    lore: 'O cadinho aprende a separar cada vez menos cinza de cada vez mais essência.',
-    icon: 'gem',
-    tier: 3,
-    cost: 200000,
-    effectText: 'Rito de Fragmentos: base 3,10 → 3,40 · escala de custo 4,90 → 4,60',
-  },
-  {
-    id: 'gn_fu1_boost',
-    name: 'Fogo Hermético',
-    title: 'Quinta-Essência Ígnea (MU14)',
-    desc: 'Melhora o Rito de produção de Fervor: a base do multiplicador passa de 2,18 para 2,35. O multiplicador continua base^(nível^0,6); o ganho depende do nível do Rito. Substitui a base concedida por Chama Astral e não altera o custo do Rito.',
-    lore: 'O fogo comum queima a matéria; o Fogo Hermético transmuta a própria lei matemática que rege o ardor do culto.',
-    icon: 'sun',
-    tier: 3,
-    cost: 240000,
-    effectText: 'Rito de Fervor: base 2,18 → 2,35',
+    cost: 9_000,
+    effectText: 'Com Cripta Eterna: retenção de Cornucópia e Tocha de 50% → 65%',
   },
   {
     id: 'gn_apotheosis',
     name: 'Gnosis Suprema',
     title: 'A Circunferência Infinita',
-    desc: 'Reduz em 0,05 a escala de custo de todos os Ritos, somando às melhorias específicas; no Rito de Fervor com Chama Astral, a escala cai de 1,75 para 1,70. Reduz o custo do Avatar do Eclipse de 10 septilhões (10^25) para 100 quintilhões (10^20) de Fé: 100.000 vezes mais barato. O Avatar Solar continua custando 10^30 Fé e não exige este upgrade.',
+    desc: 'Reduz em 20% o preço de cada nível de Rito.',
     lore: 'O centro está em toda parte; a circunferência, em lugar nenhum. A Esfera recorda sua plenitude anterior à criação.',
     icon: 'crown',
     tier: 4,
-    cost: 600000,
-    effectText: 'Escala de custo dos Ritos: −0,05 · Eclipse 100.000× mais barato',
+    cost: 75_000,
+    effectText: '−20% no preço dos Ritos',
   },
   {
     id: 'gn_empyrean_fire',
     name: 'Fogo Empíreo',
     title: 'A Chama do Firmamento',
-    desc: 'Melhora o Rito de produção de Fervor: a base do multiplicador passa de 2,35 para 2,65, mantendo base^(nível^0,6). Reduz também a escala de custo de 1,70 para 1,60, considerando Chama Astral e Gnosis Suprema: o aumento de custo por nível cai de 70% para 60%.',
+    desc: 'Multiplica a geração de Fervor por 1 + 0,15(E − 1), em que E é o estágio da Encarnação. O bônus começa em +15% no Consagrado, chega a +45% no Eclipse e a +60% no Solar.',
     lore: 'A chama já não consome o altar: ilumina o próprio firmamento.',
     icon: 'sun',
     tier: 4,
-    cost: 660000,
-    effectText: 'Rito de Fervor: base 2,35 → 2,65 · custo por nível: +70% → +60%',
+    cost: 95_000,
+    effectText: '+15% de Fervor/s por estágio além do Neófito',
   },
   {
     id: 'gn_perfect_opus',
     name: 'Opus Perfeito',
     title: 'A Matéria Consumada',
-    desc: 'Melhora o Rito de ganho de Fragmentos: a base do multiplicador passa de 3,40 para 3,75, mantendo base^(nível^0,6). Com Gnosis Suprema, a escala de custo cai de 4,55 para 4,15. O Rito continua exigindo a Fênix restaurada.',
+    desc: 'Multiplica o efeito da Arca da Aliança Cósmica em Fé/s por 1 + 0,25A, em que A é o nível da Arca. Com a Arca no nível 4, seu efeito dobra.',
     lore: 'Nada se perde no último fogo: toda matéria encontra sua forma sagrada.',
     icon: 'gem',
     tier: 4,
-    cost: 720000,
-    effectText: 'Rito de Fragmentos: base 3,40 → 3,75 · escala de custo 4,55 → 4,15',
+    cost: 115_000,
+    effectText: 'Arca: efeito × (1 + 0,25 × nível)',
   },
   {
     id: 'gn_omniscience',
     name: 'Olho do Infinito',
     title: 'Visão Panóptica',
-    desc: 'As compras automáticas de Fiéis e Ritos passam a consumir 0 recursos, mas ainda exigem saldo suficiente para o orçamento de Fiéis e para o custo de cada nível de Rito. Cada automação precisa estar desbloqueada e ativa. Também libera geração automática de Fragmentos equivalente a 100% do resultado atual da Transmutação por segundo, sem gastar Fé. A restauração automática de Relíquias continua consumindo Fragmentos.',
+    desc: 'Libera a Auto-Transmutação, que gera por segundo 10% dos Fragmentos que a Transmutação atual renderia, sem gastar Fé. Com o Draupnir restaurado, o total chega a 15%.',
     lore: 'Aquele que tudo vê não apenas compreende o universo: ele se torna a própria mente que o concebe.',
     icon: 'orb',
     tier: 4,
-    cost: 2200000,
-    effectText: 'Fiéis e Ritos automáticos sem gasto · 100% da Transmutação/s',
+    cost: 200_000,
+    effectText: 'Auto-Transmutação: +10% da Transmutação/s · 15% com Draupnir',
   }
 ];
 
 
-/** Removed purchases are refunded once when an older save is loaded. */
-export const RETIRED_GNOSE_UPGRADES = [
+/** Removed purchases use the historical price for the save revision or a known fallback. */
+export const RETIRED_GNOSE_UPGRADES: ReadonlyArray<{ id: string; tier: number; cost?: number }> = [
   { id: 'gn_click_power', cost: 3, tier: 1 },
   { id: 'gn_dilatacao', cost: 3, tier: 1 },
   { id: 'gn_altar_resonance', cost: 118, tier: 2 },
   { id: 'gn_alchemical_mind', cost: 150, tier: 2 },
   { id: 'gn_synergy_boost', cost: 8450, tier: 3 },
   { id: 'gn_relic_resonance', cost: 9900, tier: 3 },
+  { id: 'gn_relic_refinement', tier: 3 },
+  { id: 'gn_fu1_boost', tier: 3 },
 ] as const;
 
 export const LEGACY_GNOSE_AUTOMATIONS = [
@@ -297,7 +274,7 @@ export const PROGRESSION_OLD_PRICES: Readonly<Record<string, number>> = {
 };
 
 /** Current economy revision persisted in saves for one-time price refunds. */
-export const PROGRESSION_REVISION = 9;
+export const PROGRESSION_REVISION = 11;
 
 /** Prices before weakening and moving Chama Astral and Alquimia Astral to Tier 1. */
 export const PROGRESSION_REVISION_8_PRICES: Readonly<Record<string, number>> = {
@@ -321,6 +298,28 @@ export const PROGRESSION_REVISION_8_PRICES: Readonly<Record<string, number>> = {
   gn_empyrean_fire: 660000,
   gn_perfect_opus: 720000,
   gn_omniscience: 2200000,
+};
+
+/** Prices paid in revision 9, before the Tier III and IV changes. */
+export const PROGRESSION_REVISION_9_PRICES: Readonly<Record<string, number>> = {
+  ...PROGRESSION_REVISION_8_PRICES,
+  gn_init_fervor: 4,
+  gn_relic_gain: 8,
+};
+
+/** Prices paid before retiring Alquimia Hermética and Fogo Hermético. */
+export const PROGRESSION_REVISION_10_PRICES: Readonly<Record<string, number>> = {
+  ...PROGRESSION_REVISION_9_PRICES,
+  gn_followers_economy: 750,
+  gn_followers_cubic: 1_200,
+  gn_gnose_mult: 6_000,
+  gn_eternal_memory: 9_000,
+  gn_relic_refinement: 26_000,
+  gn_fu1_boost: 30_000,
+  gn_apotheosis: 75_000,
+  gn_empyrean_fire: 95_000,
+  gn_perfect_opus: 115_000,
+  gn_omniscience: 200_000,
 };
 
 /** Prices before merging Culto Autônomo and Ruptura Automática in Tier 1. */
@@ -495,11 +494,10 @@ export const PROGRESSION_REVISION_1_PRICES: Readonly<Record<string, number>> = {
 /** Campaign calibration coefficients, shared by game and simulation. */
 export const PROGRESSION_BALANCE = {
   ascensionExponent: 0.25,
-  enlightenedExponent: 0.28,
+  enlightenedExponent: 0.26,
   earlySynergyScale: 0.025,
   earlySynergyExponent: 0.5,
   congregationExponent: 0.5,
-  harmonicExponent: 1.0,
   solarCost: 1e30,
   fervorResonanceScale: 1e18,
   fervorResonanceExponent: 0.1,

@@ -29,6 +29,8 @@ import {
   PROGRESSION_REVISION_6_PRICES,
   PROGRESSION_REVISION_7_PRICES,
   PROGRESSION_REVISION_8_PRICES,
+  PROGRESSION_REVISION_9_PRICES,
+  PROGRESSION_REVISION_10_PRICES,
   RETIRED_GNOSE_UPGRADES,
 } from '../config/gnose.js';
 
@@ -527,7 +529,11 @@ export function applySaveDataToState(state: SaveStateHost, save: SaveData): void
                       ? PROGRESSION_REVISION_6_PRICES
                       : revision < 8
                         ? PROGRESSION_REVISION_7_PRICES
-                        : PROGRESSION_REVISION_8_PRICES;
+                        : revision < 9
+                          ? PROGRESSION_REVISION_8_PRICES
+                          : revision < 10
+                            ? PROGRESSION_REVISION_9_PRICES
+                            : PROGRESSION_REVISION_10_PRICES;
       for (const [id, paid] of Object.entries(paidPrices)) {
         const current = GNOSE_UPGRADES.find((u) => u.id === id);
         if (current && state.hasGnoseUpgrade(id)) {
@@ -611,7 +617,7 @@ export function migrateGnoseUpgrades(
 ): void {
   for (const upgrade of RETIRED_GNOSE_UPGRADES) {
     if (!state.unlockedGnoseUpgrades.delete(upgrade.id)) continue;
-    state.gnosePoints += upgrade.cost;
+    state.gnosePoints += paidPrices?.[upgrade.id] ?? upgrade.cost ?? 0;
     // Owning a later-tier purchase already made that tier accessible in old saves.
     const guardian = GNOSE_BOSSES.find((boss) => boss.unlocksTier === upgrade.tier);
     if (guardian) state.defeatedBosses.add(guardian.id);

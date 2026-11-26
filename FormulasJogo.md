@@ -58,8 +58,9 @@ MG = 1                                  se Gh <= 0
 MG = 1 + 0.5*sqrt(Gh) + 7000*Gh^0.35*(Gh/(Gh+1000))^2                   caso contrário
 
 MN = 1                                  sem sinergia ou N <= 0
-MN = 1 + N^e                            com Emanação ou Congregação
- e = 0.5 com Emanação; 1 com Congregação; 1.1 com Coro Harmônico
+MN = 1 + 0.025*sqrt(N)                 com Emanação, sem Congregação nem Coro
+MN = 1 + sqrt(N)                       com Congregação, sem Coro
+MN = 1 + sqrt(N)*(1 + 2*N/(N+500))     com Coro Harmônico
 
 MB = produto(faithFervorMult dos bosses já derrotados)
 MC = 0.75 enquanto bossCurseTimerSec > 0; 1 fora disso
@@ -94,7 +95,8 @@ O crítico é desbloqueado após completar 250 cliques, com 5% de chance de 2× 
 baseFiéis = soma(quantidade_i * baseEffect_i) = N no catálogo atual
 Cornucopia = 1 + 0.20 * L_relic_cornucopia
 Arca = 1 se L_relic_ark <= 0
-Arca = (log10(max(0,Rp)+1)+1)^(1.2*L_relic_ark) caso contrário
+Arca = (log10(max(0,Rp)+1)+1)^(1.2*L_relic_ark)
+       * (1 + 0.25*L_relic_ark*[gn_perfect_opus]) caso contrário
 
 P = baseFiéis * efeito(fu_followers) * I * Ap * Ag * MG * MN * MB * MC
     * BF * Cornucopia * Arca * B
@@ -108,6 +110,7 @@ Sem Fiéis, `P=0`. Não há arredondamento da produção. O bônus de Encarnaç�
 Q = 0 se o Selo da Encarnação estiver fechado
 Q = 1 * efeito(fu_prod) * (1 + 0.20*L_relic_torch) * multiplicadorDoAvatar
     * MG * MB * MC * efeito(fu_synergy) * Phoenix
+    * (1 + 0.15*(S−1)*[gn_empyrean_fire])
 Phoenix = 1.5 se L_relic_phoenix >= 1; 1 caso contrário
 ```
 
@@ -129,8 +132,9 @@ Existe um tipo: **Fiel Devoto**, ID `f_devotee`, custo base 20 Fé, escala origi
 
 ```text
 escala = max(1.05, 1.10 - 0.005*L_relic_caduceus
-             - 0.01*[gn_init_faith] - 0.015*[gn_followers_economy])
-custo(N) = max(1, floor(floor(20 * escala^N) * D))
+             - 0.01*[gn_init_faith])
+fatorConvergencia = 0.4 com gn_followers_economy; 1 caso contrário
+custo(N) = max(1, floor(floor(20 * escala^N) * D * fatorConvergencia))
 ```
 
 Os dois `floor` são aplicados nessa ordem; não equivalem sempre a arredondar uma vez. Comprar 1 desconta esse custo e acrescenta 1 Fiel.
@@ -139,7 +143,7 @@ Os dois `floor` são aplicados nessa ordem; não equivalem sempre a arredondar u
 
 O ganho mostrado ao comprar `n` Fiéis é `P(estado com N+n) - P(estado atual)`, mantendo os demais saldos e bônus. Portanto inclui a mudança nas sinergias dependentes da quantidade, e não somente `n` vezes a produção anterior de um Fiel.
 
-**Hermes versus Emanação:** cada nível de Hermes tira 0.005 da escala; Emanação tira 0.01, equivalente a dois níveis de Hermes nesse parâmetro. Hermes no nível 5 tira 0.025; combinado com Emanação dá escala 1.065; com Convergência também, chega ao piso 1.05. O texto “5% mais devagar por nível” do Cajado não é um desconto linear de 5% no preço: a fórmula executada é a redução de 0.005 da base exponencial.
+**Hermes versus Emanação:** cada nível de Hermes tira 0.005 da escala; Emanação tira 0.01, equivalente a dois níveis de Hermes nesse parâmetro. Hermes no nível 5 tira 0.025; combinado com Emanação dá escala 1.065. Convergência aplica 60% de desconto sobre o preço de cada Fiel. O texto “5% mais devagar por nível” do Cajado não é um desconto linear de 5% no preço: a fórmula executada é a redução de 0.005 da base exponencial.
 
 ## 4. Selos
 
@@ -159,7 +163,8 @@ Romper o Selo da Gnose exige atingir `1e15` Fé, mas **não consome** o saldo, p
 Todos começam no nível zero, usam **Fervor** e não têm nível máximo fixo. O custo é o do **próximo** nível, usando o nível atual `L`:
 
 ```text
-custo = floor(custoBase * escalaEfetiva^L)
+fatorSuprema = 0.8 com gn_apotheosis; 1 caso contrário
+custo = floor(custoBase * fatorSuprema * escalaEfetiva^L)
 escalaEfetiva = max(1.01, escalaOriginal - reduções aplicáveis)
 ```
 
@@ -175,37 +180,27 @@ escalaEfetiva = max(1.01, escalaOriginal - reduções aplicáveis)
 No nível `L<=0`, todos retornam multiplicador 1. Comprar aumenta o nível em 1 e desconta o custo. O Rito de Fragmentos exige a Pena Solar de Fênix para compra manual e automática.
 
 ```text
-baseProd = 2.65 com gn_empyrean_fire
-           2.35 com gn_fu1_boost, sem o anterior
-           2.05 com gn_init_fervor, sem os anteriores
-           2 caso contrário
+baseProd = 2.18 com gn_init_fervor; 2 caso contrário
+baseFrag = 3.10 com gn_relic_gain; 3 caso contrário
 
-baseFrag = 3.75 com gn_perfect_opus
-           3.40 com gn_relic_refinement, sem o anterior
-           3.05 com gn_relic_gain, sem os anteriores
-           3 caso contrário
-
-escala_fu_prod = max(1.01, 1.80 - 0.05*[gn_init_fervor]
-                    - 0.10*[gn_empyrean_fire] - 0.05*[gn_apotheosis])
-escala_fu_relics = max(1.01, 5 - 0.10*[gn_relic_gain]
-                      - 0.30*[gn_relic_refinement] - 0.40*[gn_perfect_opus]
-                      - 0.05*[gn_apotheosis])
-escala_demais = max(1.01, escalaOriginal - 0.05*[gn_apotheosis])
+escala_fu_prod = 1.80 - 0.05*[gn_init_fervor]
+escala_fu_relics = 5 - 0.10*[gn_relic_gain]
+escala_demais = escalaOriginal
 ```
 
-As bases de produção **substituem** as anteriores; as reduções das escalas de custo **somam**. Com todos os upgrades: escalas dos seis ritos, na ordem da tabela, são `1.60`, `1.95`, `1.35`, `1.45`, `2.45`, `4.15`.
+O desconto de Gnosis Suprema se aplica à compra individual, Máximo e automação. As escalas dos seis Ritos com todos os upgrades, na ordem da tabela, são `1.75`, `2.00`, `1.40`, `1.50`, `2.50`, `4.90`.
 
 ## 6. Encarnação e Bênção
 
 A evolução compra somente o próximo estágio, descontando Fé. O multiplicador abaixo substitui o anterior; não multiplica cumulativamente os estágios.
 
-| Estágio | Avatar | Custo normal em Fé | Com Gnosis Suprema | Multiplicador de Fervor/s |
-| --- | --- | --- | --- | --- |
-| 1 | Avatar Neófito | 0; inicial ao abrir o selo | 0 | 1 |
-| 2 | Avatar Consagrado | 2.5e6 | 2.5e6 | 100 |
-| 3 | Avatar Ancestral | 2.5e11 | 2.5e11 | 10000 |
-| 4 | Avatar do Eclipse | 1e25 | 1e20 | 1e8 |
-| 5 | Avatar Solar | 1e30 | 1e30 | 1e15 |
+| Estágio | Avatar | Custo em Fé | Multiplicador de Fervor/s |
+| --- | --- | --- | --- |
+| 1 | Avatar Neófito | 0 (inicial ao abrir o selo) | 1 |
+| 2 | Avatar Consagrado | 2.5e6 | 100 |
+| 3 | Avatar Ancestral | 2.5e11 | 10000 |
+| 4 | Avatar do Eclipse | 1e25 | 1e8 |
+| 5 | Avatar Solar | 1e30 | 1e15 |
 
 O estágio também entra no multiplicador `I` da produção dos Fiéis e na preparação/dano/defesa de combate.
 
@@ -217,7 +212,8 @@ O estágio também entra no multiplicador `I` da produção dos Fiéis e na prep
 
 ```text
 T = 0 se F <= 0
-T = max(0, floor(log2(max(0,F)+1) * efeito(fu_relics))) caso contrário
+fatorAstral = 2.5 com gn_relic_gain; 1 caso contrário
+T = max(0, floor(log2(max(0,F)+1) * efeito(fu_relics) * fatorAstral)) caso contrário
 ```
 
 Exige Relíquias abertas, cooldown de Transmutação em zero e `T>0`. Recebe `T` Fragmentos, soma `T` ao histórico `Rh`, atualiza `Rb=max(Rb,T)`, zera toda a Fé e inicia cooldown de **3 segundos**. Não zera Fiéis, Fervor, ritos ou avatares. É `Rb` que registra a melhor Transmutação **manual**, não as gerações automáticas.
@@ -228,10 +224,10 @@ Exige Relíquias abertas, cooldown de Transmutação em zero e `T>0`. Recebe `T`
 W = 0 se o Selo das Relíquias estiver fechado
 W = max(1,floor(Rb/10))
     + T * (0.05*[L_relic_draupnir >= 1]
-           + 1*[gn_omniscience e autoRelicsEnabled]) caso contrário
+           + 0.10*[gn_omniscience e autoRelicsEnabled]) caso contrário
 ```
 
-Há pelo menos 1 Fragmento/s assim que Relíquias estão abertas, mesmo sem ter transmutado. Draupnir e Olho do Infinito somam: juntos geram `1.05*T` por segundo, além da base. Não gastam Fé e não acionam o cooldown manual. Não atualizam `Rb`. A geração por segundo aceita frações de Fragmento. Bosses e maldição não são multiplicadores diretos de `W`; podem mudar `T` indiretamente pela Fé produzida.
+Há pelo menos 1 Fragmento/s assim que Relíquias estão abertas, mesmo sem ter transmutado. Draupnir e Olho do Infinito somam: juntos geram `0.15*T` por segundo, além da base. Não gastam Fé e não acionam o cooldown manual. Não atualizam `Rb`. A geração por segundo aceita frações de Fragmento. Bosses e maldição não são multiplicadores diretos de `W`; podem mudar `T` indiretamente pela Fé produzida.
 
 ### 7.3 Todas as Relíquias
 
@@ -239,23 +235,23 @@ Comprar exige saldo e nível abaixo do máximo; desconta o custo e aumenta 1 ní
 
 | Relíquia / ID | Custo por nível | Máximo | Efeito executado |
 | --- | --- | --- | --- |
-| Cornucópia de Amalteia / `relic_cornucopia` | `200 × 1.15^max(0,L−19)` | 20; ilimitado com Cripta | Fé/s × `(1+0.20*L)` |
-| Tocha de Prometeu / `relic_torch` | `500 × 1.15^max(0,L−19)` | 20; ilimitado com Cripta | Fervor/s × `(1+0.20*L)` |
+| Cornucópia de Amalteia / `relic_cornucopia` | `200 × 1.15^max(0,L−19)` | 20; ilimitado com Relíquias Ilimitadas | Fé/s × `(1+0.20*L)` |
+| Tocha de Prometeu / `relic_torch` | `500 × 1.15^max(0,L−19)` | 20; ilimitado com Relíquias Ilimitadas | Fervor/s × `(1+0.20*L)` |
 | Pena Solar de Fênix / `relic_phoenix` | 750 | 1 | Fervor/s × 1.5; libera comprar `fu_relics` |
 | Cajado de Hermes / `relic_caduceus` | 1500 | 5 | Escala de custo dos Fiéis −0.005 por nível, respeitando piso 1.05 |
 | Anel Divino de Draupnir / `relic_draupnir` | 2000 | 1 | Acrescenta `0.05*T` Fragmentos/s sem gastar Fé |
 | Arca da Aliança Cósmica / `relic_ark` | 15000 | 4 | Fé/s × `(log10(max(0,Rp)+1)+1)^(1.2*L)`; nível 0: 1× |
 
-Com Cripta Eterna, Cornucópia e Tocha deixam de ter limite de níveis; os primeiros 20 níveis custam 200 e 500 Fragmentos, respectivamente. Para comprar o próximo nível a partir do nível atual `L`, cobra-se `base × 1.15^max(0,L−19)`, sem arredondar a cobrança. Após o nível 20, cada compra fica 15% mais cara. Uma sequência de `n` compras com custo inicial `C` soma `C × (1.15^n − 1) / 0.15`; quando a compra cruza o nível 20, somam-se separadamente o trecho fixo e o trecho geométrico. Seus efeitos continuam lineares: `1 + 0,2 × nível`. As demais Relíquias mantêm seus limites. Restaurar Máximo calcula a quantidade e cobra o total diretamente, sem percorrer cada nível. A Oficina compra até 50 níveis por Relíquia por ciclo de um segundo, mesmo com níveis ilimitados. Todos os níveis restaurados permanecem após Ascensão e recarga do save.
+Com Relíquias Ilimitadas, Cornucópia e Tocha deixam de ter limite de níveis; os primeiros 20 níveis custam 200 e 500 Fragmentos, respectivamente. Para comprar o próximo nível a partir do nível atual `L`, cobra-se `base × 1.15^max(0,L−19)`, sem arredondar a cobrança. Após o nível 20, cada compra fica 15% mais cara. Uma sequência de `n` compras com custo inicial `C` soma `C × (1.15^n − 1) / 0.15`; quando a compra cruza o nível 20, somam-se separadamente o trecho fixo e o trecho geométrico. Seus efeitos continuam lineares: `1 + 0,2 × nível`. As demais Relíquias mantêm seus limites. Restaurar Máximo calcula a quantidade e cobra o total diretamente, sem percorrer cada nível. Com Cripta Eterna, Cornucópia e Tocha mantêm 50% dos níveis na Ascensão (65% com Memória do Opus), arredondando para baixo. As demais Relíquias preservam todos os níveis.
 
-A coleção nos limites originais soma 51 níveis e custa 84250 Fragmentos no total, antes dos níveis adicionais da Cripta. A Arca usa `Rp`: gastar Fragmentos não reduz o bônus.
+A coleção nos limites originais soma 51 níveis e custa 84250 Fragmentos no total, antes dos níveis acima de 20. A Arca usa `Rp`: gastar Fragmentos não reduz o bônus.
 
 ## 8. Gnose e todos os upgrades
 
 ### 8.1 Ascensão e bônus permanente
 
 ```text
-eAsc = 0.28 com gn_gnose_mult; 0.25 caso contrário
+eAsc = 0.26 com gn_gnose_mult; 0.25 caso contrário
 GanhoAscensão = 0 se Gnose inacessível ou F < 1e15
 GanhoAscensão = max(1,floor((F/1e15)^eAsc)) caso contrário
 
@@ -267,80 +263,70 @@ MG = 1 + 0.5*sqrt(Gh) + 7000*Gh^0.35*(Gh/(Gh+1000))^2 para Gh>0; 1 para Gh<=0
 
 Uma Ascensão com `F=1e15` dá 1 Gnose nos dois expoentes. Gastar Gnose em upgrades reduz `G`, preservando `Gh` e seu bônus. Ascender é bloqueado durante batalha ativa.
 
-### 8.2 Catálogo completo dos 20 upgrades
+### 8.2 Catálogo completo dos 18 upgrades
 
-Cada upgrade é comprado uma única vez e fica permanente. Exige tier aberto, saldo de Gnose e **todos** os pré-requisitos. Os nós aparecem por tier e custo crescente. A revisão 5 busca 20–40 minutos de jogo ativo e 4–12 Ascensões por tier, sem bônus genérico de produção por nó. O Tier I é medido da primeira Ascensão até Anúbis; os demais, entre as vitórias consecutivas sobre Guardiões. O tempo inicial até a primeira Ascensão é separado.
+Cada upgrade é comprado uma vez e permanece após Ascensões. A compra exige tier aberto e saldo de Gnose. Os nós aparecem por tier e custo crescente. A cadência anterior à remoção dos dois nós foi registrada no [relatório da revisão 10](docs/progression/gnose-impacto-e-proposta-2026-11-26.md).
 
-O bônus da Gnose total usa `MG = 1 + 0.5*sqrt(Gh) + 7000*Gh^0.35*(Gh/(Gh+1000))^2`. A raiz quadrada dá o bônus inicial moderado; o fator `(Gh/(Gh+1000))²` introduz gradualmente a contribuição de campanha, sem um salto no primeiro ponto. Com 4 Gnose, o multiplicador é aproximadamente 2,18×. A ressonância de Fervor usa expoente `0,1` para suavizar a aceleração tardia. Essas fórmulas não dependem da quantidade de nós. Gnosis Suprema abre os dois aperfeiçoamentos finais; Olho do Infinito exige ambos e entrega automações gratuitas como recompensa final.
+Saves anteriores recebem uma devolução única das reduções conhecidas de preço e dos custos conhecidos dos nós removidos. A migração preserva a Gnose total obtida, os demais upgrades e as vitórias.
 
-Todos os nós de cada tier devem ser assimilados antes do próximo Guardião. Permanecem as escolhas de prioridade e a possibilidade de comprar todos os caminhos. As metas são de calibração, não temporizadores nem bloqueios por número de Ascensões: guardar Gnose, escolher outro ritmo ou usar um save avançado pode produzir contagens e tempos diferentes.
+#### Tier 1
 
-Saves anteriores recebem uma única devolução das reduções conhecidas de preço. Aumentos não geram cobranças retroativas. Gnose total obtida, nós assimilados e vitórias são preservados, inclusive Olho do Infinito já comprado. A migração não reduz um saldo acumulado nem revoga upgrades por novos pré-requisitos.
+| Upgrade / ID | Custo em Gnose | Efeito |
+| --- | ---: | --- |
+| Memória Hermética (`gn_memoria_selos`) | 2 | Abre o Selo da Encarnação imediatamente e o mantém aberto após cada Ascensão. Libera Converter Máximo e as opções de compra máxima de Ritos e Relíquias. Os demais Selos continuam sujeitos aos seus custos e requisitos. |
+| Chama Astral (`gn_init_fervor`) | 4 | Aprimora permanentemente o Rito "Produção de Fervor" (na aba de Ritos de Fervor) de duas formas: cada nível gera muito mais Fervor/s (a base da fórmula base^(nível^0,6) sobe de 2 para 2,18) e o preço cresce mais devagar a cada compra (+80% → +75% por nível, escala 1,80 → 1,75). O ganho se acumula conforme o Rito sobe — no nível 50, por exemplo, o multiplicador passa de ~1.405× para ~3.460×, além de permitir comprar mais níveis com o mesmo Fervor. |
+| Culto e Ruptura Autônomos (`gn_automation`) | 6 | A cada segundo, verifica os Selos fechados e compra os que puder pagar, respeitando pré-requisitos e moeda (o Selo da Gnose abre ao atingir seu limiar sem consumir Fé; após cada Ascensão, os Selos voltam a ser comprados, pois não se tornam permanentes). Em seguida, usa Converter Máximo para comprar todos os Fiéis que a Fé disponível permitir, liberando Converter Máximo e pagando o custo total. A conversão automática de Fiéis pode ser pausada no painel dos Fiéis. |
+| Alquimia Astral (`gn_relic_gain`) | 8 | Multiplica por 2,5× os Fragmentos obtidos em cada Transmutação (efeito imediato, mesmo antes da Fênix) e aprimora permanentemente o Rito "Ganho de Fragmentos" (nos Ritos de Fervor, liberado ao restaurar a Pena Solar de Fênix): a base da fórmula base^(nível^0,6) sobe de 3 para 3,10 e a escala de custo cai de 5× para 4,90× por compra (+400% → +390%). No nível 20 do Rito, por exemplo, o bônus total passa de ~757× para ~2.306× Fragmentos, com custo ~33% menor no 20º nível. |
+| Relíquias Ilimitadas (`gn_unlimited_relics`) | 10 | Remove o limite de nível da Cornucópia de Amalteia e da Tocha de Prometeu. Os primeiros 20 níveis mantêm o preço original; a partir do 21º nível, cada compra custa 15% a mais. As demais Relíquias mantêm seus limites. Não preserva níveis após a Ascensão. |
 
-### Tier 1
+#### Tier 2
 
-| Upgrade / ID | Custo em Gnose | Pré-requisitos | Efeito completo |
-| --- | --- | --- | --- |
-| Emanação Primordial (`gn_init_faith`) | 1 | — | Reduz o aumento de custo por Fiel de 10% para 9%, antes do Cajado de Hermes (escala 1,10 → 1,09). Multiplica a Fé por clique e a Fé/s por 1 + √Fiéis; com 100 Fiéis, o bônus é 11×. Ao comprar, completa seu saldo até 1.000 Fé; após cada Ascensão, você começa com 1.000 Fé. |
-| Memória Hermética (`gn_memoria_selos`) | 2 | gn_init_faith | Abre o Selo da Encarnação imediatamente e o mantém aberto após cada Ascensão. Libera Converter Máximo e as opções de compra máxima de Ritos e Relíquias. Os demais Selos continuam sujeitos aos seus custos e requisitos. |
-| Culto Autônomo (`gn_automation`) | 4 | gn_memoria_selos | A cada segundo, compra automaticamente até 10.000 Fiéis com a Fé disponível, pagando o custo de cada compra. Pode usar todo o saldo. A automação pode ser ativada ou desativada no card dos Fiéis. |
-| Chama Astral (`gn_init_fervor`) | 5 | gn_init_faith | Melhora o Rito de produção de Fervor: a base do multiplicador sobe de 2 para 2,05, e o aumento de custo por nível cai de 80% para 75% (escala 1,80 → 1,75). O multiplicador de produção é base^(nível^0,6); o ganho depende do nível do Rito. |
-| Ruptura Automática (`gn_seal_automation`) | 8 | gn_memoria_selos | Verifica os Selos a cada segundo e compra os que puder pagar, respeitando os pré-requisitos e a moeda exigida por cada um. O Selo da Gnose abre ao atingir seu limiar, sem consumir Fé. Após cada Ascensão, volta a comprar os Selos; este upgrade não os torna permanentes. |
-| Alquimia Astral (`gn_relic_gain`) | 10 | gn_init_faith | Melhora o Rito de ganho de Fragmentos: a base do multiplicador sobe de 3 para 3,05, e o aumento de custo por nível cai de 400% para 390% (escala 5 → 4,90). O multiplicador é base^(nível^0,6) e melhora o resultado da Transmutação. O Rito exige a Fênix restaurada. |
+| Upgrade / ID | Custo em Gnose | Efeito |
+| --- | ---: | --- |
+| Emanação Primordial (`gn_init_faith`) | 20 | Reduz o aumento de custo por Fiel de 10% para 9%, antes do Cajado de Hermes (escala 1,10 → 1,09). Multiplica a Fé por clique e a Fé/s por 1 + 0,025 × √Fiéis (+2,5% por √Fiéis; com 100 Fiéis, +25%; com 400 Fiéis, +50%). Ao comprar, completa seu saldo até 1.000 Fé; após cada Ascensão, você começa com 1.000 Fé. |
+| Cripta Eterna (`gn_keep_relics`) | 25 | Preserva 100% dos níveis das demais Relíquias após cada Ascensão. Cornucópia de Amalteia e Tocha de Prometeu mantêm 50% dos níveis a cada Ascensão, arredondados para baixo. |
+| Liturgia e Oficina Autônomas (`gn_ritual_relic_automation`) | 30 | A cada segundo, compra Ritos e restaura Relíquias seguindo a opção Máximo de cada painel: desativada, compra um nível por item; ativada, compra o máximo disponível. Nos Ritos, prioriza o maior ganho por Fervor e reserva o custo de Selos ainda fechados (o Rito de Fragmentos exige a Fênix). Nas Relíquias, prioriza a primeira Fênix e depois o maior retorno por Fragmento, respeitando os limites de nível. Cada automação pode ser pausada no respectivo painel. |
+| Vigília Perpétua (`gn_bencao_eterna`) | 48 | Mantém a Bênção permanentemente ativa enquanto a Encarnação estiver desbloqueada (2× Fé/s, +100%, sem precisar recarregar sua duração; não aumenta a Fé por clique) e evolui a Encarnação automaticamente a cada segundo sempre que houver Fé suficiente e o próximo estágio estiver liberado, pagando o custo exigido. A evolução automática pode ser pausada no painel da Encarnação. |
+| Congregação Esférica (`gn_followers_syn`) | 150 | Melhora a sinergia dos Fiéis: o multiplicador de Fé por clique e Fé/s passa de 1 + 0,025 × √Fiéis para 1 + √Fiéis. Com 100 Fiéis, passa de 1,25× para 11×; com 400 Fiéis, passa de 1,50× para 21×. Substitui a sinergia da Emanação Primordial; os dois multiplicadores não se acumulam. |
 
-### Tier 2
+#### Tier 3
 
-| Upgrade / ID | Custo em Gnose | Pré-requisitos | Efeito completo |
-| --- | --- | --- | --- |
-| Liturgia Autônoma (`gn_ritual_automation`) | 20 | gn_automation, gn_init_fervor | A cada segundo, compra até 50 níveis de cada Rito, priorizando o maior ganho relativo por Fervor gasto. Usa o saldo disponível, mas reserva o Fervor exigido por Selos ainda fechados. O Rito de Fragmentos exige a Fênix. A automação pode ser ativada ou desativada no card de Fervor. |
-| Oficina Autônoma (`gn_relic_automation`) | 25 | gn_relic_gain | A cada segundo, restaura Relíquias com os Fragmentos disponíveis. Prioriza o primeiro nível da Fênix; depois escolhe o maior retorno por Fragmento, até 50 níveis de cada Relíquia por segundo. Respeita os limites de nível e pode usar todo o saldo. A automação pode ser ativada ou desativada no card de Relíquias. |
-| Cripta Eterna (`gn_keep_relics`) | 48 | gn_memoria_selos | Preserva 100% dos níveis restaurados das Relíquias após cada Ascensão. Remove também o limite de nível da Cornucópia de Amalteia e da Tocha de Prometeu; os limites das demais Relíquias permanecem. |
-| Congregação Esférica (`gn_followers_syn`) | 60 | gn_memoria_selos | Melhora a sinergia dos Fiéis: o multiplicador de Fé por clique e Fé/s passa de 1 + √Fiéis para 1 + Fiéis. Com 100 Fiéis, passa de 11× para 101×. Substitui a sinergia da Emanação Primordial; os dois multiplicadores não se acumulam. |
-| Vigília Perpétua (`gn_bencao_eterna`) | 120 | gn_init_fervor | Mantém a Bênção permanentemente ativa enquanto a Encarnação estiver desbloqueada: 2× Fé/s (+100%), sem precisar recarregar sua duração. A Bênção não aumenta a Fé por clique. |
-| Convergência dos Fiéis (`gn_followers_economy`) | 150 | gn_init_faith, gn_followers_syn | Reduz o aumento de custo por Fiel de 9% para 7,5%, antes do Cajado de Hermes (escala 1,09 → 1,075). Soma sua redução à da Emanação Primordial. Com o Cajado, a escala mínima continua sendo 1,05, ou +5% de custo por Fiel. |
+| Upgrade / ID | Custo em Gnose | Efeito |
+| --- | ---: | --- |
+| Convergência dos Fiéis (`gn_followers_economy`) | 750 | Reduz em 60% o preço de cada Fiel. O desconto se aplica às compras individuais, em lote e automáticas, mantendo a escala de custo de Emanação Primordial e do Cajado de Hermes. |
+| Coro Harmônico (`gn_followers_cubic`) | 1.200 | Altera a sinergia de Fé por clique e Fé/s para 1 + √N × (1 + 2N/(N + 500)), em que N é o total de Fiéis. Com 100 Fiéis, a sinergia passa de 11× para 14,33×. Em cultos maiores, o ganho sobre Congregação Esférica se aproxima de 3×. |
+| Olho de Trismegisto (`gn_gnose_mult`) | 6.000 | Aumenta o expoente do ganho de Gnose por Ascensão de 0,25 para 0,26. O ganho é (Fé ÷ 10^15)^0,26, arredondado para baixo, a partir de 10^15 de Fé. |
+| Memória do Opus (`gn_eternal_memory`) | 9.000 | Com Cripta Eterna, aumenta de 50% para 65% a retenção de níveis da Cornucópia de Amalteia e da Tocha de Prometeu em cada Ascensão, com arredondamento para baixo. |
 
-### Tier 3
+#### Tier 4
 
-| Upgrade / ID | Custo em Gnose | Pré-requisitos | Efeito completo |
-| --- | --- | --- | --- |
-| Coro Harmônico (`gn_followers_cubic`) | 30000 | gn_followers_syn | Melhora a sinergia dos Fiéis de 1 + Fiéis para 1 + Fiéis^1,1, aumentando a Fé por clique e a Fé/s. Com 100 Fiéis, o multiplicador passa de 101× para aproximadamente 159,49×. O ganho cresce com a quantidade de Fiéis. |
-| Olho de Trismegisto (`gn_gnose_mult`) | 36000 | gn_bencao_eterna | Aumenta o expoente do ganho de Gnose por Ascensão de 0,25 para 0,28. O cálculo passa a ser (Fé ÷ 1 quatrilhão)^0,28, arredondado para baixo. O requisito continua em 1 quatrilhão de Fé; o benefício cresce conforme a Fé acumulada para ascender. |
-| Alquimia Hermética (`gn_relic_refinement`) | 200000 | gn_relic_gain, gn_keep_relics | Melhora o Rito de ganho de Fragmentos: a base do multiplicador passa de 3,05 para 3,40, e a escala de custo cai de 4,90 para 4,60, antes de Gnosis Suprema. O multiplicador continua base^(nível^0,6), e o Rito exige a Fênix. |
-| Fogo Hermético (`gn_fu1_boost`) | 240000 | gn_init_fervor | Melhora o Rito de produção de Fervor: a base do multiplicador passa de 2,05 para 2,35. O multiplicador continua base^(nível^0,6); o ganho depende do nível do Rito. Substitui a base concedida por Chama Astral e não altera o custo do Rito. |
-
-### Tier 4
-
-| Upgrade / ID | Custo em Gnose | Pré-requisitos | Efeito completo |
-| --- | --- | --- | --- |
-| Gnosis Suprema (`gn_apotheosis`) | 300000 | gn_gnose_mult, gn_fu1_boost, gn_followers_cubic | Reduz em 0,05 a escala de custo de todos os Ritos, somando às melhorias específicas; no Rito de Fervor com Chama Astral, a escala cai de 1,75 para 1,70. Reduz o custo do Avatar do Eclipse de 10 septilhões (10^25) para 100 quintilhões (10^20) de Fé: 100.000 vezes mais barato. O Avatar Solar continua custando 10^30 Fé e não exige este upgrade. |
-| Fogo Empíreo (`gn_empyrean_fire`) | 600000 | gn_init_fervor, gn_fu1_boost, gn_apotheosis | Melhora o Rito de produção de Fervor: a base do multiplicador passa de 2,35 para 2,65, mantendo base^(nível^0,6). Reduz também a escala de custo de 1,70 para 1,60, considerando Chama Astral e Gnosis Suprema: o aumento de custo por nível cai de 70% para 60%. |
-| Opus Perfeito (`gn_perfect_opus`) | 720000 | gn_relic_refinement, gn_apotheosis | Melhora o Rito de ganho de Fragmentos: a base do multiplicador passa de 3,40 para 3,75, mantendo base^(nível^0,6). Com Gnosis Suprema, a escala de custo cai de 4,55 para 4,15. O Rito continua exigindo a Fênix restaurada. |
-| Olho do Infinito (`gn_omniscience`) | 2200000 | gn_automation, gn_empyrean_fire, gn_perfect_opus | As compras automáticas de Fiéis e Ritos passam a consumir 0 recursos, mas ainda exigem saldo suficiente para o orçamento de Fiéis e para o custo de cada nível de Rito. Cada automação precisa estar desbloqueada e ativa. Também libera geração automática de Fragmentos equivalente a 100% do resultado atual da Transmutação por segundo, sem gastar Fé. A restauração automática de Relíquias continua consumindo Fragmentos. |
+| Upgrade / ID | Custo em Gnose | Efeito |
+| --- | ---: | --- |
+| Gnosis Suprema (`gn_apotheosis`) | 75.000 | Reduz em 20% o preço de cada nível de Rito. |
+| Fogo Empíreo (`gn_empyrean_fire`) | 95.000 | Multiplica a geração de Fervor por 1 + 0,15(E − 1), em que E é o estágio da Encarnação. O bônus começa em +15% no Consagrado, chega a +45% no Eclipse e a +60% no Solar. |
+| Opus Perfeito (`gn_perfect_opus`) | 115.000 | Multiplica o efeito da Arca da Aliança Cósmica em Fé/s por 1 + 0,25A, em que A é o nível da Arca. Com a Arca no nível 4, seu efeito dobra. |
+| Olho do Infinito (`gn_omniscience`) | 200.000 | Libera a Auto-Transmutação, que gera por segundo 10% dos Fragmentos que a Transmutação atual renderia, sem gastar Fé. Com o Draupnir restaurado, o total chega a 15%. |
 
 ### 8.3 Particularidades dos upgrades
 
 - Emanação, ao ser comprada, credita `max(0,1000-F)` de Fé e histórico. Não adiciona 1000 quando o saldo já é maior. Na Ascensão, define o saldo inicial em 1000, sem adicionar esse reinício ao histórico.
 - Memória abre imediatamente apenas Encarnação, mantém Converter Máximo e libera lotes manuais de Ritos e Relíquias. Não conserva os outros selos.
-- Ruptura Automática paga os três primeiros Selos e reconhece o limiar gratuito da Gnose; não torna os primeiros permanentes.
+- Culto e Ruptura Autônomos compra os Selos a cada ciclo. O Selo da Gnose abre ao atingir o limiar de Fé.
 - Cripta preserva somente níveis das Relíquias; não conserva Fragmentos, melhor Transmutação, selos, ritos ou estágio.
-- Olho do Infinito deixa gratuitas apenas as compras **automáticas** de Fiéis e Ritos, se as respectivas automações estiverem compradas e ligadas. Compras manuais continuam pagas. Os três primeiros Selos e as Relíquias continuam pagos.
-- Os nomes “Coro Harmônico”/ID `gn_followers_cubic` não indicam potência cúbica: o expoente atual é 1.1.
-- Liberar tiers também exige os bosses: Tier 1 livre; Tier 2 Anúbis; Tier 3 Hades; Tier 4 Odin. Saves antigos com algum upgrade já comprado no tier conservam acesso a ele.
+- Anúbis abre o Tier I, Hades o II, Odin o III e Caos Primordial o IV. Saves com um nó já comprado no tier conservam acesso a ele.
 
 ## 9. Automações
 
 As compras automáticas executam a cada **1 segundo simulado**, com seu acumulador preservado no save:
 
 1. Selos elegíveis são pagos antes de competir com Fiéis. Gnose exige o limiar mas não consome Fé.
-2. Auto-Fiéis respeita o objetivo selecionado. Reserva quando faltam até 180 s pela produção atual para o objetivo ativo ou para um Selo/Avatar intermediário de menor custo na rota até um objetivo finito; fora dessa janela, compra uma unidade somente quando `(alvo - saldo + custo) / (P + ganhoDoFiel) < ETA atual` (ou livremente se não há objetivo finito elegível). Sem Fiéis, permite iniciar a economia. Até 10000 unidades por ciclo. Olho do Infinito dispensa o gasto, mantendo o limite do lote que caberia no saldo.
-3. Auto-Ritos escolhe efeito relativo marginal por custo, com peso 0.15 para cliques e 1 para os demais efeitos, preservando recursos necessários a Selos em Fervor. Efeitos nulos são ignorados; Fênix continua obrigatória para o Rito de Fragmentos. Até 50 níveis por Rito por ciclo. Olho do Infinito dispensa o gasto, mas cada preço precisa caber.
-4. Auto-Relíquias poupa para a primeira Fênix; depois compara ganhos relativos de Fé/s, Fervor/s, Fragmentos/s e economia de Fiéis por Fragmento. Continua pagando normalmente, respeitando os máximos.
-
-O objetivo pode ser o próximo Selo, Avatar ou uma quantidade inteira de Gnose; no modo automático, escolhe o menor limiar elegível. A interface mostra objetivo e ETA pela produção atual, permitindo trocar ou pausar. Todos os interruptores e o objetivo persistem.
+2. Auto-Fiéis usa Converter Máximo com a Fé restante, até 10.000 por ciclo, e paga o lote.
+3. Auto-Ritos escolhe efeito relativo marginal por custo, com peso 0,15 para cliques e 1 para os demais efeitos. Reserva recursos necessários ao próximo Selo que exige Fervor e respeita a Fênix. Compra um nível por Rito ou o lote de até 100 níveis com Máximo ativo.
+4. Auto-Relíquias poupa para a primeira Fênix, depois compara ganhos relativos de Fé/s, Fervor/s, Fragmentos/s e economia de Fiéis por Fragmento. Compra um nível por Relíquia ou o lote disponível com Máximo ativo.
 
 Memória permite compras manuais em lote: até 100 níveis de um Rito ou todos os níveis acessíveis de uma Relíquia, pagando cada custo normal. Compras individuais continuam disponíveis.
 
-Auto-Transmutação soma `T` Fragmentos/s com Olho do Infinito ativo. Draupnir soma `0.05*T`, independentemente desse interruptor.
+Auto-Transmutação soma `0.10*T` Fragmentos/s com Olho do Infinito ativo. Draupnir soma `0.05*T`, independentemente desse interruptor.
 
 ## 10. Conquistas
 
@@ -579,6 +565,8 @@ Itens abaixo foram removidos do catálogo ativo; não aplicam seus antigos efeit
 | gn_alchemical_mind | 150 | 2 |
 | gn_synergy_boost | 8450 | 3 |
 | gn_relic_resonance | 9900 | 3 |
+| gn_relic_refinement | Preço da revisão do save (26.000 na revisão 10) | 3 |
+| gn_fu1_boost | Preço da revisão do save (30.000 na revisão 10) | 3 |
 
 Automações antigas `gn_auto_followers` (3), `gn_auto_fervor` (5) e `gn_auto_relics` (8) são reunidas em `gn_automation` (pelo custo atual do catálogo). Seja `pago` a soma dos itens antigos possuídos: se o novo já existe, reembolsa `pago`; caso contrário, concede o novo e reembolsa `max(0,pago-custoAtual)`.
 
@@ -586,7 +574,7 @@ Selos antigos `gn_fervor_seal` (4, Tier 1) e `gn_relics_seal` (12, Tier 2) são 
 
 Os reembolsos aumentam Gnose disponível, não Gnose histórica. IDs antigos são removidos, impedindo repetir o reembolso. Migrações de itens removidos de tiers posteriores preservam o acesso herdado por meio dos respectivos guardiões.
 
-A revisão de progressão é marcada por `progressionRevision=1`. Para itens antigos cujo preço caiu, devolve `max(0,preçoAnterior-preçoAtual)` ao saldo, sem aumentar Gnose histórica; preços maiores não geram cobrança adicional. Saves sem picos iniciam Vp/Rp a partir dos saldos conhecidos, nunca de Vh/Rh. O marcador salvo impede repetir o reembolso.
+A revisão de progressão atual é marcada por `progressionRevision=11`. Para itens antigos cujo preço caiu, devolve `max(0,preçoAnterior-preçoAtual)` ao saldo, sem aumentar Gnose histórica; preços maiores não geram cobrança adicional. Saves sem picos iniciam Vp/Rp a partir dos saldos conhecidos, nunca de Vh/Rh. O marcador salvo impede repetir o reembolso.
 
 ## 16. Fontes e particularidades
 
@@ -607,7 +595,7 @@ Particularidades técnicas que afetam a interpretação:
 4. Ao carregar, saldos são limitados inferiormente a zero (histórico de Fé a pelo menos 1), Bênção a 0–60, estágio a 1–5 e níveis de Relíquias a 0–máximo. Sem Selo das Relíquias aberto, Fragmentos e recorde de Transmutação carregados são zerados. Batalha ativa não é retomada; contador de fendas reinicia e acumulador de automação é preservado em `[0, 1]`. Vigília fixa Bênção quando aplicável.
 5. A documentação cobre regras da partida, bônus, custos, compras, combate, temporização e indicadores de progressão. Movimento decorativo, partículas, cores, áudio, CSS e estratégias do simulador de benchmark não concedem bônus e não constituem fórmulas econômicas da partida.
 
-**Inventário conferido:** 1 tipo de Fiel, 4 Selos, 6 Ritos, 5 estágios de Encarnação, 6 Relíquias, 20 upgrades ativos de Gnose, 20 Conquistas e 4 Bosses; além de regras de migração de 11 IDs antigos.
+**Inventário conferido:** 1 tipo de Fiel, 4 Selos, 6 Ritos, 5 estágios de Encarnação, 6 Relíquias, 18 upgrades ativos de Gnose, 20 Conquistas e 4 Bosses.
 
 ### Coreografia e defesa na batalha
 
