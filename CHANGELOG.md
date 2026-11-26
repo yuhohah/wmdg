@@ -2,6 +2,39 @@
 
 Novidades de *Cult of the Sphere*, da versão mais recente para a mais antiga.
 
+## 0.15.0 — 2026-11-26
+
+### Árvore da Gnose e Progressão
+
+- Culto Autônomo e Ruptura Automática foram unificados em Culto e Ruptura Autônomos no Tier I (custo 6 de Gnose).
+- Liturgia Autônoma e Oficina Autônoma foram unificadas em Liturgia e Oficina Autônomas no Tier II (custo 30 de Gnose).
+- Relíquias Ilimitadas foi separada para o Tier I (custo 10 de Gnose), removendo o teto de nível da Cornucópia e da Tocha com escalonamento de custo de +15% após o nível 20; Cripta Eterna (Tier II, custo 25 de Gnose) passa a focar em preservar 100% das relíquias com limite e 50% de Cornucópia e Tocha na Ascensão.
+- Chama Astral (custo 4) e Alquimia Astral (custo 8) foram movidas para o Tier I, rebalanceadas com descrições mais claras de seus efeitos no Fervor, na Transmutação e no Rito da Encarnação, com reembolso automático da diferença de Gnose para saves antigos.
+- Escala de sinergia de Fiéis rebalanceada entre os tiers: Emanação Primordial (1 + 0,025 × √Fiéis), Congregação Esférica (1 + √Fiéis) e Coro Harmônico (1 + Fiéis).
+- Vigília Perpétua agora mantém a Bênção permanente e também evolui a Encarnação automaticamente a cada segundo, com opção de pausar a Auto-Evolução no painel da Encarnação.
+
+### Combate, Animações e Cerimônia Final
+
+- Adicionadas animações completas de sprite para Fiéis (repouso, caminhada frontal/traseira, levantar e rezar em loop), Encarnação (repouso, canalização e caminhada direcional) e Chefes (repouso animado, reação de dano e reverência).
+- Cerimônia final atualizada com movimentação direcional dos Fiéis, animações da Encarnação Solar e reverência dos guardiões e do Demiurgo.
+- Adicionado atalho na tecla Espaço para atacar o chefe durante batalhas, além dos botões Pular procissão e Pular automático nas entradas e retornos dos duelos.
+- Rebalanceado o dano sofrido na Esfera ao errar mecânicas especiais dos chefes.
+- Corrigida a mecânica especial Corvo de Odin: o botão de aparo agora permanece corretamente posicionado no card e o final da janela verde não pisca em vermelho nem registra clique adiantado por engano.
+
+### Conquistas e Salvamento
+
+- Ganhos de clique das conquistas foram redistribuídos ao longo dos marcos, adicionando bônus de base e sinergia de porcentagem da Fé/s por clique.
+- Recompensas de Milagres passam a escalar progressivamente com as conquistas de Fiéis (de 10s até 40s de Fé/s).
+- Adicionada verificação de assinatura de integridade ao sistema de salvamento.
+
+### Interface, Tabuleiro e Mobile
+
+- Relíquias Divinas agora recolhe automaticamente as relíquias com limite em uma seção expansível assim que Relíquias Ilimitadas é comprada, mantendo Cornucópia e Tocha sempre visíveis.
+- Corrigida a trepidação de layout nos cards de Relíquias Divinas (com exibição de atalhos ativada) e de Gnose (quando o ganho de Ascensão muda de 9 para 10 ou entra em notação científica).
+- Corrigidas sobreposições de interface no celular em cards, HUD, árvore da Gnose, modais e batalhas de chefe, mantendo também a tela inicial, o foco da câmera e os balões de tutorial abaixo dos contadores do topo.
+- Cabeçalhos arrastáveis agora exibem alça visual, o tutorial Monte seu quadro ensina a organizar os cards diretamente no tabuleiro e a ajuda de atalhos ganhou o grupo Quadro.
+- A câmera retorna à posição anterior do jogador ao concluir sequências de tutorial, e pular a introdução da Esfera avança para a conversão do primeiro Fiel exibindo quanta Fé falta.
+
 ## 0.14.0 — 2026-11-18
 
 ### Maldição dos Guardiões
