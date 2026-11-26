@@ -5,6 +5,7 @@ import { INCARNATION_STAGES, BLESSING_SECONDS_PER_PRESS } from '../../config/inc
 import { formatNumber } from '../../systems/calculations.js';
 import { IncarnationAltar } from './IncarnationAltar.js';
 import { setText } from '../../ui/dom.js';
+import { AutomationToggle } from '../../ui/AutomationToggle.js';
 import { events, GameEvents } from '../../core/EventBus.js';
 
 export interface IncarnationTabOptions {
@@ -19,6 +20,7 @@ export interface IncarnationTabOptions {
 export class IncarnationTab {
   private options: IncarnationTabOptions;
   public altar: IncarnationAltar | null = null;
+  private incarnationAutomation: AutomationToggle;
 
   // DOM Elements
   private stageBadgeEl: HTMLElement | null = null;
@@ -37,6 +39,11 @@ export class IncarnationTab {
 
   constructor(options: IncarnationTabOptions) {
     this.options = options;
+    this.incarnationAutomation = new AutomationToggle('auto-incarnation', {
+      isUnlocked: () => options.gameState.hasGnoseUpgrade('gn_bencao_eterna'),
+      isEnabled: () => options.gameState.autoIncarnationEnabled,
+      setEnabled: enabled => { options.gameState.autoIncarnationEnabled = enabled; },
+    });
     this.initElements();
     this.bindEvents();
   }
@@ -152,6 +159,7 @@ export class IncarnationTab {
   }
 
   public updateUI(): void {
+    this.incarnationAutomation.update();
     const stage = this.options.gameState.incarnationStage;
     const currentStage = INCARNATION_STAGES.find((s) => s.stage === stage);
     const nextStage = INCARNATION_STAGES.find((s) => s.stage === stage + 1);

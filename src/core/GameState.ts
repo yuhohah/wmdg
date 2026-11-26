@@ -122,6 +122,7 @@ export class GameStateManager {
   public skipBossProcession: boolean = false;
   public autoFollowersEnabled: boolean = true;
   public autoFervorEnabled: boolean = true;
+  public autoIncarnationEnabled: boolean = true;
   public autoRelicsEnabled: boolean = true;
   public gnoseAutoAccumulatorSec: number = 0;
   public sphereAutoAccumulatorSec: number = 0;
@@ -197,6 +198,7 @@ export class GameStateManager {
     this.skipBossProcession = false;
     this.autoFollowersEnabled = true;
     this.autoFervorEnabled = true;
+    this.autoIncarnationEnabled = true;
     this.autoRelicsEnabled = true;
     this.gnoseAutoAccumulatorSec = 0;
     this.sphereAutoAccumulatorSec = 0;
@@ -425,13 +427,16 @@ export class GameStateManager {
   }
 
   public getGnoseFollowersSynergyMultiplier(followersCount: number = this.getTotalFollowersCount()): number {
+    const hasHarmonic = this.hasGnoseUpgrade('gn_followers_cubic');
     const hasCongregation = this.hasGnoseUpgrade('gn_followers_syn');
     const early = this.hasGnoseUpgrade('gn_init_faith');
-    const exponent = hasCongregation
-      ? (this.hasGnoseUpgrade('gn_followers_cubic') ? 1.1 : PROGRESSION_BALANCE.congregationExponent)
-      : PROGRESSION_BALANCE.earlySynergyExponent;
-    return calculateGnoseFollowersSynergyMultiplier(followersCount, hasCongregation || early, exponent);
-
+    const exponent = hasHarmonic
+      ? PROGRESSION_BALANCE.harmonicExponent
+      : hasCongregation
+        ? PROGRESSION_BALANCE.congregationExponent
+        : PROGRESSION_BALANCE.earlySynergyExponent;
+    const scale = (hasHarmonic || hasCongregation) ? 1 : PROGRESSION_BALANCE.earlySynergyScale;
+    return calculateGnoseFollowersSynergyMultiplier(followersCount, hasHarmonic || hasCongregation || early, exponent, scale);
   }
 
   public getIncarnationStageCost(stageObj: IncarnationStage): number {
@@ -473,7 +478,7 @@ export class GameStateManager {
 
   public getFervorUpgradeCostMultiplier(upg: FervorUpgrade): number {
     let scale = upg.costMultiplier;
-    if (upg.id === 'fu_prod' && this.hasGnoseUpgrade('gn_init_fervor')) scale -= GNOSE_FORMULAS.ritualCostStep;
+    if (upg.id === 'fu_prod' && this.hasGnoseUpgrade('gn_init_fervor')) scale -= GNOSE_FORMULAS.fervorRitualCostStep;
     if (upg.id === 'fu_relics' && this.hasGnoseUpgrade('gn_relic_gain')) scale -= GNOSE_FORMULAS.relicCostStep;
     if (upg.id === 'fu_relics' && this.hasGnoseUpgrade('gn_relic_refinement')) scale -= GNOSE_FORMULAS.refinedRelicCostStep;
     if (upg.id === 'fu_relics' && this.hasGnoseUpgrade('gn_perfect_opus')) scale -= GNOSE_FORMULAS.perfectRelicCostStep;
@@ -504,6 +509,9 @@ export class GameStateManager {
     let mult = 1.0;
     if (fuRelics && fuRelics.level > 0) {
       mult = this.getFervorUpgradeEffect(fuRelics);
+    }
+    if (this.hasGnoseUpgrade('gn_relic_gain')) {
+      mult *= GNOSE_FORMULAS.relicDirectMultiplier;
     }
     return mult;
   }
@@ -839,12 +847,17 @@ export class GameStateManager {
 
   public runGnoseAutomation(): void {
     // Pay for eligible seals before any competing follower purchase in this cycle.
-    if (this.hasGnoseUpgrade('gn_seal_automation')) {
+    if (this.hasGnoseUpgrade('gn_automation')) {
       for (let i = 0; i < this.unlocks.length; i++) {
         const seal = this.unlocks[i];
         if (!seal.unlocked && (!seal.prerequisiteId || this.unlocks.some(u => u.id === seal.prerequisiteId && u.unlocked))) {
           this.buyUnlock(seal);
         }
+      }
+    }
+    if (this.hasGnoseUpgrade('gn_bencao_eterna') && this.autoIncarnationEnabled && this.isIncarnationUnlocked()) {
+      while (this.upgradeIncarnation()) {
+        // Evolve through every affordable eligible Avatar stage before spending Faith on followers.
       }
     }
     const free = this.hasGnoseUpgrade('gn_omniscience');

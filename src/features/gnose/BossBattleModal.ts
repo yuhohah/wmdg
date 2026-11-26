@@ -1130,8 +1130,9 @@ export class BossBattleModal {
       const extrap =
         Math.min(0.11, Math.max(0, (now - this.odinTracker.observedAt) / 1000)) *
         Math.max(0, this.speedMultiplier);
+      const minLiveRemaining = odinRift.remainingSec > 0 ? Math.min(0.001, odinRift.remainingSec) : 0;
       this.odinTracker.displayedRemaining = Math.max(
-        0,
+        minLiveRemaining,
         Math.min(this.odinTracker.displayedRemaining, odinRift.remainingSec - extrap)
       );
       this.applyOdinCardFrame(odinRift, this.odinTracker.displayedRemaining);
@@ -2174,8 +2175,10 @@ export class BossBattleModal {
         riftEl.className = `boss-rift-target${kindClass}`;
         riftEl.setAttribute('data-rift-id', rift.id);
         riftEl.setAttribute('data-rift-kind', kind);
-        riftEl.style.left = `${pos.x}px`;
-        riftEl.style.top = `${pos.y}px`;
+        if (kind !== 'odin_raven') {
+          riftEl.style.left = `${pos.x}px`;
+          riftEl.style.top = `${pos.y}px`;
+        }
         if (kind === 'odin_raven') {
           riftEl.innerHTML = `
             <span class="odin-parry-zone" aria-hidden="true"></span>

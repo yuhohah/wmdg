@@ -481,8 +481,9 @@ export function calculateTotalGnoseMultiplier(totalGnoseEarned: number): number 
 export function calculateGnoseFollowersSynergyMultiplier(
   followersCount: number,
   hasFollowersSyn: boolean,
-  exponent: number = 1.5
+  exponent: number = 1.5,
+  scale: number = 1
 ): number {
   if (!hasFollowersSyn || followersCount <= 0) return 1.0;
-  return 1 + Math.pow(followersCount, exponent);
+  return 1 + scale * Math.pow(followersCount, exponent);
 }

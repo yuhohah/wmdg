@@ -315,6 +315,11 @@
                     </div>
                   </div>
 
+                  <label class="card-automation-toggle" id="auto-incarnation-wrap" hidden>
+                    <input type="checkbox" id="auto-incarnation-toggle" checked />
+                    <span>Auto-Evolução</span>
+                  </label>
+
                   <div class="incarnation-controls">
                     <button id="btn-upgrade-incarnation" aria-keyshortcuts="U" class="btn-follower-action btn-incarnation-upgrade">
                       <div class="btn-action-main">
@@ -355,7 +360,8 @@
                   <!-- Conversion Section -->
                   <div class="relics-convert-section">
                     <button id="btn-convert-relics" aria-keyshortcuts="CapsLock" class="btn-convert-relics" disabled>
-                      Transmutar toda a Fé → +<span id="relics-to-get">0</span> Fragmentos <kbd class="hotkey-badge">Caps</kbd>
+                      <span class="btn-convert-relics-title">Transmutar toda a Fé <kbd class="hotkey-badge">Caps</kbd></span>
+                      <span class="btn-convert-relics-gain">→ +<span id="relics-to-get">0</span> Fragmentos</span>
                     </button>
                     <div class="relics-extra-rate-text" id="relics-cooldown-line" style="visibility: hidden;">
                       Transmutação disponível em <span id="relics-convert-cooldown">0</span>s
@@ -396,7 +402,8 @@
                   <div class="gnose-reset-section">
                     <div class="gnose-top-bar">
                       <button id="btn-gnose-reset" class="btn-gnose-reset" disabled>
-                        Ascender → +<span id="gnose-to-get">0</span> Gnose
+                        <span class="btn-gnose-reset-title">Ascender</span>
+                        <span class="btn-gnose-reset-gain">→ +<span id="gnose-to-get">0</span> Gnose</span>
                       </button>
                       <div class="gnose-stats-grid">
                         <div class="gnose-stat-box">

@@ -273,6 +273,7 @@ export interface GnoseSaveData {
   skipBossProcession?: boolean;
   autoFollowersEnabled: boolean;
   autoFervorEnabled: boolean;
+  autoIncarnationEnabled?: boolean;
   /** Passive transmutation unlocked by Olho do Infinito. */
   autoRelicsEnabled?: boolean;
   autoRelicUpgradesEnabled?: boolean;

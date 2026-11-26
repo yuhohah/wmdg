@@ -30,10 +30,15 @@ function followerBonusFormula(game: GameStateManager, bulk: boolean): string {
   const synergyEffect = game.getGnoseFollowersSynergyMultiplier(sampleCount);
   const constant = sampleProduction / (sampleCount * ritualEffect * synergyEffect);
 
-  const hasSynergy = game.hasGnoseUpgrade('gn_followers_syn') || game.hasGnoseUpgrade('gn_init_faith');
-  const exponent = game.hasGnoseUpgrade('gn_followers_syn')
-    ? game.hasGnoseUpgrade('gn_followers_cubic') ? 1.1 : PROGRESSION_BALANCE.congregationExponent
-    : PROGRESSION_BALANCE.earlySynergyExponent;
+  const hasHarmonic = game.hasGnoseUpgrade('gn_followers_cubic');
+  const hasCongregation = game.hasGnoseUpgrade('gn_followers_syn');
+  const hasSynergy = hasHarmonic || hasCongregation || game.hasGnoseUpgrade('gn_init_faith');
+  const exponent = hasHarmonic
+    ? PROGRESSION_BALANCE.harmonicExponent
+    : hasCongregation
+      ? PROGRESSION_BALANCE.congregationExponent
+      : PROGRESSION_BALANCE.earlySynergyExponent;
+  const synergyScale = (hasHarmonic || hasCongregation) ? 1 : PROGRESSION_BALANCE.earlySynergyScale;
 
   const follower = game.followers[0];
   const scale = game.getDevoteeBaseMultiplier();
@@ -50,7 +55,7 @@ function followerBonusFormula(game: GameStateManager, bulk: boolean): string {
       ? `• Rito_Fiéis(N) = 1 + (${ritual.level}^1,5 × N) / 50 (atual: ×${formatNumber(ritualEffect)})`
       : `• Rito_Fiéis(N) = 1 (Rito em nível 0)`,
     hasSynergy
-      ? `• Sinergia_Gnose(N) = 1 + N^${coefficient(exponent)} (atual: ×${formatNumber(synergyEffect)})`
+      ? `• Sinergia_Gnose(N) = 1 + ${synergyScale === 1 ? '' : `${coefficient(synergyScale)} × `}N^${coefficient(exponent)} (atual: ×${formatNumber(synergyEffect)})`
       : `• Sinergia_Gnose(N) = 1 (sem sinergia ativa)`,
     `ΔFé/s = P(Fiéis + ${bulk ? `n` : '1'}) − P(Fiéis) = +${formatNumber(deltaGain)} Fé/s`,
   ];
@@ -60,7 +65,7 @@ function followerBonusFormula(game: GameStateManager, bulk: boolean): string {
 const gnoseBonuses: Record<string, string> = {
   gn_init_faith: [
     '• Escala de custo dos Fiéis: escala′ = escala − 0,01 (1,10 → 1,09)',
-    '• Sinergia dos Fiéis na Fé: M_sinergia = 1 + Fiéis^0,5',
+    `• Sinergia dos Fiéis na Fé: M_sinergia = 1 + ${coefficient(PROGRESSION_BALANCE.earlySynergyScale)} × Fiéis^0,5`,
     '• Fé inicial após Ascensão: Fé_inicial = 1.000 Fé',
   ].join('\n'),
   gn_memoria_selos: [
@@ -68,20 +73,19 @@ const gnoseBonuses: Record<string, string> = {
     '• Libera compras em lote: Converter, Ritualizar (≤ 100) e Restaurar Máximo',
   ].join('\n'),
   gn_init_fervor: [
-    `• Rito Produção de Fervor: M(L) = base^(L^0,6), base 2 → ${coefficient(GNOSE_FORMULAS.fervorProductionBase)}`,
-    `• Escala de custo do Rito: escala′ = escala − ${coefficient(GNOSE_FORMULAS.ritualCostStep)} (1,80 → 1,75)`,
+    `• Rito "Produção de Fervor": M_Fervor/s(L) = base^(L^0,6), base 2 → ${coefficient(GNOSE_FORMULAS.fervorProductionBase)}`,
+    `• Custo por nível do Rito: escala′ = escala − ${coefficient(GNOSE_FORMULAS.fervorRitualCostStep)} (1,80 → 1,75 · +80% → +75%/nível)`,
+    '• Exemplo no nível 50: ×1.405 → ×3.460 Fervor/s (além de comprar mais níveis com o mesmo Fervor)',
   ].join('\n'),
   gn_relic_gain: [
-    `• Rito Ganho de Fragmentos: M(L) = base^(L^0,6), base 3 → ${coefficient(GNOSE_FORMULAS.relicProductionBase)}`,
-    `• Escala de custo do Rito: escala′ = escala − ${coefficient(GNOSE_FORMULAS.relicCostStep)} (5,00 → 4,90)`,
+    `• Transmutação direta: M_Transmutação × ${coefficient(GNOSE_FORMULAS.relicDirectMultiplier)} (efeito imediato)`,
+    `• Rito "Ganho de Fragmentos" (requer Fênix): M_Rito(L) = base^(L^0,6), base 3 → ${coefficient(GNOSE_FORMULAS.relicProductionBase)}`,
+    `• Custo por nível do Rito: escala′ = escala − ${coefficient(GNOSE_FORMULAS.relicCostStep)} (5,00 → 4,90 · +400% → +390%/nível)`,
+    '• Exemplo no nível 20: ×757 → ×2.306 Fragmentos por Transmutação (~33% menos Fervor no 20º nível)',
   ].join('\n'),
   gn_automation: [
-    '• Ciclo (1s): usa Converter Máximo com a Fé disponível',
-    '• Desconta o custo normal: Fé′ = Fé − Σ Custo(Fiéis)',
-  ].join('\n'),
-  gn_seal_automation: [
-    '• Ciclo (1s): rompe Selos fechados em ordem quando Fé ≥ Custo',
-    '• Selo da Gnose abre ao atingir 1e15 Fé sem consumir saldo',
+    '• Ciclo (1s) Selos: rompe Selos fechados em ordem quando há saldo suficiente (Gnose abre em 1e15 Fé sem consumir saldo)',
+    '• Ciclo (1s) Fiéis: usa Converter Máximo com a Fé restante (Fé′ = Fé − Σ Custo(Fiéis))',
   ].join('\n'),
   gn_unlimited_relics: [
     '• Limite de nível da Cornucópia e Tocha: 20 → ∞',
@@ -92,10 +96,11 @@ const gnoseBonuses: Record<string, string> = {
     '• Ciclo (1s) Relíquias: prioriza Fênix e compra por maior retorno / custo (1 nível ou máximo do painel)',
   ].join('\n'),
   gn_followers_syn: [
-    `• Sinergia dos Fiéis na Fé: M_sinergia = 1 + Fiéis^${coefficient(PROGRESSION_BALANCE.congregationExponent)} (expoente 0,5 → 1)`,
+    `• Sinergia dos Fiéis na Fé: M_sinergia = 1 + Fiéis^${coefficient(PROGRESSION_BALANCE.congregationExponent)} (substitui 1 + ${coefficient(PROGRESSION_BALANCE.earlySynergyScale)} × √Fiéis)`,
   ].join('\n'),
   gn_bencao_eterna: [
     '• Bênção da Encarnação permanente: M_Bênção = ×2 Fé/s (mantém 60s ativos)',
+    '• Ciclo (1s) Encarnação: evolui automaticamente para o próximo estágio liberado quando Fé ≥ Custo (paga o custo)',
   ].join('\n'),
   gn_keep_relics: [
     '• Preserva 100% dos níveis das demais Relíquias após cada Ascensão',
@@ -106,17 +111,17 @@ const gnoseBonuses: Record<string, string> = {
     `• Escala de custo dos Fiéis: escala′ = escala − ${coefficient(GNOSE_FORMULAS.followerEconomyStep)} (1,09 → 1,075 antes de Hermes, piso 1,05)`,
   ].join('\n'),
   gn_followers_cubic: [
-    '• Sinergia dos Fiéis na Fé: M_sinergia = 1 + Fiéis^1,1 (expoente 1 → 1,1)',
+    `• Sinergia dos Fiéis na Fé: M_sinergia = 1 + Fiéis^${coefficient(PROGRESSION_BALANCE.harmonicExponent)} (expoente ${coefficient(PROGRESSION_BALANCE.congregationExponent)} → ${coefficient(PROGRESSION_BALANCE.harmonicExponent)})`,
   ].join('\n'),
   gn_gnose_mult: [
     `• Ganho ao ascender: Gnose = ⌊(Fé / 1e15)^${coefficient(PROGRESSION_BALANCE.enlightenedExponent)}⌋ para Fé ≥ 1e15 (expoente 0,25 → 0,28)`,
   ].join('\n'),
   gn_relic_refinement: [
-    `• Rito Ganho de Fragmentos: M(L) = base^(L^0,6), base 3,05 → ${coefficient(GNOSE_FORMULAS.refinedRelicProductionBase)}`,
+    `• Rito Ganho de Fragmentos: M(L) = base^(L^0,6), base 3,10 → ${coefficient(GNOSE_FORMULAS.refinedRelicProductionBase)}`,
     `• Escala de custo do Rito: escala′ = escala − ${coefficient(GNOSE_FORMULAS.refinedRelicCostStep)} (4,90 → 4,60)`,
   ].join('\n'),
   gn_fu1_boost: [
-    `• Rito Produção de Fervor: M(L) = base^(L^0,6), base 2,05 → ${coefficient(GNOSE_FORMULAS.hermeticProductionBase)}`,
+    `• Rito Produção de Fervor: M(L) = base^(L^0,6), base 2,18 → ${coefficient(GNOSE_FORMULAS.hermeticProductionBase)}`,
   ].join('\n'),
   gn_omniscience: [
     '• Auto-Fiéis e Auto-Ritos não consomem Fé/Fervor (exigem saldo ≥ Custo)',

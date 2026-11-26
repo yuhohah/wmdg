@@ -110,8 +110,10 @@ export class RelicsTab {
     }
   }
 
-  private computeStructureKey(keepRelics: boolean): string {
-    let key = `${DISPLAY_CONFIG.showEmojisAndSymbols ? 1 : 0}:${keepRelics ? 1 : 0}`;
+  private finiteRelicsSummaryEl: HTMLElement | null = null;
+
+  private computeStructureKey(foldFiniteRelics: boolean): string {
+    let key = `${DISPLAY_CONFIG.showEmojisAndSymbols ? 1 : 0}:${foldFiniteRelics ? 1 : 0}`;
     const relics = this.options.gameState.relicUpgrades;
     for (let i = 0; i < relics.length; i++) {
       const r = relics[i];
@@ -121,11 +123,14 @@ export class RelicsTab {
     return key;
   }
 
+  private formatFiniteRelicsSummary(maxedCount: number, totalCount: number): string {
+    return `Relíquias com limite (${maxedCount}/${totalCount} no máximo)`;
+  }
+
   public renderList(): void {
     this.bulkToggle.update();
     if (!this.relicUpgradesListEl) return;
-    const foldFiniteRelics = this.options.gameState.hasGnoseUpgrade('gn_keep_relics')
-      && this.options.gameState.hasGnoseUpgrade('gn_unlimited_relics');
+    const foldFiniteRelics = this.options.gameState.hasGnoseUpgrade('gn_unlimited_relics');
     const structure = this.computeStructureKey(foldFiniteRelics);
     if (structure === this.renderedStructure) {
       this.updateButtonStates();
@@ -135,25 +140,37 @@ export class RelicsTab {
     const finiteRelicsOpen = this.relicUpgradesListEl.querySelector<HTMLDetailsElement>('.finite-relics')?.open ?? false;
     this.relicUpgradesListEl.innerHTML = '';
     this.cardRefs.clear();
+    this.finiteRelicsSummaryEl = null;
 
     const relicPoints = this.options.gameState.relicPoints;
     const peakRelics = Math.max(relicPoints, this.options.gameState.relicPeakThisRun);
     const bulkEnabled = this.isBulkEnabled();
 
-    // Keep the two eternal relics directly accessible; finite relics remain expandable once preserved.
+    // Keep the two infinite relics directly accessible; fold capped relics into a collapsible section.
     let finiteRelics: HTMLDetailsElement | null = null;
+    let finiteRelicsList: HTMLDivElement | null = null;
     if (foldFiniteRelics) {
       finiteRelics = document.createElement('details');
       finiteRelics.className = 'finite-relics';
       finiteRelics.open = finiteRelicsOpen;
       const summary = document.createElement('summary');
-      summary.textContent = 'Relíquias com limite';
-      finiteRelics.appendChild(summary);
+      this.finiteRelicsSummaryEl = summary;
+      finiteRelicsList = document.createElement('div');
+      finiteRelicsList.className = 'finite-relics-list';
+      finiteRelics.append(summary, finiteRelicsList);
     }
+
+    let finiteTotal = 0;
+    let finiteMaxed = 0;
 
     this.options.gameState.relicUpgrades.forEach((relic, index) => {
       const maxLevel = this.options.gameState.getRelicMaxLevel(relic);
+      const isFinite = Number.isFinite(maxLevel);
       const isMax = relic.level >= maxLevel;
+      if (isFinite) {
+        finiteTotal++;
+        if (isMax) finiteMaxed++;
+      }
       const { count, cost } = this.purchasePreview(relic, bulkEnabled);
       const canAfford = relicPoints >= cost && (!bulkEnabled || count > 0);
       const effectDesc = relic.effectText(relic.level, peakRelics, maxLevel);
@@ -185,11 +202,11 @@ export class RelicsTab {
             <span class="card-name">${relic.name}</span>
             ${hotkeyHtml}
           </div>
-          <span class="relic-level-badge ${isMax ? 'maxed' : ''}">(${formatNumber(relic.level)}/${Number.isFinite(maxLevel) ? maxLevel : '∞'})</span>
+          <span class="relic-level-badge ${isMax ? 'maxed' : ''}">(${formatNumber(relic.level)}/${isFinite ? maxLevel : '∞'})</span>
         </div>
         <div class="card-desc">
           <div class="relic-benefit-text">${effectDesc}</div>
-          ${Number.isFinite(maxLevel) ? '' : `<div>Custo +${Math.round((ETERNAL_RELIC_COST_GROWTH - 1) * 100)}% por nível após o ${ETERNAL_RELIC_FIXED_LEVELS}º.</div>`}
+          ${isFinite ? '' : `<div>Custo +${Math.round((ETERNAL_RELIC_COST_GROWTH - 1) * 100)}% por nível após o ${ETERNAL_RELIC_FIXED_LEVELS}º.</div>`}
         </div>
         <div class="card-footer-row">
           <div class="relic-cost-tag">
@@ -214,10 +231,13 @@ export class RelicsTab {
         benefitEl: card.querySelector<HTMLElement>('.relic-benefit-text'),
       });
 
-      const container = finiteRelics && Number.isFinite(maxLevel) ? finiteRelics : this.relicUpgradesListEl!;
+      const container = finiteRelicsList && isFinite ? finiteRelicsList : this.relicUpgradesListEl!;
       container.appendChild(card);
     });
-    if (finiteRelics) this.relicUpgradesListEl.appendChild(finiteRelics);
+    if (finiteRelics) {
+      setText(this.finiteRelicsSummaryEl, this.formatFiniteRelicsSummary(finiteMaxed, finiteTotal));
+      this.relicUpgradesListEl.appendChild(finiteRelics);
+    }
   }
 
   public updateUI(): void {
@@ -250,17 +270,24 @@ export class RelicsTab {
     const peakRelics = Math.max(relicPoints, this.options.gameState.relicPeakThisRun);
     const bulkEnabled = this.isBulkEnabled();
     const relics = this.options.gameState.relicUpgrades;
+    let finiteTotal = 0;
+    let finiteMaxed = 0;
     for (let i = 0; i < relics.length; i++) {
       const relic = relics[i];
       const refs = this.cardRefs.get(relic.id);
       if (!refs) continue;
       const maxLevel = this.options.gameState.getRelicMaxLevel(relic);
+      const isFinite = Number.isFinite(maxLevel);
       const isMax = relic.level >= maxLevel;
+      if (isFinite) {
+        finiteTotal++;
+        if (isMax) finiteMaxed++;
+      }
       const { count, cost } = this.purchasePreview(relic, bulkEnabled);
       const canAfford = relicPoints >= cost && (!bulkEnabled || count > 0);
       const card = refs.cardEl;
 
-      setText(refs.badgeEl, `(${formatNumber(relic.level)}/${Number.isFinite(maxLevel) ? maxLevel : '∞'})`);
+      setText(refs.badgeEl, `(${formatNumber(relic.level)}/${isFinite ? maxLevel : '∞'})`);
       if (refs.badgeEl && refs.badgeEl.classList.contains('maxed') !== isMax) {
         refs.badgeEl.classList.toggle('maxed', isMax);
       }
@@ -280,6 +307,9 @@ export class RelicsTab {
       if (refs.benefitEl) {
         setText(refs.benefitEl, relic.effectText(relic.level, peakRelics, maxLevel));
       }
+    }
+    if (this.finiteRelicsSummaryEl) {
+      setText(this.finiteRelicsSummaryEl, this.formatFiniteRelicsSummary(finiteMaxed, finiteTotal));
     }
   }
 

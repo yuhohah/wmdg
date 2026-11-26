@@ -51,7 +51,6 @@ const PRODUCTION_GNOSE_IDS = new Set([
 const COMFORT_GNOSE_IDS = new Set([
   'gn_memoria_selos',
   'gn_automation',
-  'gn_seal_automation',
   'gn_ritual_relic_automation',
   'gn_omniscience',
 ]);

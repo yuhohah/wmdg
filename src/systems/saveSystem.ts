@@ -17,6 +17,7 @@ import {
   GNOSE_UPGRADES,
   LEGACY_GNOSE_AUTOMATIONS,
   LEGACY_GNOSE_RITUAL_RELIC_AUTOMATIONS,
+  LEGACY_GNOSE_SEAL_AUTOMATION_DEFAULT_COST,
   LEGACY_GNOSE_SEAL_AUTOMATIONS,
   PROGRESSION_OLD_PRICES,
   PROGRESSION_REVISION,
@@ -26,6 +27,8 @@ import {
   PROGRESSION_REVISION_4_PRICES,
   PROGRESSION_REVISION_5_PRICES,
   PROGRESSION_REVISION_6_PRICES,
+  PROGRESSION_REVISION_7_PRICES,
+  PROGRESSION_REVISION_8_PRICES,
   RETIRED_GNOSE_UPGRADES,
 } from '../config/gnose.js';
 
@@ -99,7 +102,7 @@ export function isValidSaveData(value: unknown): value is SaveData {
       .every(key => optional(gnose, key, nonnegative)) || !optional(gnose, 'gnoseResets', integer)) return false;
     if (!optional(gnose, 'bossCurseStacks', integer) || !optional(gnose, 'bossCurseBossId', v => v === null || typeof v === 'string')) return false;
     if (!['unlockedUpgrades', 'defeatedBosses', 'maxCurseDefeatedBosses'].every(key => optional(gnose, key, strings))) return false;
-    if (!['confirmReset', 'skipBossProcession', 'autoFollowersEnabled', 'autoFervorEnabled', 'autoRelicsEnabled', 'autoRelicUpgradesEnabled']
+    if (!['confirmReset', 'skipBossProcession', 'autoFollowersEnabled', 'autoFervorEnabled', 'autoIncarnationEnabled', 'autoRelicsEnabled', 'autoRelicUpgradesEnabled']
       .every(key => optional(gnose, key, v => typeof v === 'boolean'))) return false;
     if (!optional(gnose, 'bestBossTimesSec', times => record(times) && Object.values(times).every(time => nonnegative(time) && time > 0))) return false;
   }
@@ -297,6 +300,7 @@ export interface SaveStateHost {
   skipBossProcession: boolean;
   autoFollowersEnabled: boolean;
   autoFervorEnabled: boolean;
+  autoIncarnationEnabled: boolean;
   autoRelicsEnabled: boolean;
   autoRelicUpgradesEnabled: boolean;
   resetToDefaults(): void;
@@ -363,6 +367,7 @@ export function buildSaveDataFromState(state: SaveStateHost): SaveData {
       skipBossProcession: state.skipBossProcession,
       autoFollowersEnabled: state.autoFollowersEnabled,
       autoFervorEnabled: state.autoFervorEnabled,
+      autoIncarnationEnabled: state.autoIncarnationEnabled,
       autoRelicsEnabled: state.autoRelicsEnabled,
       autoRelicUpgradesEnabled: state.autoRelicUpgradesEnabled,
     },
@@ -518,7 +523,11 @@ export function applySaveDataToState(state: SaveStateHost, save: SaveData): void
                   ? PROGRESSION_REVISION_4_PRICES
                   : revision < 6
                     ? PROGRESSION_REVISION_5_PRICES
-                    : PROGRESSION_REVISION_6_PRICES;
+                    : revision < 7
+                      ? PROGRESSION_REVISION_6_PRICES
+                      : revision < 8
+                        ? PROGRESSION_REVISION_7_PRICES
+                        : PROGRESSION_REVISION_8_PRICES;
       for (const [id, paid] of Object.entries(paidPrices)) {
         const current = GNOSE_UPGRADES.find((u) => u.id === id);
         if (current && state.hasGnoseUpgrade(id)) {
@@ -550,6 +559,8 @@ export function applySaveDataToState(state: SaveStateHost, save: SaveData): void
       typeof save.gnose.autoFollowersEnabled === 'boolean' ? save.gnose.autoFollowersEnabled : true;
     state.autoFervorEnabled =
       typeof save.gnose.autoFervorEnabled === 'boolean' ? save.gnose.autoFervorEnabled : true;
+    state.autoIncarnationEnabled =
+      typeof save.gnose.autoIncarnationEnabled === 'boolean' ? save.gnose.autoIncarnationEnabled : true;
     state.autoRelicsEnabled =
       typeof save.gnose.autoRelicsEnabled === 'boolean' ? save.gnose.autoRelicsEnabled : true;
     state.autoRelicUpgradesEnabled =
@@ -620,7 +631,7 @@ export function migrateGnoseUpgrades(
     state.unlockedGnoseUpgrades.delete(upgrade.id)
   );
   if (sealAutomations.length > 0) {
-    const replacement = GNOSE_UPGRADES.find((upgrade) => upgrade.id === 'gn_seal_automation')!;
+    const replacement = GNOSE_UPGRADES.find((upgrade) => upgrade.id === 'gn_automation')!;
     const paid = sealAutomations.reduce((sum, upgrade) => sum + upgrade.cost, 0);
     state.gnosePoints += state.hasGnoseUpgrade(replacement.id)
       ? paid
@@ -630,6 +641,18 @@ export function migrateGnoseUpgrades(
     for (const upgrade of sealAutomations) {
       const guardian = GNOSE_BOSSES.find((boss) => boss.unlocksTier === upgrade.tier);
       if (guardian) state.defeatedBosses.add(guardian.id);
+    }
+  }
+  if (state.unlockedGnoseUpgrades.delete('gn_seal_automation')) {
+    const replacement = GNOSE_UPGRADES.find((upgrade) => upgrade.id === 'gn_automation')!;
+    const paidSeal = paidPrices?.gn_seal_automation ?? LEGACY_GNOSE_SEAL_AUTOMATION_DEFAULT_COST;
+    if (state.hasGnoseUpgrade(replacement.id)) {
+      const paidAuto = paidPrices?.gn_automation ?? replacement.cost;
+      const effectiveAutoPaid = Math.min(paidAuto, replacement.cost);
+      state.gnosePoints += Math.max(0, effectiveAutoPaid + paidSeal - replacement.cost);
+    } else {
+      state.gnosePoints += Math.max(0, paidSeal - replacement.cost);
+      state.unlockedGnoseUpgrades.add(replacement.id);
     }
   }
   const ritualRelicAutomations = LEGACY_GNOSE_RITUAL_RELIC_AUTOMATIONS.filter((upgrade) =>
